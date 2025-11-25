@@ -1,11 +1,12 @@
 // packages/auth/index.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { SupabaseClient, createClient, Session, User } from '@supabase/supabase-js';
+import * as SecureStore from 'expo-secure-store';
 const safeSecureStore = () => {
   const isReactNative = typeof navigator !== 'undefined' && (navigator as any).product === 'ReactNative';
   if (!isReactNative) return null;
   try {
-    return require('expo-secure-store');
+    return SecureStore;
   } catch (e) {
     return null;
   }

@@ -16,7 +16,7 @@ export default function ProfileScreen() {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
         .then(({ data, error }) => {
           if (error) console.log('Error fetching profile:', error);
           if (data) {

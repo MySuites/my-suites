@@ -1,14 +1,19 @@
 // apps/mycpo/app/auth.tsx
 import { useState } from 'react';
-import { Alert, View, TextInput } from 'react-native';
+import { View, TextInput, Text } from 'react-native';
 import { supabase } from '@mycsuite/auth';
 import { SharedButton } from '@mycsuite/ui';
 
 export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [status, setStatus] = useState<{
+    type: 'idle' | 'typing' | 'signing-in' | 'success' | 'error' | 'info';
+    message?: string;
+  }>({ type: 'idle' });
 
   const handleSignUp = async () => {
+    setStatus({ type: 'signing-in', message: 'Creating account...' });
     // Use the returned `data` to determine whether Supabase created a
     // session immediately (auto-login) or sent a confirmation email
     // (no session). If no session is returned we will show a message
@@ -24,23 +29,25 @@ export default function AuthScreen() {
       options: { emailRedirectTo: redirectTo },
     });
     if (error) {
-      Alert.alert('Sign up error', error.message);
+      setStatus({ type: 'error', message: error.message });
       return;
     }
 
-    // If Supabase returned a session the user is already logged in.
-    // Otherwise, a confirmation email was sent and we should ask the
-    // user to verify their address instead of proceeding.
     if (data?.session) {
-      Alert.alert('Signed up', 'You are signed in.');
+      setStatus({ type: 'success', message: 'Signed up and signed in.' });
     } else {
-      Alert.alert('Check your email', 'We sent a confirmation link — follow it to complete sign up.');
+      setStatus({ type: 'info', message: 'Check your email for a confirmation link.' });
     }
   };
 
   const handleSignIn = async () => {
+    setStatus({ type: 'signing-in', message: 'Signing in...' });
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) Alert.alert(error.message);
+    if (error) {
+      setStatus({ type: 'error', message: error.message });
+      return;
+    }
+    setStatus({ type: 'success', message: 'Signed in.' });
   };
 
   return (
@@ -58,10 +65,31 @@ export default function AuthScreen() {
         placeholder="Password"
         placeholderTextColor="#9CA3AF"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(text) => {
+          setPassword(text);
+          setStatus((s) => (s.type === 'idle' ? { type: 'typing' } : s));
+        }}
         secureTextEntry
         autoCapitalize="none"
       />
+      {/* Status message */}
+      {status.type !== 'idle' && (
+        <Text
+          className={
+            `mb-3 text-sm ` +
+            (status.type === 'error'
+              ? 'text-red-600'
+              : status.type === 'success'
+              ? 'text-green-600'
+              : status.type === 'signing-in'
+              ? 'text-blue-600'
+              : 'text-gray-700')
+          }
+          accessibilityLiveRegion="polite"
+        >
+          {status.message ?? (status.type === 'typing' ? 'Typing...' : '')}
+        </Text>
+      )}
       <SharedButton title="Sign In" onPress={handleSignIn} />
       <SharedButton title="Sign Up" onPress={handleSignUp} />
     </View>
