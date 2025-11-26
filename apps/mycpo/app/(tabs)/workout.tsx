@@ -9,9 +9,10 @@ import {
 	TouchableOpacity,
 	Modal,
 	TextInput,
-	SafeAreaView,
 	Alert,
 } from "react-native";
+
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Exercise = {
 	id: string;

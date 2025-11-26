@@ -1,0 +1,25 @@
+INSERT INTO public.muscle_groups (name, description, created_at)
+VALUES
+  ('Abdominals', 'Rectus abdominis and related anterior core muscles.', NOW()),
+  ('Abductors', 'Lateral hip muscles that move the leg outward (eg. gluteus medius).', NOW()),
+  ('Adductors', 'Medial thigh muscles that pull the leg inward.', NOW()),
+  ('Biceps', 'Front upper arm muscles (elbow flexors).', NOW()),
+  ('Calves', 'Gastrocnemius and soleus (lower leg posterior).', NOW()),
+  ('Chest', 'Chest muscles (pectoralis major and minor).', NOW()),
+  ('Forearms', 'Wrist and finger flexors/extensors.', NOW()),
+  ('Glutes', 'Gluteus maximus, medius and minimus (buttock muscles).', NOW()),
+  ('Hamstrings', 'Back thigh muscles (biceps femoris, semitendinosus, semimembranosus).', NOW()),
+  ('Hip Flexors', 'Iliopsoas and related muscles that flex the hip.', NOW()),
+  ('Lats', 'Large back muscles (Latissimus Dorsi).', NOW()),
+  ('Lower Back', 'Erector spinae and other posterior trunk stabilizers.', NOW()),
+  ('Neck', 'Cervical muscles supporting head movement and posture.', NOW()),
+  ('Obliques', 'Internal and external obliques (side abdominal muscles).', NOW()),
+  ('Quadriceps', 'Front thigh muscles (rectus femoris, vastus group).', NOW()),
+  ('Rhomboids', 'Upper back muscles between shoulder blades.', NOW()),
+  ('Serratus Anterior', 'Muscle along the side of the ribcage important for scapular movement.', NOW()),
+  ('Shoulders', 'Shoulder muscles (anterior/middle/posterior deltoid heads).', NOW()),
+  ('Traps', 'Upper back and neck muscles (trapezius).', NOW()),
+  ('Triceps', 'Back upper arm muscles (elbow extensors).', NOW()),
+  ('Upper Back', 'Umbrella for posterior upper-trunk muscles (trapezius, rhomboids, lats).', NOW()),
+  ('Other', 'Miscellaneous or smaller muscle groups not categorized elsewhere.', NOW())
+ON CONFLICT (name) DO NOTHING;
