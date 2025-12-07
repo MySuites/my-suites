@@ -14,6 +14,7 @@ import {
 } from "react-native";
 
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useUITheme as useTheme } from '@mycsuite/ui';
 import { formatSeconds } from '../../utils/formatting';
 import { useWorkoutManager, Exercise } from '../../hooks/useWorkoutManager';
@@ -31,6 +32,7 @@ import {
 export default function Workout() {
 
 	const theme = useTheme();
+	const router = useRouter();
 	const [exercises, setExercises] = useState<Exercise[]>(() => [
 		{id: "1", name: "Push Ups", sets: 3, reps: 12, completedSets: 0},
 		{id: "2", name: "Squats", sets: 3, reps: 10, completedSets: 0},
@@ -271,6 +273,9 @@ export default function Workout() {
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.controlButton} onPress={() => setLoadModalOpen(true)} accessibilityLabel="Load routine">
 					<Text style={styles.controlText}>Load</Text>
+				</TouchableOpacity>
+				<TouchableOpacity style={styles.controlButton} onPress={() => router.push('/workout-history' as any)} accessibilityLabel="History">
+					<Text style={styles.controlText}>History</Text>
 				</TouchableOpacity>
 			</View>
 
