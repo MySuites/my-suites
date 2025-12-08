@@ -154,8 +154,9 @@ export function RadialMenu({
       height: buttonSize,
       borderRadius: buttonSize / 2,
       shadowColor: '#000',
-      shadowOpacity: isOpen.value * 0.3,
-      shadowRadius: 5,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
       elevation: 5,
       zIndex: 3000, // Ensure button is ABOVE items
       alignItems: 'center',
