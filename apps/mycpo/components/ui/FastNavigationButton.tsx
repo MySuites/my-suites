@@ -1,8 +1,10 @@
-import React, { useMemo, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { useUITheme } from '@mycsuite/ui';
-import { useRouter, usePathname } from 'expo-router';
+import { usePathname } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+
 import { RadialMenu, RadialMenuItem } from './RadialMenu';
 import { useFloatingButton } from './FloatingButtonContext';
 
@@ -16,9 +18,12 @@ const PATH_CONFIG = [
     { match: ['/workout', '/(tabs)/workout'], icon: 'dumbbell.fill' },
 ];
 
-export function FastNavigationButton() {
+export function FastNavigationButton({ navigation: propNavigation }: { navigation?: any }) {
   const theme = useUITheme();
-  const router = useRouter();
+  // Use prop navigation if valid, otherwise fallback to hook (though hook seems to be the source of error)
+  const defaultNavigation = useNavigation();
+  const navigation = propNavigation || defaultNavigation;
+  
   const pathname = usePathname();
   const { activeButtonId, setActiveButtonId } = useFloatingButton();
 
@@ -29,14 +34,20 @@ export function FastNavigationButton() {
   }, [pathname]);
 
   const navigateTo = React.useCallback((route: string) => {
-      router.push(route as any);
-  }, [router]);
+      if (!navigation) {
+          console.error('FastNavigationButton: Navigation prop is missing!');
+          return;
+      }
+      // @ts-ignore - Dynamic string navigation with merge: true for proper Tab behavior
+      navigation.navigate({ name: route, merge: true });
+  }, [navigation]);
 
   // Define menu items with explicit angles
+  // We use route names (index, workout, profile) to ensure the Tab Navigator tracks history correctly.
   const menuItems: RadialMenuItem[] = useMemo(() => [
-    { id: 'profile', icon: 'person.fill', label: 'Profile', onPress: () => navigateTo('/(tabs)/profile'), angle: -45 },
-    { id: 'home', icon: 'house.fill', label: 'Home', onPress: () => navigateTo('/(tabs)'), angle: 0 },
-    { id: 'workout', icon: 'dumbbell.fill', label: 'Workout', onPress: () => navigateTo('/(tabs)/workout'), angle: 45 },
+    { id: 'profile', icon: 'person.fill', label: 'Profile', onPress: () => navigateTo('profile'), angle: -45 },
+    { id: 'home', icon: 'house.fill', label: 'Home', onPress: () => navigateTo('index'), angle: 0 },
+    { id: 'workout', icon: 'dumbbell.fill', label: 'Workout', onPress: () => navigateTo('workout'), angle: 45 },
   ], [navigateTo]);
 
   // Handle visibility animation
@@ -52,7 +63,6 @@ export function FastNavigationButton() {
   });
 
   const handleMenuStateChange = (isOpen: boolean) => {
-      console.log('NavButton: Menu State Changed:', isOpen);
       if (isOpen) {
           setActiveButtonId('nav');
       } else if (activeButtonId === 'nav') { // Only clear if we were the owner

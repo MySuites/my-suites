@@ -22,14 +22,13 @@ const MAPPING = {
   'dumbbell.fill': 'fitness-center',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'chevron.left': 'chevron-left',
   'bolt.fill': 'flash-on',
   'plus': 'add',
   'pencil': 'edit',
   'list.bullet.clipboard': 'list',
   'scale.3d': 'scale',
   'play.fill': 'play-arrow',
-  'arrow.left': 'arrow-left',
-  'arrow.right': 'arrow-right',
   'ellipsis': 'menu',
 } as IconMapping;
 
