@@ -137,7 +137,6 @@ export default function Workout() {
 
     function handleStartWorkout() {
         startWorkout();
-        router.push('/active-workout' as any);
     }
 
 
@@ -202,7 +201,7 @@ export default function Workout() {
 							<TouchableOpacity style={styles.actionBtn} onPress={prevExercise} accessibilityLabel="Previous exercise">
 								<Text>◀ Prev</Text>
 							</TouchableOpacity>
-							<TouchableOpacity style={styles.actionBtnPrimary} onPress={completeSet} accessibilityLabel="Complete set">
+							<TouchableOpacity style={styles.actionBtnPrimary} onPress={() => completeSet(currentIndex)} accessibilityLabel="Complete set">
 								<Text style={styles.controlTextPrimary}>Complete Set</Text>
 							</TouchableOpacity>
 							<TouchableOpacity style={styles.actionBtn} onPress={nextExercise} accessibilityLabel="Next exercise">

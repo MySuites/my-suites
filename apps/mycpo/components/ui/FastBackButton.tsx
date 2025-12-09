@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { IconSymbol } from './icon-symbol';
 import { useFloatingButton } from './FloatingButtonContext';
 import * as Haptics from 'expo-haptics';
+import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 
 
 const BUTTON_SIZE = 60;
@@ -15,9 +16,17 @@ export function FastBackButton() {
   const router = useRouter();
   const { activeButtonId } = useFloatingButton();
   
+  // Import useActiveWorkout hook at the top
+  const { isExpanded, setExpanded } = useActiveWorkout();
+  
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
+    if (isExpanded) {
+        setExpanded(false);
+        return;
+    }
+
     // Use Router for back navigation
     if (router.canGoBack()) {
         router.back();

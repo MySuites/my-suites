@@ -11,14 +11,19 @@ interface ActiveWorkoutContextType {
     workoutSeconds: number;
     restSeconds: number;
     currentIndex: number;
+    workoutName: string;
+    setWorkoutName: (name: string) => void;
     startWorkout: () => void;
     pauseWorkout: () => void;
     resetWorkout: () => void;
-    completeSet: (index?: number, input?: { weight?: string, reps?: string, duration?: string }) => void;
+    completeSet: (index: number, input?: { weight?: number; reps?: number; duration?: number; distance?: number }) => void;
     nextExercise: () => void;
     prevExercise: () => void;
     addExercise: (name: string, sets: string, reps: string) => void;
     updateExercise: (index: number, updates: Partial<Exercise>) => void;
+    isExpanded: boolean;
+    toggleExpanded: () => void;
+    setExpanded: (expanded: boolean) => void;
     exportSummary: () => void;
     finishWorkout: () => void;
 }
@@ -32,6 +37,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 		{id: "2", name: "Squats", sets: 3, reps: 10, completedSets: 0},
 		{id: "3", name: "Plank (sec)", sets: 3, reps: 45, completedSets: 0},
 	]);
+    const [workoutName, setWorkoutName] = useState("Current Workout");
     
     const [isRunning, setRunning] = useState(false);
 	const [workoutSeconds, setWorkoutSeconds] = useState(0);
@@ -122,6 +128,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 			return;
 		}
 		setRunning(true);
+        setIsExpanded(true);
 	}, [exercises]);
 
     const pauseWorkout = useCallback(() => {
@@ -159,7 +166,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         );
     };
 
-    const handleCompleteSet = (targetIndex?: number, input?: { weight?: string, reps?: string, duration?: string }) => {
+    const handleCompleteSet = (targetIndex?: number, input?: { weight?: number; reps?: number; duration?: number; distance?: number }) => {
         const indexToComplete = targetIndex ?? currentIndex;
         
         setExercises(currentExercises => {
@@ -168,10 +175,10 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                     const currentSets = ex.completedSets || 0;
                     const logs = ex.logs || [];
                     
-                    // Parse inputs
-                    const weight = input?.weight ? parseFloat(input.weight) : undefined;
-                    const reps = input?.reps ? parseFloat(input.reps) : undefined; 
-                    // Fallback to target reps? Usually yes.
+                    // Inputs are already numbers
+                    const weight = input?.weight;
+                    const reps = input?.reps; 
+                    // Fallback to target reps if not provided
                     const finalReps = reps !== undefined ? reps : ex.reps;
                     
                     const newLog: any = {
@@ -210,6 +217,16 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     }
 
 
+    // Overlay expansion state
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const toggleExpanded = () => setIsExpanded(prev => !prev);
+
+    const handleFinishWorkout = useCallback(() => {
+        resetWorkout();
+        setIsExpanded(false);
+    }, [resetWorkout]);
+
     const value = {
         exercises,
         setExercises,
@@ -217,6 +234,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         workoutSeconds,
         restSeconds,
         currentIndex,
+        workoutName,
         startWorkout,
         pauseWorkout,
         resetWorkout,
@@ -226,7 +244,11 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         addExercise,
         updateExercise,
         exportSummary,
-        finishWorkout: resetWorkout // Using resetWorkout as the base for finish logic
+        finishWorkout: handleFinishWorkout,
+        isExpanded,
+        toggleExpanded,
+        setExpanded: setIsExpanded,
+        setWorkoutName,
     };
 
     return (

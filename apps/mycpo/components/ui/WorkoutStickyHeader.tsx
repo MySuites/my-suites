@@ -1,51 +1,63 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, usePathname } from 'expo-router';
 import { useUITheme } from '@mycsuite/ui';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { formatSeconds } from '../../utils/formatting';
 import { IconSymbol } from './icon-symbol';
 
 export function WorkoutStickyHeader() {
     const theme = useUITheme();
-    const router = useRouter();
-    const pathname = usePathname();
     const insets = useSafeAreaInsets();
     
     // Get workout state
-    const { isRunning, workoutSeconds } = useActiveWorkout();
+    const { isRunning, workoutSeconds, workoutName, isExpanded, toggleExpanded } = useActiveWorkout();
     
     // Logic for visibility:
-    // 1. Must be running OR have some time elapsed (paused state).
-    // 2. Must NOT be on the active-workout screen itself.
+    // Must be running OR have some time elapsed (paused state).
     const hasActiveWorkout = isRunning || workoutSeconds > 0;
-    const isWorkoutScreen = pathname === '/active-workout';
     
-    if (!hasActiveWorkout || isWorkoutScreen) {
-        return null;
+    
+    if (!hasActiveWorkout) {
+        return null; // Don't show if no workout at all
     }
+
+    // Styles
+    const containerStyle = [
+        styles.container, 
+        { paddingTop: insets.top + 8, backgroundColor: theme.surface }
+    ];
+
+    // Config based on screen state
+    // User requested title to ALWAYS be the workout name
+    const title = workoutName || "Current Workout";
+    const rightIcon = isExpanded ? "chevron.down" : "chevron.up";
+    
+    const handlePress = () => {
+         toggleExpanded();
+    };
 
     return (
         <Animated.View 
+            layout={Layout.springify()} // Animate layout changes if any (e.g. height)
             entering={FadeIn.duration(300)}
             exiting={FadeOut.duration(300)}
-            style={[styles.container, { paddingTop: insets.top + 8, backgroundColor: theme.surface }]}
+            style={containerStyle}
         >
             <TouchableOpacity 
                 style={styles.content} 
-                onPress={() => router.push('/active-workout')}
+                onPress={handlePress}
                 activeOpacity={0.8}
             >
                  <View style={styles.leftInfo}>
                      <View style={[styles.indicator, { backgroundColor: isRunning ? theme.primary : theme.icon }]} />
-                     <Text style={[styles.label, { color: theme.text }]}>Active Workout</Text>
+                     <Text style={[styles.label, { color: theme.text }]}>{title}</Text>
                  </View>
                  
                  <View style={styles.rightInfo}>
                      <Text style={[styles.timer, { color: theme.text }]}>{formatSeconds(workoutSeconds)}</Text>
-                     <IconSymbol name="chevron.up" size={16} color={theme.icon ?? '#000'} />
+                     <IconSymbol name={rightIcon} size={16} color={theme.icon ?? '#000'} />
                  </View>
             </TouchableOpacity>
         </Animated.View>

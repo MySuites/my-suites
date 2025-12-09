@@ -12,6 +12,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { ActiveWorkoutProvider } from '../providers/ActiveWorkoutProvider'; // Fixed import path
 import { WorkoutStickyHeader } from '../components/ui/WorkoutStickyHeader';
+import { ActiveWorkoutOverlay } from '../components/ActiveWorkoutOverlay'; 
 import { FastNavigationButton } from '../components/ui/FastNavigationButton';
 import { FastUtilityButton } from '../components/ui/FastUilityButton';
 import { FastBackButton } from '../components/ui/FastBackButton';
@@ -50,7 +51,6 @@ function RootLayoutNav() {
       <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       <Stack.Screen name="auth" options={{ headerShown: false }} />
       <Stack.Screen name="settings" options={{ headerShown: false }} />
-      <Stack.Screen name="active-workout" options={{ headerShown: false, presentation: 'transparentModal', animation: 'fade' }} />
     </Stack>
   );
 }
@@ -78,6 +78,7 @@ export default function RootLayout() {
                 <FloatingButtonProvider>
                   <RootLayoutNav />
                   <WorkoutStickyHeader />
+                  <ActiveWorkoutOverlay />
                   <GlobalOverlay>
                     <FastNavigationButton />
                     <FastUtilityButton />

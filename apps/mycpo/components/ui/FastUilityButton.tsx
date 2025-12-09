@@ -38,11 +38,11 @@ export function FastUtilityButton() {
   const router = useRouter();
   const pathname = usePathname();
   const { activeButtonId, setActiveButtonId } = useFloatingButton();
-  const { isRunning, startWorkout, pauseWorkout, finishWorkout } = useActiveWorkout();
+  const { isRunning, startWorkout, pauseWorkout, finishWorkout, isExpanded } = useActiveWorkout();
 
   // Determine current context and actions
   const currentActions = useMemo(() => {
-     if (pathname.includes('active-workout')) {
+     if (isExpanded || pathname.includes('active-workout')) {
          return [
             { 
                 id: 'toggle_workout', 
@@ -65,7 +65,7 @@ export function FastUtilityButton() {
      }
      if (pathname.includes('profile')) return CONTEXT_ACTIONS['profile'];
      return CONTEXT_ACTIONS['home'] || [];
-  }, [pathname, isRunning]);
+  }, [pathname, isRunning, isExpanded]);
 
   const handleAction = React.useCallback((item: ActionItemType) => {
       if (item.action === 'toggle_workout') {
@@ -73,16 +73,13 @@ export function FastUtilityButton() {
               pauseWorkout();
           } else {
               startWorkout();
-              router.push('/active-workout' as any);
+              // Already on the screen, no need to push
           }
           return;
       }
       
       if (item.action === 'finish_workout') {
         finishWorkout();
-        router.dismissAll();
-        // Fallback or ensure we go to tabs if dismissAll isn't enough (it should be for a modal stack)
-        // Checks if can go back, else replace
         return; 
       }
 
@@ -148,7 +145,7 @@ const styles = StyleSheet.create({
     right: 40, 
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 900, 
+    zIndex: 1100, 
     width: 60, // Constrain size to avoid blocking
     height: 60,
     overflow: 'visible',
