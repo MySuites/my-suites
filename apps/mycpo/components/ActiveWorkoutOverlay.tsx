@@ -7,6 +7,7 @@ import { useUITheme as useTheme } from '@mycsuite/ui';
 import { useActiveWorkout } from '../providers/ActiveWorkoutProvider';
 import Animated, { SlideInUp, SlideOutUp } from 'react-native-reanimated';
 import { ExerciseCard } from './ui/ExerciseCard';
+import { AddExerciseModal } from './AddExerciseModal';
 
 export function ActiveWorkoutOverlay() {
     const theme = useTheme();
@@ -21,6 +22,7 @@ export function ActiveWorkoutOverlay() {
         isExpanded,
         setExpanded,
         toggleExpanded,
+        addExercise,
     } = useActiveWorkout();
 
     const styles = makeStyles(theme);
@@ -39,11 +41,9 @@ export function ActiveWorkoutOverlay() {
     }, [isExpanded, setExpanded]);
 
 
+    const [isAddModalOpen, setAddModalOpen] = React.useState(false);
+
     // If not expanded, return null or handle animation visibility
-    // Ideally we want it mounted but hidden/animated out.
-    // But for performance, maybe we unmount if animation completes?
-    // Let's rely on Reanimated's layout animations or conditional rendering with Exiting.
-    
     if (!isExpanded) return null;
 
     return (
@@ -62,47 +62,63 @@ export function ActiveWorkoutOverlay() {
                              </TouchableOpacity>
                         </View>
                      ) : (
-                        exercises.map((exercise, index) => (
-                            <ExerciseCard 
-                                key={index}
-                                exercise={exercise}
-                                isCurrent={index === currentIndex}
-                                restSeconds={restSeconds}
-                                theme={theme}
-                                onCompleteSet={(input) => {
-                                    // ExerciseCard might return strings from TextInput, need to parse
-                                    const parsedInput = {
-                                        weight: input?.weight ? parseFloat(input.weight) : undefined,
-                                        reps: input?.reps ? parseFloat(input.reps) : undefined,
-                                        duration: input?.duration ? parseFloat(input.duration) : undefined,
-                                    };
-                                    completeSet(index, parsedInput);
-                                }}
-                                onAddSet={() => updateExercise(index, { sets: exercise.sets + 1 })}
-                                onDeleteSet={(setIndex) => {
-                                    // Logic for deleting a set
-                                    const currentLogs = exercise.logs || [];
-                                    const currentTarget = exercise.sets;
-                                    
-                                    if (setIndex < currentLogs.length) {
-                                        // Deleting a completed set (log)
-                                        const newLogs = [...currentLogs];
-                                        newLogs.splice(setIndex, 1);
-                                        updateExercise(index, { 
-                                            logs: newLogs, 
-                                            completedSets: (exercise.completedSets || 1) - 1,
-                                            sets: currentTarget > 0 ? currentTarget - 1 : 0
-                                        });
-                                    } else {
-                                        // Deleting a pending set (reduce target)
-                                        updateExercise(index, { sets: Math.max(0, currentTarget - 1) });
-                                    }
-                                }}
-                            />
-                        ))
+                        <>
+                            {exercises.map((exercise, index) => (
+                                <ExerciseCard 
+                                    key={index}
+                                    exercise={exercise}
+                                    isCurrent={index === currentIndex}
+                                    restSeconds={restSeconds}
+                                    theme={theme}
+                                    onCompleteSet={(input) => {
+                                        // ExerciseCard might return strings from TextInput, need to parse
+                                        const parsedInput = {
+                                            weight: input?.weight ? parseFloat(input.weight) : undefined,
+                                            reps: input?.reps ? parseFloat(input.reps) : undefined,
+                                            duration: input?.duration ? parseFloat(input.duration) : undefined,
+                                        };
+                                        completeSet(index, parsedInput);
+                                    }}
+                                    onAddSet={() => updateExercise(index, { sets: exercise.sets + 1 })}
+                                    onDeleteSet={(setIndex) => {
+                                        // Logic for deleting a set
+                                        const currentLogs = exercise.logs || [];
+                                        const currentTarget = exercise.sets;
+                                        
+                                        if (setIndex < currentLogs.length) {
+                                            // Deleting a completed set (log)
+                                            const newLogs = [...currentLogs];
+                                            newLogs.splice(setIndex, 1);
+                                            updateExercise(index, { 
+                                                logs: newLogs, 
+                                                completedSets: (exercise.completedSets || 1) - 1,
+                                                sets: currentTarget > 0 ? currentTarget - 1 : 0
+                                            });
+                                        } else {
+                                            // Deleting a pending set (reduce target)
+                                            updateExercise(index, { sets: Math.max(0, currentTarget - 1) });
+                                        }
+                                    }}
+                                />
+                            ))}
+                            <TouchableOpacity 
+                                style={styles.addExerciseButton}
+                                onPress={() => setAddModalOpen(true)}
+                            >
+                                <Text style={styles.addExerciseText}>+ Add Exercise</Text>
+                            </TouchableOpacity>
+                        </>
                      )}
                 </ScrollView>
             </View>
+
+            <AddExerciseModal 
+                visible={isAddModalOpen}
+                onClose={() => setAddModalOpen(false)}
+                onAdd={(name: string, sets: string, reps: string) => {
+                    addExercise(name, sets, reps);
+                }}
+            />
         </Animated.View>
     );
 }
@@ -119,5 +135,20 @@ const makeStyles = (theme: any) =>
         closeButton: { padding: 10 },
         controlText: { color: theme.primary },
         content: { padding: 20, paddingBottom: 150 },
-        emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' }
+        emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+        addExerciseButton: {
+            marginTop: 20,
+            padding: 16,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: theme.primary,
+            borderStyle: 'dashed',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        addExerciseText: {
+            color: theme.primary,
+            fontSize: 16,
+            fontWeight: '600',
+        }
     });
