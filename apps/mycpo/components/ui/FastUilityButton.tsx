@@ -38,13 +38,14 @@ export function FastUtilityButton() {
   const router = useRouter();
   const pathname = usePathname();
   const { activeButtonId, setActiveButtonId } = useFloatingButton();
-  const { isRunning, startWorkout, pauseWorkout, finishWorkout, resetWorkout, isExpanded, hasActiveSession } = useActiveWorkout();
+  const { isRunning, startWorkout, pauseWorkout, finishWorkout, resetWorkout, cancelWorkout, isExpanded, hasActiveSession } = useActiveWorkout();
 
   // Determine current context and actions
   const currentActions = useMemo(() => {
      if (hasActiveSession || isExpanded || pathname.includes('active-workout')) {
          return [
             { id: 'finish_workout', icon: 'flag.checkered', label: 'Finish', action: 'finish_workout' },
+            { id: 'cancel_workout', icon: 'xmark', label: 'Cancel', action: 'cancel_workout' },
             { id: 'reset_workout', icon: 'arrow.counterclockwise', label: 'Reset', action: 'reset_workout' },
             { 
                 id: 'toggle_workout', 
@@ -88,12 +89,17 @@ export function FastUtilityButton() {
           return;
       }
       
+      if (item.action === 'cancel_workout') {
+          cancelWorkout();
+          return;
+      }
+      
       if (item.route) {
           router.push(item.route as any);
       } else {
           console.log('Trigger action:', item.action);
       }
-  }, [router, isRunning, startWorkout, pauseWorkout, finishWorkout, resetWorkout]);
+  }, [router, isRunning, startWorkout, pauseWorkout, finishWorkout, resetWorkout, cancelWorkout]);
 
   // Map to RadialMenuItems
   // We use distributed angles, so we don't set angle explicitly

@@ -26,6 +26,7 @@ interface ActiveWorkoutContextType {
     setExpanded: (expanded: boolean) => void;
     exportSummary: () => void;
     finishWorkout: () => void;
+    cancelWorkout: () => void;
     hasActiveSession: boolean;
 }
 
@@ -241,6 +242,19 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         setIsExpanded(false);
     }, []);
 
+    const handleCancelWorkout = useCallback(() => {
+        // Cancel is effectively the same as finish for now (discard/reset)
+        // But we separate it for future distinction (Finish = Save potentially)
+        setRunning(false);
+        setWorkoutSeconds(0);
+        setRestSeconds(0);
+        setCurrentIndex(0);
+        setExercises((exs) => exs.map((x) => ({...x, completedSets: 0, logs: []})));
+        
+        setHasActiveSession(false);
+        setIsExpanded(false);
+    }, []);
+
     const value = {
         exercises,
         setExercises,
@@ -259,6 +273,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         updateExercise,
         exportSummary,
         finishWorkout: handleFinishWorkout,
+        cancelWorkout: handleCancelWorkout,
         isExpanded,
         hasActiveSession,
         toggleExpanded,
