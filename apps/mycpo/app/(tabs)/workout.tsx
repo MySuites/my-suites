@@ -40,9 +40,40 @@ export default function Workout() {
         setExercises,
         isRunning,
         startWorkout,
-        pauseWorkout,
+        finishWorkout,
+        cancelWorkout,
         hasActiveSession,
     } = useActiveWorkout();
+
+    const handleStartEmpty = () => {
+        if (hasActiveSession) {
+            Alert.alert(
+                "Active Workout",
+                "You have an active workout. What would you like to do?",
+                [
+                    {
+                        text: "Cancel",
+                        style: "cancel"
+                    },
+                    {
+                        text: "Stop Current",
+                        onPress: () => finishWorkout()
+                    },
+                    {
+                        text: "Replace",
+                        style: "destructive",
+                        onPress: () => {
+                            cancelWorkout();
+                            // Small timeout to ensure state clears before starting new
+                            setTimeout(() => startWorkout([]), 100);
+                        }
+                    }
+                ]
+            );
+        } else {
+            startWorkout([]);
+        }
+    };
 
 
 
@@ -132,21 +163,9 @@ export default function Workout() {
 
 			{/* Controls Row */}
 			<View style={styles.controlsRow}>
-
-
-					{!isRunning ? (
-						<>
-
-							<TouchableOpacity style={styles.controlButton} onPress={() => startWorkout([])} accessibilityLabel="Start empty workout">
-								<Text style={styles.controlText}>Start Empty</Text>
-							</TouchableOpacity>
-						</>
-					) : (
-						<TouchableOpacity style={styles.controlButton} onPress={pauseWorkout} accessibilityLabel="Pause workout">
-							<Text style={styles.controlText}>Pause</Text>
-						</TouchableOpacity>
-					)}
-
+					<TouchableOpacity style={styles.controlButton} onPress={handleStartEmpty} accessibilityLabel="Start empty workout">
+						<Text style={styles.controlText}>Start Empty</Text>
+					</TouchableOpacity>
 					<TouchableOpacity style={styles.controlButton} onPress={() => router.push('/workout-history' as any)} accessibilityLabel="History">
 						<Text style={styles.controlText}>History</Text>
 					</TouchableOpacity>
