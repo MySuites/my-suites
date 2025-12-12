@@ -158,6 +158,35 @@ export default function Workout() {
 				showsVerticalScrollIndicator={false}
 			>
 					
+                    {/* Saved Workouts Section (Quick Access) */}
+                    <View style={styles.sectionHeader}>
+                         <Text style={styles.sectionTitle}>Saved Workouts</Text>
+                         <TouchableOpacity onPress={() => setWorkoutsListOpen(true)}>
+                            <Text style={{color: theme.primary}}>See All</Text>
+                        </TouchableOpacity>
+                    </View>
+                     {savedWorkouts.length === 0 ? (
+                        <Text style={{color: theme.icon}}>No saved workouts.</Text>
+                    ) : (
+						<FlatList
+							data={savedWorkouts}
+							scrollEnabled={false}
+							keyExtractor={(i) => i.id}
+							renderItem={({item}) => (
+								<TouchableOpacity 
+									style={styles.workoutCard} 
+									onPress={() => loadWorkout(item.id)}
+									onLongPress={() => deleteSavedWorkout(item.id)}
+								>
+									<Text style={[styles.workoutCardTitle, {flex: 1}]} numberOfLines={1}>{item.name}</Text>
+									<Text style={{color: theme.icon, fontSize: 12}}>{item.exercises?.length || 0} Exercises</Text>
+								</TouchableOpacity>
+							)}
+						/>
+                    )}
+
+                    <View style={{height: 24}} />
+
                     {/* Active Routine Section */}
                     {activeRoutineObj ? (
                         <ActiveRoutineCard
@@ -188,33 +217,6 @@ export default function Workout() {
                                 </View>
                             </View>
                         </View>
-                    )}
-
-                    {/* Saved Workouts Section (Quick Access) */}
-                    <View style={styles.sectionHeader}>
-                         <Text style={styles.sectionTitle}>Saved Workouts</Text>
-                         <TouchableOpacity onPress={() => setWorkoutsListOpen(true)}>
-                            <Text style={{color: theme.primary}}>See All</Text>
-                        </TouchableOpacity>
-                    </View>
-                     {savedWorkouts.length === 0 ? (
-                        <Text style={{color: theme.icon}}>No saved workouts.</Text>
-                    ) : (
-						<FlatList
-							data={savedWorkouts}
-							scrollEnabled={false}
-							keyExtractor={(i) => i.id}
-							renderItem={({item}) => (
-								<TouchableOpacity 
-									style={styles.workoutCard} 
-									onPress={() => loadWorkout(item.id)}
-									onLongPress={() => deleteSavedWorkout(item.id)}
-								>
-									<Text style={[styles.workoutCardTitle, {flex: 1}]} numberOfLines={1}>{item.name}</Text>
-									<Text style={{color: theme.icon, fontSize: 12}}>{item.exercises?.length || 0} Exercises</Text>
-								</TouchableOpacity>
-							)}
-						/>
                     )}
 
                     {/* Routines Section */}
