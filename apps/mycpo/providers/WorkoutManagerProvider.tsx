@@ -324,6 +324,75 @@ async function persistUpdateRoutineToSupabase(
 }
 
 
+
+async function persistUpdateSavedWorkoutToSupabase(
+    user: any,
+    workoutId: string,
+    workoutName: string,
+    exercises: Exercise[],
+) {
+    if (!user) return { error: "User not logged in" };
+
+    if (workoutName.trim().toLowerCase() === "rest") {
+        return { error: "Cannot name workout 'Rest'" };
+    }
+
+    // 1. Update the parent workout row
+    const { data: wdata, error: wErr } = await supabase
+        .from("workouts")
+        .update({
+            workout_name: workoutName.trim(),
+            notes: JSON.stringify(exercises),
+            // updated_at: new Date().toISOString() // Let DB handle
+        })
+        .eq("workout_id", workoutId)
+        .select()
+        .single();
+
+    if (wErr || !wdata) {
+        return { error: wErr || "Failed to update workout" };
+    }
+
+    // 2. Sync workout_exercises
+    // Delete existing
+    const { error: delErr } = await supabase
+        .from("workout_exercises")
+        .delete()
+        .eq("workout_id", workoutId);
+    
+    if (delErr) {
+        console.warn("Failed to clear old exercises", delErr);
+    }
+
+    // Insert new
+    for (let i = 0; i < exercises.length; i++) {
+        const ex = exercises[i];
+        const exerciseId = await getOrCreateExercise(user, ex);
+        if (!exerciseId) continue;
+
+        const { data: weData, error: weErr } = await supabase
+            .from("workout_exercises").insert([{
+                workout_id: workoutId,
+                exercise_id: exerciseId,
+                position: i,
+            }]).select().single();
+
+        if (weErr || !weData) continue;
+
+        // Insert sets
+        const workoutExerciseId = weData.workout_exercise_id;
+        for (let s = 1; s <= (ex.sets || 1); s++) {
+             await supabase.from("exercise_sets").insert([{
+                workout_exercise_id: workoutExerciseId,
+                set_number: s,
+                details: { reps: ex.reps },
+            }]);
+        }
+    }
+
+    return { data: wdata };
+}
+
 // --- Context ---
 
 interface WorkoutManagerContextType {
@@ -340,6 +409,7 @@ interface WorkoutManagerContextType {
     isSaving: boolean;
     saveWorkout: (name: string, exercises: Exercise[], onSuccess: () => void) => Promise<void>;
     deleteSavedWorkout: (id: string) => void;
+    updateSavedWorkout: (id: string, name: string, exercises: Exercise[], onSuccess: () => void) => Promise<void>;
     saveRoutineDraft: (name: string, sequence: any[], onSuccess: () => void) => Promise<void>;
     updateRoutine: (id: string, name: string, sequence: any[], onSuccess: () => void) => Promise<void>;
     deleteRoutine: (id: string, onSuccess?: () => void) => void;
@@ -615,6 +685,51 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         ]);
     }
 
+    async function updateSavedWorkout(
+        id: string,
+        name: string,
+        exercises: Exercise[],
+        onSuccess: () => void
+    ) {
+        if (!name || name.trim() === "") {
+            Alert.alert("Name required", "Please enter a name for the workout.");
+            return;
+        }
+
+        if (user) {
+            setIsSaving(true);
+            try {
+                const { data, error } = await persistUpdateSavedWorkoutToSupabase(user, id, name, exercises);
+                if (error || !data) {
+                    Alert.alert("Error", "Failed to update workout on server.");
+                } else {
+                    const payload = {
+                        id: data.workout_id,
+                        name: data.workout_name,
+                        exercises,
+                        createdAt: data.created_at,
+                    };
+                    setSavedWorkouts(prev => prev.map(w => w.id === id ? payload : w));
+                    onSuccess();
+                    Alert.alert("Updated", `Workout '${payload.name}' updated.`);
+                }
+            } finally {
+                setIsSaving(false);
+            }
+        } else {
+             // Local update
+             const payload = {
+                id,
+                name: name.trim(),
+                exercises,
+                createdAt: new Date().toISOString(),
+            };
+            setSavedWorkouts(prev => prev.map(w => w.id === id ? { ...w, ...payload, createdAt: w.createdAt } : w));
+            onSuccess();
+            Alert.alert("Updated", `Workout '${name}' updated locally.`);
+        }
+    }
+
     async function saveRoutineDraft(
         routineDraftName: string,
         routineSequence: any[],
@@ -856,6 +971,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         isSaving,
         saveWorkout,
         deleteSavedWorkout,
+        updateSavedWorkout,
         saveRoutineDraft,
         updateRoutine,
         deleteRoutine,

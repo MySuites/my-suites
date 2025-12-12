@@ -81,6 +81,12 @@ export default function Workout() {
 	const [routineSequence, setRoutineSequence] = useState<any[]>([]);
 	const [isWorkoutsListOpen, setWorkoutsListOpen] = useState(false);
     
+    // Edit Workout State
+    const [editingWorkoutId, setEditingWorkoutId] = useState<string | null>(null);
+    const [workoutDraftName, setWorkoutDraftName] = useState("");
+    const [workoutDraftExercises, setWorkoutDraftExercises] = useState<any[]>([]);
+    const [isEditWorkoutModalOpen, setEditWorkoutModalOpen] = useState(false);
+    
     const { 
         savedWorkouts, 
         routines, 
@@ -95,6 +101,7 @@ export default function Workout() {
         saveRoutineDraft: saveRoutineDraftManager,
         updateRoutine,
         deleteRoutine,
+        updateSavedWorkout,
     } = useWorkoutManager();
 
 
@@ -207,6 +214,44 @@ export default function Workout() {
         }
     };
 
+    function handleEditSavedWorkout(workout: any) {
+        setEditingWorkoutId(workout.id);
+        setWorkoutDraftName(workout.name);
+        // Exercises array from saved workout
+        setWorkoutDraftExercises(workout.exercises ? [...workout.exercises] : []);
+        setEditWorkoutModalOpen(true);
+    }
+
+    function handleCloseWorkoutModal() {
+        setEditWorkoutModalOpen(false);
+        setWorkoutDraftExercises([]);
+        setWorkoutDraftName('');
+        setEditingWorkoutId(null);
+    }
+
+    function removeWorkoutDraftExercise(index: number) {
+        setWorkoutDraftExercises(prev => prev.filter((_, i) => i !== index));
+    }
+
+    function moveWorkoutDraftExercise(index: number, dir: -1 | 1) {
+        const newArr = [...workoutDraftExercises];
+        if (index + dir < 0 || index + dir >= newArr.length) return;
+        const temp = newArr[index];
+        newArr[index] = newArr[index + dir];
+        newArr[index + dir] = temp;
+        setWorkoutDraftExercises(newArr);
+    }
+
+    async function handleSaveWorkoutDraft() {
+        if (!editingWorkoutId) return;
+        
+        const onSuccess = () => {
+             handleCloseWorkoutModal();
+        };
+
+        updateSavedWorkout(editingWorkoutId, workoutDraftName, workoutDraftExercises, onSuccess);
+    }
+
 	return (
 		<SafeAreaView className="flex-1 p-4 bg-background dark:bg-background_dark">
 			<View className="flex-row justify-between items-center">
@@ -244,16 +289,26 @@ export default function Workout() {
 							scrollEnabled={false}
 							keyExtractor={(i) => i.id}
 							renderItem={({item}) => (
-								<TouchableOpacity 
+								<View 
 									className="bg-surface dark:bg-surface_dark rounded-xl p-4 mb-3 border border-black/5 dark:border-white/10 shadow-sm"
-									onPress={() => loadWorkout(item.id)}
-									onLongPress={() => deleteSavedWorkout(item.id)}
 								>
                                     <View className="flex-row justify-between items-start mb-4">
-                                        <View className="flex-1">
+                                        <TouchableOpacity 
+                                            className="flex-1 mr-2"
+                                            onPress={() => loadWorkout(item.id)}
+                                        >
                                             <Text className="font-semibold text-apptext dark:text-apptext_dark text-lg mb-1" numberOfLines={1}>{item.name}</Text>
                                             <Text className="text-gray-500 dark:text-gray-400 text-sm">{item.exercises?.length || 0} Exercises</Text>
-                                        </View>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity 
+                                            onPress={() => {
+                                                console.log("Edit button pressed for:", item.name);
+                                                handleEditSavedWorkout(item);
+                                            }}
+                                            className="p-3 bg-gray-100 dark:bg-white/5 rounded-lg"
+                                        >
+                                            <Text className="text-primary dark:text-primary_dark font-medium text-sm">Edit</Text>
+                                        </TouchableOpacity>
                                     </View>
                                     
                                     <View className="flex-row justify-end">
@@ -264,7 +319,7 @@ export default function Workout() {
                                             <Text className="text-white font-semibold">Start</Text>
                                         </TouchableOpacity>
                                     </View>
-								</TouchableOpacity>
+								</View>
 							)}
 						/>
                     )}
@@ -460,6 +515,63 @@ export default function Workout() {
 
 
 
+            {/* Edit Saved Workout Modal */}
+            <Modal visible={isEditWorkoutModalOpen} animationType="slide" transparent={true}>
+                <View className="flex-1 justify-center items-center bg-black/40">
+                    <View className="w-[90%] p-4 rounded-xl bg-background dark:bg-background_dark max-h-[85%]">
+                        <Text className="text-lg font-bold mb-2 text-apptext dark:text-apptext_dark">Edit Workout</Text>
+                        <TextInput 
+                            placeholder="Workout name" 
+                            value={workoutDraftName} 
+                            onChangeText={setWorkoutDraftName} 
+                            className="border border-surface dark:border-surface_dark rounded-lg p-2.5 mb-4 text-apptext dark:text-apptext_dark" 
+                            placeholderTextColor="#9CA3AF" 
+                        />
+                        
+                        <View className="flex-row justify-between items-center mb-2">
+                            <Text className="font-semibold text-apptext dark:text-apptext_dark">Exercises</Text>
+                        </View>
+
+                        {workoutDraftExercises.length === 0 ? (
+                            <Text className="text-gray-500 dark:text-gray-400 mb-4">No exercises</Text>
+                        ) : (
+                            <FlatList
+                                data={workoutDraftExercises}
+                                keyExtractor={(item, index) => `${index}-${item.name}`} // Use index as key fallback since exercises might duplicate or lack unique IDs in draft
+                                className="mb-4"
+                                renderItem={({item, index}) => (
+                                    <View className="flex-row items-center justify-between py-2 border-b border-surface dark:border-surface_dark">
+                                        <View className="flex-1 mr-2">
+                                            <Text className="text-apptext dark:text-apptext_dark font-medium">{item.name}</Text>
+                                            <Text className="text-gray-500 dark:text-gray-400 text-xs">{item.sets} Sets • {item.reps} Reps</Text>
+                                        </View>
+                                        <View className="flex-row items-center">
+                                            <TouchableOpacity onPress={() => moveWorkoutDraftExercise(index, -1)} className="p-2"> 
+                                                <Text className="text-apptext dark:text-apptext_dark">↑</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity onPress={() => moveWorkoutDraftExercise(index, 1)} className="p-2"> 
+                                                <Text className="text-apptext dark:text-apptext_dark">↓</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity onPress={() => removeWorkoutDraftExercise(index)} className="p-2 ml-1"> 
+                                                <Text className="text-red-500 font-bold">×</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                )}
+                            />
+                        )}
+
+                        <View className="flex-row justify-end items-center gap-2">
+                            <TouchableOpacity onPress={handleCloseWorkoutModal} className="p-2.5 rounded-lg border border-surface dark:border-surface_dark bg-background dark:bg-background_dark"> 
+                                <Text className="text-apptext dark:text-apptext_dark">Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity disabled={isSaving} onPress={handleSaveWorkoutDraft} className={`p-2.5 rounded-lg bg-primary dark:bg-primary_dark ${isSaving ? 'opacity-60' : ''}`}>
+                                {isSaving ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-semibold">Save Changes</Text>}
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
 		</SafeAreaView>
 
 	);
