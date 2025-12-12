@@ -177,6 +177,36 @@ export default function Workout() {
 
 
 
+    const handleStartSavedWorkout = (workout: any) => {
+        if (hasActiveSession) {
+             Alert.alert(
+                "Active Workout",
+                "You have an active workout. What would you like to do?",
+                [
+                    {
+                        text: "Cancel",
+                        style: "cancel"
+                    },
+                    {
+                        text: "Stop Current",
+                        onPress: () => finishWorkout()
+                    },
+                    {
+                        text: "Replace",
+                        style: "destructive",
+                        onPress: () => {
+                            cancelWorkout();
+                            // Small timeout to ensure state clears before starting new
+                            setTimeout(() => startWorkout(workout.exercises), 100);
+                        }
+                    }
+                ]
+            );
+        } else {
+            startWorkout(workout.exercises);
+        }
+    };
+
 	return (
 		<SafeAreaView className="flex-1 p-4 bg-background dark:bg-background_dark">
 			<View className="flex-row justify-between items-center">
@@ -215,12 +245,25 @@ export default function Workout() {
 							keyExtractor={(i) => i.id}
 							renderItem={({item}) => (
 								<TouchableOpacity 
-									className="bg-surface dark:bg-surface_dark rounded-xl p-4 mb-3 flex-row items-center justify-between border border-black/5 dark:border-white/10 shadow-sm"
+									className="bg-surface dark:bg-surface_dark rounded-xl p-4 mb-3 border border-black/5 dark:border-white/10 shadow-sm"
 									onPress={() => loadWorkout(item.id)}
 									onLongPress={() => deleteSavedWorkout(item.id)}
 								>
-									<Text className="font-semibold text-apptext dark:text-apptext_dark text-base flex-1" numberOfLines={1}>{item.name}</Text>
-									<Text className="text-gray-500 dark:text-gray-400 text-xs">{item.exercises?.length || 0} Exercises</Text>
+                                    <View className="flex-row justify-between items-start mb-4">
+                                        <View className="flex-1">
+                                            <Text className="font-semibold text-apptext dark:text-apptext_dark text-lg mb-1" numberOfLines={1}>{item.name}</Text>
+                                            <Text className="text-gray-500 dark:text-gray-400 text-sm">{item.exercises?.length || 0} Exercises</Text>
+                                        </View>
+                                    </View>
+                                    
+                                    <View className="flex-row justify-end">
+                                        <TouchableOpacity 
+                                            onPress={() => handleStartSavedWorkout(item)}
+                                            className="bg-primary dark:bg-primary_dark px-6 py-2 rounded-full"
+                                        >
+                                            <Text className="text-white font-semibold">Start</Text>
+                                        </TouchableOpacity>
+                                    </View>
 								</TouchableOpacity>
 							)}
 						/>
