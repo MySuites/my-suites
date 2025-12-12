@@ -38,7 +38,7 @@ export function WorkoutStickyHeader() {
             entering={FadeIn.duration(300)}
             exiting={FadeOut.duration(300)}
             style={{ paddingTop: insets.top + 8 }}
-            className="absolute top-0 left-0 right-0 z-50 pb-6 px-4 shadow-sm border-b border-black/5 bg-surface dark:bg-surface_dark"
+            className="absolute top-0 left-0 right-0 z-[1001] pb-6 px-4 shadow-sm border-b border-black/5 bg-surface dark:bg-surface_dark"
         >
             <TouchableOpacity 
                 className="flex-row items-center justify-between"

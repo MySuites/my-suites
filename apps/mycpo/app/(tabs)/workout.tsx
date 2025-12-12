@@ -183,8 +183,14 @@ export default function Workout() {
 				<Text className="text-2xl font-bold text-apptext dark:text-apptext_dark">Workout</Text>
 			</View>
 
-			{/* Controls Row */}
-			<View className="flex-row gap-2 my-3">
+			{/* Dashboard: Routines & Saved Workouts */}
+			<ScrollView 
+				className="flex-1 mt-3"
+				contentContainerStyle={{paddingBottom: 40, flexGrow: 1}}
+				showsVerticalScrollIndicator={false}
+			>
+				{/* Controls Row */}
+				<View className="flex-row gap-2 my-3">
 					<TouchableOpacity className="flex-1 mr-0 p-2.5 rounded-lg border border-surface dark:border-surface_dark bg-background dark:bg-background_dark" onPress={handleStartEmpty} accessibilityLabel="Start empty workout">
 						<Text className="text-apptext dark:text-apptext_dark">Start Empty</Text>
 					</TouchableOpacity>
@@ -192,13 +198,6 @@ export default function Workout() {
 						<Text className="text-apptext dark:text-apptext_dark">History</Text>
 					</TouchableOpacity>
 				</View>
-
-			{/* Dashboard: Routines & Saved Workouts */}
-			<ScrollView 
-				className="flex-1 mt-3"
-				contentContainerStyle={{paddingBottom: 40, flexGrow: 1}}
-				showsVerticalScrollIndicator={false}
-			>
 					
                     {/* Saved Workouts Section (Quick Access) */}
                     <View className="flex-row justify-between items-center mb-3">
