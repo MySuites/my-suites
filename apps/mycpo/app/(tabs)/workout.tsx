@@ -437,9 +437,9 @@ export default function Workout() {
                                                     console.log("Edit button pressed for:", item.name);
                                                     handleEditSavedWorkout(item);
                                                 }}
-                                                className="p-3 bg-gray-100 dark:bg-white/5 rounded-lg"
+                                                className="bg-primary dark:bg-primary_dark px-4 py-2 rounded-lg"
                                             >
-                                                <Text className="text-primary dark:text-primary_dark font-medium text-sm">Edit</Text>
+                                                <Text className="text-white font-semibold">Edit</Text>
                                             </TouchableOpacity>
 
                                             <TouchableOpacity 
