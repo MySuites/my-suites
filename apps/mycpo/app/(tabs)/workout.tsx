@@ -379,15 +379,16 @@ export default function Workout() {
     const [expandedDraftExerciseIndex, setExpandedDraftExerciseIndex] = useState<number | null>(null);
 
 	return (
-		<SafeAreaView className="flex-1 p-4 bg-background dark:bg-background_dark">
-			<View className="flex-row justify-between items-center">
-				<Text className="text-2xl font-bold text-apptext dark:text-apptext_dark">Workout</Text>
-			</View>
+		<SafeAreaView className="flex-1 bg-background dark:bg-background_dark" edges={['top', 'left', 'right']}>
+			<View className="flex-1 px-4 pt-4">
+				<View className="flex-row justify-between items-center">
+					<Text className="text-2xl font-bold text-apptext dark:text-apptext_dark">Workout</Text>
+				</View>
 
 			{/* Dashboard: Routines & Saved Workouts */}
 			<ScrollView 
 				className="flex-1 mt-3"
-				contentContainerStyle={{paddingBottom: 65, flexGrow: 1}}
+				contentContainerStyle={{paddingBottom: 120, flexGrow: 1}}
 				showsVerticalScrollIndicator={false}
 			>
 				{/* Controls Row */}
@@ -528,6 +529,7 @@ export default function Workout() {
                     )}
                     
 			</ScrollView>
+			</View>
 
 			{/* Saved Workouts modal */}
 			<Modal visible={isWorkoutsListOpen} animationType="slide" transparent={true}>
