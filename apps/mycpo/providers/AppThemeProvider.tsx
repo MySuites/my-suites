@@ -3,6 +3,7 @@ import { useColorScheme as rnUseColorScheme } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { Colors } from '../constants/theme';
 import { UIThemeProvider } from '@mycsuite/ui';
+import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
 
 const THEME_PREF_KEY = 'theme-preference';
 
@@ -18,6 +19,7 @@ export const ThemePreferenceContext = createContext<ThemePreferenceContextValue 
 
 export const AppThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const system = rnUseColorScheme();
+  const { setColorScheme } = useNativeWindColorScheme();
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
 
   useEffect(() => {
@@ -33,6 +35,13 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
     })();
   }, []);
 
+  const effectiveScheme: 'light' | 'dark' = preference === 'system' ? (system === 'dark' ? 'dark' : 'light') : preference;
+
+  // Sync with NativeWind
+  useEffect(() => {
+    setColorScheme(effectiveScheme);
+  }, [effectiveScheme, setColorScheme]);
+
   const setPreference = async (p: ThemePreference) => {
     try {
       await SecureStore.setItemAsync(THEME_PREF_KEY, p);
@@ -42,7 +51,6 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
     setPreferenceState(p);
   };
 
-  const effectiveScheme: 'light' | 'dark' = preference === 'system' ? (system === 'dark' ? 'dark' : 'light') : preference;
   const theme = effectiveScheme === 'dark' ? Colors.dark : Colors.light;
 
   return (
