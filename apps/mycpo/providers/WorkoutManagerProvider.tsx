@@ -323,7 +323,7 @@ interface WorkoutManagerContextType {
     workoutHistory: WorkoutLog[];
     fetchWorkoutLogDetails: (logId: string) => Promise<{ data: any[], error: any }>;
     saveCompletedWorkout: (name: string, exercises: Exercise[], duration: number, onSuccess?: () => void) => Promise<void>;
-    deleteWorkoutLog: (id: string, onSuccess?: () => void) => void;
+    deleteWorkoutLog: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => void;
 }
 
 const WorkoutManagerContext = createContext<WorkoutManagerContextType | undefined>(undefined);
@@ -789,31 +789,42 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                         clearActiveRoutine();
                     }
                     onSuccess?.();
+
                 },
             },
         ]);
     }
 
-    function deleteWorkoutLog(id: string, onSuccess?: () => void) {
-        Alert.alert("Delete Workout Log", "Are you sure? This cannot be undone.", [
-            { text: "Cancel", style: "cancel" },
-            {
-                text: "Delete",
-                style: "destructive",
-                onPress: async () => {
-                    if (user) {
-                        try {
-                            await supabase.from("workout_logs").delete().eq("workout_log_id", id);
-                        } catch (e) {
-                            console.warn("Failed to delete workout log on server", e);
-                        }
+    const deleteWorkoutLog = async (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => {
+        const performDelete = async () => {
+            if (user) {
+                try {
+                    await supabase.from("workout_logs").delete().eq("workout_log_id", id);
+                } catch (e) {
+                    console.warn("Failed to delete workout log on server", e);
+                }
+            }
+            setWorkoutHistory((h) => h.filter((x) => x.id !== id));
+            options?.onSuccess?.();
+        };
+
+        if (options?.skipConfirmation) {
+            await performDelete();
+        } else {
+            Alert.alert(
+                "Delete Workout Log",
+                "Are you sure? This cannot be undone.",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                        text: "Delete",
+                        style: "destructive",
+                        onPress: performDelete
                     }
-                    setWorkoutHistory((h) => h.filter((x) => x.id !== id));
-                    onSuccess?.();
-                },
-            },
-        ]);
-    }
+                ]
+            );
+        }
+    };
 
     const fetchWorkoutLogDetails = useCallback(async (logId: string) => {
         if (!user) return { data: [], error: "User not logged in" };

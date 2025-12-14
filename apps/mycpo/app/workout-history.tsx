@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Text, View, FlatList, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,11 +22,13 @@ import * as Haptics from 'expo-haptics';
 const RightAction = ({ 
     dragX, 
     progress, 
-    onDelete 
+    onDelete,
+    onSetReadyToDelete
 }: { 
     dragX: SharedValue<number>; 
     progress: SharedValue<number>;
     onDelete: () => void;
+    onSetReadyToDelete: (ready: boolean) => void;
 }) => {
     const { width } = useWindowDimensions();
     const hasTriggered = useSharedValue(false);
@@ -39,16 +41,19 @@ const RightAction = ({
     // Layout width needs to include the margin to snap correctly at the circle's edge
     const LAYOUT_WIDTH = BUTTON_HEIGHT + BUTTON_MARGIN; 
 
-    // Monitor drag value to trigger delete on long swipe
+    // Monitor drag value to trigger haptic feedback on long swipe
     useAnimatedReaction(
         () => dragX.value,
         (currentDrag) => {
             if (currentDrag < TRIGGER_THRESHOLD && !hasTriggered.value) {
                 hasTriggered.value = true;
                 runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
-                runOnJS(onDelete)();
+                // Mark parent as ready to delete
+                runOnJS(onSetReadyToDelete)(true);
             } else if (currentDrag > TRIGGER_THRESHOLD + 40 && hasTriggered.value) {
                 hasTriggered.value = false;
+                // Unmark if user swipes back
+                runOnJS(onSetReadyToDelete)(false);
             }
         }
     );
@@ -140,8 +145,8 @@ const RightAction = ({
                 >
                     <View style={{ width: BUTTON_HEIGHT, height: '100%', justifyContent: 'center', alignItems: 'center' }}>
                         <TouchableOpacity onPress={onDelete} activeOpacity={0.8}>
-                            <Animated.View style={iconStyle}>
-                                <IconSymbol name="trash.fill" size={20} color="white" />
+                            <Animated.View style={[iconStyle, { alignItems: 'center' }]}>
+                                <IconSymbol name="trash.fill" size={18} color="white" />
                             </Animated.View>
                         </TouchableOpacity>
                     </View>
@@ -160,14 +165,34 @@ const RightAction = ({
 
 
 const WorkoutHistoryItem = ({ item, onDelete, onPress }: { item: any, onDelete: () => void, onPress: () => void }) => {
+    // Track if we are deep enough to delete
+    const shouldDelete = useRef(false);
+
+    // Callback to update the ref from the shared value listener
+    const setReadyToDelete = (ready: boolean) => {
+        shouldDelete.current = ready;
+    };
+
     return (
         <Swipeable
             renderRightActions={(progress, dragX) => (
-                <RightAction dragX={dragX} progress={progress} onDelete={onDelete} />
+                <RightAction 
+                    dragX={dragX} 
+                    progress={progress} 
+                    onDelete={onDelete} 
+                    onSetReadyToDelete={setReadyToDelete}
+                />
             )}
-            overshootRight={true}
+            overshootRight={true} // Allow overshooting to swipe fully
             friction={2}
-            rightThreshold={40} // Easy to open
+            rightThreshold={40} // Easy to open (Reveal threshold)
+            onSwipeableWillOpen={() => {
+                // Trigger delete ONLY if we dragged past the deep threshold
+                if (shouldDelete.current) {
+                    onDelete();
+                }
+                // If not deep enough, it just opens (revealing the button)
+            }}
             containerStyle={{ overflow: 'visible' }}
         >
             <TouchableOpacity 
@@ -216,7 +241,7 @@ export default function WorkoutHistoryScreen() {
         renderItem={({ item }) => (
             <WorkoutHistoryItem 
                 item={item} 
-                onDelete={() => deleteWorkoutLog(item.id)}
+                onDelete={() => deleteWorkoutLog(item.id, { skipConfirmation: true })}
                 onPress={() => setSelectedLogId(item.id)}
             />
         )}
