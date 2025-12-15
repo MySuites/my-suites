@@ -37,7 +37,7 @@ export default function Workout() {
     
 	// consume shared state
     const {
-        setExercises,
+
         startWorkout,
         finishWorkout,
         cancelWorkout,
@@ -81,7 +81,6 @@ export default function Workout() {
     const [expandedWorkoutId, setExpandedWorkoutId] = useState<string | null>(null);
 	const [routineDraftName, setRoutineDraftName] = useState("");
 	const [routineSequence, setRoutineSequence] = useState<any[]>([]);
-	const [isWorkoutsListOpen, setWorkoutsListOpen] = useState(false);
 	const [isRoutinesListOpen, setRoutinesListOpen] = useState(false);
     
 
@@ -98,7 +97,7 @@ export default function Workout() {
         markRoutineDayComplete,
         clearActiveRoutine,
  
-        deleteSavedWorkout, 
+ 
         saveRoutineDraft: saveRoutineDraftManager,
         updateRoutine,
         deleteRoutine,
@@ -106,29 +105,11 @@ export default function Workout() {
 
     // Toggle floating buttons visibility when modals are open
     React.useEffect(() => {
-        setIsHidden(isWorkoutsListOpen || isCreateRoutineOpen || isRoutinesListOpen);
-    }, [isWorkoutsListOpen, isCreateRoutineOpen, isRoutinesListOpen, setIsHidden]);
+        setIsHidden(isCreateRoutineOpen || isRoutinesListOpen);
+    }, [isCreateRoutineOpen, isRoutinesListOpen, setIsHidden]);
 
 
-	function loadWorkout(id: string) {
-        // Allow loading even if not "active" session (but might have default exercises)
-        if (hasActiveSession) {
-            Alert.alert(
-                "Active Session", 
-                "Please finish or cancel your current workout before loading a new one.",
-                [
-                    { text: "OK" }
-                ]
-            );
-            return;
-        }
 
-		const w = savedWorkouts.find((x) => x.id === id);
-		if (!w) return;
-		setExercises(w.exercises || []);
-		setWorkoutsListOpen(false);
-		Alert.alert('Loaded', `Workout '${w.name}' loaded.`);
-	}
 
 
     
@@ -257,7 +238,7 @@ export default function Workout() {
                             <TouchableOpacity onPress={handleCreateSavedWorkout}>
                                 <Text className="text-primary dark:text-primary_dark">+ New</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setWorkoutsListOpen(true)}>
+                            <TouchableOpacity onPress={() => router.push('/saved-workouts')}>
                                 <Text className="text-primary dark:text-primary_dark">See All</Text>
                             </TouchableOpacity>
                          </View>
@@ -399,43 +380,7 @@ export default function Workout() {
 			</ScrollView>
 			</View>
 
-			{/* Saved Workouts modal */}
-			<Modal visible={isWorkoutsListOpen} animationType="slide" transparent={true}>
-				<View className="flex-1 justify-center items-center bg-black/40">
-					<View className="w-[90%] p-4 rounded-xl bg-background dark:bg-background_dark max-h-[80%]">
-						<Text className="text-lg font-bold mb-2 text-apptext dark:text-apptext_dark">Saved Workouts</Text>
-						{savedWorkouts.length === 0 ? (
-							<Text className="text-gray-500 dark:text-gray-400">No saved workouts</Text>
-						) : (
-							<FlatList
-								data={savedWorkouts}
-								keyExtractor={(i) => i.id}
-								renderItem={({item}) => (
-									<View className="flex-row items-center justify-between py-2">
-										<View>
-											<Text className="text-apptext dark:text-apptext_dark font-semibold">{item.name}</Text>
-											<Text className="text-gray-500 dark:text-gray-400 text-xs">{new Date(item.createdAt).toLocaleString()}</Text>
-										</View>
-										<View className="flex-row">
-											<TouchableOpacity onPress={() => loadWorkout(item.id)} className="p-2.5 rounded-lg border border-surface dark:border-surface_dark mr-2 bg-background dark:bg-background_dark"> 
-												<Text className="text-apptext dark:text-apptext_dark">Load</Text>
-											</TouchableOpacity>
-											<TouchableOpacity onPress={() => deleteSavedWorkout(item.id)} className="p-2.5 rounded-lg border border-surface dark:border-surface_dark bg-background dark:bg-background_dark">
-												<Text className="text-apptext dark:text-apptext_dark">Delete</Text>
-											</TouchableOpacity>
-										</View>
-									</View>
-								)}
-							/>
-						)}
-						<View className="flex-row justify-end mt-3">
-							<TouchableOpacity onPress={() => setWorkoutsListOpen(false)} className="p-2.5 rounded-lg border border-surface dark:border-surface_dark bg-background dark:bg-background_dark">
-								<Text className="text-apptext dark:text-apptext_dark">Close</Text>
-							</TouchableOpacity>
-						</View>
-					</View>
-				</View>
-			</Modal>
+
 
 			{/* Create/Edit routine (schedule) modal */}
 			<Modal visible={isCreateRoutineOpen} animationType="slide" transparent={true}>
