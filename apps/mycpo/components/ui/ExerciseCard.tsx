@@ -33,8 +33,8 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
 
             <View className="flex-row justify-between items-center mb-4">
                 <View>
-                    <Text className="text-lg font-bold text-apptext dark:text-apptext_dark mb-1">{exercise.name}</Text>
-                    <Text className="text-sm text-gray-500">Target: {exercise.sets} sets • {exercise.reps} reps</Text>
+                    <Text className="text-lg font-bold text-black dark:text-white mb-1">{exercise.name}</Text>
+                    <Text className="text-sm text-black dark:text-white">Target: {exercise.sets} sets • {exercise.reps} reps</Text>
                 </View>
                 {isFinished && <IconSymbol name="checkmark.circle.fill" size={24} color={theme.primary} />}
             </View>
@@ -42,10 +42,10 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
             <View className="pt-3">
                 {/* Headers */}
                 <View className="flex-row mb-2 px-1">
-                    <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[30px] text-gray-500">SET</Text>
-                    <Text className="text-[10px] font-bold uppercase text-center text-gray-500 flex-1">PREVIOUS</Text>
-                    <Text className="text-[10px] font-bold uppercase text-center text-gray-500 w-[60px] mx-1">LBS</Text>
-                    <Text className="text-[10px] font-bold uppercase text-center text-gray-500 w-[60px] mx-1">REPS</Text>
+                    <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[30px] text-black dark:text-white">SET</Text>
+                    <Text className="text-[10px] font-bold uppercase text-center text-black dark:text-white flex-1">PREVIOUS</Text>
+                    <Text className="text-[10px] font-bold uppercase text-center text-black dark:text-white w-[60px] mx-1">LBS</Text>
+                    <Text className="text-[10px] font-bold uppercase text-center text-black dark:text-white w-[60px] mx-1">REPS</Text>
                     <View className="w-[40px] items-center" />
                     <View className="w-[30px] items-center justify-center" />
                 </View>
@@ -60,19 +60,17 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
                         <View key={i} className={`flex-row items-center mb-2 h-11 bg-surface dark:bg-surface_dark rounded-lg px-1 ${isCurrentSet ? 'bg-black/5 dark:bg-white/5' : ''}`}>
                             {/* Set Number */}
                             <View className="w-[30px] items-center justify-center">
-                                <View className={`w-6 h-6 rounded-full items-center justify-center ${isCompleted ? 'bg-primary dark:bg-primary_dark' : 'bg-transparent'} ${isCurrentSet ? 'border border-primary dark:border-primary_dark' : ''}`}>
-                                    <Text className={`text-xs font-bold ${isCompleted ? 'text-white' : 'text-gray-500'}`}>{i + 1}</Text>
-                                </View>
+                                <Text className="text-xs font-bold text-black dark:text-white">{i + 1}</Text>
                             </View>
 
 
-                            <Text className="flex-1 text-center text-xs text-gray-500">-</Text>
+                            <Text className="flex-1 text-center text-xs text-black dark:text-white">-</Text>
 
                             {/* Inputs / Values */}
                             {isCompleted ? (
                                 <>
-                                    <Text className="w-[60px] text-center text-sm font-bold text-apptext dark:text-apptext_dark mx-1">{log.weight}</Text>
-                                    <Text className="w-[60px] text-center text-sm font-bold text-apptext dark:text-apptext_dark mx-1">{log.reps}</Text>
+                                    <Text className="w-[60px] text-center text-sm font-bold text-black dark:text-white mx-1">{log.weight}</Text>
+                                    <Text className="w-[60px] text-center text-sm font-bold text-black dark:text-white mx-1">{log.reps}</Text>
                                     <TouchableOpacity 
                                         className="w-9 h-9 rounded-lg bg-primary dark:bg-primary_dark items-center justify-center ml-1"
                                         onPress={() => onUncompleteSet?.(i)}
@@ -83,20 +81,20 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
                             ) : (
                                 <>
                                     <TextInput 
-                                        className="w-[60px] h-9 bg-background dark:bg-background_dark rounded-lg text-center text-base font-bold text-apptext dark:text-apptext_dark mx-1"
+                                        className="w-[60px] h-9 bg-background dark:bg-background_dark rounded-lg text-center text-base font-bold text-black dark:text-white mx-1"
                                         value={getValue(i, 'weight')}
                                         onChangeText={(t) => onUpdateSetTarget?.(i, 'weight', t)}
                                         placeholder={getValue(i, 'weight') || "-"} 
                                         keyboardType="numeric" 
-                                        placeholderTextColor={theme.icon || '#9ca3af'}
+                                        placeholderTextColor={theme.text || '#000000'}
                                     />
                                     <TextInput 
-                                        className="w-[60px] h-9 bg-background dark:bg-background_dark rounded-lg text-center text-base font-bold text-apptext dark:text-apptext_dark mx-1"
+                                        className="w-[60px] h-9 bg-background dark:bg-background_dark rounded-lg text-center text-base font-bold text-black dark:text-white mx-1"
                                         value={getValue(i, 'reps')} 
                                         onChangeText={(t) => onUpdateSetTarget?.(i, 'reps', t)}
                                         placeholder={getValue(i, 'reps') || exercise.reps.toString()}
                                         keyboardType="numeric" 
-                                        placeholderTextColor={theme.icon || '#9ca3af'}
+                                        placeholderTextColor={theme.text || '#000000'}
                                     />
                                     <TouchableOpacity 
                                         className={`w-9 h-9 rounded-lg items-center justify-center ml-1 border-2 border-primary dark:border-primary_dark`}
