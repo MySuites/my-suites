@@ -46,7 +46,9 @@ export default function SavedWorkoutsScreen() {
            <ThemedText type="link">Close</ThemedText>
         </TouchableOpacity>
         <ThemedText type="subtitle">Saved Workouts</ThemedText>
-        <View className="w-[50px]" /> 
+        <TouchableOpacity onPress={() => router.push('/create-workout')} className="p-2">
+           <ThemedText type="link">Create</ThemedText>
+        </TouchableOpacity>
       </ThemedView>
       
       {savedWorkouts.length === 0 ? (
