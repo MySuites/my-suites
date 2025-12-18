@@ -8,7 +8,9 @@ import Animated, {
     interpolate, 
     Extrapolation, 
     SharedValue,
-    useSharedValue
+    useSharedValue,
+    withTiming,
+    useDerivedValue
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { IconSymbol } from './icon-symbol';
@@ -23,11 +25,13 @@ interface CardProps extends ViewProps {
 // Actions component that monitors drag distance
 const CardSwipeAction = ({ 
     dragX, 
+    sharedDragX,
     onDelete,
     onEdit,
     onSetReadyToDelete
 }: { 
     dragX: SharedValue<number>; 
+    sharedDragX: SharedValue<number>;
     onDelete: () => void;
     onEdit?: () => void;
     onSetReadyToDelete: (ready: boolean) => void;
@@ -50,6 +54,14 @@ const CardSwipeAction = ({
         ? (BUTTON_HEIGHT * 2) + GAP + MARGIN + CARD_GAP 
         : BUTTON_HEIGHT + MARGIN + CARD_GAP + 20; // extra space if just one button
 
+    // Sync dragX to parent shared value
+    useAnimatedReaction(
+        () => dragX.value,
+        (currentDrag) => {
+            sharedDragX.value = currentDrag;
+        }
+    );
+
     // Monitor drag value to trigger haptic feedback on long swipe
     useAnimatedReaction(
         () => dragX.value,
@@ -68,18 +80,35 @@ const CardSwipeAction = ({
     );
 
     // Delete Button (Red Blob) Animation
+    const snapProgress = useDerivedValue(() => {
+        const isDeleting = dragX.value < TRIGGER_THRESHOLD;
+        return withTiming(isDeleting ? 1 : 0, { duration: 200 });
+    });
+
     const deleteStyle = useAnimatedStyle(() => {
         const drag = dragX.value;
         const absDrag = Math.abs(drag);
         
-        let w = BUTTON_HEIGHT;
-        let borderRadius = BUTTON_HEIGHT / 2;
+        // 1. Calculate Linear State (Dragging)
+        // Default relative width
+        let linearW = BUTTON_HEIGHT;
         
-        // Only expand if we have dragged past the full layout width (overshoot)
-        // This prevents the red button from covering the Edit button during normal swipe
+        // If we overshoot, grow linearly
         if (absDrag > LAYOUT_WIDTH) {
-             w = BUTTON_HEIGHT + (absDrag - LAYOUT_WIDTH);
+             linearW = BUTTON_HEIGHT + (absDrag - LAYOUT_WIDTH);
         }
+        
+        // 2. Calculate Snapped State (Full Screen)
+        // Fit exactly to screen width (anchored right, so left edge is at 0)
+        const snappedW = width - 35;
+        
+        // 3. Interpolate
+        const progress = snapProgress.value;
+        
+        const w = interpolate(progress, [0, 1], [linearW, snappedW]);
+        const right = interpolate(progress, [0, 1], [0, -MARGIN]);
+        // Keep consistent border radius even when expanded
+        const borderRadius = BUTTON_HEIGHT / 2;
 
         const scale = interpolate(
             drag,
@@ -87,8 +116,7 @@ const CardSwipeAction = ({
             [1, 0], 
             Extrapolation.CLAMP
         );
-
-        // Fade in entire button
+        
         const opacity = interpolate(
             drag,
             [-50, -10],
@@ -99,12 +127,13 @@ const CardSwipeAction = ({
         const isDeleting = drag < TRIGGER_THRESHOLD;
 
         return {
-            width: w, 
+            width: w,
             height: BUTTON_HEIGHT,
-            borderRadius: borderRadius, 
-            transform: [{ scale }],
+            right: right,
+            borderRadius: borderRadius,
+            transform: [{ scale: isDeleting ? 1 : scale }],
             opacity,
-            zIndex: isDeleting ? 10 : 0, 
+            zIndex: isDeleting ? 100 : 0, // High z-index to cover everything
         };
     });
 
@@ -116,7 +145,14 @@ const CardSwipeAction = ({
         const absDrag = Math.abs(drag);
         
         let translateX = 0;
-        if (absDrag > LAYOUT_WIDTH) {
+        // Slide the edit button left as we expand, keeping it roughly relative to the card's movement
+        // or ensuring it gets out of the way of the massive red blob
+        // If deleting, slide WAY left to disappear
+        if (drag < TRIGGER_THRESHOLD) {
+            translateX = -width;
+        } 
+        else if (absDrag > LAYOUT_WIDTH) {
+             // Move left by the excess drag amount to appear "attached" to the card side
              translateX = -(absDrag - LAYOUT_WIDTH);
         }
         
@@ -157,21 +193,31 @@ const CardSwipeAction = ({
         const drag = dragX.value;
         const absDrag = Math.abs(drag);
         
-        let translateX = 0;
+        let linearTranslateX = 0;
+        let snappedTranslateX = 0;
         
-        // Calculate how much the button has expanded beyond its initial size
-        // The button exapnds to the left, so we need to move the text to the left by half that amount to stay centered
+        // 1. Linear Centering (Moving linearly with drag)
         if (absDrag > LAYOUT_WIDTH) {
-             const expansion = absDrag - LAYOUT_WIDTH;
-             translateX = -expansion / 2;
+             // Center distance from right: linearW / 2
+             // linearW = BUTTON_HEIGHT + (absDrag - LAYOUT_WIDTH)
+             // simplified from previous step: -( (absDrag/2) - 30 )
+             linearTranslateX = -( (absDrag / 2) - 30 );
         }
+        
+        // 2. Snapped Centering (Full Screen)
+        // Center relative to right edge (margin): (width - 35)/2.
+        // Text container center relative to right edge: 40.
+        // Shift needed: Target - Current = ((width - 35)/2) - 40
+        // Move Left (negative): -(((width - 35)/2) - 40)
+        snappedTranslateX = -( (width - 35) / 2 - 40 );
+
+        // 3. Interpolate
+        const translateX = interpolate(snapProgress.value, [0, 1], [linearTranslateX, snappedTranslateX]);
 
         return {
             transform: [{ translateX }],
-            // Removed opacity fade as requested - text remains visible
         };
     });
-
     return (
         <View style={{ width: LAYOUT_WIDTH, height: '100%', flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}>
              
@@ -215,7 +261,7 @@ const CardSwipeAction = ({
                 <View style={{ width: BUTTON_HEIGHT, height: BUTTON_HEIGHT, position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
                      <Animated.View 
                         className="bg-red-500 overflow-hidden" 
-                        style={[deleteStyle, { position: 'absolute', right: 0 }]} 
+                        style={[deleteStyle, { position: 'absolute' }]} 
                     >
                         <TouchableOpacity onPress={onDelete} activeOpacity={0.8} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                             <Animated.View style={[deleteIconStyle]}>
@@ -238,32 +284,67 @@ const CardSwipeAction = ({
 };
 
 export function Card({ children, style, className, onPress, activeOpacity = 0.9, onDelete, onEdit, ...props }: CardProps) {
+  const { width } = useWindowDimensions();
   // Base styling from RoutineCard
   const baseClassName = `bg-surface dark:bg-surface_dark rounded-xl p-3 w-full mb-1 border border-black/5 dark:border-white/10 shadow-sm ${className || ''}`;
 
   // Track if we are deep enough to delete
   const shouldDelete = useRef(false);
   const swipeableRef = useRef<any>(null);
+  
+  // Shared drag X for coordinating main card movement
+  const sharedDragX = useSharedValue(0);
+  const TRIGGER_THRESHOLD = -width * 0.45;
 
   const setReadyToDelete = (ready: boolean) => {
       shouldDelete.current = ready;
   };
 
+  // Card Content Animation to snap off-screen
+  const cardContentStyle = useAnimatedStyle(() => {
+      // If we crossed the threshold, push the card completely off screen
+      // The Swipeable already moves it by dragX.
+      // We want final position to be -width (completely gone left).
+      // So we add extra translation: (-width - dragX).
+      // Actually simpler: if dragX < threshold, just set translateX to -width (minus whatever swipeable is doing?)
+      // Wait, Swipeable translates the whole container? No, Swipeable translates the children (LeftActions/Content).
+      // If we modify `Content` style, it compounds.
+      
+      const drag = sharedDragX.value;
+      if (drag < TRIGGER_THRESHOLD) {
+          // Snap away
+          // We want visual position to be roughly -width.
+          // Current pos is `drag`.
+          // We need to shift it further left by `(-width - drag)`.
+          // But purely visual snap is enough.
+          return {
+              transform: [{ translateX: -width - drag }] // Should compound to result in -width
+          };
+      }
+      return {
+          transform: [{ translateX: 0 }]
+      };
+  });
+
   const Content = (
     onPress ? (
-        <TouchableOpacity 
-          style={style} 
-          className={baseClassName} 
-          onPress={onPress} 
-          activeOpacity={activeOpacity}
-          {...(props as TouchableOpacityProps)}
-        >
-          {children}
-        </TouchableOpacity>
+        <Animated.View style={[cardContentStyle]}>
+            <TouchableOpacity 
+            style={style} 
+            className={baseClassName} 
+            onPress={onPress} 
+            activeOpacity={activeOpacity}
+            {...(props as TouchableOpacityProps)}
+            >
+            {children}
+            </TouchableOpacity>
+        </Animated.View>
       ) : (
-        <View style={style} className={baseClassName} {...props}>
-          {children}
-        </View>
+        <Animated.View style={[cardContentStyle]}>
+            <View style={style} className={baseClassName} {...props}>
+            {children}
+            </View>
+        </Animated.View>
       )
   );
 
@@ -274,6 +355,7 @@ export function Card({ children, style, className, onPress, activeOpacity = 0.9,
             renderRightActions={(progress, dragX) => (
                 <CardSwipeAction 
                     dragX={dragX}
+                    sharedDragX={sharedDragX}
                     onDelete={() => {
                         swipeableRef.current?.close();
                         onDelete();
