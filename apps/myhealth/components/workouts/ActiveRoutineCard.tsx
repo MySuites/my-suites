@@ -15,6 +15,7 @@ interface ActiveRoutineCardProps {
   onClearRoutine: () => void;
   onStartWorkout: (exercises: any[], name?: string) => void;
   onMarkComplete: () => void;
+  onJumpToDay: (index: number) => void;
 }
 
 export function ActiveRoutineCard({
@@ -25,6 +26,7 @@ export function ActiveRoutineCard({
   onClearRoutine,
   onStartWorkout,
   onMarkComplete,
+  onJumpToDay,
 }: ActiveRoutineCardProps) {
   const theme = useUITheme();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -83,7 +85,19 @@ export function ActiveRoutineCard({
                 : theme.surface;
 
               return (
-                <View key={index} className="flex-row">
+                <TouchableOpacity 
+                    key={index} 
+                    className="flex-row"
+                    activeOpacity={isToday ? 1 : 0.7}
+                    onPress={() => {
+                        if (!isToday && item.originalIndex !== undefined) {
+                            Alert.alert("Jump to Day", `Skip to ${item.name || "this day"}?`, [
+                                { text: "Cancel", style: "cancel" },
+                                { text: "Yes", onPress: () => onJumpToDay(item.originalIndex) }
+                            ]);
+                        }
+                    }}
+                >
                   <View className="w-[30px] items-center">
                     <View
                       style={{
@@ -131,20 +145,46 @@ export function ActiveRoutineCard({
                           ? 'Rest Day'
                           : item.name || 'Unknown Workout'}
                       </Text>
-                      {isToday && !isCompletedToday && (
-                        <View className="bg-surface dark:bg-surface_dark px-2 py-0.5 rounded">
-                          <Text className="text-[10px] text-gray-500 font-bold">
-                            TODAY
-                          </Text>
-                        </View>
-                      )}
-                      {isCompletedToday && (
-                        <View className="bg-[#4CAF50]/10 px-2 py-0.5 rounded">
-                          <Text className="text-[10px] text-[#4CAF50] font-bold">
-                            DONE
-                          </Text>
-                        </View>
-                      )}
+                      
+                       <View className="flex-row items-center">
+                           {!isToday && (
+                                <TouchableOpacity 
+                                    onPress={() => {
+                                         if (item.originalIndex !== undefined) {
+                                            Alert.alert("Jump to Day", `Skip to ${item.name || "this day"}?`, [
+                                                { text: "Cancel", style: "cancel" },
+                                                { text: "Yes", onPress: () => onJumpToDay(item.originalIndex) }
+                                            ]);
+                                        }
+                                    }}
+                                    className="mr-2 bg-primary/10 dark:bg-white/10 px-3 py-1 rounded-md"
+                                >
+                                    <Text className="text-primary dark:text-white text-xs font-bold">Start</Text>
+                                </TouchableOpacity>
+                           )}
+
+                          <View className="items-end w-[75px]">
+                            {item.date && !isToday && (
+                                 <Text className="text-xs text-gray-500 mb-0.5 text-right" numberOfLines={1}>
+                                    {item.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                 </Text>
+                            )}
+                            {isToday && !isCompletedToday && (
+                                <View className="bg-surface dark:bg-surface_dark px-2 py-0.5 rounded">
+                                <Text className="text-[10px] text-gray-500 font-bold">
+                                    TODAY
+                                </Text>
+                                </View>
+                            )}
+                            {isCompletedToday && (
+                                <View className="bg-[#4CAF50]/10 px-2 py-0.5 rounded">
+                                <Text className="text-[10px] text-[#4CAF50] font-bold">
+                                    DONE
+                                </Text>
+                                </View>
+                            )}
+                          </View>
+                       </View>
                     </View>
 
 
@@ -176,7 +216,7 @@ export function ActiveRoutineCard({
                       </View>
                     )}
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })}
           </View>

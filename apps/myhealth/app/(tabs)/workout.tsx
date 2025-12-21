@@ -69,6 +69,7 @@ export default function Workout() {
         activeRoutine,
         startActiveRoutine,
         markRoutineDayComplete,
+        setActiveRoutineIndex,
         clearActiveRoutine,
         deleteSavedWorkout,
         deleteRoutine,
@@ -87,7 +88,13 @@ export default function Workout() {
         // Show up to 7 days
         for (let i = 0; i < 7; i++) {
             const index = (dayIndex + i) % total;
-            result.push({ ...seq[index], originalIndex: index });
+            const d = new Date();
+            d.setDate(d.getDate() + i);
+            result.push({ 
+                ...seq[index], 
+                originalIndex: index,
+                date: d
+            });
         }
         return result;
     }, [activeRoutineObj, dayIndex]);
@@ -284,6 +291,7 @@ export default function Workout() {
                                 onClearRoutine={clearActiveRoutine}
                                 onStartWorkout={(exercises, name) => startWorkout(exercises, name, activeRoutineObj.id)}
                                 onMarkComplete={markRoutineDayComplete}
+                                onJumpToDay={setActiveRoutineIndex}
                             />
                         ) : (
                             <View className="mb-6">

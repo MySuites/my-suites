@@ -556,6 +556,7 @@ interface WorkoutManagerContextType {
         lastCompletedDate?: string;
     } | null;
     startActiveRoutine: (id: string) => void;
+    setActiveRoutineIndex: (index: number) => void;
     markRoutineDayComplete: () => void;
     clearActiveRoutine: () => void;
     isSaving: boolean;
@@ -1158,6 +1159,12 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         });
     }
 
+    function setActiveRoutineIndex(index: number) {
+        setActiveRoutine((prev) => 
+            prev ? { ...prev, dayIndex: index, lastCompletedDate: undefined } : null
+        );
+    }
+
     const markRoutineDayComplete = useCallback(() => {
         if (!activeRoutine) return;
         
@@ -1209,6 +1216,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         routines,
         activeRoutine,
         startActiveRoutine,
+        setActiveRoutineIndex,
         markRoutineDayComplete,
         clearActiveRoutine,
         isSaving,
