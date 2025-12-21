@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, View, Modal, FlatList } from 'react-native';
+import { TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '../components/ui/ThemedView';
 import { ThemedText } from '../components/ui/ThemedText';
 import { IconSymbol } from '../components/ui/icon-symbol';
+import { SelectionModal } from '../components/ui/SelectionModal';
 import { useUITheme } from '@mycsuite/ui';
 import { useWorkoutManager, fetchMuscleGroups } from '../hooks/useWorkoutManager';
 
@@ -89,53 +90,6 @@ export default function CreateExerciseScreen() {
     }
   };
 
-  // Selection Modal Component
-  const renderSelectionModal = (
-      visible: boolean, 
-      onClose: () => void, 
-      title: string, 
-      items: any[], 
-      onSelect: (item: any) => void,
-      isSelected: (item: any) => boolean,
-      multiSelect = false
-  ) => (
-      <Modal
-          visible={visible}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={onClose}
-      >
-          <ThemedView className="flex-1">
-              <View className="flex-row items-center justify-between p-4 border-b border-surface dark:border-white/10 pt-4 android:pt-10">
-                  <TouchableOpacity onPress={onClose} className="p-2">
-                       <ThemedText type="link">Done</ThemedText>
-                  </TouchableOpacity>
-                  <ThemedText type="subtitle">{title}</ThemedText>
-                  <View style={{ width: 50 }} />
-              </View>
-              <FlatList
-                  data={items}
-                  keyExtractor={(item) => item.value || item.id}
-                  renderItem={({ item }) => {
-                      const selected = isSelected(item);
-                      return (
-                          <TouchableOpacity 
-                              className={`flex-row items-center justify-between p-4 border-b border-surface dark:border-white/5 ${selected ? 'bg-primary/10 dark:bg-primary/20' : ''}`}
-                              onPress={() => {
-                                  onSelect(item);
-                                  if (!multiSelect) onClose();
-                              }}
-                          >
-                              <ThemedText type="defaultSemiBold">{item.label || item.name}</ThemedText>
-                              {selected && <IconSymbol name="checkmark" size={20} color={theme.primary} />}
-                          </TouchableOpacity>
-                      );
-                  }}
-              />
-          </ThemedView>
-      </Modal>
-  );
-
   return (
     <ThemedView className="flex-1">
       <View className="flex-row items-center justify-between p-4 border-b border-surface dark:border-white/10 pt-4 android:pt-10">
@@ -207,34 +161,34 @@ export default function CreateExerciseScreen() {
       </KeyboardAvoidingView>
 
       {/* Modals */}
-      {renderSelectionModal(
-          showTypeModal, 
-          () => setShowTypeModal(false), 
-          "Select Properties", 
-          EXERCISE_PROPERTIES, 
-          toggleProperty,
-          (item) => properties.some(p => p.value === item.value),
-          true
-      )}
+      <SelectionModal
+          visible={showTypeModal}
+          onClose={() => setShowTypeModal(false)}
+          title="Select Properties"
+          items={EXERCISE_PROPERTIES}
+          onSelect={toggleProperty}
+          isSelected={(item) => properties.some(p => p.value === item.value)}
+          multiSelect={true}
+      />
 
-      {renderSelectionModal(
-          showPrimaryModal, 
-          () => setShowPrimaryModal(false), 
-          "Select Primary Muscle", 
-          muscleGroups, 
-          setPrimaryMuscle,
-          (item) => item.id === primaryMuscle?.id
-      )}
+      <SelectionModal
+          visible={showPrimaryModal}
+          onClose={() => setShowPrimaryModal(false)}
+          title="Select Primary Muscle"
+          items={muscleGroups}
+          onSelect={setPrimaryMuscle}
+          isSelected={(item) => item.id === primaryMuscle?.id}
+      />
 
-      {renderSelectionModal(
-          showSecondaryModal, 
-          () => setShowSecondaryModal(false), 
-          "Select Secondary Muscles", 
-          muscleGroups.filter(m => m.id !== primaryMuscle?.id), // Exclude primary
-          toggleSecondaryMuscle,
-          (item) => secondaryMuscles.some(m => m.id === item.id),
-          true
-      )}
+      <SelectionModal
+          visible={showSecondaryModal}
+          onClose={() => setShowSecondaryModal(false)}
+          title="Select Secondary Muscles"
+          items={muscleGroups.filter(m => m.id !== primaryMuscle?.id)} // Exclude primary
+          onSelect={toggleSecondaryMuscle}
+          isSelected={(item) => secondaryMuscles.some(m => m.id === item.id)}
+          multiSelect={true}
+      />
 
     </ThemedView>
   );
