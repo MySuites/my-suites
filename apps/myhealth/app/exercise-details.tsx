@@ -38,7 +38,7 @@ export default function ExerciseDetailsScreen() {
         if (Array.isArray(props)) {
             props.forEach((p: string) => {
                 const lower = String(p).toLowerCase();
-                if (lower.includes('weight') || lower.includes('weighted')) metrics.push('weight');
+                if ((lower.includes('weight') && !lower.includes('bodyweight')) || lower.includes('weighted')) metrics.push('weight');
                 if (lower.includes('reps')) metrics.push('reps');
                 if (lower.includes('duration') || lower.includes('time')) metrics.push('duration');
                 if (lower.includes('distance')) metrics.push('distance');
