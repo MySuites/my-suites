@@ -6,7 +6,6 @@ import {
  	TouchableOpacity,
  	Alert,
     ScrollView,
-    Modal,
 } from "react-native";
 
 import { ThemedView } from '../../components/ui/ThemedView';
@@ -16,10 +15,12 @@ import { useWorkoutManager } from '../../hooks/useWorkoutManager';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { RoutineCard } from '../../components/workouts/RoutineCard';
 import { ActiveRoutineCard } from '../../components/workouts/ActiveRoutineCard';
+import { SavedWorkoutItem } from '../../components/workouts/SavedWorkoutItem';
+import { WorkoutPreviewModal } from '../../components/workouts/WorkoutPreviewModal';
+import { useRoutineTimeline } from '../../hooks/useRoutineTimeline';
 
 import { SavedWorkout, Routine } from '../../types';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
-import { Card } from '../../components/ui/Card';
 
 export default function Workout() {
 	const router = useRouter();
@@ -81,39 +82,8 @@ export default function Workout() {
     // Derived state for current routine
     const activeRoutineObj = routines.find(r => r.id === activeRoutine?.id);
     const dayIndex = activeRoutine?.dayIndex || 0;
-    const timelineDays = React.useMemo(() => {
-        if (!activeRoutineObj?.sequence) return [];
-        const seq = activeRoutineObj.sequence;
-        const total = seq.length;
-        if (total === 0) return [];
-
-        const result = [];
-        // Show up to 7 visible days (skipping future rest days)
-        let i = 0;
-        
-        // Limits based on mode
-        const countLimit = routineViewMode === 'next_3' ? 3 : routineViewMode === 'next_7' ? 7 : 7; // Week uses day limit, not count limit primarily
-        const dayLimit = routineViewMode === 'week' ? 7 : 30; // Next 3/7 look ahead further
-
-        // Safety break at 30 days to prevent infinite loops if routine is weird
-        while (result.length < countLimit && i < dayLimit) {
-            const index = (dayIndex + i) % total;
-            const item = seq[index];
-            
-            // Allow today (i=0) even if rest, otherwise skip rest days
-            if (i === 0 || item.type !== 'rest') {
-                const d = new Date();
-                d.setDate(d.getDate() + i);
-                result.push({ 
-                    ...item, 
-                    originalIndex: index,
-                    date: d
-                });
-            }
-            i++;
-        }
-        return result;
-    }, [activeRoutineObj, dayIndex, routineViewMode]);
+    
+    const timelineDays = useRoutineTimeline(activeRoutineObj, dayIndex, routineViewMode);
     
     // Check if the current day has been completed today
     const isDayCompleted = !!(activeRoutine?.lastCompletedDate && 
@@ -170,66 +140,6 @@ export default function Workout() {
             startWorkout(workout.exercises, workout.name);
         }
     }
-
-    const SavedWorkoutItem = ({ 
-        item, 
-        isExpanded, 
-        onPress, 
-        onEdit, 
-        onStart,
-        onDelete 
-    }: { 
-        item: any, 
-        isExpanded: boolean, 
-        onPress: () => void, 
-        onEdit: () => void, 
-        onStart: () => void,
-        onDelete: () => void
-    }) => {
-        return (
-            <Card 
-                onPress={onPress}
-                activeOpacity={0.9}
-                className="p-0 mb-0 border border-black/5 dark:border-white/10"
-                onDelete={onDelete}
-                onEdit={onEdit}
-            >
-                <View className={`flex-row justify-between items-center ${isExpanded ? 'border-b border-black/5 dark:border-white/10' : ''}`}>
-                    <TouchableOpacity 
-                        className="flex-1 mr-2"
-                        onPress={onPress}
-                    >
-                        <Text className="font-semibold text-apptext dark:text-apptext_dark text-lg mb-0.5" numberOfLines={1}>{item.name}</Text>
-                        <Text className="text-gray-500 dark:text-gray-400 text-sm">{item.exercises?.length || 0} Exercises</Text>
-                    </TouchableOpacity>
-                    
-                    <View className="flex-row items-center">
-                        <TouchableOpacity 
-                            onPress={onStart}
-                            className="bg-primary dark:bg-primary_dark px-3 py-1.5 rounded-lg"
-                        >
-                            <Text className="text-white font-semibold">Start</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-                
-                {isExpanded && (
-                    <View className="bg-background/50 dark:bg-background_dark/50 px-4 py-2 rounded-b-xl">
-                        {item.exercises && item.exercises.length > 0 ? (
-                            item.exercises.map((ex: any, idx: number) => (
-                                <View key={idx} className="py-2 flex-row justify-between border-b border-black/5 dark:border-white/5 last:border-0">
-                                    <Text className="text-apptext dark:text-apptext_dark font-medium">{ex.name}</Text>
-                                    <Text className="text-gray-500 dark:text-gray-400 text-sm">{ex.sets} x {ex.reps}</Text>
-                                </View>
-                            ))
-                        ) : (
-                            <Text className="text-gray-500 dark:text-gray-400 py-2 italic text-center">No exercises</Text>
-                        )}
-                    </View>
-                )}
-            </Card>
-        );
-    };
 
 	return (
 		<ThemedView className="flex-1">
@@ -310,7 +220,6 @@ export default function Workout() {
                                 onClearRoutine={clearActiveRoutine}
                                 onStartWorkout={(exercises, name, workoutId) => {
                                     console.log("Workout.tsx: onStartWorkout called. ID:", workoutId);
-                                    console.log("Workout.tsx: SavedWorkouts IDs:", savedWorkouts.map(w => w.id));
                                     
                                     let exercisesToStart = exercises;
                                     // Try to find fresh version from saved workouts if ID exists
@@ -318,26 +227,15 @@ export default function Workout() {
                                     
                                     if (workoutId) {
                                         fresh = savedWorkouts.find(w => w.id === workoutId);
-                                        if (fresh) {
-                                             console.log("Workout.tsx: Found fresh workout by ID.");
-                                        } else {
-                                            console.log("Workout.tsx: Fresh workout NOT FOUND for ID:", workoutId);
-                                        }
                                     }
 
                                     // Fallback to name match if ID failed
                                     if (!fresh && name) {
-                                        console.log("Workout.tsx: Attempting name fallback for:", name);
                                         fresh = savedWorkouts.find(w => w.name.trim() === name.trim());
-                                        if (fresh) {
-                                            console.log("Workout.tsx: Found fresh workout by NAME.");
-                                        }
                                     }
 
                                     if (fresh && fresh.exercises && fresh.exercises.length > 0) {
                                         exercisesToStart = fresh.exercises;
-                                        // Also update the name to match the fresh workout (in case of subtle changes)
-                                        // But keep routine context.
                                     }
 
                                     startWorkout(exercisesToStart, name, activeRoutineObj.id);
@@ -411,52 +309,11 @@ export default function Workout() {
 			</ScrollView>
 
              {/* Workout Preview Modal */}
-             <Modal
-                transparent={true}
+             <WorkoutPreviewModal
                 visible={!!previewWorkout}
-                animationType="slide"
-                onRequestClose={() => setPreviewWorkout(null)}
-            >
-                <View className="flex-1 justify-end bg-black/50">
-                    <View className="bg-background dark:bg-background_dark h-[60%] rounded-t-3xl overflow-hidden">
-                        <View className="p-4 border-b border-border dark:border-border_dark flex-row justify-between items-center">
-                            <Text className="text-xl font-bold text-apptext dark:text-apptext_dark">
-                                {previewWorkout?.name || "Workout Details"}
-                            </Text>
-                            <TouchableOpacity 
-                                onPress={() => setPreviewWorkout(null)}
-                                className="bg-surface dark:bg-surface_dark p-2 rounded-full"
-                            >
-                                <Text className="text-apptext dark:text-apptext_dark font-bold">Close</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <ScrollView className="p-4">
-                            {previewWorkout?.exercises?.map((ex, idx) => (
-                                <View key={idx} className="mb-4 bg-surface dark:bg-surface_dark p-3 rounded-xl">
-                                    <Text className="text-lg font-semibold text-apptext dark:text-apptext_dark">
-                                        {ex.name}
-                                    </Text>
-                                    <Text className="text-gray-500">
-                                        {ex.sets} Sets
-                                    </Text>
-                                    {ex.setTargets && ex.setTargets.length > 0 ? (
-                                        <View className="mt-2 pl-2 border-l-2 border-primary dark:border-primary_dark">
-                                            {ex.setTargets.map((set, sIdx) => (
-                                                <Text key={sIdx} className="text-apptext dark:text-apptext_dark">
-                                                    Set {sIdx + 1}: {set.weight ? `${set.weight}lbs x ` : ""}{set.reps || 0} reps
-                                                </Text>
-                                            ))}
-                                        </View>
-                                    ) : (
-                                         <Text className="text-gray-500 mt-1">Target: {ex.reps} reps</Text>
-                                    )}
-                                </View>
-                            ))}
-                            <View className="h-10" />
-                        </ScrollView>
-                    </View>
-                </View>
-            </Modal>
+                workout={previewWorkout}
+                onClose={() => setPreviewWorkout(null)}
+            />
 		</ThemedView>
 	);
 }
