@@ -5,13 +5,13 @@ import { ThemedView } from '../components/ui/ThemedView';
 import { ThemedText } from '../components/ui/ThemedText';
 import { useUITheme } from '@mycsuite/ui';
 import { IconSymbol } from '../components/ui/icon-symbol';
-import { useActiveWorkout } from '../providers/ActiveWorkoutProvider';
+
 
 export default function ExerciseDetailsScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
     const theme = useUITheme();
-    const { addExercise } = useActiveWorkout();
+
     
     const exercise = useMemo(() => {
         try {
@@ -36,11 +36,7 @@ export default function ExerciseDetailsScreen() {
         );
     }
 
-    const handleAddToWorkout = () => {
-        addExercise(exercise.name, "3", "10", exercise.properties);
-        router.dismiss(); 
-        router.dismiss(); 
-    };
+
 
     return (
         <ThemedView className="flex-1">
@@ -92,15 +88,7 @@ export default function ExerciseDetailsScreen() {
 
             </ScrollView>
 
-            <View className="p-4 border-t border-surface dark:border-white/10">
-                 <TouchableOpacity 
-                    className="w-full bg-primary dark:bg-primary_dark py-3.5 rounded-xl flex-row items-center justify-center gap-2"
-                    onPress={handleAddToWorkout}
-                >
-                    <IconSymbol name="plus.circle.fill" size={20} color="white" />
-                    <ThemedText className="text-white font-semibold text-base">Add to Workout</ThemedText>
-                </TouchableOpacity>
-            </View>
+
         </ThemedView>
     );
 }
