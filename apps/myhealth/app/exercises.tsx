@@ -74,7 +74,7 @@ export default function ExercisesScreen() {
           <TouchableOpacity 
             className="flex-row items-center justify-between p-4 border-b border-surface dark:border-white/10"
             onPress={() => {
-                addExercise(item.name, "3", "10"); // Default sets/reps for now
+                addExercise(item.name, "3", "10", item.rawType); // Default sets/reps for now
                 router.back();
             }}
           >

@@ -78,6 +78,7 @@ export function ActiveWorkoutOverlay() {
                                             weight: input?.weight ? parseFloat(input.weight) : undefined,
                                             reps: input?.reps ? parseFloat(input.reps) : undefined,
                                             duration: input?.duration ? parseFloat(input.duration) : undefined,
+                                            distance: input?.distance ? parseFloat(input.distance) : undefined,
                                         };
                                         completeSet(index, parsedInput);
                                     }}

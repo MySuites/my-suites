@@ -4,23 +4,25 @@ import { supabase, useAuth } from "@mycsuite/auth";
 
 export type SetLog = {
     id?: string;
-    weight?: number;
+    weight?: number; // lbs
     reps?: number;
     duration?: number; // seconds
-    distance?: number;
+    distance?: number; // meters or user unit, not used yet but good to have
 };
 
 export type Exercise = {
     id: string;
     name: string;
     sets: number; // Target sets
-    reps: number; // Target reps
+    reps: number; // Target reps/duration/distance
     completedSets: number;
     logs?: SetLog[];
-    type?: "reps" | "duration" | "bodyweight";
+    type?: string; // "weight_reps" | "bodyweight_reps" | "duration" | "distance_weight" | etc.
     setTargets?: {
         reps: number;
         weight: number;
+        duration?: number;
+        distance?: number;
     }[];
 };
 

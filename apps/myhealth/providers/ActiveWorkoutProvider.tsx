@@ -18,7 +18,7 @@ interface ActiveWorkoutContextType {
     completeSet: (index: number, input?: { weight?: number; reps?: number; duration?: number; distance?: number }) => void;
     nextExercise: () => void;
     prevExercise: () => void;
-    addExercise: (name: string, sets: string, reps: string) => void;
+    addExercise: (name: string, sets: string, reps: string, type?: string) => void;
     updateExercise: (index: number, updates: Partial<Exercise>) => void;
     isExpanded: boolean;
     toggleExpanded: () => void;
@@ -159,8 +159,8 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
 
 
-    const addExercise = (name: string, sets: string, reps: string) => {
-        const ex = createExercise(name, sets, reps);
+    const addExercise = (name: string, sets: string, reps: string, type?: string) => {
+        const ex = createExercise(name, sets, reps, type);
         // Ensure type compatibility by setting completedSets and logs explicitly if missing
 		setExercises((e) => [...e, { ...ex, completedSets: 0, logs: [] }]);
 	};

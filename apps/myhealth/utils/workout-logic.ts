@@ -4,12 +4,14 @@ export type Exercise = {
     sets: number;
     reps: number;
     completedSets?: number;
+    type?: string;
 };
 
 export function createExercise(
     name: string,
     setsStr: string,
     repsStr: string,
+    type?: string,
 ): Exercise {
     const sets = Math.max(1, Number(setsStr) || 1);
     const reps = Math.max(1, Number(repsStr) || 1);
@@ -20,6 +22,7 @@ export function createExercise(
         sets,
         reps,
         completedSets: 0,
+        type: type || "weight_reps",
     };
 }
 

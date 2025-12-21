@@ -47,12 +47,36 @@ export default function CreateWorkoutScreen() {
     // Expanded exercise state
     const [expandedDraftExerciseIndex, setExpandedDraftExerciseIndex] = useState<number | null>(null);
 
+    // Helper for columns
+    const getExerciseFields = (type?: string) => {
+        switch (type) {
+            case 'bodyweight_reps':
+                return { showBodyweight: true, showWeight: false, showReps: true, showDuration: false, showDistance: false };
+            case 'weighted_bodyweight':
+                return { showBodyweight: true, showWeight: true, showReps: true, showDuration: false, showDistance: false };
+            case 'duration':
+                return { showBodyweight: false, showWeight: false, showReps: false, showDuration: true, showDistance: false };
+            case 'distance_duration':
+            case 'distance':
+                return { showBodyweight: false, showWeight: false, showReps: false, showDuration: true, showDistance: true };
+            case 'distance_weight': // Farmer's walk
+                return { showBodyweight: false, showWeight: true, showReps: false, showDuration: true, showDistance: false };
+            case 'weight_reps':
+            default:
+                return { showBodyweight: false, showWeight: true, showReps: true, showDuration: false, showDistance: false };
+        }
+    };
+
     // Initialize
     useEffect(() => {
         if (editingWorkoutId) {
             const workout = savedWorkouts.find(w => w.id === editingWorkoutId);
             if (workout) {
                 setWorkoutDraftName(workout.name);
+                // Ensure exercises have the correct structure from saved data
+                // Note: Saved workouts might not have 'type' if they are old. 
+                // We might need to fetch exercise details if type is missing? 
+                // For now assuming new workouts or we can patch it if we had a global look up.
                 setWorkoutDraftExercises(workout.exercises ? JSON.parse(JSON.stringify(workout.exercises)) : []);
             } else {
                 Alert.alert("Error", "Workout not found");
@@ -106,7 +130,8 @@ export default function CreateWorkoutScreen() {
             sets: 3,
             reps: 10,
             category: exercise.category,
-            setTargets: Array.from({ length: 3 }, () => ({ reps: 10, weight: 0 }))
+            type: exercise.rawType, 
+            setTargets: Array.from({ length: 3 }, () => ({ reps: 10, weight: 0, duration: 0, distance: 0 }))
         };
         setWorkoutDraftExercises(prev => [...prev, newExercise]);
         setIsAddingExercise(false);
@@ -128,7 +153,7 @@ export default function CreateWorkoutScreen() {
         setWorkoutDraftExercises(newArr);
     }
 
-    function updateSetTarget(exerciseIndex: number, setIndex: number, field: 'reps' | 'weight', value: string) {
+    function updateSetTarget(exerciseIndex: number, setIndex: number, field: 'reps' | 'weight' | 'duration' | 'distance', value: string) {
         setWorkoutDraftExercises(prev => {
             const newArr = [...prev];
             const ex = { ...newArr[exerciseIndex] };
@@ -136,11 +161,15 @@ export default function CreateWorkoutScreen() {
                  ex.setTargets = Array.from({ length: ex.sets || 1 }, () => ({ reps: ex.reps || 0, weight: 0 }));
             }
             const newTargets = [...ex.setTargets];
-            newTargets[setIndex] = { ...newTargets[setIndex], [field]: Number(value) || 0 };
+            newTargets[setIndex] = { 
+                ...newTargets[setIndex], 
+                [field]: Number(value) || 0 
+            };
             ex.setTargets = newTargets;
             
-            if (field === 'reps' && setIndex === 0) {
-                ex.reps = Number(value) || 0;
+            // Sync top level properties for the first set (legacy behavior/UI summary)
+            if (setIndex === 0) {
+                if (field === 'reps') ex.reps = Number(value) || 0;
             }
             newArr[exerciseIndex] = ex;
             return newArr;
@@ -238,6 +267,7 @@ export default function CreateWorkoutScreen() {
                         renderItem={({item, index}) => {
                             const isExpanded = expandedDraftExerciseIndex === index;
                             const currentTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || 0, weight: 0 }));
+                            const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(item.type);
 
                             return (
                             <View className="bg-surface dark:bg-surface_dark rounded-xl mb-3 overflow-hidden border border-black/5 dark:border-white/10">
@@ -248,7 +278,9 @@ export default function CreateWorkoutScreen() {
                                     <View className="flex-1 mr-2">
                                         <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
                                         <Text className="text-gray-500 dark:text-gray-400 text-sm">
-                                            {item.sets} Sets {'•'} {item.reps} Reps
+                                            {item.sets} Sets
+     {showReps && ` • ${item.reps} Reps`}
+     {showDuration && ` • ${item.reps}s`} 
                                         </Text>
                                     </View>
                                     <View className="flex-row items-center">
@@ -268,31 +300,71 @@ export default function CreateWorkoutScreen() {
                                     <View className="px-3 pb-3 pt-1 bg-background/50 dark:bg-background_dark/30">
                                         <View className="flex-row mb-2">
                                             <Text className="w-10 text-xs text-gray-500 font-semibold text-center">Set</Text>
-                                            <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Reps</Text>
-                                            <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Weight</Text>
+                                            {showBodyweight && <Text className="w-12 text-xs text-gray-500 font-semibold text-center">BW</Text>}
+                                            {showWeight && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Lbs</Text>}
+                                            {showReps && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Reps</Text>}
+                                            {showDuration && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Time</Text>}
+                                            {showDistance && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Dist</Text>}
                                             <View className="w-8" />
                                         </View>
                                         {currentTargets.map((set: any, setIdx: number) => (
                                             <View key={setIdx} className="flex-row items-center mb-2">
                                                 <Text className="w-10 text-apptext dark:text-apptext_dark text-center font-medium">{setIdx + 1}</Text>
-                                                <View className="flex-1 flex-row justify-center">
+                                                
+                                                {showBodyweight && (
+                                                    <View className="w-12 items-center justify-center">
+                                                        <Text className="text-sm font-bold text-black/50 dark:text-white/50">BW</Text>
+                                                    </View>
+                                                )}
+
+                                                {showWeight && (
+                                                    <View className="flex-1 flex-row justify-center">
                                                         <TextInput 
-                                                        value={String(set.reps || 0)} 
-                                                        keyboardType="numeric"
-                                                        onChangeText={(v) => updateSetTarget(index, setIdx, 'reps', v)}
-                                                        className="bg-background dark:bg-background_dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-apptext dark:text-apptext_dark"
-                                                        selectTextOnFocus
-                                                    />
-                                                </View>
-                                                <View className="flex-1 flex-row justify-center">
+                                                            value={String(set.weight || 0)} 
+                                                            keyboardType="numeric"
+                                                            onChangeText={(v) => updateSetTarget(index, setIdx, 'weight', v)}
+                                                            className="bg-background dark:bg-background_dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-apptext dark:text-apptext_dark"
+                                                            selectTextOnFocus
+                                                        />
+                                                    </View>
+                                                )}
+
+                                                {showReps && (
+                                                    <View className="flex-1 flex-row justify-center">
                                                         <TextInput 
-                                                        value={String(set.weight || 0)} 
-                                                        keyboardType="numeric"
-                                                        onChangeText={(v) => updateSetTarget(index, setIdx, 'weight', v)}
-                                                        className="bg-background dark:bg-background_dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-apptext dark:text-apptext_dark"
-                                                        selectTextOnFocus
-                                                    />
-                                                </View>
+                                                            value={String(set.reps || 0)} 
+                                                            keyboardType="numeric"
+                                                            onChangeText={(v) => updateSetTarget(index, setIdx, 'reps', v)}
+                                                            className="bg-background dark:bg-background_dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-apptext dark:text-apptext_dark"
+                                                            selectTextOnFocus
+                                                        />
+                                                    </View>
+                                                )}
+
+                                                {showDuration && (
+                                                    <View className="flex-1 flex-row justify-center">
+                                                        <TextInput 
+                                                            value={String(set.duration || 0)} 
+                                                            keyboardType="numeric"
+                                                            onChangeText={(v) => updateSetTarget(index, setIdx, 'duration', v)}
+                                                            className="bg-background dark:bg-background_dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-apptext dark:text-apptext_dark"
+                                                            selectTextOnFocus
+                                                        />
+                                                    </View>
+                                                )}
+
+                                                {showDistance && (
+                                                    <View className="flex-1 flex-row justify-center">
+                                                        <TextInput 
+                                                            value={String(set.distance || 0)} 
+                                                            keyboardType="numeric"
+                                                            onChangeText={(v) => updateSetTarget(index, setIdx, 'distance', v)}
+                                                            className="bg-background dark:bg-background_dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-apptext dark:text-apptext_dark"
+                                                            selectTextOnFocus
+                                                        />
+                                                    </View>
+                                                )}
+
                                                 <TouchableOpacity 
                                                     onPress={() => removeSetFromDraft(index, setIdx)}
                                                     className="w-8 items-center justify-center rounded h-8 ml-2"
@@ -324,8 +396,10 @@ export default function CreateWorkoutScreen() {
                                     text: 'Delete', 
                                     style: 'destructive', 
                                     onPress: () => {
-                                        deleteSavedWorkout(editingWorkoutId, () => {
-                                            router.back();
+                                        deleteSavedWorkout(editingWorkoutId, {
+                                            onSuccess: () => {
+                                                router.back();
+                                            }
                                         });
                                     }
                                 }
