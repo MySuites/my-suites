@@ -74,14 +74,14 @@ export default function ExercisesScreen() {
           <TouchableOpacity 
             className="flex-row items-center justify-between p-4 border-b border-surface dark:border-white/10"
             onPress={() => {
-                addExercise(item.name, "3", "10", item.rawType); // Default sets/reps for now
+                addExercise(item.name, "3", "10", item.properties); // Default sets/reps for now
                 router.back();
             }}
           >
             <View>
                 <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
                 <ThemedText style={{color: theme.icon ?? '#888', fontSize: 12}}>
-                    {item.category} • {item.type || item.rawType}
+                    {item.category} • {item.properties?.join(', ') || item.rawType}
                 </ThemedText> 
             </View>
             <IconSymbol name="plus.circle" size={20} color={theme.primary} />

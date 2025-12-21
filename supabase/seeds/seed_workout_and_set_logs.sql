@@ -9,20 +9,33 @@ WITH demo AS (
   )
   LIMIT 1
 ), chosen_workout AS (
-  SELECT workout_id FROM public.workouts WHERE workout_name = 'Full Body Day 1' LIMIT 1
+  SELECT workout_id, workout_name FROM public.workouts WHERE workout_name = 'Full Body Day 1' LIMIT 1
 ), ins AS (
-  INSERT INTO public.workout_logs (workout_log_id, workout_id, user_id, workout_time, notes, created_at)
-  SELECT gen_random_uuid(), cw.workout_id, demo.user_id, NOW(), 'Demo workout log', NOW()
+  INSERT INTO public.workout_logs (workout_log_id, user_id, workout_time, exercises, workout_name, duration, created_at)
+  SELECT 
+    gen_random_uuid(), 
+    demo.user_id, 
+    NOW(), 
+    '[]'::text, -- Placeholder for historical snapshot
+    cw.workout_name, 
+    3600, -- Duration
+    NOW()
   FROM chosen_workout cw, demo
   WHERE demo.user_id IS NOT NULL
-  RETURNING workout_log_id, workout_id
+  RETURNING workout_log_id
 )
 -- Insert set logs by matching exercise_sets that belong to the workout
-INSERT INTO public.set_logs (set_log_id, workout_log_id, exercise_set_id, details, notes, created_at)
-SELECT gen_random_uuid(), i.workout_log_id, es.exercise_set_id,
-       es.details, NULL, NOW()
+INSERT INTO public.set_logs (set_log_id, workout_log_id, exercise_set_id, exercise_id, details, notes, created_at)
+SELECT 
+    gen_random_uuid(), 
+    i.workout_log_id, 
+    es.exercise_set_id,
+    we.exercise_id, 
+    es.details, 
+    NULL, 
+    NOW()
 FROM ins i
-JOIN public.exercise_sets es ON es.workout_exercise_id IN (
-  SELECT workout_exercise_id FROM public.workout_exercises we WHERE we.workout_id = i.workout_id
-)
+CROSS JOIN chosen_workout cw
+JOIN public.workout_exercises we ON we.workout_id = cw.workout_id
+JOIN public.exercise_sets es ON es.workout_exercise_id = we.workout_exercise_id
 ON CONFLICT DO NOTHING;

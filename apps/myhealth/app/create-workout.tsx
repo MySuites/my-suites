@@ -48,23 +48,16 @@ export default function CreateWorkoutScreen() {
     const [expandedDraftExerciseIndex, setExpandedDraftExerciseIndex] = useState<number | null>(null);
 
     // Helper for columns
-    const getExerciseFields = (type?: string) => {
-        switch (type) {
-            case 'bodyweight_reps':
-                return { showBodyweight: true, showWeight: false, showReps: true, showDuration: false, showDistance: false };
-            case 'weighted_bodyweight':
-                return { showBodyweight: true, showWeight: true, showReps: true, showDuration: false, showDistance: false };
-            case 'duration':
-                return { showBodyweight: false, showWeight: false, showReps: false, showDuration: true, showDistance: false };
-            case 'distance_duration':
-            case 'distance':
-                return { showBodyweight: false, showWeight: false, showReps: false, showDuration: true, showDistance: true };
-            case 'distance_weight': // Farmer's walk
-                return { showBodyweight: false, showWeight: true, showReps: false, showDuration: true, showDistance: false };
-            case 'weight_reps':
-            default:
-                return { showBodyweight: false, showWeight: true, showReps: true, showDuration: false, showDistance: false };
-        }
+    const getExerciseFields = (properties?: string[]) => {
+        const props = properties || [];
+        const lowerProps = props.map(p => p.toLowerCase());
+        return { 
+            showBodyweight: lowerProps.includes('bodyweight'),
+            showWeight: lowerProps.includes('weighted'),
+            showReps: lowerProps.includes('reps'),
+            showDuration: lowerProps.includes('duration'),
+            showDistance: lowerProps.includes('distance')
+        };
     };
 
     // Initialize
@@ -130,6 +123,7 @@ export default function CreateWorkoutScreen() {
             sets: 3,
             reps: 10,
             category: exercise.category,
+            properties: exercise.properties, // Copy properties
             type: exercise.rawType, 
             setTargets: Array.from({ length: 3 }, () => ({ reps: 10, weight: 0, duration: 0, distance: 0 }))
         };
@@ -267,7 +261,7 @@ export default function CreateWorkoutScreen() {
                         renderItem={({item, index}) => {
                             const isExpanded = expandedDraftExerciseIndex === index;
                             const currentTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || 0, weight: 0 }));
-                            const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(item.type);
+                            const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(item.properties);
 
                             return (
                             <View className="bg-surface dark:bg-surface_dark rounded-xl mb-3 overflow-hidden border border-black/5 dark:border-white/10">
@@ -482,7 +476,7 @@ export default function CreateWorkoutScreen() {
                                         <View>
                                             <ThemedText type="defaultSemiBold" style={{ fontSize: 18 }}>{item.name}</ThemedText>
                                             <Text className="text-gray-500 dark:text-gray-400 text-sm">
-                                                {item.category} • {item.type || item.rawType}
+                                                {item.category} • {item.properties?.join(', ') || item.type || item.rawType}
                                             </Text> 
                                         </View>
                                         <IconSymbol name="plus.circle" size={28} color={theme.primary} />

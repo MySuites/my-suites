@@ -1,6 +1,13 @@
 -- Sample exercises for demo user (uses `gen_random_uuid()` for ids)
 -- Requires `supabase/seeds/seed_profiles.sql` and `supabase/seeds/seed_muscle_groups.sql` to be run first.
 
+-- Ensure exercise_type is TEXT
+DO $$ BEGIN
+    ALTER TABLE public.exercises ALTER COLUMN exercise_type TYPE TEXT;
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
+
+-- Exercise Properties: Bodyweight, Distance, Duration, Reps, Weighted
+
 WITH demo AS (
   SELECT id AS user_id
   FROM auth.users
@@ -10,156 +17,167 @@ WITH demo AS (
   LIMIT 1
 )
 INSERT INTO public.exercises (exercise_id, exercise_name, exercise_type, description, user_id, created_at)
-  SELECT gen_random_uuid(), e.name, e.type::type_of_exercise, e.description, demo.user_id, NOW()
+  SELECT gen_random_uuid(), e.name, e.type, e.description, demo.user_id, NOW()
 FROM demo, (
   VALUES
     -- Weights: Chest
-    ('Incline Bench Press', 'weight_reps', 'Barbell incline bench press.'),
-    ('Flat Bench Press', 'weight_reps', 'Barbell flat bench press.'),
-    ('Decline Bench Press', 'weight_reps', 'Barbell decline bench press.'),
-    ('Incline Smith Machine Bench Press', 'weight_reps', 'Smith machine bench press, incline.'),
-    ('Flat Smith Machine Bench Press', 'weight_reps', 'Smith machine bench press, flat.'),
-    ('Decline Smith Machine Bench Press', 'weight_reps', 'Smith machine bench press, decline.'),
-    ('Dumbbell Flys', 'weight_reps', 'Flat or incline dumbbell flys.'),
-    ('Cable Flys', 'weight_reps', 'Cable flys for chest thickness.'),
-    ('Incline Dumbbell Bench Press', 'weight_reps', 'Dumbbell bench press, incline.'),
-    ('Flat Dumbbell Bench Press', 'weight_reps', 'Dumbbell bench press, flat.'),
-    ('Decline Dumbbell Bench Press', 'weight_reps', 'Dumbbell bench press, decline.'),
+    ('Incline Bench Press', 'Weighted, Reps', 'Barbell incline bench press.'),
+    ('Flat Bench Press', 'Weighted, Reps', 'Barbell flat bench press.'),
+    ('Decline Bench Press', 'Weighted, Reps', 'Barbell decline bench press.'),
+    ('Incline Smith Machine Bench Press', 'Weighted, Reps', 'Smith machine bench press, incline.'),
+    ('Flat Smith Machine Bench Press', 'Weighted, Reps', 'Smith machine bench press, flat.'),
+    ('Decline Smith Machine Bench Press', 'Weighted, Reps', 'Smith machine bench press, decline.'),
+    ('Dumbbell Flys', 'Weighted, Reps', 'Flat or incline dumbbell flys.'),
+    ('Cable Flys', 'Weighted, Reps', 'Cable flys for chest thickness.'),
+    ('Incline Dumbbell Bench Press', 'Weighted, Reps', 'Dumbbell bench press, incline.'),
+    ('Flat Dumbbell Bench Press', 'Weighted, Reps', 'Dumbbell bench press, flat.'),
+    ('Decline Dumbbell Bench Press', 'Weighted, Reps', 'Dumbbell bench press, decline.'),
     
     -- Weights: Back
-    ('Lat Pulldown', 'weight_reps', 'Cable lat pulldown.'),
-    ('Seated Cable Row', 'weight_reps', 'Seated cable row for back thickness.'),
+    ('Lat Pulldown', 'Weighted, Reps', 'Cable lat pulldown.'),
+    ('Seated Cable Row', 'Weighted, Reps', 'Seated cable row for back thickness.'),
 
     -- Weights: Shoulders
-    ('Face Pull', 'weight_reps', 'Cable face pull for rear delts.'),
-    ('Lateral Raise', 'weight_reps', 'Dumbbell lateral raise.'),
-    ('Front Raise', 'weight_reps', 'Dumbbell or plate front raise.'),
-    ('Arnold Press', 'weight_reps', 'Dumbbell shoulder press with rotation.'),
+    ('Face Pull', 'Weighted, Reps', 'Cable face pull for rear delts.'),
+    ('Lateral Raise', 'Weighted, Reps', 'Dumbbell lateral raise.'),
+    ('Front Raise', 'Weighted, Reps', 'Dumbbell or plate front raise.'),
+    ('Arnold Press', 'Weighted, Reps', 'Dumbbell shoulder press with rotation.'),
     
     -- Weights: Legs
-    ('Romanian Deadlift', 'weight_reps', 'Barbell or dumbbell RDL.'),
-    ('Deadlift', 'weight_reps', 'Barbell deadlift.'),
-    ('Bulgarian Split Squat', 'weight_reps', 'Single-leg split squat.'),
-    ('Calf Raise', 'weight_reps', 'Standing or seated calf raise.'),
-    ('Leg Extension', 'weight_reps', 'Machine leg extension.'),
-    ('Leg Curl', 'weight_reps', 'Machine hamstring curl.'),
-    ('Barbell Squat', 'weight_reps', 'Barbell squat for quads.'),
-    ('Leg Press', 'weight_reps', 'Machine leg press.'),
-    ('Smith Machine Squat', 'weight_reps', 'Smith machine squat for quads.'),
+    ('Romanian Deadlift', 'Weighted, Reps', 'Barbell or dumbbell RDL.'),
+    ('Deadlift', 'Weighted, Reps', 'Barbell deadlift.'),
+    ('Bulgarian Split Squat', 'Weighted, Reps', 'Single-leg split squat.'),
+    ('Calf Raise', 'Weighted, Reps', 'Standing or seated calf raise.'),
+    ('Leg Extension', 'Weighted, Reps', 'Machine leg extension.'),
+    ('Leg Curl', 'Weighted, Reps', 'Machine hamstring curl.'),
+    ('Barbell Squat', 'Weighted, Reps', 'Barbell squat for quads.'),
+    ('Leg Press', 'Weighted, Reps', 'Machine leg press.'),
+    ('Smith Machine Squat', 'Weighted, Reps', 'Smith machine squat for quads.'),
     
     -- Weights: Biceps
-    ('Barbell Curl', 'weight_reps', 'Barbell curl for biceps.'),
-    ('Dumbbell Curl', 'weight_reps', 'Dumbbell curl for biceps.'),
-    ('Seated Dumbbell Curl', 'weight_reps', 'Seated dumbbell curl for biceps.'),
-    ('Incline Dumbbell Curl', 'weight_reps', 'Dumbbell curl for biceps, incline.'),
-    ('Decline Dumbbell Curl', 'weight_reps', 'Dumbbell curl for biceps, decline.'),
-    ('Spider Curl', 'weight_reps', 'Spider curl for biceps.'),
-    ('Hammer Curl', 'weight_reps', 'Neutral grip dumbbell curl.'),
-    ('Cable Curl', 'weight_reps', 'Cable curl for biceps.'),
-    ('Incline Cable Curl', 'weight_reps', 'Cable curl for biceps, incline.'),
-    ('Decline Cable Curl', 'weight_reps', 'Cable curl for biceps, decline.'),
-    ('Preacher Curl', 'weight_reps', 'Preacher curl for biceps.'),
+    ('Barbell Curl', 'Weighted, Reps', 'Barbell curl for biceps.'),
+    ('Dumbbell Curl', 'Weighted, Reps', 'Dumbbell curl for biceps.'),
+    ('Seated Dumbbell Curl', 'Weighted, Reps', 'Seated dumbbell curl for biceps.'),
+    ('Incline Dumbbell Curl', 'Weighted, Reps', 'Dumbbell curl for biceps, incline.'),
+    ('Decline Dumbbell Curl', 'Weighted, Reps', 'Dumbbell curl for biceps, decline.'),
+    ('Spider Curl', 'Weighted, Reps', 'Spider curl for biceps.'),
+    ('Hammer Curl', 'Weighted, Reps', 'Neutral grip dumbbell curl.'),
+    ('Cable Curl', 'Weighted, Reps', 'Cable curl for biceps.'),
+    ('Incline Cable Curl', 'Weighted, Reps', 'Cable curl for biceps, incline.'),
+    ('Decline Cable Curl', 'Weighted, Reps', 'Cable curl for biceps, decline.'),
+    ('Preacher Curl', 'Weighted, Reps', 'Preacher curl for biceps.'),
 
     -- Weights: Triceps
-    ('Skullcrusher', 'weight_reps', 'Lying tricep extension.'),
-    ('Overhead Tricep Extension', 'weight_reps', 'Overhead tricep extension.'),
-    ('Cable Tricep Pushdown', 'weight_reps', 'Cable tricep pushdown.'),
-    ('Dumbbell Tricep Pushdown', 'weight_reps', 'Dumbbell tricep pushdown.'),
-    ('Tricep Pushdown', 'weight_reps', 'Cable tricep pushdown.'),
-    ('Tricep Kickback', 'weight_reps', 'Cable tricep pushdown.'),
-    ('Tricep Extension', 'weight_reps', 'Cable tricep pushdown.'),
-    ('One-Arm Tricep Extension', 'weight_reps', 'One-arm tricep extension.'),
+    ('Skullcrusher', 'Weighted, Reps', 'Lying tricep extension.'),
+    ('Overhead Tricep Extension', 'Weighted, Reps', 'Overhead tricep extension.'),
+    ('Cable Tricep Pushdown', 'Weighted, Reps', 'Cable tricep pushdown.'),
+    ('Dumbbell Tricep Pushdown', 'Weighted, Reps', 'Dumbbell tricep pushdown.'),
+    ('Tricep Pushdown', 'Weighted, Reps', 'Cable tricep pushdown.'),
+    ('Tricep Kickback', 'Weighted, Reps', 'Cable tricep pushdown.'),
+    ('Tricep Extension', 'Weighted, Reps', 'Cable tricep pushdown.'),
+    ('One-Arm Tricep Extension', 'Weighted, Reps', 'One-arm tricep extension.'),
     
     -- Weights: Abs
-    ('Hanging Leg Raise', 'bodyweight_reps', 'Hanging from bar, raising legs.'),
-    ('Cable Crunch', 'weight_reps', 'Cable crunch for abs.'),
+    ('Hanging Leg Raise', 'Bodyweight, Reps', 'Hanging from bar, raising legs.'),
+    ('Cable Crunch', 'Weighted, Reps', 'Cable crunch for abs.'),
 
     -- Bodyweight: Chest and Triceps and Shoulders
-    ('Push-up', 'bodyweight_reps', 'Standard push-up.'),
-    ('Incline Push-up', 'bodyweight_reps', 'Incline push-up.'),
-    ('Decline Push-up', 'bodyweight_reps', 'Decline push-up.'),
-    ('Diamond Push-up', 'bodyweight_reps', 'Diamond push-up.'),
-    ('Close Push-up', 'bodyweight_reps', 'Close grip push-up.'),
-    ('Wide Push-up', 'bodyweight_reps', 'Wide grip push-up.'),
-    ('Pike Push-up', 'bodyweight_reps', 'Pike push-up.'),
-    ('Pseudo Planche Push-up', 'bodyweight_reps', 'Pseudo planche push-up.'),
+    ('Push-up', 'Bodyweight, Reps', 'Standard push-up.'),
+    ('Incline Push-up', 'Bodyweight, Reps', 'Incline push-up.'),
+    ('Decline Push-up', 'Bodyweight, Reps', 'Decline push-up.'),
+    ('Diamond Push-up', 'Bodyweight, Reps', 'Diamond push-up.'),
+    ('Close Push-up', 'Bodyweight, Reps', 'Close grip push-up.'),
+    ('Wide Push-up', 'Bodyweight, Reps', 'Wide grip push-up.'),
+    ('Pike Push-up', 'Bodyweight, Reps', 'Pike push-up.'),
+    ('Pseudo Planche Push-up', 'Bodyweight, Reps', 'Pseudo planche push-up.'),
 
     -- Bodyweight: Back and Biceps
-    ('Pull-up', 'bodyweight_reps', 'Standard pull-up (overhand grip).'),
-    ('Chin-up', 'bodyweight_reps', 'Chin-up (underhand grip).'),
-    ('Bodyweight Rows', 'bodyweight_reps', 'Bodyweight rows for back thickness.'),
+    ('Pull-up', 'Bodyweight, Reps', 'Standard pull-up (overhand grip).'),
+    ('Chin-up', 'Bodyweight, Reps', 'Chin-up (underhand grip).'),
+    ('Bodyweight Rows', 'Bodyweight, Reps', 'Bodyweight rows for back thickness.'),
 
     -- Bodyweight: Legs
-    ('Lunges', 'weight_reps', 'Walking or stationary lunges.'),
-    ('Calf Raises', 'bodyweight_reps', 'Calf raises for calf thickness.'),
-    ('Bodyweight Squats', 'bodyweight_reps', 'Squats for leg strength.'),
-    ('Split Squats', 'bodyweight_reps', 'Split squats for leg strength.'),
-    ('Bulgarian Split Squats', 'bodyweight_reps', 'Bulgarian split squats for leg strength.'),
-    ('Shrimp Squats', 'bodyweight_reps', 'Shrimp squats for leg strength.'),
-    ('Pistol Squats', 'bodyweight_reps', 'Pistol squats for leg strength.'),
-    ('Sissy Squats', 'bodyweight_reps', 'Sissy squats for leg strength.'),
-    ('Dragon Squats', 'bodyweight_reps', 'Dragon squats for leg strength.'),
+    ('Lunges', 'Bodyweight, Reps', 'Walking or stationary lunges.'),
+    ('Calf Raises', 'Bodyweight, Reps', 'Calf raises for calf thickness.'),
+    ('Bodyweight Squats', 'Bodyweight, Reps', 'Squats for leg strength.'),
+    ('Split Squats', 'Bodyweight, Reps', 'Split squats for leg strength.'),
+    ('Bulgarian Split Squats', 'Bodyweight, Reps', 'Bulgarian split squats for leg strength.'),
+    ('Shrimp Squats', 'Bodyweight, Reps', 'Shrimp squats for leg strength.'),
+    ('Pistol Squats', 'Bodyweight, Reps', 'Pistol squats for leg strength.'),
+    ('Sissy Squats', 'Bodyweight, Reps', 'Sissy squats for leg strength.'),
+    ('Dragon Squats', 'Bodyweight, Reps', 'Dragon squats for leg strength.'),
 
     -- Bodyweight: Abs
-    ('Plank', 'duration', 'Isometric core strength exercise.'),
-    ('Russian Twist', 'bodyweight_reps', 'Seated rotational core exercise.'),
-    ('Side Plank', 'duration', 'Isometric core strength exercise.'),
+    ('Plank', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Russian Twist', 'Bodyweight, Reps', 'Seated rotational core exercise.'),
+    ('Side Plank', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
 
     -- Weighted Bodyweight
-    ('Weighted Push-up', 'weighted_bodyweight', 'Weighted push-up.'),
-    ('Weighted Pull-up', 'weighted_bodyweight', 'Weighted pull-up (overhand grip).'),
-    ('Weighted Chin-up', 'weighted_bodyweight', 'Weighted chin-up (underhand grip).'),
-    ('Weighted Rows', 'weighted_bodyweight', 'Weighted rows for back thickness.'),
-    ('Weighted Dips', 'weighted_bodyweight', 'Weighted dips for chest thickness.'),
-    ('Weighted Lunges', 'weighted_bodyweight', 'Weighted lunges for leg strength.'),
-    ('Weighted Plank', 'duration', 'Isometric core strength exercise.'),
-    ('Weighted Squat', 'weighted_bodyweight', 'Weighted squat for quads.'),
+    ('Weighted Push-up', 'Weighted, Bodyweight, Reps', 'Weighted push-up.'),
+    ('Weighted Pull-up', 'Weighted, Bodyweight, Reps', 'Weighted pull-up (overhand grip).'),
+    ('Weighted Chin-up', 'Weighted, Bodyweight, Reps', 'Weighted chin-up (underhand grip).'),
+    ('Weighted Rows', 'Weighted, Bodyweight, Reps', 'Weighted rows for back thickness.'),
+    ('Weighted Dips', 'Weighted, Bodyweight, Reps', 'Weighted dips for chest thickness.'),
+    ('Weighted Lunges', 'Weighted, Bodyweight, Reps', 'Weighted lunges for leg strength.'),
+    ('Weighted Plank', 'Weighted, Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Weighted Squat', 'Weighted, Bodyweight, Reps', 'Weighted squat for quads.'),
 
     -- Advanced Calisthenics Skills
-    ('Chest-to-Wall Handstand', 'duration', 'Isometric core strength exercise.'),
-    ('Back-to-Wall Handstand', 'duration', 'Isometric core strength exercise.'),
-    ('Handstand', 'duration', 'Isometric core strength exercise.'),
-    ('Wall Handstand Push-up', 'bodyweight_reps', 'Wall handstand push-up.'),
-    ('Handstand Push-up', 'bodyweight_reps', 'Handstand push-up.'),
-    ('One-Arm Handstand', 'duration', 'Isometric core strength exercise.'),
+    ('Chest-to-Wall Handstand', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Back-to-Wall Handstand', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Handstand', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Wall Handstand Push-up', 'Bodyweight, Reps', 'Wall handstand push-up.'),
+    ('Handstand Push-up', 'Bodyweight, Reps', 'Handstand push-up.'),
+    ('One-Arm Handstand', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
 
-    ('Pike Handstand Press', 'bodyweight_reps', 'Pike handstand press for chest thickness.'),
-    ('Straddle Handstand Press', 'bodyweight_reps', 'Straddle handstand press for chest thickness.'),
-    ('Handstand Press', 'bodyweight_reps', 'Handstand press for chest thickness.'),
+    ('Pike Handstand Press', 'Bodyweight, Reps', 'Pike handstand press for chest thickness.'),
+    ('Straddle Handstand Press', 'Bodyweight, Reps', 'Straddle handstand press for chest thickness.'),
+    ('Handstand Press', 'Bodyweight, Reps', 'Handstand press for chest thickness.'),
 
-    ('Elbow Lever', 'duration', 'Isometric core strength exercise.'),
-    ('Bent-Arm Planche', 'duration', 'Isometric core strength exercise.'),
-    ('90-Degree Push-up', 'bodyweight_reps', '90-degree push-up.'),
+    ('Elbow Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Bent-Arm Planche', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('90-Degree Push-up', 'Bodyweight, Reps', '90-degree push-up.'),
 
-    ('Tuck Planche', 'duration', 'Isometric core strength exercise.'),
-    ('Advanced Tuck Planche', 'duration', 'Isometric core strength exercise.'),
-    ('Half-Lay Planche', 'duration', 'Isometric core strength exercise.'),
-    ('Straddle Planche', 'duration', 'Isometric core strength exercise.'),
-    ('Planche', 'duration', 'Isometric core strength exercise.'),
-    ('Planche Push-up', 'bodyweight_reps', 'Planche push-up.'),
-    ('Maltese', 'duration', 'Isometric core strength exercise.'),
-    ('Dragon Maltese', 'duration', 'Isometric core strength exercise.'),
+    ('Tuck Planche', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Advanced Tuck Planche', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Half-Lay Planche', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Straddle Planche', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Planche', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Planche Push-up', 'Bodyweight, Reps', 'Planche push-up.'),
+    ('Maltese', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Dragon Maltese', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
 
-    ('Tuck Front Lever', 'duration', 'Isometric core strength exercise.'),
-    ('Advanced Tuck Front Lever', 'duration', 'Isometric core strength exercise.'),
-    ('Half-Lay Front Lever', 'duration', 'Isometric core strength exercise.'),
-    ('Straddle Front Lever', 'duration', 'Isometric core strength exercise.'),
-    ('Front Lever', 'duration', 'Isometric core strength exercise.'),
-    ('Front Lever Pull-up', 'bodyweight_reps', 'Front lever pull-up.'),
-    ('Front Lever Touch', 'duration', 'Isometric core strength exercise.'),
-    ('One-Arm Front Lever', 'duration', 'Isometric core strength exercise.'),
+    ('Tuck Front Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Advanced Tuck Front Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Half-Lay Front Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Straddle Front Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Front Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Front Lever Pull-up', 'Bodyweight, Reps', 'Front lever pull-up.'),
+    ('Front Lever Touch', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('One-Arm Front Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
     
-    ('Tuck Back Lever', 'duration', 'Isometric core strength exercise.'),
-    ('Advanced Tuck Back Lever', 'duration', 'Isometric core strength exercise.'),
-    ('Half-Lay Back Lever', 'duration', 'Isometric core strength exercise.'),
-    ('Straddle Back Lever', 'duration', 'Isometric core strength exercise.'),
-    ('Back Lever', 'duration', 'Isometric core strength exercise.'),
-    ('Back Lever Pull-up', 'bodyweight_reps', 'Back lever pull-up.'),
-    ('Back Lever Touch', 'duration', 'Isometric core strength exercise.'),
-    ('One-Arm Back Lever', 'duration', 'Isometric core strength exercise.'),
+    ('Tuck Back Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Advanced Tuck Back Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Half-Lay Back Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Straddle Back Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Back Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Back Lever Pull-up', 'Bodyweight, Reps', 'Back lever pull-up.'),
+    ('Back Lever Touch', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('One-Arm Back Lever', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
     
-    ('Frog Stand', 'duration', 'Isometric core strength exercise.'),
-    ('Crow Stand', 'duration', 'Isometric core strength exercise.')
+    ('Frog Stand', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+    ('Crow Stand', 'Bodyweight, Duration', 'Isometric core strength exercise.'),
+
+    ('Threadmill', 'Distance, Duration', 'Running on a treadmill.'),
+    ('Elliptical', 'Distance, Duration', 'Elliptical machine.'),
+    ('Rowing Machine', 'Distance, Duration', 'Rowing machine.'),
+    ('Stationary Bike', 'Distance, Duration', 'Stationary bike.'),
+    ('Jump Rope', 'Reps, Duration', 'Jump rope.'),
+    ('Cycling', 'Distance, Duration', 'Cycling.'),
+    ('Swimming', 'Distance, Duration', 'Swimming.'),
+    ('Rowing', 'Distance, Duration', 'Rowing.'),
+
+    ('Farmers Walk', 'Weighted, Distance', 'Farmers walk for grip strength.')
 
 ) AS e(name, type, description)
 WHERE demo.user_id IS NOT NULL

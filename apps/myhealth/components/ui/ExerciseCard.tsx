@@ -29,23 +29,16 @@ interface ExerciseCardProps {
     theme: any;
 }
 
-const getExerciseFields = (type?: string) => {
-    switch (type) {
-        case 'bodyweight_reps':
-            return { showBodyweight: true, showWeight: false, showReps: true, showDuration: false, showDistance: false };
-        case 'weighted_bodyweight':
-            return { showBodyweight: true, showWeight: true, showReps: true, showDuration: false, showDistance: false };
-        case 'duration':
-            return { showBodyweight: false, showWeight: false, showReps: false, showDuration: true, showDistance: false };
-        case 'distance_duration':
-        case 'distance':
-            return { showBodyweight: false, showWeight: false, showReps: false, showDuration: true, showDistance: true };
-        case 'distance_weight': // Farmer's walk
-            return { showBodyweight: false, showWeight: true, showReps: false, showDuration: true, showDistance: false };
-        case 'weight_reps':
-        default:
-            return { showBodyweight: false, showWeight: true, showReps: true, showDuration: false, showDistance: false };
-    }
+const getExerciseFields = (properties?: string[]) => {
+    const props = properties || [];
+    const lowerProps = props.map(p => p.toLowerCase());
+    return { 
+        showBodyweight: lowerProps.includes('bodyweight'),
+        showWeight: lowerProps.includes('weighted'),
+        showReps: lowerProps.includes('reps'),
+        showDuration: lowerProps.includes('duration'),
+        showDistance: lowerProps.includes('distance')
+    };
 };
 
 // Actions component that monitors drag distance (Adapted for Set Rows)
@@ -120,7 +113,7 @@ const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTa
     const isCompleted = !!log;
     const isEvenSet = (index + 1) % 2 === 0;
 
-    const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(exercise.type);
+    const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(exercise.properties);
 
     const getValue = (field: 'weight' | 'reps' | 'duration' | 'distance') => {
         const target = exercise.setTargets?.[index]?.[field];
@@ -292,14 +285,12 @@ const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTa
     );
 };
 
-
-
 export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onAddSet, onDeleteSet, restSeconds, theme }: ExerciseCardProps) {
     // Derived state
     const completedSets = exercise.completedSets || 0;
     const isFinished = completedSets >= exercise.sets;
 
-    const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(exercise.type);
+    const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(exercise.properties);
 
     return (
         <Card>

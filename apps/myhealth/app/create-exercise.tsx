@@ -7,12 +7,12 @@ import { IconSymbol } from '../components/ui/icon-symbol';
 import { useUITheme } from '@mycsuite/ui';
 import { useWorkoutManager, fetchMuscleGroups } from '../hooks/useWorkoutManager';
 
-const EXERCISE_TYPES = [
-    { label: 'Weight & Reps', value: 'weight_reps' },
-    { label: 'Bodyweight Reps', value: 'bodyweight_reps' },
-    { label: 'Weighted Bodyweight', value: 'weighted_bodyweight' },
-    { label: 'Duration', value: 'duration' },
-    { label: 'Distance', value: 'distance' },
+const EXERCISE_PROPERTIES = [
+    { label: 'Weighted', value: 'Weighted' },
+    { label: 'Bodyweight', value: 'Bodyweight' },
+    { label: 'Reps', value: 'Reps' },
+    { label: 'Duration', value: 'Duration' },
+    { label: 'Distance', value: 'Distance' },
 ];
 
 export default function CreateExerciseScreen() {
@@ -21,7 +21,7 @@ export default function CreateExerciseScreen() {
   const { createCustomExercise } = useWorkoutManager();
   
   const [name, setName] = useState('');
-  const [type, setType] = useState(EXERCISE_TYPES[0]);
+  const [properties, setProperties] = useState<any[]>([EXERCISE_PROPERTIES[0], EXERCISE_PROPERTIES[2]]); // Default Weighted, Reps
   const [muscleGroups, setMuscleGroups] = useState<any[]>([]);
   const [primaryMuscle, setPrimaryMuscle] = useState<any>(null);
   const [secondaryMuscles, setSecondaryMuscles] = useState<any[]>([]);
@@ -57,7 +57,8 @@ export default function CreateExerciseScreen() {
     setIsSubmitting(true);
     try {
         const secondaryIds = secondaryMuscles.map(m => m.id);
-        const { error } = await createCustomExercise(name, type.value, primaryMuscle.id, secondaryIds);
+        const typeString = properties.map(p => p.value).join(', ');
+        const { error } = await createCustomExercise(name, typeString, primaryMuscle.id, secondaryIds);
         if (error) {
             Alert.alert('Error', 'Failed to create exercise');
             console.error(error);
@@ -77,6 +78,14 @@ export default function CreateExerciseScreen() {
         setSecondaryMuscles(prev => prev.filter(m => m.id !== muscle.id));
     } else {
         setSecondaryMuscles(prev => [...prev, muscle]);
+    }
+  };
+
+  const toggleProperty = (prop: any) => {
+    if (properties.some(p => p.value === prop.value)) {
+        setProperties(prev => prev.filter(p => p.value !== prop.value));
+    } else {
+        setProperties(prev => [...prev, prop]);
     }
   };
 
@@ -155,12 +164,16 @@ export default function CreateExerciseScreen() {
         </View>
 
         <View className="mb-6">
-            <ThemedText type="defaultSemiBold" className="mb-2">Category</ThemedText>
+            <ThemedText type="defaultSemiBold" className="mb-2">Properties</ThemedText>
             <TouchableOpacity 
                 onPress={() => setShowTypeModal(true)}
                 className="bg-surface dark:bg-surface_dark p-4 rounded-xl border border-transparent dark:border-white/10 flex-row justify-between items-center"
             >
-                <ThemedText>{type.label}</ThemedText>
+                <ThemedText numberOfLines={1}>
+                    {properties.length > 0 
+                        ? properties.map(p => p.label).join(', ') 
+                        : 'Select Properties'}
+                </ThemedText>
                 <IconSymbol name="chevron.right" size={16} color={theme.icon || '#888'} />
             </TouchableOpacity>
         </View>
@@ -197,10 +210,11 @@ export default function CreateExerciseScreen() {
       {renderSelectionModal(
           showTypeModal, 
           () => setShowTypeModal(false), 
-          "Select Category", 
-          EXERCISE_TYPES, 
-          setType,
-          (item) => item.value === type.value
+          "Select Properties", 
+          EXERCISE_PROPERTIES, 
+          toggleProperty,
+          (item) => properties.some(p => p.value === item.value),
+          true
       )}
 
       {renderSelectionModal(

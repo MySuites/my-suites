@@ -17,7 +17,7 @@ export type Exercise = {
     reps: number; // Target reps/duration/distance
     completedSets: number;
     logs?: SetLog[];
-    type?: string; // "weight_reps" | "bodyweight_reps" | "duration" | "distance_weight" | etc.
+    properties?: string[]; // E.g. ["Weighted", "Reps", "Bodyweight"]
     setTargets?: {
         reps: number;
         weight: number;
@@ -155,31 +155,24 @@ export async function fetchExercises(user: any) {
 
     if (error) return { data: [], error };
 
-    const formatType = (t: string) => {
-        switch(t) {
-            case 'weight_reps': return 'Weight & Reps';
-            case 'bodyweight_reps': return 'Bodyweight Reps';
-            case 'weighted_bodyweight': return 'Weighted Bodyweight';
-            case 'duration': return 'Duration';
-            case 'distance_duration': return 'Distance & Duration';
-            case 'duration_weight': return 'Duration & Weight';
-            case 'distance_weight': return 'Distance & Weight';
-            default: return t;
-        }
-    };
-
     const mapped = data.map((e: any) => {
         // Get primary muscle group or first available
         const muscles = e.exercise_muscle_groups || [];
         const primary = muscles.find((m: any) => m.role === 'primary');
         const firstMuscle = primary ? primary.muscle_groups?.name : (muscles[0]?.muscle_groups?.name);
         
+        // Parse properties from comma-separated string
+        const properties = e.exercise_type 
+            ? e.exercise_type.split(',').map((s: string) => s.trim()) 
+            : [];
+
         return {
             id: e.exercise_id,
             name: e.exercise_name,
             category: firstMuscle || "General", 
-            type: formatType(e.exercise_type),
-            rawType: e.exercise_type
+            properties: properties,
+            // Keep rawType if needed for now, or just rely on properties
+            rawType: e.exercise_type 
         };
     });
 
