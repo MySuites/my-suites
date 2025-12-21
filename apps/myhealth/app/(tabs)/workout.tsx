@@ -243,11 +243,14 @@ export default function Workout() {
 			>
 				{/* Controls Row */}
 				<View className="flex-row gap-2 my-3 px-4">
+                    <TouchableOpacity className="flex-1 mr-0 p-2.5 rounded-lg border border-surface dark:border-surface_dark bg-background dark:bg-background_dark" onPress={() => router.push('/exercises' as any)} accessibilityLabel="Exercises">
+						<Text className="text-apptext dark:text-apptext_dark text-center">Exercises</Text>
+					</TouchableOpacity>
 					<TouchableOpacity className="flex-1 mr-0 p-2.5 rounded-lg border border-surface dark:border-surface_dark bg-background dark:bg-background_dark" onPress={handleStartEmpty} accessibilityLabel="Start empty workout">
-						<Text className="text-apptext dark:text-apptext_dark">Start Empty</Text>
+						<Text className="text-apptext dark:text-apptext_dark text-center">Start Empty</Text>
 					</TouchableOpacity>
 					<TouchableOpacity className="flex-1 mr-0 p-2.5 rounded-lg border border-surface dark:border-surface_dark bg-background dark:bg-background_dark" onPress={() => router.push('/workout-history' as any)} accessibilityLabel="History">
-						<Text className="text-apptext dark:text-apptext_dark">History</Text>
+						<Text className="text-apptext dark:text-apptext_dark text-center">History</Text>
 					</TouchableOpacity>
 				</View>
 					
