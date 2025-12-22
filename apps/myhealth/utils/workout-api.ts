@@ -368,6 +368,11 @@ export async function persistCompletedWorkoutToSupabase(
     // Strip actual logs from the notes used for the workout summary
     // This preserves the "plan" but moves the "performance" to set_logs
     const exercisesForNotes = exercises.map(({ logs, ...rest }) => {
+        // Remove 'type' if it exists (redundant with properties)
+        if ("type" in rest) {
+            delete (rest as any).type;
+        }
+
         const props = rest.properties?.map((p) => p.toLowerCase()) || [];
         const isDurationOnly = props.includes("duration") &&
             !props.includes("reps");
