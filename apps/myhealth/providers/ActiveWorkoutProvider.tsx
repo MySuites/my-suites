@@ -3,6 +3,7 @@ import { Exercise, useWorkoutManager } from '../hooks/useWorkoutManager';
 import { createExercise } from '../utils/workout-logic';
 import { useActiveWorkoutTimers } from '../hooks/useActiveWorkoutTimers';
 import { useActiveWorkoutPersistence } from '../hooks/useActiveWorkoutPersistence';
+import uuid from 'react-native-uuid';
 
 // Define the shape of our context
 interface ActiveWorkoutContextType {
@@ -145,10 +146,13 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                     const weight = input?.weight;
                     const reps = input?.reps; 
                     // Fallback to target reps if not provided
-                    const finalReps = reps !== undefined ? reps : ex.reps;
+                    const props = ex.properties?.map((p: string) => p.toLowerCase()) || [];
+                    // Using undefined for finalReps so database receives null (or we filter it out)
+                    const isDurationOnly = props.includes('duration') && !props.includes('reps');
+                    const finalReps = reps !== undefined ? reps : (isDurationOnly ? undefined : ex.reps);
                     
                     const newLog: any = {
-                        id: Date.now().toString(),
+                        id: uuid.v4(),
                         weight,
                         reps: finalReps,
                         duration: input?.duration,

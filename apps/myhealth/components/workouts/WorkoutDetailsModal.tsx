@@ -74,19 +74,39 @@ export function WorkoutDetailsModal({ visible, onClose, workoutLogId }: WorkoutD
                             renderItem={({ item }) => (
                                 <View className="mb-4 bg-surface dark:bg-surface_dark p-3 rounded-lg">
                                     <Text className="text-base font-semibold text-apptext dark:text-apptext_dark mb-2">{item.name}</Text>
-                                    {item.sets.map((set: any, idx: number) => (
+                                    {item.sets.map((set: any, idx: number) => {
+                                        const parts = [];
+                                        const props = item.properties || [];
+                                        const hasProps = props.length > 0;
+                                        
+                                        // Determine what to show based on properties
+                                        // If no properties defined, show everything that exists (legacy/fallback)
+                                        // If properties defined, only show what is in properties
+                                        // Exception: 'bodyweight' doesn't map to a value usually, 'weighted' maps to weight
+                                        
+                                        const propsLower = props.map((p: string) => p.toLowerCase());
+                                        const showReps = !hasProps || propsLower.includes('reps');
+                                        const showDuration = !hasProps || propsLower.includes('duration');
+                                        const showDistance = !hasProps || propsLower.includes('distance');
+
+                                        if (showReps && set.details?.reps) parts.push(`${set.details.reps} reps`);
+                                        if (showDuration && set.details?.duration) parts.push(`${set.details.duration} seconds`);
+                                        if (showDistance && set.details?.distance) parts.push(`${set.details.distance} meters`);
+                                        if (set.details?.weight != null && set.details.weight > 0) parts.push(`${set.details.weight} lbs`);
+                                        
+                                        const mainText = parts.length > 0 ? parts.join(', ') : 'Completed';
+
+                                        return (
                                         <View key={idx} className="flex-row justify-between mb-1">
                                             <Text className="text-sm text-gray-500">
                                                 Set {set.setNumber || idx + 1}:
                                             </Text>
                                             <Text className="text-sm text-gray-500">
-                                                {set.details?.reps ? `${set.details.reps} reps` : 'Completed'}
+                                                {mainText}
                                             </Text>
-                                             {set.details?.weight != null && set.details.weight > 0 && (
-                                                <Text className="text-sm text-gray-500"> @ {set.details.weight}</Text>
-                                             )}
                                         </View>
-                                    ))}
+                                        );
+                                    })}
                                 </View>
                             )}
                         />

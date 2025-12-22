@@ -367,7 +367,15 @@ export async function persistCompletedWorkoutToSupabase(
 
     // Strip actual logs from the notes used for the workout summary
     // This preserves the "plan" but moves the "performance" to set_logs
-    const exercisesForNotes = exercises.map(({ logs, ...rest }) => rest);
+    const exercisesForNotes = exercises.map(({ logs, ...rest }) => {
+        const props = rest.properties?.map((p) => p.toLowerCase()) || [];
+        const isDurationOnly = props.includes("duration") &&
+            !props.includes("reps");
+        if (isDurationOnly) {
+            return { ...rest, reps: 0 };
+        }
+        return rest;
+    });
 
     const notesObj = {
         name,
@@ -571,63 +579,119 @@ export async function persistUpdateSavedWorkoutToSupabase(
 
 export async function fetchWorkoutLogDetails(user: any, logId: string) {
     if (!user) return { data: [], error: "User not logged in" };
-    const { data: setLogs, error } = await supabase
-        .from("set_logs")
-        .select(`
-            set_log_id,
-            details,
-            notes,
-            exercise_sets (
-                set_number,
-                workout_exercises (
-                    position,
-                    exercises (
-                        exercise_name
-                    )
-                )
-            )
-        `)
-        .eq("workout_log_id", logId)
-        .order("created_at", { ascending: true }); // Simple ordering
 
-    if (error) return { data: [], error };
+    try {
+        // 1. Fetch workout log to get the snapshot of exercises (with properties)
+        const { data: workoutLog } = await supabase
+            .from("workout_logs")
+            .select("exercises")
+            .eq("workout_log_id", logId)
+            .single();
 
-    // Group by exercise
-    // Structure: { [exerciseName]: { name: string, sets: [] } }
-    const grouped: Record<string, any> = {};
+        // Parse exercises JSON to a map for easy lookup
+        let exercisesSnapshot: any[] = [];
+        try {
+            if (workoutLog?.exercises) {
+                let parsed: any;
+                if (typeof workoutLog.exercises === "string") {
+                    parsed = JSON.parse(workoutLog.exercises);
+                } else {
+                    parsed = workoutLog.exercises;
+                }
 
-    setLogs?.forEach((log: any) => {
-        const relationalName = log.exercise_sets?.workout_exercises?.exercises
-            ?.exercise_name;
-        const detailsName = log.details?.exercise_name;
-        const exName = relationalName || detailsName || "Unknown Exercise";
+                // Handle different structures
+                if (Array.isArray(parsed)) {
+                    exercisesSnapshot = parsed;
+                } else if (parsed && Array.isArray(parsed.exercises)) {
+                    exercisesSnapshot = parsed.exercises;
+                }
+            }
+        } catch {}
 
-        const position = log.exercise_sets?.workout_exercises?.position || 999;
-        // Use set_number from relation, or infer from sequence if we tracked it, or details
-        const setNumber = log.exercise_sets?.set_number ||
-            log.details?.set_number;
-
-        if (!grouped[exName]) {
-            grouped[exName] = {
-                name: exName,
-                position: position,
-                sets: [],
-            };
+        if (!Array.isArray(exercisesSnapshot)) {
+            exercisesSnapshot = [];
         }
 
-        grouped[exName].sets.push({
-            setNumber: setNumber,
-            details: log.details, // e.g. { reps: 10 }
-            notes: log.notes,
-        });
-    });
+        if (!Array.isArray(exercisesSnapshot)) {
+            exercisesSnapshot = [];
+        }
 
-    // Convert to array and sort by position
-    const result = Object.values(grouped).sort((a: any, b: any) =>
-        a.position - b.position
-    );
+        // Fallback: Reconstruct from set_logs (Legacy behavior)
+        const { data: setLogs, error } = await supabase
+            .from("set_logs")
+            .select(`
+                set_log_id,
+                details,
+                notes,
+                exercise_id,
+                exercise_sets (
+                    set_number,
+                    workout_exercises (
+                        position,
+                        exercises (
+                            exercise_name
+                        )
+                    )
+                )
+            `)
+            .eq("workout_log_id", logId)
+            .order("created_at", { ascending: true }); // Simple ordering
 
-    return { data: result, error: null };
+        if (error) return { data: [], error };
+
+        // Group by exercise
+        const grouped: Record<string, any> = {};
+
+        if (setLogs) {
+            setLogs.forEach((log: any) => {
+                const relationalName = log.exercise_sets?.workout_exercises
+                    ?.exercises
+                    ?.exercise_name;
+                const detailsName = log.details?.exercise_name;
+                const exName = relationalName || detailsName ||
+                    "Unknown Exercise";
+
+                // Try to find properties from snapshot
+                const logExId = log.exercise_id || log.details?.exercise_id;
+                let matchedEx = exercisesSnapshot.find((e: any) =>
+                    e.id === logExId
+                );
+                if (!matchedEx) {
+                    matchedEx = exercisesSnapshot.find((e: any) =>
+                        e.name === exName
+                    );
+                }
+                const position =
+                    log.exercise_sets?.workout_exercises?.position || 999;
+                const setNumber = log.exercise_sets?.set_number ||
+                    log.details?.set_number;
+
+                if (!grouped[exName]) {
+                    grouped[exName] = {
+                        name: exName,
+                        position: position,
+                        sets: [],
+                        properties: matchedEx?.properties || [],
+                    };
+                }
+
+                grouped[exName].sets.push({
+                    setNumber: setNumber,
+                    details: log.details,
+                    notes: log.notes,
+                });
+            });
+        }
+
+        const result = Object.values(grouped).sort((a: any, b: any) =>
+            a.position - b.position
+        );
+
+        return { data: result, error: null };
+    } catch (err: any) {
+        console.warn("fetchWorkoutLogDetails failed", err);
+        return { data: [], error: err.message || "Failed to load details" };
+    }
 }
 
 export async function deleteRoutineFromSupabase(user: any, routineId: string) {

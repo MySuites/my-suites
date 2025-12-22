@@ -1,3 +1,5 @@
+import uuid from "react-native-uuid";
+
 export type Exercise = {
     id: string;
     name: string;
@@ -17,7 +19,7 @@ export function createExercise(
 ): Exercise {
     const sets = Math.max(1, Number(setsStr) || 1);
     const reps = Math.max(1, Number(repsStr) || 1);
-    const id = Date.now().toString();
+    const id = uuid.v4().toString();
     return {
         id,
         name: name || `Exercise ${id}`,
