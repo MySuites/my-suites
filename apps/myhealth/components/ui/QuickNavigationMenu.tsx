@@ -38,9 +38,9 @@ export function QuickNavigationButton() {
 
 
   const menuItems: RadialMenuItem[] = useMemo(() => [
-    { id: 'profile', icon: 'person.fill', label: 'Profile', onPress: () => navigateTo('profile'), angle: -45 },
-    { id: 'home', icon: 'house.fill', label: 'Home', onPress: () => navigateTo('index'), angle: 0 },
-    { id: 'workout', icon: 'dumbbell.fill', label: 'Workout', onPress: () => navigateTo('workout'), angle: 45 },
+    { id: 'profile', icon: 'person.fill', label: 'Profile', onPress: () => navigateTo('profile'), angle: 0 },   // Up
+    { id: 'home', icon: 'house.fill', label: 'Home', onPress: () => navigateTo('index'), angle: 45 },           // Diagonal
+    { id: 'workout', icon: 'dumbbell.fill', label: 'Workout', onPress: () => navigateTo('workout'), angle: 90 }, // Right
   ], [navigateTo]);
 
 
@@ -64,7 +64,7 @@ export function QuickNavigationButton() {
 
   return (
     <Animated.View 
-        className="absolute bottom-0 left-0 right-0 h-[150px] items-center justify-end pb-10 z-[1000] overflow-visible pointer-events-none"
+        className="absolute bottom-10 left-10 items-center justify-center z-[1100] w-[60px] h-[60px] overflow-visible"
         style={[containerAnimatedStyle]}
         pointerEvents="box-none"
     >
