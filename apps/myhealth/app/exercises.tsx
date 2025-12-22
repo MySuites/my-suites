@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, TouchableOpacity, View, ActivityIndicator, TextInput } from 'react-native'; 
+import { FlatList, TouchableOpacity, View, ActivityIndicator, TextInput, Alert } from 'react-native'; 
 import { useRouter } from 'expo-router';
 
 import { ThemedText } from '../components/ui/ThemedText';
@@ -8,6 +8,7 @@ import { useUITheme } from '@mycsuite/ui';
 import { useAuth } from '@mycsuite/auth';
 import { fetchExercises } from '../hooks/useWorkoutManager';
 import { IconSymbol } from '../components/ui/icon-symbol';
+import { useActiveWorkout } from '../providers/ActiveWorkoutProvider';
 
 export default function ExercisesScreen() {
   const router = useRouter();
@@ -17,6 +18,17 @@ export default function ExercisesScreen() {
   const [exercises, setExercises] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  
+  const { addExercise, hasActiveSession } = useActiveWorkout();
+
+  const handleAddExercise = (exercise: any) => {
+      if (!hasActiveSession) {
+          Alert.alert("No Active Workout", "Please start a workout first.");
+          return;
+      }
+      addExercise(exercise.name, "3", "10", exercise.properties);
+      Alert.alert('Added', `${exercise.name} added to current workout.`);
+  };
 
   useEffect(() => {
     async function load() {
@@ -86,7 +98,12 @@ export default function ExercisesScreen() {
                     {item.category} • {item.properties?.join(', ') || item.rawType}
                 </ThemedText> 
             </View>
-            <IconSymbol name="plus.circle" size={20} color={theme.primary} />
+            <TouchableOpacity onPress={(e) => {
+                e.stopPropagation(); // Prevent navigation
+                handleAddExercise(item);
+            }}>
+                <IconSymbol name="plus.circle" size={24} color={theme.primary} />
+            </TouchableOpacity>
           </TouchableOpacity>
         )}
         className="flex-1"
