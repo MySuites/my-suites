@@ -18,7 +18,7 @@ interface ActiveWorkoutContextType {
     startWorkout: (exercisesToStart?: Exercise[], name?: string, routineId?: string, sourceWorkoutId?: string) => void;
     pauseWorkout: () => void;
     resetWorkout: () => void;
-    completeSet: (index: number, input?: { weight?: number; reps?: number; duration?: number; distance?: number }) => void;
+    completeSet: (index: number, setIndex: number, input?: { weight?: number; reps?: number; duration?: number; distance?: number }) => void;
     nextExercise: () => void;
     prevExercise: () => void;
     addExercise: (name: string, sets: string, reps: string, properties?: string[]) => void;
@@ -133,14 +133,13 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         );
     };
 
-    const handleCompleteSet = (targetIndex?: number, input?: { weight?: number; reps?: number; duration?: number; distance?: number }) => {
+    const handleCompleteSet = (targetIndex: number,  setIndex: number, input?: { weight?: number; reps?: number; duration?: number; distance?: number }) => {
         const indexToComplete = targetIndex ?? currentIndex;
         
         setExercises(currentExercises => {
             return currentExercises.map((ex, idx) => {
                 if (idx === indexToComplete) {
-                    const currentSets = ex.completedSets || 0;
-                    const logs = ex.logs || [];
+                    const logs = [...(ex.logs || [])];
                     
                     // Inputs are already numbers
                     const weight = input?.weight;
@@ -159,10 +158,16 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                         distance: input?.distance,
                     };
 
+                    // Insert at specific index (filling gaps if necessary with undefined/empty)
+                    logs[setIndex] = newLog;
+
+                    // Recalculate completed sets count (filter out holes/undefined)
+                    const completedCount = logs.filter(l => l !== undefined && l !== null).length;
+
                     return { 
                         ...ex, 
-                        completedSets: currentSets + 1,
-                        logs: [...logs, newLog]
+                        completedSets: completedCount,
+                        logs: logs
                     };
                 }
                 return ex;

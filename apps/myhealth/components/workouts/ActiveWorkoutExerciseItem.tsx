@@ -7,7 +7,7 @@ interface ActiveWorkoutExerciseItemProps {
     index: number;
     isCurrent: boolean;
     restSeconds: number;
-    completeSet: (exerciseIndex: number, input: any) => void;
+    completeSet: (exerciseIndex: number, setIndex: number, input: any) => void;
     updateExercise: (exerciseIndex: number, updates: any) => void;
 }
 
@@ -27,25 +27,29 @@ export function ActiveWorkoutExerciseItem({
             isCurrent={isCurrent}
             restSeconds={restSeconds}
             theme={theme}
-            onCompleteSet={(input) => {
+            onCompleteSet={(setIndex, input) => {
                 const parsedInput = {
                     weight: input?.weight ? parseFloat(input.weight) : undefined,
                     reps: input?.reps ? parseFloat(input.reps) : undefined,
                     duration: input?.duration ? parseFloat(input.duration) : undefined,
                     distance: input?.distance ? parseFloat(input.distance) : undefined,
                 };
-                completeSet(index, parsedInput);
+                completeSet(index, setIndex, parsedInput);
             }}
             onUncompleteSet={(setIndex) => {
                 const currentLogs = exercise.logs || [];
-                if (setIndex < currentLogs.length) {
-                    const newLogs = [...currentLogs];
-                    newLogs.splice(setIndex, 1);
-                    updateExercise(index, { 
-                        logs: newLogs, 
-                        completedSets: (exercise.completedSets || 1) - 1,
-                    });
-                }
+                // Allow clearing any index, even if it's beyond current length (though unlikely via UI)
+                const newLogs = [...currentLogs];
+                // Set to undefined/null to preserve indices of other sets
+                newLogs[setIndex] = undefined; // or null
+                
+                // Recalculate completed sets
+                const completedCount = newLogs.filter(l => l !== undefined && l !== null).length;
+
+                updateExercise(index, { 
+                    logs: newLogs, 
+                    completedSets: completedCount,
+                });
             }}
             onUpdateSetTarget={(setIndex, key, value) => {
                 const numValue = value === '' ? 0 : parseFloat(value);
@@ -104,28 +108,27 @@ export function ActiveWorkoutExerciseItem({
                 const currentSetTargets = exercise.setTargets ? [...exercise.setTargets] : [];
 
                 // Remove the target definition for this index if it exists
-                // This ensures that if we delete set 1, set 2's target becomes the new set 1 target
                 if (setIndex < currentSetTargets.length) {
                     currentSetTargets.splice(setIndex, 1);
                 }
                 
-                if (setIndex < currentLogs.length) {
-                    // Deleting a completed set (log)
-                    const newLogs = [...currentLogs];
+                // Handle logs (sparse array safe splice)
+                const newLogs = [...currentLogs];
+                // Only splice if within bounds, but with sparse array we just splice anyway if we want to shift
+                // If setIndex >= newLogs.length, nothing happens, which is fine for "future" sets that have no log entry yet
+                if (setIndex < newLogs.length) {
                     newLogs.splice(setIndex, 1);
-                    updateExercise(index, { 
-                        logs: newLogs, 
-                        setTargets: currentSetTargets,
-                        completedSets: Math.max(0, (exercise.completedSets || 1) - 1),
-                        sets: Math.max(0, currentTarget - 1)
-                    });
-                } else {
-                    // Deleting a future/planned set
-                    updateExercise(index, { 
-                        sets: Math.max(0, currentTarget - 1),
-                        setTargets: currentSetTargets
-                    });
                 }
+
+                // Recalculate completed sets count
+                const completedCount = newLogs.filter(l => l !== undefined && l !== null).length;
+
+                updateExercise(index, { 
+                    logs: newLogs, 
+                    setTargets: currentSetTargets,
+                    completedSets: completedCount,
+                    sets: Math.max(0, currentTarget - 1)
+                });
             }}
         />
     );

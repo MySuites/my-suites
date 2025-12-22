@@ -12,7 +12,34 @@ jest.mock('../../components/ui/icon-symbol', () => ({
 }));
 
 // Mock SetRow
-jest.mock('../../components/workouts/SetRow');
+jest.mock('../../components/workouts/SetRow', () => {
+    const { TouchableOpacity } = require('react-native');
+    
+    // Copy of helper function for mock
+    const getExerciseFields = (properties?: string[]) => {
+        const props = properties || [];
+        const lowerProps = props.map(p => p.toLowerCase());
+        return { 
+            showBodyweight: lowerProps.includes('bodyweight'),
+            showWeight: lowerProps.includes('weighted'),
+            showReps: lowerProps.includes('reps'),
+            showDuration: lowerProps.includes('duration'),
+            showDistance: lowerProps.includes('distance')
+        };
+    };
+
+    return {
+        SetRow: ({ index, onCompleteSet }: any) => (
+            <TouchableOpacity 
+                testID={`set-row-${index}`} 
+                onPress={() => onCompleteSet({ weight: "100", reps: "10" })}
+            >
+                <></>
+            </TouchableOpacity>
+        ),
+        getExerciseFields,
+    };
+});
 
 describe('ExerciseCard', () => {
     const mockExercise: Exercise = {
@@ -71,5 +98,15 @@ describe('ExerciseCard', () => {
     it('should NOT show rest timer if not current', () => {
         const { queryByText } = render(<ExerciseCard {...defaultProps} isCurrent={false} restSeconds={60} />);
         expect(queryByText('01:00')).toBeNull();
+    });
+
+    it('should call onCompleteSet with correct set index', () => {
+        const { getByTestId } = render(<ExerciseCard {...defaultProps} />);
+        // Simulate completing the second set (index 1)
+        const setRow1 = getByTestId('set-row-1');
+        fireEvent.press(setRow1);
+        
+        // Expect onCompleteSet to be called with (index, input)
+        expect(mockOnCompleteSet).toHaveBeenCalledWith(1, { weight: "100", reps: "10" });
     });
 });
