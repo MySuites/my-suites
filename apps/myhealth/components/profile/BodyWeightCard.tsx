@@ -59,6 +59,9 @@ export function BodyWeightCard({
                             style={{ 
                                 backgroundColor: selectedRange === 'Day' ? 'white' : 'transparent',
                                 shadowOpacity: selectedRange === 'Day' ? 0.1 : 0,
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowRadius: 2,
+                                elevation: selectedRange === 'Day' ? 2 : 0,
                             }}
                         >
                             <Text 
@@ -75,6 +78,9 @@ export function BodyWeightCard({
                             style={{ 
                                 backgroundColor: selectedRange === 'Week' ? 'white' : 'transparent',
                                 shadowOpacity: selectedRange === 'Week' ? 0.1 : 0,
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowRadius: 2,
+                                elevation: selectedRange === 'Week' ? 2 : 0,
                             }}
                         >
                             <Text 
@@ -91,6 +97,9 @@ export function BodyWeightCard({
                             style={{ 
                                 backgroundColor: selectedRange === 'Month' ? 'white' : 'transparent',
                                 shadowOpacity: selectedRange === 'Month' ? 0.1 : 0,
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowRadius: 2,
+                                elevation: selectedRange === 'Month' ? 2 : 0,
                             }}
                         >
                             <Text 
@@ -107,6 +116,9 @@ export function BodyWeightCard({
                             style={{ 
                                 backgroundColor: selectedRange === 'All' ? 'white' : 'transparent',
                                 shadowOpacity: selectedRange === 'All' ? 0.1 : 0,
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowRadius: 2,
+                                elevation: selectedRange === 'All' ? 2 : 0,
                             }}
                         >
                             <Text 
