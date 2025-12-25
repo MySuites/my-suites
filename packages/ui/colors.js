@@ -9,7 +9,7 @@ const baseColors = {
     tabIconDefault: 'hsl(0, 0%, 89%)',
     error: 'hsl(0, 84%, 60%)',
     border: 'hsl(0, 0%, 95%)',
-    highlight: 'hsl(0, 0%, 100%)',
+    highlight: 'hsla(0, 0%, 100%, 0.5)',
   },
   dark: {
     bgLight: 'hsl(0, 0%, 20%)',
@@ -21,7 +21,7 @@ const baseColors = {
     tabIconDefault: 'hsl(0, 0%, 89%)',
     error: 'hsl(0, 84%, 60%)',
     border: 'hsl(0, 0%, 10%)',
-    highlight: 'hsl(0, 0%, 60%)',
+    highlight: 'hsla(0, 0%, 100%, 0.3)',
   }
 };
 

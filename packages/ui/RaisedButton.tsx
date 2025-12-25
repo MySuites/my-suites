@@ -10,7 +10,7 @@ cssInterop(Text, { className: 'style' });
 
 export const RaisedButton = ({ title, className, textClassName, style, ...props }: { title: string; className?: string; textClassName?: string } & PressableProps) => {
   const theme = useUITheme();
-  const defaultClasses = 'p-4 my-4 rounded-xl items-center justify-center bg-light dark:bg-dark border border-t-highlight border-l-highlight border-b-transparent border-r-transparent dark:border-t-highlight-dark dark:border-l-highlight-dark';
+  const defaultClasses = 'p-4 my-4 rounded-xl items-center justify-center bg-light dark:bg-dark-darker border border-t-highlight border-l-highlight border-b-transparent border-r-transparent dark:border-t-highlight-dark dark:border-l-highlight-dark';
   const combined = `${defaultClasses}${className ? ' ' + className : ''}`;
 
   const shadowStyle = {
@@ -31,7 +31,7 @@ export const RaisedButton = ({ title, className, textClassName, style, ...props 
             {(pressed || hovered) && (
               <LinearGradient
                 colors={theme.dark 
-                  ? ['hsla(0, 0%, 100%, 0.2)', 'hsla(0, 0%, 75%, 0.3)'] 
+                  ? ['hsla(0, 0%, 50%, 0.2)', 'hsla(0, 0%, 20%, 0.3)'] 
                   : ['hsla(0, 0%, 100%, 0.7)', 'hsla(0, 0%, 75%, 0.05)']}
                 locations={[0, 1]}
                 start={{ x: 0, y: 0 }}

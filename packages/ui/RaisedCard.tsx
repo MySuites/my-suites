@@ -24,7 +24,7 @@ export function RaisedCard({ children, style, className, onPress, activeOpacity 
   const { width } = useWindowDimensions();
   const theme = useUITheme();
   // Refined Neumorphic RaisedCard: matches background, uses highlight top-border and soft bottom shadow
-  const baseClassName = `bg-light dark:bg-dark rounded-xl p-3 w-full mb-1 border border-light dark:border-dark border-t-highlight dark:border-t-highlight-dark border-l-highlight dark:border-l-highlight-dark ${className || ''}`;
+  const baseClassName = `bg-light dark:bg-dark-darker rounded-xl p-3 w-full mb-1 border border-light dark:border-dark border-t-highlight dark:border-t-highlight-dark border-l-highlight dark:border-l-highlight-dark ${className || ''}`;
   const shadowStyle = { 
       shadowColor: '#000',
       shadowOffset: { width: 2, height: 4 }, 
@@ -64,7 +64,7 @@ export function RaisedCard({ children, style, className, onPress, activeOpacity 
   const Gradient = (
     <LinearGradient
         colors={theme.dark 
-          ? ['hsla(0, 0%, 100%, 0.2)', 'hsla(0, 0%, 90%, 0.3)'] 
+          ? ['hsla(0, 0%, 50%, 0.2)', 'hsla(0, 0%, 20%, 0.3)'] 
           : ['hsla(0, 0%, 100%, 0.7)', 'hsla(0, 0%, 90%, 0.05)']}
         locations={[0, 1]}
         start={{ x: 0, y: 0 }}
