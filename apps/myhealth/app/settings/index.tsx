@@ -1,16 +1,14 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView, TextInput, Switch } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView, TextInput } from 'react-native';
 import { useAuth, supabase } from '@mysuite/auth';
 import { useUITheme, ThemedView } from '@mysuite/ui';
 import { IconSymbol } from '../../components/ui/icon-symbol';
 import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
-import { useNavigationSettings } from '../../providers/NavigationSettingsProvider';
 
 export default function SettingsScreen() {
   const { user } = useAuth();
   const theme = useUITheme();
-  const { isFabEnabled, toggleFab } = useNavigationSettings();
   const [username, setUsername] = React.useState('');
   const [fullName, setFullName] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -82,22 +80,13 @@ export default function SettingsScreen() {
         <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Appearance</Text>
           <ThemeToggle />
-          <View className="flex-row justify-between items-center py-3 border-b border-border dark:border-border-dark">
-             <Text className="text-base text-apptext dark:text-apptext-dark">Fast Action Button</Text>
-             <Switch
-                value={isFabEnabled}
-                onValueChange={toggleFab}
-                trackColor={{ false: theme.bgDark || '#ccc', true: theme.primary }}
-                thumbColor={'#fff'}
-             />
-          </View>
         </View>
 
         <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Account</Text>
           <View className="py-3">
             <Text className="text-base text-apptext dark:text-apptext-dark">Email</Text>
-            <Text className="text-base text-gray-500">{user?.email}</Text>
+            <Text className="text-base text-apptext dark:text-apptext-dark">{user?.email}</Text>
           </View>
           
           <View className="py-3">
