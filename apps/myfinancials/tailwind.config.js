@@ -44,6 +44,9 @@ module.exports = {
         'primary-dark': brand.dark.primary,
         accent: brand.light.accent,
         'accent-dark': brand.dark.accent,
+
+        'highlight': baseColors.light.highlight,
+        'highlight-dark': baseColors.dark.highlight,
       },
       colors: {
         error: baseColors.light.error,

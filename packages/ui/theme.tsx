@@ -13,6 +13,7 @@ export type AppTheme = {
   tabIconDefault?: string;
   tabIconSelected?: string;
   error?: string;
+  highlight?: string;
   [k: string]: any;
 };
 
@@ -30,6 +31,7 @@ export const getAppTheme = (appId: keyof typeof appThemes, scheme: 'light' | 'da
     primaryMuted: brand.primaryMuted,
     accent: brand.accent,
     tabIconSelected: brand.primary,
+    highlight: base.highlight,
   };
 };
 

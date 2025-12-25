@@ -8,10 +8,11 @@ const baseColors = {
     icon: 'hsl(0, 0%, 5%)',
     tabIconDefault: 'hsl(0, 0%, 89%)',
     error: 'hsl(0, 84%, 60%)',
-    border: 'hsl(0, 0%, 89%)',
+    border: 'hsl(0, 0%, 95%)',
+    highlight: 'hsl(0, 0%, 100%)',
   },
   dark: {
-    bgLight: 'hsl(0, 0%, 15%)',
+    bgLight: 'hsl(0, 0%, 20%)',
     bg: 'hsl(0, 0%, 10%)',
     bgDark: 'hsl(0, 0%, 0%)',
     text: 'hsl(0, 0%, 95%)',
@@ -19,7 +20,8 @@ const baseColors = {
     icon: 'hsl(0, 0%, 5%)',
     tabIconDefault: 'hsl(0, 0%, 89%)',
     error: 'hsl(0, 84%, 60%)',
-    border: 'hsl(0, 0%, 89%)',
+    border: 'hsl(0, 0%, 10%)',
+    highlight: 'hsl(0, 0%, 60%)',
   }
 };
 

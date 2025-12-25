@@ -50,6 +50,9 @@ module.exports = {
         'primary-muted-dark': brand.dark.primaryMuted,
         accent: brand.light.accent,
         'accent-dark': brand.dark.accent,
+
+        'highlight': baseColors.light.highlight,
+        'highlight-dark': baseColors.dark.highlight,
       },
       colors: {
         error: baseColors.light.error,

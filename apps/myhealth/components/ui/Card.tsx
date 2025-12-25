@@ -17,7 +17,15 @@ interface CardProps extends ViewProps {
 export function Card({ children, style, className, onPress, activeOpacity = 0.9, onDelete, onEdit, ...props }: CardProps) {
   const { width } = useWindowDimensions();
   // Base styling from RoutineCard
-  const baseClassName = `bg-light-darker dark:bg-dark-lighter rounded-xl p-3 w-full mb-1 border border-light dark:border-dark ${className || ''}`;
+  const baseClassName = `bg-light-darker dark:bg-dark-lighter rounded-xl p-3 w-full mb-1 border border-light dark:border-dark border-t-highlight dark:border-t-highlight-dark ${className || ''}`;
+  const shadowStyle = { 
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 }, 
+      shadowOpacity: 0.20, 
+      shadowRadius: 3, 
+      elevation: 8,
+      overflow: 'visible' as const
+  };
 
   // Track if we are deep enough to delete
   const shouldDelete = useRef(false);
@@ -50,7 +58,7 @@ export function Card({ children, style, className, onPress, activeOpacity = 0.9,
     onPress ? (
         <Animated.View style={[cardContentStyle]}>
             <TouchableOpacity 
-            style={style} 
+            style={[style, shadowStyle]} 
             className={baseClassName} 
             onPress={onPress} 
             activeOpacity={activeOpacity}
@@ -61,7 +69,7 @@ export function Card({ children, style, className, onPress, activeOpacity = 0.9,
         </Animated.View>
       ) : (
         <Animated.View style={[cardContentStyle]}>
-            <View style={style} className={baseClassName} {...props}>
+            <View style={[style, shadowStyle]} className={baseClassName} {...props}>
             {children}
             </View>
         </Animated.View>

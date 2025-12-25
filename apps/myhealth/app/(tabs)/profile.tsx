@@ -258,10 +258,6 @@ export default function ProfileScreen() {
         fetchWeightHistory(); // Refresh chart
     }
   };
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-  };
   
   return (
     <View className="flex-1 p-4 bg-light dark:bg-dark">
