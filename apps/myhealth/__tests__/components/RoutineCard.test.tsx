@@ -3,7 +3,18 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { RoutineCard } from '../../components/routines/RoutineCard';
 
 // Mock Card since it might contain complex animations or gestures
-jest.mock('../../components/ui/Card');
+jest.mock('../../components/ui/RaisedCard', () => {
+  const { View, Text, TouchableOpacity } = require('react-native');
+  return {
+    RaisedCard: ({ children, onDelete, onEdit }: any) => (
+      <View testID="raised-card">
+          {onDelete && <TouchableOpacity testID="card-delete-btn" onPress={onDelete}><Text>Delete</Text></TouchableOpacity>}
+          {onEdit && <TouchableOpacity testID="card-edit-btn" onPress={onEdit}><Text>Edit</Text></TouchableOpacity>}
+          {children}
+      </View>
+    ),
+  };
+});
 
 describe('RoutineCard', () => {
     const mockRoutine = {

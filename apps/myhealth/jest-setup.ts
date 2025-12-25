@@ -29,3 +29,9 @@ jest.mock("@mysuite/auth", () => ({
     },
     useAuth: jest.fn(() => ({ session: null, user: null })),
 }));
+
+jest.mock("expo-haptics", () => ({
+    selectionAsync: jest.fn(),
+    impactAsync: jest.fn(),
+    notificationAsync: jest.fn(),
+}));

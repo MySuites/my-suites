@@ -26,7 +26,7 @@ const TestComponent = () => {
             ))}
             <Button title="Start" onPress={() => startWorkout(([] as any))} />
             <Button title="Add Ex" onPress={() => addExercise('New Ex', '3', '12')} />
-            <Button title="Complete Set" onPress={() => completeSet((0 as any))} />
+            <Button title="Complete Set" onPress={() => completeSet(0, 0)} />
         </View>
     );
 };

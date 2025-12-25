@@ -4,7 +4,9 @@ import { ExerciseCard } from '../../components/exercises/ExerciseCard';
 import { Exercise } from '../../hooks/workouts/useWorkoutManager';
 
 // Mock Card
-jest.mock('../../components/ui/Card');
+jest.mock('../../components/ui/RaisedCard', () => ({
+  RaisedCard: ({ children }: any) => <>{children}</>,
+}));
 
 // Mock IconSymbol
 jest.mock('../../components/ui/icon-symbol', () => ({

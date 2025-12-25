@@ -2,10 +2,10 @@
 
 exports[`ThemedCard renders correctly with title 1`] = `
 <View
-  className="p-3 rounded-[10px] my-2 border shadow-sm bg-surface dark:bg-surface_dark border-surface dark:border-white/10"
+  className="p-3 rounded-[10px] my-2 border shadow-sm bg-light-lighter dark:bg-border-dark border-light dark:border-white/10"
 >
   <Text
-    className="text-base font-bold mb-1 text-apptext dark:text-apptext_dark"
+    className="text-base font-bold mb-1 text-apptext dark:text-dark"
   >
     Test Card
   </Text>
@@ -14,10 +14,10 @@ exports[`ThemedCard renders correctly with title 1`] = `
 
 exports[`ThemedCard renders correctly with title and subtitle 1`] = `
 <View
-  className="p-3 rounded-[10px] my-2 border shadow-sm bg-surface dark:bg-surface_dark border-surface dark:border-white/10"
+  className="p-3 rounded-[10px] my-2 border shadow-sm bg-light-lighter dark:bg-border-dark border-light dark:border-white/10"
 >
   <Text
-    className="text-base font-bold mb-1 text-apptext dark:text-apptext_dark"
+    className="text-base font-bold mb-1 text-apptext dark:text-dark"
   >
     Test Card
   </Text>

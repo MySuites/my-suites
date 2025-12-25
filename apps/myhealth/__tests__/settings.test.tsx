@@ -40,10 +40,7 @@ jest.mock('@mysuite/ui', () => ({
   }),
 }));
 
-// Mock components that might cause issues
-jest.mock('../components/ui/ThemedView', () => ({
-  ThemedView: 'View',
-}));
+
 
 jest.mock('../components/ui/icon-symbol', () => ({
   IconSymbol: 'View',
