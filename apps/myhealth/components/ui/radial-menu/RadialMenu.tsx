@@ -152,7 +152,7 @@ export function RadialMenu({
       height: buttonSize,
       borderRadius: buttonSize / 2,
       shadowColor: '#000',
-      shadowOffset: { width: 4, height: 4 }, // Deeper shadow for floating effect
+      shadowOffset: { width: 6, height: 6 }, // Deeper shadow for floating effect
       shadowOpacity: 0.3,
       shadowRadius: 5,
       elevation: 8,
@@ -196,7 +196,7 @@ export function RadialMenu({
             
             {/* Gradient Overlay for Smooth Convex Effect */}
             <LinearGradient
-                colors={theme.dark ? ['hsla(0, 0%, 100%, 0.25)', 'hsla(0, 0%, 0%, 0.3)'] : ['hsla(0, 0%, 100%, 0.9)', 'hsla(0, 0%, 70%, 0.05)']}
+                colors={theme.dark ? ['hsla(0, 0%, 100%, 0.25)', 'hsla(0, 0%, 0%, 0.3)'] : ['hsla(0, 0%, 98%, 0.9)', 'hsla(0, 0%, 80%, 0.05)']}
                 locations={[0.5, 1]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
