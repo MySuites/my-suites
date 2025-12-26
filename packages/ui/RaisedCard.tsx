@@ -65,10 +65,10 @@ export function RaisedCard({ children, style, className, onPress, activeOpacity 
     <LinearGradient
         colors={theme.dark 
           ? ['hsla(0, 0%, 50%, 0.2)', 'hsla(0, 0%, 20%, 0.3)'] 
-          : ['hsla(0, 0%, 100%, 0.7)', 'hsla(0, 0%, 90%, 0.05)']}
+          : ['hsla(0, 0%, 97%, 0.7)', 'hsla(0, 0%, 90%, 0.05)']}
         locations={[0, 1]}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0.4, y: 4 }} // Steep vector to create diagonal look on wide cards
+        end={{ x: 0.2, y: 3 }} // Steep vector to create diagonal look on wide cards
         style={{
             position: 'absolute',
             top: 0,
