@@ -18,7 +18,7 @@ import { ActiveRoutineCard } from '../../components/routines/ActiveRoutineCard';
 import { SavedWorkoutItem } from '../../components/workouts/SavedWorkoutItem';
 import { WorkoutPreviewModal } from '../../components/workouts/WorkoutPreviewModal';
 import { useRoutineTimeline } from '../../hooks/routines/useRoutineTimeline';
-import { HollowedCard, RaisedButton } from '@mysuite/ui';
+import { HollowedCard, RaisedButton, RaisedCard } from '@mysuite/ui';
 
 import { SavedWorkout, Routine } from '../../types';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -177,49 +177,51 @@ export default function Workout() {
                     />
 				</View>
 					
-                <View>
-                    {/* Saved Workouts Section (Quick Access) */}
-                    <View className="flex-row justify-between items-center mb-3 px-4">
-                         <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">Saved Workouts</Text>
-                         <View className="flex-row items-center gap-4">
-                            <TouchableOpacity onPress={handleCreateSavedWorkout}>
-                                <Text className="text-primary dark:text-primary-dark">+ New</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => router.push('/workouts/saved')}>
-                                <Text className="text-primary dark:text-primary-dark">See All</Text>
-                            </TouchableOpacity>
-                         </View>
-                    </View>
-                     {savedWorkouts.length === 0 ? (
-                        <View className="p-4 mx-4 items-center justify-center border border-dashed border-light dark:border-dark rounded-xl">
-                            <Text className="text-gray-500 dark:text-gray-400 mb-2">No saved workouts.</Text>
-                            <TouchableOpacity onPress={handleCreateSavedWorkout} className="p-2.5 rounded-lg border border-light dark:border-dark bg-light dark:bg-dark">
-                                <Text className="text-light dark:text-dark">Create a Workout</Text>
-                            </TouchableOpacity>
+                <View className="px-4 mb-2">
+                    <RaisedCard className="p-4">
+                        {/* Saved Workouts Header */}
+                        <View className="flex-row justify-between items-center mb-3">
+                             <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">Saved Workouts</Text>
+                             <View className="flex-row items-center gap-4">
+                                <TouchableOpacity onPress={handleCreateSavedWorkout}>
+                                    <Text className="text-primary dark:text-primary-dark">+ New</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => router.push('/workouts/saved')}>
+                                    <Text className="text-primary dark:text-primary-dark">See All</Text>
+                                </TouchableOpacity>
+                             </View>
                         </View>
-                    ) : (
- 						<FlatList
-							data={savedWorkouts}
-							scrollEnabled={false}
-							keyExtractor={(i) => i.id}
-                            style={{ overflow: 'visible' }}
-                            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8 }}
-                            ItemSeparatorComponent={() => <View className="h-2" />}
-							renderItem={({item}) => {
-                                const isExpanded = expandedWorkoutId === item.id;
-                                return (
-                                    <SavedWorkoutItem
-                                        item={item}
-                                        isExpanded={isExpanded}
-                                        onPress={() => setExpandedWorkoutId(isExpanded ? null : item.id)}
-                                        onEdit={() => handleEditSavedWorkout(item)}
-                                        onStart={() => handleStartSavedWorkout(item)}
-                                        onDelete={() => deleteSavedWorkout(item.id, { skipConfirmation: true })}
-                                    />
-                                );
-                            }}
-						/>
-                    )}
+
+                        {savedWorkouts.length === 0 ? (
+                            <View className="items-center justify-center border border-dashed border-light dark:border-dark rounded-xl p-4">
+                                <Text className="text-gray-500 dark:text-gray-400 mb-2">No saved workouts.</Text>
+                                <TouchableOpacity onPress={handleCreateSavedWorkout} className="p-2.5 rounded-lg border border-light dark:border-dark bg-light dark:bg-dark">
+                                    <Text className="text-light dark:text-dark">Create a Workout</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <FlatList
+                                data={savedWorkouts}
+                                scrollEnabled={false}
+                                keyExtractor={(i) => i.id}
+                                style={{ overflow: 'visible' }}
+                                ItemSeparatorComponent={() => <View />}
+                                renderItem={({item}) => {
+                                    const isExpanded = expandedWorkoutId === item.id;
+                                    return (
+                                        <SavedWorkoutItem
+                                            item={item}
+                                            isExpanded={isExpanded}
+                                            onPress={() => setExpandedWorkoutId(isExpanded ? null : item.id)}
+                                            onEdit={() => handleEditSavedWorkout(item)}
+                                            onStart={() => handleStartSavedWorkout(item)}
+                                            onDelete={() => deleteSavedWorkout(item.id, { skipConfirmation: true })}
+                                        />
+                                    );
+                                }}
+                            />
+                        )}
+                    </RaisedCard>
                 </View>
 
                     <View className="h-6" />

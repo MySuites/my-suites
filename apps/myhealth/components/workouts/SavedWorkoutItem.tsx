@@ -24,7 +24,7 @@ export const SavedWorkoutItem = ({
         <ActionCard 
             onPress={onPress}
             activeOpacity={0.9}
-            className="p-0 mb-0 border border-light dark:border-dark"
+            className="p-0 mb-0"
             onDelete={onDelete}
             onEdit={onEdit}
         >

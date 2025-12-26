@@ -21,15 +21,10 @@ export function ActionCard({ children, style, className, onPress, activeOpacity 
   const { width } = useWindowDimensions();
   
   // Flat ActionCard: Simple background, border, no heavy neumorphic shadows
-  const baseClassName = `bg-white dark:bg-zinc-900 rounded-xl p-3 w-full mb-1 border border-gray-200 dark:border-gray-800 ${className || ''}`;
+  const baseClassName = `bg-light dark:bg-dark-lighter rounded-xl p-3 w-full ${className || ''}`;
 
   // Minimal shadow for separation, but flat style
   const shadowStyle = { 
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 }, 
-      shadowOpacity: 0.05, 
-      shadowRadius: 2, 
-      elevation: 2,
       overflow: 'visible' as const
   };
 
