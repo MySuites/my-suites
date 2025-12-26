@@ -29,13 +29,8 @@ export const SavedWorkoutItem = ({
             onEdit={onEdit}
         >
             <View className={`flex-row justify-between items-center ${isExpanded ? 'border-b border-light dark:border-dark' : ''}`}>
-                <View 
-                    className="flex-row items-center flex-1 mr-2"
-                >
-                    <View className="flex-1">
+                <View className="flex-row items-center flex-1 mr-2">
                         <Text className="font-semibold text-light dark:text-dark text-lg mb-0.5" numberOfLines={1}>{item.name}</Text>
-                        <Text className="text-gray-500 dark:text-gray-400 text-sm">{item.exercises?.length || 0} Exercises</Text>
-                    </View>
                 </View>
                 
                 <View className="flex-row items-center">
