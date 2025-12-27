@@ -18,13 +18,15 @@ import { ActiveRoutineCard } from '../../components/routines/ActiveRoutineCard';
 import { SavedWorkoutItem } from '../../components/workouts/SavedWorkoutItem';
 import { WorkoutPreviewModal } from '../../components/workouts/WorkoutPreviewModal';
 import { useRoutineTimeline } from '../../hooks/routines/useRoutineTimeline';
-import { HollowedCard, RaisedButton, RaisedCard } from '@mysuite/ui';
+import { HollowedCard, RaisedButton, RaisedCard, useUITheme } from '@mysuite/ui';
 
 import { SavedWorkout, Routine } from '../../types';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { IconSymbol } from '../../components/ui/icon-symbol';
 
 export default function Workout() {
 	const router = useRouter();
+    const theme = useUITheme();
     
 	// consume shared state
     const {
@@ -183,12 +185,28 @@ export default function Workout() {
                         <View className="flex-row justify-between items-center mb-3">
                              <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">Saved Workouts</Text>
                              <View className="flex-row items-center gap-4">
-                                <TouchableOpacity onPress={handleCreateSavedWorkout}>
-                                    <Text className="text-primary dark:text-primary-dark">+ New</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={() => router.push('/workouts/saved')}>
-                                    <Text className="text-primary dark:text-primary-dark">See All</Text>
-                                </TouchableOpacity>
+                                <RaisedButton 
+                                    onPress={handleCreateSavedWorkout}
+                                    borderRadius={20}
+                                    className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
+                                >
+                                    <IconSymbol 
+                                        name="plus" 
+                                        size={20} 
+                                        color={theme.primary} 
+                                    />
+                                </RaisedButton>
+                                <RaisedButton 
+                                    onPress={() => router.push('/workouts/saved')}
+                                    borderRadius={20}
+                                    className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
+                                >
+                                    <IconSymbol 
+                                        name="line.3.horizontal" 
+                                        size={20} 
+                                        color={theme.primary} 
+                                    />
+                                </RaisedButton>
                              </View>
                         </View>
 
@@ -288,43 +306,61 @@ export default function Workout() {
                     </View>
 
                     {/* Routines Section */}
-                    <View>
-                        <View className="flex-row justify-between items-center mb-3 mt-6 px-4">
-                            <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">My Routines</Text>
-                             <View className="flex-row items-center gap-4">
-                                <TouchableOpacity onPress={handleCreateRoutine}>
-                                    <Text className="text-primary dark:text-primary-dark">+ New</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={() => router.push('/routines')}>
-                                    <Text className="text-primary dark:text-primary-dark">See All</Text>
-                                </TouchableOpacity>
-                             </View>
-                        </View>
-                        
-                        {routines.length === 0 ? (
-                            <View className="p-4 mx-4 items-center justify-center border border-dashed border-light dark:border-dark rounded-xl">
-                                <Text className="text-gray-500 dark:text-gray-400 mb-2">No routines yet.</Text>
-                                <TouchableOpacity onPress={handleCreateRoutine} className="p-2.5 rounded-lg border border-light dark:border-dark bg-light dark:bg-dark">
-                                    <Text className="text-light dark:text-dark">Create a Routine</Text>
-                                </TouchableOpacity>
+                    <View className="px-4 mb-2 mt-6">
+                        <RaisedCard className="p-4">
+                            <View className="flex-row justify-between items-center mb-3">
+                                <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">My Routines</Text>
+                                 <View className="flex-row items-center gap-4">
+                                    <RaisedButton 
+                                        onPress={handleCreateRoutine}
+                                        borderRadius={20}
+                                        className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
+                                    >
+                                        <IconSymbol 
+                                            name="plus" 
+                                            size={20} 
+                                            color={theme.primary} 
+                                        />
+                                    </RaisedButton>
+                                    <RaisedButton 
+                                        onPress={() => router.push('/routines')}
+                                        borderRadius={20}
+                                        className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
+                                    >
+                                        <IconSymbol 
+                                            name="line.3.horizontal" 
+                                            size={20} 
+                                            color={theme.primary} 
+                                        />
+                                    </RaisedButton>
+                                 </View>
                             </View>
-                        ) : (
-                             <FlatList
-                                data={routines.slice(0, 5)}
-                                scrollEnabled={false}
-                                keyExtractor={(i) => i.id}
-                                style={{ overflow: 'visible' }}
-                                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8 }}
-                                renderItem={({item}) => (
-                                    <RoutineCard 
-                                        routine={item} 
-                                        onPress={() => startActiveRoutine(item.id)}
-                                        onEdit={() => handleEditRoutine(item)}
-                                        onDelete={() => deleteRoutine(item.id)}
-                                    />
-                                )}
-                            />
-                        )}
+                            
+                            {routines.length === 0 ? (
+                                <View className="items-center justify-center border border-dashed border-light dark:border-dark rounded-xl p-4">
+                                    <Text className="text-gray-500 dark:text-gray-400 mb-2">No routines yet.</Text>
+                                    <TouchableOpacity onPress={handleCreateRoutine} className="p-2.5 rounded-lg border border-light dark:border-dark bg-light dark:bg-dark">
+                                        <Text className="text-light dark:text-dark">Create a Routine</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ) : (
+                                 <FlatList
+                                    data={routines.slice(0, 5)}
+                                    scrollEnabled={false}
+                                    keyExtractor={(i) => i.id}
+                                    style={{ overflow: 'visible' }}
+                                    ItemSeparatorComponent={() => <View />}
+                                    renderItem={({item}) => (
+                                        <RoutineCard 
+                                            routine={item} 
+                                            onPress={() => startActiveRoutine(item.id)}
+                                            onEdit={() => handleEditRoutine(item)}
+                                            onDelete={() => deleteRoutine(item.id)}
+                                        />
+                                    )}
+                                />
+                            )}
+                        </RaisedCard>
                     </View>
                     
 			</ScrollView>

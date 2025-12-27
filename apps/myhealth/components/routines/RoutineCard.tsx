@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { RaisedCard } from '../../../../packages/ui/RaisedCard';
-
+import { View, Text } from 'react-native';
+import { ActionCard } from '../../../../packages/ui/ActionCard';
+import { RaisedButton } from '../../../../packages/ui/RaisedButton';
 
 interface RoutineCardProps {
   routine: {
@@ -21,7 +21,13 @@ export function RoutineCard({ routine, onPress, onLongPress, onDelete, onEdit }:
   const totalDays = routine.sequence.length;
 
   return (
-    <RaisedCard onDelete={onDelete} onEdit={onEdit} onPress={onPress}>
+    <ActionCard 
+        onPress={onPress} 
+        onDelete={onDelete} 
+        onEdit={onEdit}
+        className="p-0 mb-0"
+        activeOpacity={0.9}
+    >
       <View className="flex-row justify-between items-center mb-0">
         <View className="flex-1 mr-2">
             <Text className="text-lg font-bold text-light dark:text-dark mb-1" numberOfLines={1}>
@@ -33,14 +39,14 @@ export function RoutineCard({ routine, onPress, onLongPress, onDelete, onEdit }:
         </View>
 
         <View className="flex-row items-center gap-2">
-            <TouchableOpacity 
+            <RaisedButton 
+                title="Set Active"
                 onPress={onPress}
-                className="bg-primary dark:bg-primary-dark px-4 py-2 rounded-lg"
-            >
-                <Text className="text-white font-semibold">Set Active</Text>
-            </TouchableOpacity>
+                className="px-4 py-2"
+                textClassName="text-white font-semibold"
+            />
         </View>
       </View>
-    </RaisedCard>
+    </ActionCard>
   );
 }

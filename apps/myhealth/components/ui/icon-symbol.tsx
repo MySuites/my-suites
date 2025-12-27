@@ -1,10 +1,9 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolViewProps } from 'expo-symbols';
-import { ComponentProps } from 'react';
+
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 import { hslToHex } from '../../utils/colors';
 
-type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
+
 type IconSymbolName = keyof typeof MAPPING;
 
 /**
@@ -31,9 +30,11 @@ const MAPPING = {
   'scale.3d': 'scale',
   'play.fill': 'play-arrow',
   'ellipsis': 'menu',
+  'menu': 'menu',
+  'line.3.horizontal': 'menu',
   'magnifyingglass': 'search',
   'xmark.circle.fill': 'cancel',
-} as IconMapping;
+} as const;
 
 
 
