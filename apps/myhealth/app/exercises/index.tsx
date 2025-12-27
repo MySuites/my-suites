@@ -43,30 +43,30 @@ export default function ExercisesScreen() {
 
   return (
     <View className="flex-1 bg-light dark:bg-dark">
-      <View className="flex-row items-center justify-between p-4 border-b border-bg-dark dark:border-white/10">
+      <View className="flex-row items-center justify-between p-4 border-b border-light-darker dark:border-highlight-dark">
         <TouchableOpacity onPress={() => router.back()} className="p-2">
-           <Text className="text-base leading-[30px] text-[#0a7ea4]">Close</Text>
+           <Text className="text-base leading-[30px] text-primary dark:text-primary-dark">Close</Text>
         </TouchableOpacity>
-        <Text className="text-xl font-bold">Exercises</Text>
+        <Text className="text-xl font-bold text-light dark:text-dark">Exercises</Text>
         <TouchableOpacity onPress={() => router.push('/exercises/create')} className="p-2">
-            <Text className="text-base leading-[30px] text-[#0a7ea4]">Create</Text>
+            <Text className="text-base leading-[30px] text-primary dark:text-primary-dark">Create</Text>
         </TouchableOpacity> 
       </View>
       
-      <View className="px-4 py-3 border-b border-bg-dark dark:border-white/10">
-        <View className="flex-row items-center bg-light dark:bg-dark rounded-lg px-2.5 h-10">
-            <IconSymbol name="magnifyingglass" size={20} color={theme.icon || '#888'} />
+      <View className="px-4 py-3 border-b border-light-darker dark:border-highlight-dark">
+        <View className="flex-row items-center bg-light dark:bg-dark rounded-lg px-2.5 h-10 border border-light-darker dark:border-highlight-dark">
+            <IconSymbol name="magnifyingglass" size={20} color={theme.textMuted || '#888'} />
              <TextInput
                 className="flex-1 ml-2 text-base h-full text-light dark:text-dark"
                 placeholder="Search exercises..."
-                placeholderTextColor={theme.icon || '#888'}
+                placeholderTextColor={theme.textMuted}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 autoCorrect={false}
             />
             {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchQuery('')}>
-                     <IconSymbol name="xmark.circle.fill" size={20} color={theme.icon || '#888'} />
+                     <IconSymbol name="xmark.circle.fill" size={20} color={theme.textMuted || '#888'} />
                 </TouchableOpacity>
             )}
         </View>
@@ -82,7 +82,7 @@ export default function ExercisesScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity 
-            className="flex-row items-center justify-between p-4 border-b border-bg-dark dark:border-white/10"
+            className="flex-row items-center justify-between p-4 border-b border-light-darker dark:border-highlight-dark"
             onPress={() => {
                 router.push({
                     pathname: '/exercises/details',
@@ -91,8 +91,8 @@ export default function ExercisesScreen() {
             }}
           >
             <View>
-                <Text className="text-base leading-6 font-semibold">{item.name}</Text>
-                <Text style={{color: theme.icon ?? '#888', fontSize: 12}}>
+                <Text className="text-base leading-6 font-semibold text-light dark:text-dark">{item.name}</Text>
+                <Text className="text-xs text-light-muted dark:text-dark-muted">
                     {item.category} • {item.properties?.join(', ') || item.rawType}
                 </Text> 
             </View>
@@ -108,7 +108,7 @@ export default function ExercisesScreen() {
         contentContainerStyle={{ paddingBottom: 120 }}
         ListEmptyComponent={
             <View className="p-5 items-center">
-                <Text style={{color: theme.icon}} className="text-base leading-6">No exercises found.</Text>
+                <Text className="text-base leading-6 text-light-muted dark:text-dark-muted">No exercises found.</Text>
             </View>
         }
         showsVerticalScrollIndicator={false}
