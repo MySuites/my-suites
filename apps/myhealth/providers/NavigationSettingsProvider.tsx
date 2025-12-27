@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type NavigationSettingsContextType = {
   isFabEnabled: boolean;
@@ -20,25 +19,16 @@ export const useNavigationSettings = () => {
 
 const KEY_IS_FAB_ENABLED = 'setting.navigation.isFabEnabled';
 
-const isWeb = Platform.OS === 'web';
-
 async function getItem(key: string): Promise<string | null> {
-  if (isWeb) {
-    return localStorage.getItem(key);
-  }
-  return await SecureStore.getItemAsync(key);
+  return await AsyncStorage.getItem(key);
 }
 
 async function setItem(key: string, value: string): Promise<void> {
-  if (isWeb) {
-    localStorage.setItem(key, value);
-    return;
-  }
-  await SecureStore.setItemAsync(key, value);
+  await AsyncStorage.setItem(key, value);
 }
 
 export function NavigationSettingsProvider({ children }: { children: React.ReactNode }) {
-  const [isFabEnabled, setIsFabEnabled] = useState(false);
+  const [isFabEnabled, setIsFabEnabled] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -47,6 +37,8 @@ export function NavigationSettingsProvider({ children }: { children: React.React
         const value = await getItem(KEY_IS_FAB_ENABLED);
         if (value !== null) {
           setIsFabEnabled(value === 'true');
+        } else {
+           setIsFabEnabled(true); // Default to true if not set
         }
       } catch (error) {
         console.error('Failed to load navigation settings:', error);

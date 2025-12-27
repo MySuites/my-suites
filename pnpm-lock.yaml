@@ -281,6 +281,9 @@ importers:
 
   packages/auth:
     dependencies:
+      '@react-native-async-storage/async-storage':
+        specifier: 2.2.0
+        version: 2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))
       '@supabase/supabase-js':
         specifier: ^2.83.0
         version: 2.83.0
@@ -7233,7 +7236,7 @@ snapshots:
       wrap-ansi: 7.0.0
       ws: 8.18.3
     optionalDependencies:
-      expo-router: 6.0.17(d7c2344ceaec293ce94da3034de27211)
+      expo-router: 6.0.17(5c470d4e3386b83b8d0bf34e68680b17)
       react-native: 0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0)
     transitivePeerDependencies:
       - bufferutil

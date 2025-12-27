@@ -12,12 +12,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { ActiveWorkoutProvider } from '../providers/ActiveWorkoutProvider'; // Fixed import path
 import { WorkoutManagerProvider } from '../providers/WorkoutManagerProvider';
-import { ActiveWorkoutHeader } from '../components/workouts/ActiveWorkoutHeader';
-import { ActiveWorkoutOverlay } from '../components/workouts/ActiveWorkoutOverlay'; 
-import { QuickNavigationButton } from '../components/ui/QuickNavigationMenu';
-import { QuickUtilityButton } from '../components/ui/QuickUtilityMenu';
 import { FloatingButtonProvider } from '../providers/FloatingButtonContext';
-import { GlobalOverlay } from '../components/ui/GlobalOverlay';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -27,16 +22,17 @@ export const unstable_settings = {
 
 function RootLayoutNav() {
   const { session } = useAuth();
-  const router = useRouter();
+  // const router = useRouter();
+  const router = null;
 
-  useEffect(() => {
-    if (!router) return;
-    if (session) {
-      setTimeout(() => (router as any).replace('/(tabs)'), 0);
-    } else {
-      setTimeout(() => (router as any).replace('/auth'), 0);
-    }
-  }, [session, router]);
+  // useEffect(() => {
+  //   if (!router) return;
+  //   if (session) {
+  //     setTimeout(() => (router as any).replace('/(tabs)'), 0);
+  //   } else {
+  //     setTimeout(() => (router as any).replace('/auth'), 0);
+  //   }
+  // }, [session, router]);
 
   return (
     <Stack>
@@ -64,8 +60,25 @@ function RootLayoutNav() {
 
 
 
+// Separate component to consume the theme context
+function RootLayoutContent() {
+  const colorScheme = useColorScheme(); // correct hook usage inside provider
+
+  return (
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <WorkoutManagerProvider>
+        <ActiveWorkoutProvider>
+          <FloatingButtonProvider>
+            <RootLayoutNav />
+          </FloatingButtonProvider>
+          <StatusBar style="auto" />
+        </ActiveWorkoutProvider>
+      </WorkoutManagerProvider>
+    </ThemeProvider>
+  );
+}
+
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const loaded = true;
   useEffect(() => {
     if (loaded) {
@@ -82,22 +95,7 @@ export default function RootLayout() {
       <AuthProvider>
         <NavigationSettingsProvider>
           <AppThemeProvider>
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-              <WorkoutManagerProvider>
-                <ActiveWorkoutProvider>
-                  <FloatingButtonProvider>
-                    <RootLayoutNav />
-                    <ActiveWorkoutHeader />
-                    <ActiveWorkoutOverlay />
-                    <GlobalOverlay>
-                      <QuickNavigationButton />
-                      <QuickUtilityButton />
-                    </GlobalOverlay>
-                  </FloatingButtonProvider>
-                  <StatusBar style="auto" />
-                </ActiveWorkoutProvider>
-              </WorkoutManagerProvider>
-            </ThemeProvider>
+            <RootLayoutContent />
           </AppThemeProvider>
         </NavigationSettingsProvider>
       </AuthProvider>

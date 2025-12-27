@@ -35,6 +35,18 @@ const MAPPING = {
   'magnifyingglass': 'search',
   'xmark.circle.fill': 'cancel',
   'scalemass.fill': 'monitor-weight',
+  'arrow.up': 'arrow-upward',
+  'arrow.down': 'arrow-downward',
+  'trash.fill': 'delete',
+  'minus.circle.fill': 'remove-circle',
+  'plus.circle': 'add-circle',
+  'checkmark': 'check',
+  'xmark': 'close',
+  'arrow.counterclockwise': 'refresh',
+  'checkmark.circle.fill': 'check-circle',
+  'timer': 'timer',
+  'calendar': 'calendar-today',
+  'moon.zzz.fill': 'nightlight',
 } as const;
 
 

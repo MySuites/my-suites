@@ -1,92 +1,28 @@
 // packages/auth/index.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SupabaseClient, createClient, Session, User } from '@supabase/supabase-js';
-// Avoid importing `expo-secure-store` at module evaluation time because
-// the native module may not be available in the running environment
-// (e.g. plain Node, web, or Expo Go without the module). Require it
-// lazily inside a try/catch so the bundle doesn't crash when the native
-// module is missing.
-const safeSecureStore = () => {
-  const isReactNative = typeof navigator !== 'undefined' && (navigator as any).product === 'ReactNative';
-  if (!isReactNative) return null;
-  try {
-    // Use require so bundlers don't eagerly fail when the native module
-    // isn't present in the runtime. This can still throw if the module
-    // isn't installed — catch and return null in that case.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const SecureStore = require('expo-secure-store');
-    return SecureStore;
-  } catch (e) {
-    return null;
-  }
-};
-
-const ExpoSecureStoreAdapter = {
+const AsyncStorageAdapter = {
   getItem: async (key: string) => {
-    // Web support: use localStorage
-    if (typeof window !== 'undefined' && window.localStorage) {
-      return window.localStorage.getItem(key);
-    }
-    
-    const SecureStore = safeSecureStore();
-    if (!SecureStore || !SecureStore.getItemAsync) return Promise.resolve(null);
     try {
-      const value = await SecureStore.getItemAsync(key);
-      // By default avoid noisy repeated getItem logs. Enable by setting
-      // `EXPO_SECURE_STORE_DEBUG=true` in your environment if needed.
-      const shouldDebug = typeof __DEV__ !== 'undefined' && __DEV__ && process.env.EXPO_SECURE_STORE_DEBUG === 'true';
-      if (shouldDebug) {
-        try {
-          const parsed = value ? JSON.parse(value) : null;
-          // eslint-disable-next-line no-console
-          console.debug('[ExpoSecureStoreAdapter] getItem', key, parsed ? { hasRefreshToken: !!parsed.refresh_token, keys: Object.keys(parsed) } : null);
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.debug('[ExpoSecureStoreAdapter] getItem (non-json)', key, value ? value.slice(0, 200) : null);
-        }
-      }
-      return value;
-    } catch (err) {
+      return await AsyncStorage.getItem(key);
+    } catch (e) {
       return null;
     }
   },
   setItem: async (key: string, value: string) => {
-    // Web support: use localStorage
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.setItem(key, value);
-      return;
-    }
-
-    const SecureStore = safeSecureStore();
-    if (!SecureStore || !SecureStore.setItemAsync) return Promise.resolve();
     try {
-      if (typeof __DEV__ !== 'undefined' && __DEV__) {
-        // eslint-disable-next-line no-console
-        console.debug('[ExpoSecureStoreAdapter] setItem', key, value ? (value.length > 200 ? value.slice(0, 200) + '...': value) : null);
-      }
-      return SecureStore.setItemAsync(key, value);
-    } catch (err) {
-      return;
+      await AsyncStorage.setItem(key, value);
+    } catch (e) {
+      // ignore
     }
   },
   removeItem: async (key: string) => {
-    // Web support: use localStorage
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.removeItem(key);
-      return;
-    }
-
-    const SecureStore = safeSecureStore();
-    if (!SecureStore || !SecureStore.deleteItemAsync) return Promise.resolve();
     try {
-      if (typeof __DEV__ !== 'undefined' && __DEV__) {
-        // eslint-disable-next-line no-console
-        console.debug('[ExpoSecureStoreAdapter] removeItem', key);
-      }
-      return SecureStore.deleteItemAsync(key);
-    } catch (err) {
-      return;
+      await AsyncStorage.removeItem(key);
+    } catch (e) {
+      // ignore
     }
   },
 };
@@ -118,7 +54,7 @@ const getSupabaseUrl = () => {
 
 export const supabase = createClient(getSupabaseUrl(), supabaseAnonKey, {
   auth: {
-    storage: ExpoSecureStoreAdapter,
+    storage: AsyncStorageAdapter,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,

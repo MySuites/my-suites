@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useColorScheme as rnUseColorScheme } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '../constants/theme';
 import { UIThemeProvider } from '@mysuite/ui';
 import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
@@ -25,9 +25,10 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
   useEffect(() => {
     (async () => {
       try {
-        const stored = await SecureStore.getItemAsync(THEME_PREF_KEY);
+        const stored = await AsyncStorage.getItem(THEME_PREF_KEY);
+        // Cast stored value to ThemePreference if it matches
         if (stored === 'light' || stored === 'dark' || stored === 'system') {
-          setPreferenceState(stored);
+          setPreferenceState(stored as ThemePreference);
         }
       } catch {
         // ignore
@@ -44,7 +45,7 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
 
   const setPreference = async (p: ThemePreference) => {
     try {
-      await SecureStore.setItemAsync(THEME_PREF_KEY, p);
+      await AsyncStorage.setItem(THEME_PREF_KEY, p);
     } catch {
       // ignore
     }
