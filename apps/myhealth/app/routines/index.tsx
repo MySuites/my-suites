@@ -1,7 +1,7 @@
 import React from 'react';
 import { FlatList, TouchableOpacity, View, Alert, Text } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useUITheme, RaisedButton } from '@mysuite/ui';
+import { useUITheme, RaisedButton, RaisedCard } from '@mysuite/ui';
 import { IconSymbol } from '../../components/ui/icon-symbol';
 import { useWorkoutManager } from '../../hooks/workouts/useWorkoutManager';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
@@ -90,7 +90,8 @@ export default function RoutinesScreen() {
             data={routines}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <View className="flex-row items-center justify-between p-4 border-b border-light-darker dark:border-highlight-dark">
+
+              <RaisedCard className="flex-row items-center justify-between p-4 mb-3">
                 <View className="flex-1">
                     <Text className="text-base leading-6 font-semibold text-light dark:text-dark">{item.name}</Text>
                     <Text className="text-xs text-light-muted dark:text-dark-muted">
@@ -111,10 +112,10 @@ export default function RoutinesScreen() {
                         <Text className="text-sm text-light dark:text-dark">Delete</Text>
                     </TouchableOpacity>
                 </View>
-              </View>
+              </RaisedCard>
             )}
             className="flex-1"
-            contentContainerStyle={{ paddingBottom: 120 }}
+            contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 16, paddingTop: 16 }}
           />
       )}
     </View>
