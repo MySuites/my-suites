@@ -107,13 +107,13 @@ export default function CreateRoutineScreen() {
 
     return (
         <View className="flex-1 bg-light dark:bg-dark">
-             <View className="flex-row justify-between items-center p-4 border-b border-bg-dark dark:border-white/10 pt-4 android:pt-10">
+             <View className="flex-row justify-between items-center p-4 border-b border-light-darker dark:border-highlight-dark pt-4 android:pt-10">
                 <TouchableOpacity onPress={() => router.back()} className="p-2">
-                     <Text className="text-base leading-[30px] text-[#0a7ea4]">Cancel</Text>
+                     <Text className="text-base leading-[30px] text-primary dark:text-primary-dark">Cancel</Text>
                 </TouchableOpacity>
-                <Text className="text-xl font-bold">{editingRoutineId ? 'Edit Routine' : 'Create Routine'}</Text>
+                <Text className="text-xl font-bold text-light dark:text-dark">{editingRoutineId ? 'Edit Routine' : 'Create Routine'}</Text>
                 <TouchableOpacity disabled={isSaving} onPress={handleSaveRoutine} className="p-2">
-                    {isSaving ? <ActivityIndicator size="small" /> : <Text className="text-base leading-[30px] text-[#0a7ea4]" style={{ fontWeight: 'bold' }}>Save</Text>}
+                    {isSaving ? <ActivityIndicator size="small" /> : <Text className="text-base leading-[30px] text-primary dark:text-primary-dark" style={{ fontWeight: 'bold' }}>Save</Text>}
                 </TouchableOpacity>
             </View>
 
@@ -123,22 +123,22 @@ export default function CreateRoutineScreen() {
                         placeholder="Routine Name" 
                         value={routineDraftName} 
                         onChangeText={setRoutineDraftName} 
-                        className="bg-light dark:bg-dark text-light dark:text-dark p-4 rounded-xl text-base border border-transparent dark:border-white/10 mb-6"
-                        placeholderTextColor={theme.icon}
+                        className="bg-light-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-base border border-transparent dark:border-highlight-dark mb-6"
+                        placeholderTextColor={theme.textMuted || '#888'}
                     />
                     
                     <View className="flex-row justify-between items-center mb-6">
-                        <Text className="text-base leading-6 font-semibold">Schedule</Text>
+                        <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Schedule</Text>
                         <TouchableOpacity onPress={() => setIsAddingDay(true)}>
-                            <Text className="text-base leading-[30px] text-[#0a7ea4]" style={{ fontSize: 16 }}>+ Add Day</Text>
+                            <Text className="text-base leading-[30px] text-primary dark:text-primary-dark" style={{ fontSize: 16 }}>+ Add Day</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
                 {routineSequence.length === 0 ? (
                     <View className="flex-1 justify-center items-center opacity-50 px-4">
-                        <Text className="leading-6 mb-2 text-lg" style={{ color: theme.icon }}>No days added yet</Text>
+                        <Text className="leading-6 mb-2 text-lg text-light-muted dark:text-dark-muted">No days added yet</Text>
                         <TouchableOpacity onPress={() => setIsAddingDay(true)}>
-                            <Text className="text-base leading-[30px] text-[#0a7ea4]" style={{ fontSize: 18 }}>Add Day</Text>
+                            <Text className="text-base leading-[30px] text-primary dark:text-primary-dark" style={{ fontSize: 18 }}>Add Day</Text>
                         </TouchableOpacity>
                     </View>
                 ) : (
@@ -171,7 +171,7 @@ export default function CreateRoutineScreen() {
                         }} 
                         className="py-3 items-center mt-2 mb-6"
                     >
-                        <Text className="text-red-500 font-semibold text-base">Delete Routine</Text>
+                        <Text className="text-danger font-semibold text-base">Delete Routine</Text>
                     </TouchableOpacity>
                 )}
             </View>
