@@ -79,8 +79,8 @@ export default function SavedWorkoutsScreen() {
             renderItem={({ item }) => (
               <TouchableOpacity onPress={() => {
                   router.push({
-                      pathname: '/workouts/details',
-                      params: { workout: JSON.stringify(item) }
+                      pathname: '/workouts/create',
+                      params: { id: item.id }
                   });
               }} activeOpacity={0.7}>
               <RaisedCard className="flex-row items-center justify-between p-4 mb-3">
