@@ -139,7 +139,7 @@ export default function Workout() {
 				showsVerticalScrollIndicator={false}
 			>
 				{/* Controls Row */}
-				<View className="flex-row gap-2 my-3 px-4">
+				<View className="flex-row gap-2 my-6 px-4">
                     <RaisedButton 
                         title="Exercises" 
                         onPress={() => router.push('/exercises' as any)} 
