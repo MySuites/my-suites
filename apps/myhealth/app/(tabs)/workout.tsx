@@ -280,6 +280,7 @@ export default function Workout() {
                                     onWorkoutPress={setPreviewWorkout}
                                     viewMode={routineViewMode}
                                     onViewModeChange={setRoutineViewMode}
+                                    onMenuPress={() => router.push('/routines')}
                                 />
                             </View>
                         ) : (
@@ -287,6 +288,17 @@ export default function Workout() {
                                 <RaisedCard className="p-4">
                                     <View className="flex-row justify-between items-center mb-3">
                                         <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">Active Routine</Text>
+                                        <RaisedButton 
+                                            onPress={() => router.push('/routines')}
+                                            borderRadius={20}
+                                            className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
+                                        >
+                                            <IconSymbol 
+                                                name="line.3.horizontal" 
+                                                size={20} 
+                                                color={theme.primary} 
+                                            />
+                                        </RaisedButton>
                                     </View>
                                     <HollowedCard className="p-4">
                                         <View className="p-5 items-center">

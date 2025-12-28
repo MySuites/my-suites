@@ -31,6 +31,7 @@ interface ActiveRoutineCardProps {
   onWorkoutPress: (workout: any) => void;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
+  onMenuPress: () => void;
 }
 
 export function ActiveRoutineCard({
@@ -45,6 +46,7 @@ export function ActiveRoutineCard({
   onWorkoutPress,
   viewMode,
   onViewModeChange,
+  onMenuPress,
 }: ActiveRoutineCardProps) {
   const theme = useUITheme();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -57,6 +59,7 @@ export function ActiveRoutineCard({
         <ActiveRoutineHeader
           routineName={activeRoutineObj.name}
           onClearRoutine={onClearRoutine}
+          onMenuPress={onMenuPress}
         />
         {timelineDays.length === 0 ? (
           <ActiveRoutineCompletion onClearRoutine={onClearRoutine} />
