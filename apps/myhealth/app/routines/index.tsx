@@ -87,6 +87,12 @@ export default function RoutinesScreen() {
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
 
+              <TouchableOpacity onPress={() => {
+                  router.push({
+                      pathname: '/routines/details',
+                      params: { routine: JSON.stringify(item) }
+                  });
+              }} activeOpacity={0.7}>
               <RaisedCard className="flex-row items-center justify-between p-4 mb-3">
                 <View className="flex-1">
                     <Text className="text-base leading-6 font-semibold text-light dark:text-dark">{item.name}</Text>
@@ -96,19 +102,26 @@ export default function RoutinesScreen() {
                 </View>
                 <View className="flex-row gap-2">
                     <TouchableOpacity 
-                        onPress={() => handleSetRoutine(item.id, item.name, item.sequence)} 
+                        onPress={(e) => {
+                            e.stopPropagation();
+                            handleSetRoutine(item.id, item.name, item.sequence);
+                        }} 
                         className="py-1.5 px-3 rounded-md bg-primary dark:bg-primary-dark"
                     >
                         <Text className="text-white text-sm font-semibold">Set Active</Text>
                     </TouchableOpacity>
                     <TouchableOpacity 
-                        onPress={() => handleDelete(item.id, item.name)} 
+                        onPress={(e) => {
+                            e.stopPropagation();
+                            handleDelete(item.id, item.name);
+                        }} 
                         className="py-1.5 px-3 rounded-md border border-light-darker dark:border-highlight-dark"
                     >
                         <Text className="text-sm text-light dark:text-dark">Delete</Text>
                     </TouchableOpacity>
                 </View>
               </RaisedCard>
+              </TouchableOpacity>
             )}
             className="flex-1"
             contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 16, paddingTop: 16 }}
