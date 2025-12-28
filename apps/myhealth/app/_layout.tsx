@@ -38,7 +38,7 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="auth/index" options={{ headerShown: false }} />
       <Stack.Screen name="settings/index" options={{ headerShown: false }} />
-      <Stack.Screen name="exercises/index" options={{ presentation: 'modal', title: 'Exercises', headerShown: false }} />
+      <Stack.Screen name="exercises/index" options={{ title: 'Exercises', headerShown: false }} />
       <Stack.Screen name="workouts/saved" options={{ presentation: 'modal', title: 'Saved Workouts', headerShown: false }} />
       <Stack.Screen name="routines/index" options={{ presentation: 'modal', title: 'My Routines', headerShown: false }} />
       <Stack.Screen name="workouts/create" options={{ presentation: 'modal', title: 'Create Workout', headerShown: false }} />

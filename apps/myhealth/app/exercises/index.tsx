@@ -8,6 +8,8 @@ import { fetchExercises } from '../../hooks/workouts/useWorkoutManager';
 import { IconSymbol } from '../../components/ui/icon-symbol';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+
 export default function ExercisesScreen() {
   const router = useRouter();
   const theme = useUITheme();
@@ -43,15 +45,19 @@ export default function ExercisesScreen() {
 
   return (
     <View className="flex-1 bg-light dark:bg-dark">
-      <View className="flex-row items-center justify-between p-4 border-b border-light-darker dark:border-highlight-dark">
-        <TouchableOpacity onPress={() => router.back()} className="p-2">
-           <Text className="text-base leading-[30px] text-primary dark:text-primary-dark">Close</Text>
-        </TouchableOpacity>
-        <Text className="text-xl font-bold text-light dark:text-dark">Exercises</Text>
-        <TouchableOpacity onPress={() => router.push('/exercises/create')} className="p-2">
-            <Text className="text-base leading-[30px] text-primary dark:text-primary-dark">Create</Text>
-        </TouchableOpacity> 
-      </View>
+      <ScreenHeader
+        title="Exercises"
+        leftAction={
+            <TouchableOpacity onPress={() => router.back()} className="p-2">
+                <Text className="text-base font-semibold text-primary dark:text-primary-dark">Close</Text>
+            </TouchableOpacity>
+        }
+        rightAction={
+            <TouchableOpacity onPress={() => router.push('/exercises/create')} className="p-2">
+                <Text className="text-base font-semibold text-primary dark:text-primary-dark">Create</Text>
+            </TouchableOpacity>
+        }
+      />
       
       <View className="px-4 py-3 border-b border-light-darker dark:border-highlight-dark">
         <View className="flex-row items-center bg-light dark:bg-dark rounded-lg px-2.5 h-10 border border-light-darker dark:border-highlight-dark">
