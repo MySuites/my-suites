@@ -6,6 +6,8 @@ import { useWorkoutManager } from '../../hooks/workouts/useWorkoutManager';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { useFloatingButton } from '../../providers/FloatingButtonContext';
 
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+
 export default function SavedWorkoutsScreen() {
   const router = useRouter();
   const theme = useUITheme();
@@ -47,15 +49,19 @@ export default function SavedWorkoutsScreen() {
 
   return (
     <View className="flex-1 bg-light dark:bg-dark">
-      <View className="flex-row items-center justify-between p-4 border-b border-light-darker dark:border-highlight-dark">
-        <TouchableOpacity onPress={() => router.back()} className="p-2">
-           <Text className="text-base leading-[30px] text-primary dark:text-primary-dark">Close</Text>
-        </TouchableOpacity>
-        <Text className="text-xl font-bold text-light dark:text-dark">Saved Workouts</Text>
-        <TouchableOpacity onPress={() => router.push('/workouts/create')} className="p-2">
-           <Text className="text-base leading-[30px] text-primary dark:text-primary-dark">Create</Text>
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader
+        title="Saved Workouts"
+        leftAction={
+            <TouchableOpacity onPress={() => router.back()} className="p-2">
+                <Text className="text-base font-semibold text-primary dark:text-primary-dark">Close</Text>
+            </TouchableOpacity>
+        }
+        rightAction={
+            <TouchableOpacity onPress={() => router.push('/workouts/create')} className="p-2">
+                <Text className="text-base font-semibold text-primary dark:text-primary-dark">Create</Text>
+            </TouchableOpacity>
+        }
+      />
       
       {savedWorkouts.length === 0 ? (
           <View className="flex-1 items-center justify-center p-8">
