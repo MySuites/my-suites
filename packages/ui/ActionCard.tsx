@@ -39,6 +39,7 @@ export function ActionCard({ children, style, className, onPress, activeOpacity 
   
   // Shared drag X for coordinating main card movement
   const sharedDragX = useSharedValue(0);
+  const cardWidth = useSharedValue(0);
   const TRIGGER_THRESHOLD = -width * 0.45;
 
   const [isSwiped, setIsSwiped] = React.useState(false);
@@ -82,7 +83,7 @@ export function ActionCard({ children, style, className, onPress, activeOpacity 
 
   const Content = (
     onPress ? (
-        <Animated.View style={[cardContentStyle]}>
+        <Animated.View style={[cardContentStyle]} onLayout={(e) => cardWidth.value = e.nativeEvent.layout.width}>
             <Pressable 
             style={[style, shadowStyle]} 
             className={`${className || ''}`} 
@@ -104,7 +105,7 @@ export function ActionCard({ children, style, className, onPress, activeOpacity 
             </Pressable>
         </Animated.View>
       ) : (
-        <Animated.View style={[cardContentStyle]}>
+        <Animated.View style={[cardContentStyle]} onLayout={(e) => cardWidth.value = e.nativeEvent.layout.width}>
             <View 
                 style={[style, shadowStyle]} 
                 className={`rounded-xl p-3 w-full ${className || ''} ${
@@ -134,6 +135,7 @@ export function ActionCard({ children, style, className, onPress, activeOpacity 
                     }}
                     onEdit={onEdit}
                     onSetReadyToDelete={setReadyToDelete}
+                    cardWidth={cardWidth}
                 />
             )}
             overshootRight={true} // Allow overshooting

@@ -37,6 +37,7 @@ interface CardSwipeActionProps {
     onDelete: () => void;
     onEdit?: () => void;
     onSetReadyToDelete: (ready: boolean) => void;
+    cardWidth: SharedValue<number>;
 }
 
 export const CardSwipeAction = ({ 
@@ -44,7 +45,8 @@ export const CardSwipeAction = ({
     sharedDragX,
     onDelete,
     onEdit,
-    onSetReadyToDelete
+    onSetReadyToDelete,
+    cardWidth
 }: CardSwipeActionProps) => {
     const { width } = useWindowDimensions();
     const hasTriggered = useSharedValue(false);
@@ -91,7 +93,8 @@ export const CardSwipeAction = ({
     const deleteStyle = useAnimatedStyle(() => {
         const drag = dragX.value;
         const absDrag = Math.abs(drag);
-        
+        const maxW = cardWidth.value > 0 ? cardWidth.value : width;
+
         // 1. Calculate Linear State (Dragging)
         // Default relative width
         let linearW = BUTTON_HEIGHT;
@@ -103,12 +106,18 @@ export const CardSwipeAction = ({
         
         // 2. Calculate Snapped State (Full Screen)
         // Fit exactly to screen width (anchored right, so left edge is at 0)
-        const snappedW = width - SCREEN_PADDING;
+        // Using "width" (window) minus padding for now, but really we want to stick to card bounds
+        // If cardWidth is known, let's just fill it. "SCREEN_PADDING" might be irrelevant if we scope to card.
+        // Assuming we want to fill the CARD:
+        const snappedW = maxW - MARGIN;
         
         // 3. Interpolate
         const progress = snapProgress.value;
         
-        const w = interpolate(progress, [0, 1], [linearW, snappedW]);
+        // Initial clamp to prevent overflow during drag if drag exceeds card width (unlikely but possible)
+        const finalLinearW = Math.min(linearW, maxW);
+
+        const w = interpolate(progress, [0, 1], [finalLinearW, snappedW]);
         const right = interpolate(progress, [0, 1], [0, -MARGIN]);
 
         const scale = interpolate(
