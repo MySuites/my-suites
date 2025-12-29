@@ -12,7 +12,7 @@ const baseColors = {
     highlight: 'hsla(0, 0%, 100%, 0.5)',
     info: 'hsl(217, 91%, 60%)',
     danger: 'hsl(0, 84%, 60%)',
-    warning: 'hsl(45, 93%, 47%)',
+    warning: 'hsl(45, 93%, 40%)',
     success: 'hsl(142, 76%, 36%)',
   },
   dark: {

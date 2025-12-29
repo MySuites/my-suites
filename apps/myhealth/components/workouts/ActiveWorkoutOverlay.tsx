@@ -1,14 +1,14 @@
 "use client"
 
 import React, { useEffect } from 'react';
-import { View, ScrollView, BackHandler } from 'react-native';
+import { View, ScrollView, BackHandler, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import Animated, { SlideInUp, SlideOutUp } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { ActiveWorkoutEmptyState } from './ActiveWorkoutEmptyState';
 import { ActiveWorkoutExerciseItem } from './ActiveWorkoutExerciseItem';
-import { HollowedButton } from '@mysuite/ui';
+import { HollowedButton, RaisedButton } from '@mysuite/ui';
 
 export function ActiveWorkoutOverlay() {
     const router = useRouter();
@@ -22,6 +22,8 @@ export function ActiveWorkoutOverlay() {
         updateExercise,
         isExpanded,
         setExpanded,
+        resetWorkout,
+        cancelWorkout
 
     } = useActiveWorkout();
 
@@ -76,6 +78,28 @@ export function ActiveWorkoutOverlay() {
                                 className="mt-5"
                                 textClassName="text-base font-semibold text-primary dark:text-primary-dark"
                             />
+
+                            <View className="mt-4 flex-row gap-4">
+                                <RaisedButton
+                                    onPress={resetWorkout}
+                                    className="flex-1 h-12 bg-light dark:bg-dark-lighter"
+                                >
+                                    <View>
+                                        <Text className="text-warning font-bold text-center text-lg">Reset</Text>
+                                    </View>
+                                </RaisedButton>
+
+                                <RaisedButton
+                                    onPress={() => {
+                                        cancelWorkout();
+                                    }}
+                                    className="flex-1 h-12 bg-light dark:bg-dark-lighter"
+                                >
+                                    <View>
+                                        <Text className="text-danger font-bold text-center text-lg">Discard</Text>
+                                    </View>
+                                </RaisedButton>
+                            </View>
                         </>
                      )}
                 </ScrollView>

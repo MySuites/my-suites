@@ -36,7 +36,7 @@ export function QuickUtilityButton() {
   const router = useRouter();
   const pathname = usePathname();
   const { activeButtonId, setActiveButtonId, isHidden } = useFloatingButton();
-  const { isRunning, startWorkout, pauseWorkout, resetWorkout, isExpanded, setExpanded } = useActiveWorkout();
+  const { pauseWorkout, resetWorkout, isExpanded, setExpanded } = useActiveWorkout();
 
 
   // Ensure Back button is always last to be at -90 degrees (Left)
@@ -47,12 +47,6 @@ export function QuickUtilityButton() {
          actions = [
             { id: 'end_workout', icon: 'flag.checkered', label: 'End', action: 'end_workout' },
             { id: 'reset_workout', icon: 'arrow.counterclockwise', label: 'Reset', action: 'reset_workout' },
-            { 
-                id: 'toggle_workout', 
-                icon: isRunning ? 'pause.fill' : 'play.fill', 
-                label: isRunning ? 'Pause' : 'Start', 
-                action: 'toggle_workout' 
-            },
          ];
      } else if (pathname.includes('workout') || pathname === '/') {
          actions = [
@@ -71,23 +65,13 @@ export function QuickUtilityButton() {
        ...actions,
        { id: 'back', icon: 'chevron.left', label: 'Back', action: 'go_back' }
      ];
-  }, [pathname, isRunning, isExpanded]);
+  }, [pathname, isExpanded]);
 
   const { handleBack } = useBackButtonAction();
 
   const handleAction = React.useCallback((item: ActionItemType) => {
       if (item.action === 'go_back') {
           handleBack();
-          return;
-      }
-
-      if (item.action === 'toggle_workout') {
-          if (isRunning) {
-              pauseWorkout();
-          } else {
-              startWorkout();
-              // Already on the screen, no need to push
-          }
           return;
       }
       
@@ -108,7 +92,7 @@ export function QuickUtilityButton() {
       } else {
           console.log('Trigger action:', item.action);
       }
-  }, [router, isRunning, startWorkout, pauseWorkout, resetWorkout, setExpanded, handleBack]);
+  }, [router, pauseWorkout, resetWorkout, setExpanded, handleBack]);
 
   const menuItems: RadialMenuItem[] = useMemo(() => {
     return currentActions.map(action => ({
