@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Modal, ActivityIndicator, ScrollView } from 'react-native';
-import { useUITheme, RaisedButton, HollowedCard } from '@mysuite/ui';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Modal, ScrollView } from 'react-native';
+import { useUITheme, RaisedButton, HollowedCard, Skeleton } from '@mysuite/ui';
 import { IconSymbol } from '../ui/icon-symbol';
 
 
@@ -77,7 +77,17 @@ export const ExerciseSelectorModal = ({
                     </View>
 
                     {isLoading ? (
-                        <ActivityIndicator size="large" color={theme.primary} className="mt-4" />
+                        <View className="mt-4">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                                <View key={i} className="flex-row items-center justify-between py-3 border-b border-light dark:border-dark">
+                                    <View className="flex-1">
+                                        <Skeleton height={22} width="55%" className="mb-2" />
+                                        <Skeleton height={14} width="35%" />
+                                    </View>
+                                    <View className="w-10 h-10 rounded-full bg-light-darker/10 dark:bg-highlight-dark/10" />
+                                </View>
+                            ))}
+                        </View>
                     ) : (
                         <FlatList
                             data={exercises.filter(ex => {
