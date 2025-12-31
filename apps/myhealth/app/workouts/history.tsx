@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 
 import { useWorkoutManager } from '../../hooks/workouts/useWorkoutManager';
 import { WorkoutDetailsModal } from '../../components/workouts/WorkoutDetailsModal';
-import { ActionCard } from '@mysuite/ui';
+import { ActionCard, HollowedCard } from '@mysuite/ui';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 
@@ -58,10 +58,12 @@ export default function WorkoutHistoryScreen() {
             />
         )}
         ListEmptyComponent={
-          <View className="p-8 items-center">
-            <Text className="text-gray-500 text-base text-center">
-              There are currently no past workouts, start and finish a workout first.
-            </Text>
+          <View className="p-4 items-center">
+            <HollowedCard className="p-8 w-full">
+              <Text className="text-light-muted dark:text-dark-muted text-base text-center">
+                There are currently no past workouts, start and finish a workout first.
+              </Text>
+            </HollowedCard>
           </View>
         }
       />
