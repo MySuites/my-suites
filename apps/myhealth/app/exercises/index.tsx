@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FlatList, TouchableOpacity, View, ActivityIndicator, TextInput, Alert, Text } from 'react-native'; 
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 import { useUITheme, RaisedButton } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
@@ -13,6 +13,7 @@ import { BackButton } from '../../components/ui/BackButton';
 
 export default function ExercisesScreen() {
   const router = useRouter();
+  const { mode } = useLocalSearchParams();
   const theme = useUITheme();
 
   const { user } = useAuth();
@@ -107,7 +108,7 @@ export default function ExercisesScreen() {
                     {item.category} • {item.properties?.join(', ') || item.rawType}
                 </Text> 
             </View>
-            {hasActiveSession && (
+            {hasActiveSession && mode === 'add' && (
               <RaisedButton 
                 onPress={(e) => {
                   e.stopPropagation(); // Prevent navigation

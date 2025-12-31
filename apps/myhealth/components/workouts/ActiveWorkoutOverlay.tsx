@@ -77,7 +77,7 @@ export function ActiveWorkoutOverlay() {
 
                     <HollowedButton
                         title="+ Add Exercise"
-                        onPress={() => router.push('/exercises')}
+                        onPress={() => router.push({ pathname: '/exercises', params: { mode: 'add' } })}
                         className="mt-5"
                         textClassName="text-base font-semibold text-primary dark:text-primary-dark"
                     />
