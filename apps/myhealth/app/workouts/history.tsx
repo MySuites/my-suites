@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 
 import { useWorkoutManager } from '../../hooks/workouts/useWorkoutManager';
 import { WorkoutDetailsModal } from '../../components/workouts/WorkoutDetailsModal';
-import { ActionCard, HollowedCard } from '@mysuite/ui';
+import { ActionCard, HollowedCard, Skeleton } from '@mysuite/ui';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 
@@ -34,7 +34,7 @@ const WorkoutHistoryItem = ({ item, onDelete, onPress }: { item: any, onDelete: 
 
 export default function WorkoutHistoryScreen() {
 
-  const { workoutHistory, deleteWorkoutLog } = useWorkoutManager();
+  const { workoutHistory, deleteWorkoutLog, isLoading } = useWorkoutManager();
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
 
   return (
@@ -46,10 +46,26 @@ export default function WorkoutHistoryScreen() {
         leftAction={<BackButton />}
       />
 
+      {isLoading ? (
+        <View className="flex-1 px-4 mt-28">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <ActionCard key={i} className="mb-3">
+              <View className="flex-row justify-between mb-2">
+                <Skeleton height={20} width="60%" />
+                <Skeleton height={14} width="20%" />
+              </View>
+              <Skeleton height={14} width="40%" />
+              <View className="mt-2 items-end">
+                <Skeleton height={12} width="25%" />
+              </View>
+            </ActionCard>
+          ))}
+        </View>
+      ) : (
       <FlatList
         data={workoutHistory}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingTop: 120, padding: 16, paddingBottom: 100 }}
+        contentContainerStyle={{ paddingTop: 124, padding: 16, paddingBottom: 100 }}
         renderItem={({ item }) => (
             <WorkoutHistoryItem 
                 item={item} 
@@ -67,6 +83,7 @@ export default function WorkoutHistoryScreen() {
           </View>
         }
       />
+      )}
 
       <WorkoutDetailsModal 
         visible={!!selectedLogId} 
