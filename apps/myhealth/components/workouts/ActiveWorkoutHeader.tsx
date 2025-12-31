@@ -113,7 +113,7 @@ export function ActiveWorkoutHeader() {
         <Animated.View 
             style={{ 
                 zIndex: 1001,
-                bottom: insets.bottom + 12,
+                bottom: insets.bottom,
                 left: 16,
                 right: 16,
                 paddingTop: 10,
