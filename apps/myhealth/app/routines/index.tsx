@@ -101,19 +101,19 @@ export default function RoutinesScreen() {
                 <View className="flex-1">
                     <Text className="text-base leading-6 font-semibold text-light dark:text-dark">{item.name}</Text>
                     <Text className="text-xs text-light-muted dark:text-dark-muted">
-                        {new Date(item.createdAt).toLocaleDateString()} • {item.sequence?.length || 0} Days
+                        {item.sequence?.length || 0} Days
                     </Text> 
                 </View>
                 <View className="flex-row gap-2">
-                    <TouchableOpacity 
+                    <RaisedButton 
+                        title="Set Active"
                         onPress={(e) => {
                             e.stopPropagation();
                             handleSetRoutine(item.id, item.name, item.sequence);
                         }} 
-                        className="py-1.5 px-3 rounded-md bg-primary dark:bg-primary-dark"
-                    >
-                        <Text className="text-white text-sm font-semibold">Set Active</Text>
-                    </TouchableOpacity>
+                        className="px-3 h-8 my-0"
+                        textClassName="text-primary dark:text-primary-dark text-sm font-semibold"
+                    />
 
                 </View>
               </RaisedCard>
