@@ -15,10 +15,24 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { IconSymbol } from './IconSymbol';
 import { RaisedButton } from './RaisedButton';
-// import { CardSwipeAction } from './CardSwipeAction'; // Inline
 import { cssInterop } from 'nativewind';
 
 cssInterop(Pressable, { className: 'style' });
+
+// Constants
+const BUTTON_HEIGHT = 40; 
+const GAP = 10; // Between buttons
+const MARGIN = 0; // Right edge margin (Card has no margin now)
+const CARD_GAP = 10; // Padding from the card
+const GAP_SMALL = 5;
+const TRIGGER_OFFSET = 40;
+const BORDER_RADIUS = BUTTON_HEIGHT / 2;
+
+// Animation Constants
+const SCALE_RANGE_START = -50;
+const OPACITY_RANGE_START = -50;
+const OPACITY_RANGE_END = -10;
+const EDIT_OPACITY_START = -60;
 
 interface ActionCardProps extends ViewProps {
   onPress?: () => void;
@@ -169,20 +183,7 @@ export function ActionCard({ children, style, className, onPress, activeOpacity 
   return Content;
 }
 
-// Constants
-const BUTTON_HEIGHT = 40; 
-const GAP = 10; // Between buttons
-const MARGIN = 0; // Right edge margin (Card has no margin now)
-const CARD_GAP = 10; // Padding from the card
-const GAP_SMALL = 5;
-const TRIGGER_OFFSET = 40;
-const BORDER_RADIUS = BUTTON_HEIGHT / 2;
 
-// Animation Constants
-const SCALE_RANGE_START = -50;
-const OPACITY_RANGE_START = -50;
-const OPACITY_RANGE_END = -10;
-const EDIT_OPACITY_START = -60;
 
 interface CardSwipeActionProps { 
     dragX: SharedValue<number>; 
