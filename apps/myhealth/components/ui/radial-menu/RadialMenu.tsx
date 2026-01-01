@@ -1,20 +1,81 @@
 import React from 'react';
 
-import { View, ViewStyle, StyleProp } from 'react-native';
+import { View, ViewStyle, StyleProp, Dimensions } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   runOnJS,
+  withTiming,
+  SharedValue
 } from 'react-native-reanimated';
-import { useUITheme } from '@mysuite/ui';
-import { IconSymbol } from "/ui";
+import { useUITheme, IconSymbol } from '@mysuite/ui';
 import * as Haptics from 'expo-haptics';
-import { RadialMenuBackdrop } from './RadialMenuBackdrop';
-import { RadialMenuFan } from './RadialMenuFan';
+
 import { RadialMenuItem, RadialMenuItemType } from './RadialMenuItem';
 import { LinearGradient } from 'expo-linear-gradient';
+
+
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+// Radial Menu Background fade
+function RadialMenuBackdrop({ isOpen }: { isOpen: SharedValue<number> }) {
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            opacity: withTiming(isOpen.value * 0.5, { duration: 40 }), // Darken screen
+        };
+    });
+
+    return (
+        <Animated.View 
+            style={[animatedStyle, {
+                position: 'absolute',
+                width: SCREEN_WIDTH * 2,
+                height: SCREEN_HEIGHT * 2,
+                backgroundColor: '#000',
+                zIndex: 500, // Lowest zIndex but visible
+                pointerEvents: 'none', // Don't block touches for now, just visual
+            }]}
+        />
+    );
+}
+
+// Radial Menu Fan
+function RadialMenuFan({ isOpen, menuRadius, theme }: { isOpen: SharedValue<number>, menuRadius: number, theme: any }) {
+    const animatedStyle = useAnimatedStyle(() => {
+        const scale = isOpen.value;
+        const opacity = Math.min(isOpen.value * 2, 0.4); // Cap opacity at 0.4 for circle
+        return {
+            transform: [
+                { scale },
+            ],
+            opacity: withSpring(opacity),
+        };
+    });
+
+    const size = menuRadius * 2; 
+
+    return (
+        <Animated.View 
+            style={[animatedStyle, {
+                width: size,
+                height: size, // Full circle
+                borderRadius: size / 2,
+                backgroundColor: theme.bgLight,
+                position: 'absolute',
+                // Center vertically on the button center (which acts as origin 0,0 locally often, but we are in a container)
+                // Container aligns items-center justify-center.
+                // Button is 60px.
+                // If we put this absolutely centered, it should work.
+                // But let's check container.
+                bottom: -(size/2) + 30, // Offset to center on the 60px button (center is 30px from bottom)
+                zIndex: 1000, 
+            }]}
+        />
+    );
+}
 
 // Configuration
 const BUTTON_SIZE = 60;
