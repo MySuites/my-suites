@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity } from 'react-native';
-import { ActiveRoutineHeader } from './ActiveRoutineHeader';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { ActiveRoutineCompletion } from './ActiveRoutineCompletion';
 import { ActiveRoutineTimelineItem } from './ActiveRoutineTimelineItem';
 import { SegmentedControl, SegmentedControlOption } from '../ui/SegmentedControl';
-import { RaisedCard, useUITheme } from '@mysuite/ui';
+import { RaisedCard, RaisedButton, useUITheme } from '@mysuite/ui';
 import { IconSymbol } from '../ui/icon-symbol';
 
 type ViewMode = 'next_3' | 'next_7' | 'week';
@@ -56,11 +55,29 @@ export function ActiveRoutineCard({
   return (
     <View className="mb-6">
       <RaisedCard className="p-4">
-        <ActiveRoutineHeader
-          routineName={activeRoutineObj.name}
-          onClearRoutine={onClearRoutine}
-          onMenuPress={onMenuPress}
-        />
+        {/* Active Routine Header */}
+        <View className="flex-row justify-between items-center mb-3">
+          <Text className="text-lg font-semibold mb-2 text-light dark:text-dark flex-1 mr-2" numberOfLines={1}>
+            {activeRoutineObj.name}
+          </Text>
+          <View className="flex-row items-center gap-4">
+            <TouchableOpacity onPress={onClearRoutine}>
+              <Text className="text-xs text-gray-500">Exit</Text>
+            </TouchableOpacity>
+            <RaisedButton 
+                onPress={onMenuPress}
+                borderRadius={20}
+                className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
+            >
+                <IconSymbol 
+                    name="line.3.horizontal" 
+                    size={20} 
+                    color={theme.primary} 
+                />
+            </RaisedButton>
+          </View>
+        </View>
+        {/* Active Routine Timeline */}
         {timelineDays.length === 0 ? (
           <ActiveRoutineCompletion onClearRoutine={onClearRoutine} />
         ) : (
