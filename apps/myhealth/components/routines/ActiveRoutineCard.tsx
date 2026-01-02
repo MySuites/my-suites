@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import { ActiveRoutineTimelineItem } from './ActiveRoutineTimelineItem';
 import { RaisedCard, RaisedButton, useUITheme, IconSymbol } from '@mysuite/ui';
 
@@ -40,10 +40,18 @@ export function ActiveRoutineCard({
           <Text className="text-lg font-semibold mb-2 text-light dark:text-dark flex-1 mr-2" numberOfLines={1}>
             {activeRoutineObj.name}
           </Text>
-          <View className="flex-row items-center gap-4">
-            <TouchableOpacity onPress={onClearRoutine}>
-              <Text className="text-xs text-gray-500">Exit</Text>
-            </TouchableOpacity>
+          <View className="flex-row items-center gap-2">
+            <RaisedButton
+              onPress={onClearRoutine}
+              borderRadius={20}
+              className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
+            >
+              <IconSymbol 
+                  name="stop.fill" 
+                  size={18} 
+                  color={theme.primary} 
+              />
+            </RaisedButton>
             <RaisedButton 
                 onPress={onMenuPress}
                 borderRadius={20}

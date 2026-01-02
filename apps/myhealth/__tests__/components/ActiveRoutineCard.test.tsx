@@ -14,9 +14,9 @@ const mockOnMenuPress = jest.fn();
 jest.mock('@mysuite/ui', () => {
     return {
         RaisedCard: ({ children }: any) => <mockRN.View testID="raised-card">{children}</mockRN.View>,
-        RaisedButton: ({ onPress, children }: any) => (
-            <mockRN.TouchableOpacity onPress={onPress} testID="menu-button">
-                {children}
+        RaisedButton: ({ onPress, children, title, ...props }: any) => (
+            <mockRN.TouchableOpacity onPress={onPress} {...props}>
+                {title ? <mockRN.Text>{title}</mockRN.Text> : children}
             </mockRN.TouchableOpacity>
         ),
         IconSymbol: ({ name }: any) => <mockRN.Text>{name}</mockRN.Text>,
@@ -57,12 +57,12 @@ describe('ActiveRoutineCard', () => {
         );
 
         expect(getByText('My Routine')).toBeTruthy();
-        expect(getByText('Exit')).toBeTruthy();
+        expect(getByText('stop.fill')).toBeTruthy();
         expect(getAllByText(/Day:/).length).toBe(2);
     });
 
     it('handles interaction events', () => {
-        const { getByText, getByTestId } = render(
+        const { getByText } = render(
             <ActiveRoutineCard
                 activeRoutineObj={mockRoutine}
                 timelineDays={mockTimeline}
@@ -75,10 +75,13 @@ describe('ActiveRoutineCard', () => {
             />
         );
 
-        fireEvent.press(getByText('Exit'));
+        fireEvent.press(getByText('stop.fill'));
         expect(mockOnClearRoutine).toHaveBeenCalled();
 
-        fireEvent.press(getByTestId('menu-button'));
+        fireEvent.press(getByText('stop.fill'));
+        expect(mockOnClearRoutine).toHaveBeenCalled();
+
+        fireEvent.press(getByText('line.3.horizontal'));
         expect(mockOnMenuPress).toHaveBeenCalled();
     });
 
