@@ -135,7 +135,10 @@ export default function ProfileScreen() {
   if (!user) {
     return (
       <View className="flex-1 bg-light dark:bg-dark">
-        <ScreenHeader title="Profile" />
+        <ScreenHeader 
+          title="Profile" 
+          leftAction={<BackButton />}
+        />
         <View className="flex-1 justify-center px-4">
             <Text className="text-center text-lg font-bold mb-8 text-light dark:text-dark">
                 Sign in to view your profile
