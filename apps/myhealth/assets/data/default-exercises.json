@@ -1,37 +1,877 @@
 [
   {
-    "id": "pushups",
-    "name": "Pushups",
+    "id": "incline_bench_press",
+    "name": "Incline Bench Press",
+    "type": "Weighted, Reps",
     "muscle_group": "Chest",
-    "equipment": "Bodyweight",
-    "type": "reps"
+    "equipment": "Barbell"
   },
   {
-    "id": "pullups",
-    "name": "Pullups",
-    "muscle_group": "Back",
-    "equipment": "Bodyweight",
-    "type": "reps"
-  },
-  {
-    "id": "squats",
-    "name": "Bodyweight Squats",
-    "muscle_group": "Legs",
-    "equipment": "Bodyweight",
-    "type": "reps"
-  },
-  {
-    "id": "bench_press",
-    "name": "Bench Press",
+    "id": "flat_bench_press",
+    "name": "Flat Bench Press",
+    "type": "Weighted, Reps",
     "muscle_group": "Chest",
-    "equipment": "Barbell",
-    "type": "weight_reps"
+    "equipment": "Barbell"
+  },
+  {
+    "id": "decline_bench_press",
+    "name": "Decline Bench Press",
+    "type": "Weighted, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "incline_smith_machine_bench_press",
+    "name": "Incline Smith Machine Bench Press",
+    "type": "Weighted, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "flat_smith_machine_bench_press",
+    "name": "Flat Smith Machine Bench Press",
+    "type": "Weighted, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "decline_smith_machine_bench_press",
+    "name": "Decline Smith Machine Bench Press",
+    "type": "Weighted, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "dumbbell_flys",
+    "name": "Dumbbell Flys",
+    "type": "Weighted, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Dumbbell"
+  },
+  {
+    "id": "cable_flys",
+    "name": "Cable Flys",
+    "type": "Weighted, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Dumbbell"
+  },
+  {
+    "id": "incline_dumbbell_bench_press",
+    "name": "Incline Dumbbell Bench Press",
+    "type": "Weighted, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "flat_dumbbell_bench_press",
+    "name": "Flat Dumbbell Bench Press",
+    "type": "Weighted, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "decline_dumbbell_bench_press",
+    "name": "Decline Dumbbell Bench Press",
+    "type": "Weighted, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "lat_pulldown",
+    "name": "Lat Pulldown",
+    "type": "Weighted, Reps",
+    "muscle_group": "Lats",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "seated_cable_row",
+    "name": "Seated Cable Row",
+    "type": "Weighted, Reps",
+    "muscle_group": "Lats",
+    "equipment": "Cable"
+  },
+  {
+    "id": "face_pull",
+    "name": "Face Pull",
+    "type": "Weighted, Reps",
+    "muscle_group": "Shoulders",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "lateral_raise",
+    "name": "Lateral Raise",
+    "type": "Weighted, Reps",
+    "muscle_group": "Shoulders",
+    "equipment": "Dumbbell"
+  },
+  {
+    "id": "front_raise",
+    "name": "Front Raise",
+    "type": "Weighted, Reps",
+    "muscle_group": "Shoulders",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "arnold_press",
+    "name": "Arnold Press",
+    "type": "Weighted, Reps",
+    "muscle_group": "Shoulders",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "romanian_deadlift",
+    "name": "Romanian Deadlift",
+    "type": "Weighted, Reps",
+    "muscle_group": "Hamstrings",
+    "equipment": "Barbell"
   },
   {
     "id": "deadlift",
     "name": "Deadlift",
-    "muscle_group": "Back",
-    "equipment": "Barbell",
-    "type": "weight_reps"
+    "type": "Weighted, Reps",
+    "muscle_group": "Lower back",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "bulgarian_split_squat",
+    "name": "Bulgarian Split Squat",
+    "type": "Weighted, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "calf_raise",
+    "name": "Calf Raise",
+    "type": "Weighted, Reps",
+    "muscle_group": "Calves",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "leg_extension",
+    "name": "Leg Extension",
+    "type": "Weighted, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Machine"
+  },
+  {
+    "id": "leg_curl",
+    "name": "Leg Curl",
+    "type": "Weighted, Reps",
+    "muscle_group": "Hamstrings",
+    "equipment": "Machine"
+  },
+  {
+    "id": "barbell_squat",
+    "name": "Barbell Squat",
+    "type": "Weighted, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "leg_press",
+    "name": "Leg Press",
+    "type": "Weighted, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Machine"
+  },
+  {
+    "id": "smith_machine_squat",
+    "name": "Smith Machine Squat",
+    "type": "Weighted, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "barbell_curl",
+    "name": "Barbell Curl",
+    "type": "Weighted, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "dumbbell_curl",
+    "name": "Dumbbell Curl",
+    "type": "Weighted, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Dumbbell"
+  },
+  {
+    "id": "seated_dumbbell_curl",
+    "name": "Seated Dumbbell Curl",
+    "type": "Weighted, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Dumbbell"
+  },
+  {
+    "id": "incline_dumbbell_curl",
+    "name": "Incline Dumbbell Curl",
+    "type": "Weighted, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Dumbbell"
+  },
+  {
+    "id": "decline_dumbbell_curl",
+    "name": "Decline Dumbbell Curl",
+    "type": "Weighted, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Dumbbell"
+  },
+  {
+    "id": "spider_curl",
+    "name": "Spider Curl",
+    "type": "Weighted, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Machine"
+  },
+  {
+    "id": "hammer_curl",
+    "name": "Hammer Curl",
+    "type": "Weighted, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Machine"
+  },
+  {
+    "id": "cable_curl",
+    "name": "Cable Curl",
+    "type": "Weighted, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Cable"
+  },
+  {
+    "id": "incline_cable_curl",
+    "name": "Incline Cable Curl",
+    "type": "Weighted, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Cable"
+  },
+  {
+    "id": "decline_cable_curl",
+    "name": "Decline Cable Curl",
+    "type": "Weighted, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Cable"
+  },
+  {
+    "id": "preacher_curl",
+    "name": "Preacher Curl",
+    "type": "Weighted, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Machine"
+  },
+  {
+    "id": "skullcrusher",
+    "name": "Skullcrusher",
+    "type": "Weighted, Reps",
+    "muscle_group": "Triceps",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "overhead_tricep_extension",
+    "name": "Overhead Tricep Extension",
+    "type": "Weighted, Reps",
+    "muscle_group": "Triceps",
+    "equipment": "Machine"
+  },
+  {
+    "id": "cable_tricep_pushdown",
+    "name": "Cable Tricep Pushdown",
+    "type": "Weighted, Reps",
+    "muscle_group": "Triceps",
+    "equipment": "Cable"
+  },
+  {
+    "id": "dumbbell_tricep_pushdown",
+    "name": "Dumbbell Tricep Pushdown",
+    "type": "Weighted, Reps",
+    "muscle_group": "Triceps",
+    "equipment": "Dumbbell"
+  },
+  {
+    "id": "tricep_pushdown",
+    "name": "Tricep Pushdown",
+    "type": "Weighted, Reps",
+    "muscle_group": "Triceps",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "tricep_kickback",
+    "name": "Tricep Kickback",
+    "type": "Weighted, Reps",
+    "muscle_group": "Triceps",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "tricep_extension",
+    "name": "Tricep Extension",
+    "type": "Weighted, Reps",
+    "muscle_group": "Triceps",
+    "equipment": "Machine"
+  },
+  {
+    "id": "one_arm_tricep_extension",
+    "name": "One-Arm Tricep Extension",
+    "type": "Weighted, Reps",
+    "muscle_group": "Triceps",
+    "equipment": "Machine"
+  },
+  {
+    "id": "hanging_leg_raise",
+    "name": "Hanging Leg Raise",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Abdominals",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "cable_crunch",
+    "name": "Cable Crunch",
+    "type": "Weighted, Reps",
+    "muscle_group": "Abdominals",
+    "equipment": "Cable"
+  },
+  {
+    "id": "push_up",
+    "name": "Push-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Triceps",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "incline_push_up",
+    "name": "Incline Push-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "decline_push_up",
+    "name": "Decline Push-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "diamond_push_up",
+    "name": "Diamond Push-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Triceps",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "close_push_up",
+    "name": "Close Push-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "wide_push_up",
+    "name": "Wide Push-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "pike_push_up",
+    "name": "Pike Push-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "pseudo_planche_push_up",
+    "name": "Pseudo Planche Push-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "pull_up",
+    "name": "Pull-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Lats",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "chin_up",
+    "name": "Chin-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "bodyweight_rows",
+    "name": "Bodyweight Rows",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Lats",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "lunges",
+    "name": "Lunges",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "calf_raises",
+    "name": "Calf Raises",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Calves",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "bodyweight_squats",
+    "name": "Bodyweight Squats",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "split_squats",
+    "name": "Split Squats",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "bulgarian_split_squats",
+    "name": "Bulgarian Split Squats",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Other",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "shrimp_squats",
+    "name": "Shrimp Squats",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "pistol_squats",
+    "name": "Pistol Squats",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "sissy_squats",
+    "name": "Sissy Squats",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "dragon_squats",
+    "name": "Dragon Squats",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "plank",
+    "name": "Plank",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Abdominals",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "russian_twist",
+    "name": "Russian Twist",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Abdominals",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "side_plank",
+    "name": "Side Plank",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Abdominals",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "weighted_push_up",
+    "name": "Weighted Push-up",
+    "type": "Weighted, Bodyweight, Reps",
+    "muscle_group": "Chest",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "weighted_pull_up",
+    "name": "Weighted Pull-up",
+    "type": "Weighted, Bodyweight, Reps",
+    "muscle_group": "Lats",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "weighted_chin_up",
+    "name": "Weighted Chin-up",
+    "type": "Weighted, Bodyweight, Reps",
+    "muscle_group": "Biceps",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "weighted_rows",
+    "name": "Weighted Rows",
+    "type": "Weighted, Bodyweight, Reps",
+    "muscle_group": "Lats",
+    "equipment": "Cable"
+  },
+  {
+    "id": "weighted_dips",
+    "name": "Weighted Dips",
+    "type": "Weighted, Bodyweight, Reps",
+    "muscle_group": "Triceps",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "weighted_lunges",
+    "name": "Weighted Lunges",
+    "type": "Weighted, Bodyweight, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "weighted_plank",
+    "name": "Weighted Plank",
+    "type": "Weighted, Bodyweight, Duration",
+    "muscle_group": "Abdominals",
+    "equipment": "Weighted Bodyweight"
+  },
+  {
+    "id": "weighted_squat",
+    "name": "Weighted Squat",
+    "type": "Weighted, Bodyweight, Reps",
+    "muscle_group": "Quadriceps",
+    "equipment": "Barbell"
+  },
+  {
+    "id": "chest_to_wall_handstand",
+    "name": "Chest-to-Wall Handstand",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "back_to_wall_handstand",
+    "name": "Back-to-Wall Handstand",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "handstand",
+    "name": "Handstand",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Shoulders",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "wall_handstand_push_up",
+    "name": "Wall Handstand Push-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Shoulders",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "handstand_push_up",
+    "name": "Handstand Push-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Shoulders",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "one_arm_handstand",
+    "name": "One-Arm Handstand",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "pike_handstand_press",
+    "name": "Pike Handstand Press",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Shoulders",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "straddle_handstand_press",
+    "name": "Straddle Handstand Press",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Shoulders",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "handstand_press",
+    "name": "Handstand Press",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Shoulders",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "elbow_lever",
+    "name": "Elbow Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Abdominals",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "bent_arm_planche",
+    "name": "Bent-Arm Planche",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "90_degree_push_up",
+    "name": "90-Degree Push-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "tuck_planche",
+    "name": "Tuck Planche",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "advanced_tuck_planche",
+    "name": "Advanced Tuck Planche",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "half_lay_planche",
+    "name": "Half-Lay Planche",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "straddle_planche",
+    "name": "Straddle Planche",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "planche",
+    "name": "Planche",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Shoulders",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "planche_push_up",
+    "name": "Planche Push-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Shoulders",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "maltese",
+    "name": "Maltese",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Shoulders",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "dragon_maltese",
+    "name": "Dragon Maltese",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "tuck_front_lever",
+    "name": "Tuck Front Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "advanced_tuck_front_lever",
+    "name": "Advanced Tuck Front Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "half_lay_front_lever",
+    "name": "Half-Lay Front Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "straddle_front_lever",
+    "name": "Straddle Front Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "front_lever",
+    "name": "Front Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Abdominals",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "front_lever_pull_up",
+    "name": "Front Lever Pull-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "front_lever_touch",
+    "name": "Front Lever Touch",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "one_arm_front_lever",
+    "name": "One-Arm Front Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "tuck_back_lever",
+    "name": "Tuck Back Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "advanced_tuck_back_lever",
+    "name": "Advanced Tuck Back Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "half_lay_back_lever",
+    "name": "Half-Lay Back Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "straddle_back_lever",
+    "name": "Straddle Back Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "back_lever",
+    "name": "Back Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Abdominals",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "back_lever_pull_up",
+    "name": "Back Lever Pull-up",
+    "type": "Bodyweight, Reps",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "back_lever_touch",
+    "name": "Back Lever Touch",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "one_arm_back_lever",
+    "name": "One-Arm Back Lever",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "frog_stand",
+    "name": "Frog Stand",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "crow_stand",
+    "name": "Crow Stand",
+    "type": "Bodyweight, Duration",
+    "muscle_group": "Other",
+    "equipment": "Cable"
+  },
+  {
+    "id": "threadmill",
+    "name": "Threadmill",
+    "type": "Distance, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "elliptical",
+    "name": "Elliptical",
+    "type": "Distance, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "rowing_machine",
+    "name": "Rowing Machine",
+    "type": "Distance, Duration",
+    "muscle_group": "Other",
+    "equipment": "Cable"
+  },
+  {
+    "id": "stationary_bike",
+    "name": "Stationary Bike",
+    "type": "Distance, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "jump_rope",
+    "name": "Jump Rope",
+    "type": "Reps, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "cycling",
+    "name": "Cycling",
+    "type": "Distance, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "swimming",
+    "name": "Swimming",
+    "type": "Distance, Duration",
+    "muscle_group": "Other",
+    "equipment": "Bodyweight"
+  },
+  {
+    "id": "rowing",
+    "name": "Rowing",
+    "type": "Distance, Duration",
+    "muscle_group": "Other",
+    "equipment": "Cable"
+  },
+  {
+    "id": "farmers_walk",
+    "name": "Farmers Walk",
+    "type": "Weighted, Distance",
+    "muscle_group": "Other",
+    "equipment": "Weighted Bodyweight"
   }
 ]

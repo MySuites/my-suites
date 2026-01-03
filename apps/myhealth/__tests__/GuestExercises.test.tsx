@@ -32,7 +32,8 @@ describe('Guest Exercise Fetching', () => {
     // Code: properties = e.properties.split...
     // But wait, e.properties in the MAPPED object above is e.type ("reps").
     // Then below it does: properties = e.properties ? split...
-    // So for "reps", it becomes ["reps"].
-    expect(firstResult.properties).toEqual([firstDefault.type]);
+    // So for "Weighted, Reps", it becomes ["Weighted", "Reps"].
+    const expectedProperties = firstDefault.type.split(',').map((s: string) => s.trim());
+    expect(firstResult.properties).toEqual(expectedProperties);
   });
 });
