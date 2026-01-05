@@ -353,19 +353,53 @@ export const DataRepository = {
     saveBodyWeight: async (log: { userId: string, weight: number, date: string, id?: string }): Promise<void> => {
         const id = log.id || (uuid.v4() as string);
         const now = Date.now();
-        const timestamp = new Date().toISOString();
         const db = await getDb();
-
         await db.runAsync(`
             INSERT OR REPLACE INTO body_measurements (id, user_id, weight, date, created_at, updated_at, sync_status)
             VALUES (?, ?, ?, ?, ?, ?, 'pending')
         `, [
             id,
-            log.userId,
+            log.userId || null,
             log.weight,
             log.date,
-            timestamp,
+            new Date().toISOString(),
             now
         ]);
+    },
+
+    // --- Routines ---
+    getRoutines: async (): Promise<any[]> => {
+        const db = await getDb();
+        const result = await db.getAllAsync<any>('SELECT * FROM routines WHERE deleted_at IS NULL ORDER BY created_at DESC');
+        return result.map(r => ({
+            ...r,
+            sequence: r.sequence ? JSON.parse(r.sequence) : []
+        }));
+    },
+
+    saveRoutine: async (routine: any): Promise<void> => {
+        const db = await getDb();
+        const now = Date.now();
+        await db.runAsync(`
+            INSERT OR REPLACE INTO routines (id, name, sequence, created_at, updated_at, deleted_at, sync_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [
+            routine.id,
+            routine.name,
+            JSON.stringify(routine.sequence || []),
+            routine.createdAt || routine.created_at || new Date().toISOString(),
+            now,
+            null, // Not deleted
+            'pending'
+        ]);
+    },
+
+    deleteRoutine: async (id: string): Promise<void> => {
+        const db = await getDb();
+        await db.runAsync(`
+            UPDATE routines 
+            SET deleted_at = ?, sync_status = 'pending', updated_at = ?
+            WHERE id = ?
+        `, [Date.now(), Date.now(), id]);
     }
 };

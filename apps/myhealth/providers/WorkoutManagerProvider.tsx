@@ -9,6 +9,8 @@ import { useRoutineManager } from "../hooks/routines/useRoutineManager";
 import { useToast } from "@mysuite/ui";
 import { DataRepository } from "./DataRepository";
 import { useSyncService } from "../hooks/useSyncService";
+import uuid from 'react-native-uuid';
+
 
 // Re-export types for compatibility
 export type { Exercise, SetLog, WorkoutLog } from "../utils/workout-api";
@@ -89,15 +91,9 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                 mappedHistory.sort((a, b) => new Date(b.workoutTime).getTime() - new Date(a.workoutTime).getTime());
                 setWorkoutHistory(mappedHistory);
 
-                // Load Routines (Assuming DataRepository will handle routines too?
-                // Wait, DataRepository implementation I wrote only has Workouts, History, Stats.
-                // I missed Routines in DataRepository! I should add it.
-                // For now, I'll keep existing Routine logic or quickly patch DataRepo.
-                // It's better to patch DataRepo. But I'll assume they are stored in AsyncStorage "myhealth_workout_routines"
-                // which DataRepository doesn't expose yet.
-                // I will add routines logic to this file's "loadData" directly using storage wrapper for now if DataRepo missing it, 
-                // OR better: I'll update DataRepository in next step. For now let's use storage util directly for routines to not block.
-                // Actually I will invoke storage.getItem directly for routines to be safe.
+                // Load Routines
+                const storedRoutines = await DataRepository.getRoutines();
+                setRoutines(storedRoutines);
             } catch (e) {
                 console.error("Failed to load local data", e);
             } finally {
@@ -107,12 +103,6 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         loadData();
     }, [user]);
 
-    // Refresh data when focused or periodically? SyncService should handle updates and maybe we expose a listener?
-    // For MVP Offline: We just load on mount. useSyncService will likely push/pull and update storage.
-    // If storage updates, we might need to reload state. 
-    // Ideally we subscribe to store changes, but for now let's rely on actions updating state + storage manually.
-
-    // Actions
     async function saveWorkout(
         workoutName: string,
         exercises: Exercise[],
@@ -133,21 +123,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         setIsSaving(true);
         try {
             await DataRepository.saveWorkout(newWorkout);
-            
-            // Update State
-            setSavedWorkouts(prev => [newWorkout, ...prev]); 
-            // Note: ID generation happens in Repo, so 'newWorkout' above has undefined ID. 
-            // This is a bug in my logic. Repo should return the saved item or I should gen ID here.
-            // I'll gen ID here.
-            
-            // Reload to be safe? Or just prepend.
-            // Let's reload to get the ID correct if I don't gen it.
-            // Actually, best to Gen ID here.
-            // But DataRepo handles UUID if missing.
-            // I'll reload workouts from Repo after save.
             const updated = await DataRepository.getWorkouts();
             setSavedWorkouts(updated);
-
             onSuccess();
             showToast({ message: `Workout saved`, type: 'success' });
         } catch (e) {
@@ -156,14 +133,6 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
             setIsSaving(false);
         }
     }
-
-    // ... Other actions similar pattern ... 
-    // Since this file is huge, I will try to keep "Routines" logic as is (via direct storage or old API?)
-    // The prompt asked to "Offline-First". Routines should be offline too.
-    // I will impl `saveRoutineDraft` etc using local storage directly for now to emulate "DataRepository" for Routines which I forgot to convert.
-    // Or I'll just use the `storage` util I created.
-
-    // I will implement the functions fully.
 
     async function updateSavedWorkout(id: string, name: string, exercises: Exercise[], onSuccess: () => void) {
          setIsSaving(true);
@@ -221,9 +190,9 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
              const mappedHistory = storedHistory.map(h => ({
                     id: h.id,
                     userId: user?.id || 'guest',
-                    workoutTime: h.date,
+                    workoutTime: h.date, // LocalWorkoutLog uses 'date', API 'workoutTime'
                     workoutName: h.name,
-                    createdAt: h.date,
+                    createdAt: h.date, // Approximate
                     notes: h.note
              }));
              mappedHistory.sort((a: any, b: any) => new Date(b.workoutTime).getTime() - new Date(a.workoutTime).getTime());
@@ -238,55 +207,76 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
          }
     }
 
-    // STUBBED ROUTINES (Since DataRepo missing them, I'll essentially keep current logic but removed API calls)
-    // I need to properly handle Routines offline.
-    // I'll do a minimal implementation here for Routines to be "Offline" using `storage` util.
-
     async function saveRoutineDraft(name: string, sequence: any[], onSuccess: () => void) {
-        // ... local save ...
-        const id = Date.now().toString(); // temporary ID strategy
-        const newRoutine = { id, name, sequence, createdAt: new Date().toISOString() };
-        
-        // This is distinct from Workouts, ideally DataRepo handles it.
-        // For compliance with plan "Refactor WorkoutManagerProvider", I should probably make sure it's consistent.
-        // But the plan didn't explicitly specify Routines schema in DataRepo (it said "local types (SavedWorkouts, Routines, History)").
-        // I'll stick to local state management here for now.
-        
-        setRoutines(prev => [newRoutine, ...prev]);
-        // Also persist to storage?
-        // The old provider had an EFFECT that persisted changes. I should restore that or use manual save.
-        // I'll restore the effect-based persistence for Routines specifically?
-        // Or manual save. Manual is better for "Repository" pattern.
-        // I'll skip persisting to `storage` explicitly in this function if I include the Effect below.
-        onSuccess();
+        setIsSaving(true);
+        try {
+            const id = uuid.v4() as string;
+            const newRoutine = { id, name, sequence, createdAt: new Date().toISOString() };
+            
+            await DataRepository.saveRoutine(newRoutine);
+            // Refresh
+            const updated = await DataRepository.getRoutines();
+            setRoutines(updated);
+            
+            onSuccess();
+        } catch (e) {
+            Alert.alert("Error saving routine", String(e));
+        } finally {
+            setIsSaving(false);
+        }
     }
     
-    // ... I'll actually copy the Effect from the original file that persists routines.
-
     async function updateRoutine(id: string, name: string, sequence: any[], onSuccess: () => void, suppressAlert?: boolean) {
-        setRoutines(prev => prev.map(r => r.id === id ? { ...r, name, sequence } : r));
-        onSuccess();
+        setIsSaving(true);
+        try {
+            // We need to preserve created_at or fetch existing? 
+            // The UI passes ID, Name, Sequence. 
+            // We should ideally fetch first or assume we have it in 'routines' state to merge?
+            const existing = routines.find(r => r.id === id);
+            const routineToSave = { 
+                ...existing, // keep created_at
+                id, name, sequence, 
+                updatedAt: Date.now() 
+            };
+            
+            await DataRepository.saveRoutine(routineToSave);
+            const updated = await DataRepository.getRoutines();
+            setRoutines(updated);
+            
+            onSuccess();
+        } catch (e) {
+            Alert.alert("Error updating routine", String(e));
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     function deleteRoutine(id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) {
-         setRoutines(prev => prev.filter(r => r.id !== id));
+         const performDelete = async () => {
+             setIsSaving(true);
+             try {
+                await DataRepository.deleteRoutine(id);
+                setRoutines(prev => prev.filter(r => r.id !== id));
+                options?.onSuccess?.();
+             } catch(e) {
+                 Alert.alert("Error deleting routine", String(e));
+             } finally {
+                 setIsSaving(false);
+             }
+         };
+
          if (options?.skipConfirmation) {
-             options?.onSuccess?.();
+             performDelete();
          } else {
-             // ...
-             options?.onSuccess?.();
+             Alert.alert("Delete Routine", "Are you sure?", [
+                { text: "Cancel", style: "cancel" },
+                { text: "Delete", style: "destructive", onPress: performDelete }
+             ]);
          }
     }
     
-    // Persistence Effect for Routines (since DataRepo doesn't cover them yet)
-    useEffect(() => {
-        const persistRoutines = async () => {
-             // Use storage util or AsyncStorage
-             // storage.setItem("myhealth_workout_routines", routines);
-        };
-        persistRoutines(); 
-        // Note: I'll actually rely on the standard `useEffect` I'll include in the Full File that does persistence for Routines.
-    }, [routines]);
+    // Legacy persistence effect removed
+
 
 
     // Return Context

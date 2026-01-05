@@ -72,6 +72,16 @@ export const initDatabase = async () => {
             updated_at INTEGER,
             sync_status TEXT DEFAULT 'pending'
         );
+
+        CREATE TABLE IF NOT EXISTS routines (
+            id TEXT PRIMARY KEY,
+            name TEXT,
+            sequence TEXT, -- JSON string
+            created_at TEXT,
+            updated_at INTEGER,
+            deleted_at INTEGER,
+            sync_status TEXT DEFAULT 'pending'
+        );
     `);
 
     console.log("Database initialized successfully");
