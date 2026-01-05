@@ -8,6 +8,7 @@ import {
 import { useRoutineManager } from "../hooks/routines/useRoutineManager";
 import { useToast } from "@mysuite/ui";
 import { DataRepository } from "./DataRepository";
+import { ProfileRepository } from "./ProfileRepository";
 import { useSyncService } from "../hooks/useSyncService";
 import uuid from 'react-native-uuid';
 
@@ -62,6 +63,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         setActiveRoutineIndex,
         markRoutineDayComplete,
         clearActiveRoutine,
+        setRoutineState
     } = useRoutineManager(routines);
 
     // Initial Load - Local First
@@ -94,6 +96,15 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                 // Load Routines
                 const storedRoutines = await DataRepository.getRoutines();
                 setRoutines(storedRoutines);
+
+                // Load Active Routine State
+                const userId = user?.id || 'guest';
+                // Ensure profile exists for guest if needed? 
+                // For now try fetch.
+                const profile = await ProfileRepository.getProfile(userId);
+                if (profile && profile.active_routine) {
+                     setRoutineState(profile.active_routine);
+                }
             } catch (e) {
                 console.error("Failed to load local data", e);
             } finally {
@@ -101,7 +112,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
             }
         }
         loadData();
-    }, [user]);
+    }, [user, setRoutineState]);
 
     async function saveWorkout(
         workoutName: string,

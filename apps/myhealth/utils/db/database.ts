@@ -69,6 +69,7 @@ export const initDatabase = async () => {
             email TEXT,
             username TEXT,
             full_name TEXT,
+            active_routine TEXT, -- JSON { id, dayIndex, lastCompletedDate }
             updated_at INTEGER,
             sync_status TEXT DEFAULT 'pending'
         );
