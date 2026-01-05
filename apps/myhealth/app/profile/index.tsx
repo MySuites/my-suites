@@ -4,6 +4,7 @@ import { useAuth, supabase } from '@mysuite/auth';
 import { useUITheme, RaisedButton, IconSymbol } from '@mysuite/ui';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
+import { ProfileRepository } from '../../providers/ProfileRepository';
 
 // Removed AuthForm import
 
@@ -62,44 +63,41 @@ export default function ProfileScreen() {
   };
 
 
+
+// ... inside component
+
   useEffect(() => {
     if (user) {
-      supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle()
-        .then(({ data, error }) => {
-          if (error) console.log('Error fetching profile:', error);
+      ProfileRepository.getProfile(user.id).then((data) => {
           if (data) {
             setUsername(data.username || '');
             setFullName(data.full_name || '');
             setTempUsername(data.username || '');
             setTempFullName(data.full_name || '');
           }
-        });
+      });
     }
   }, [user]);
 
   const handleUpdateProfile = async () => {
     if (!user) return;
     setLoading(true);
-    const { error } = await supabase.from('profiles').upsert({
-      id: user.id,
-      username: tempUsername,
-      full_name: tempFullName,
-      updated_at: new Date().toISOString(),
+    
+    // Save locally first
+    await ProfileRepository.saveProfile({
+        id: user.id,
+        email: user.email || '',
+        username: tempUsername,
+        full_name: tempFullName,
+        updated_at: Date.now(),
+        sync_status: 'pending'
     });
+    
     setLoading(false);
-
-    if (error) {
-      Alert.alert('Error', error.message);
-    } else {
-      setUsername(tempUsername);
-      setFullName(tempFullName);
-      setIsEditing(false);
-      Alert.alert('Success', 'Profile updated successfully!');
-    }
+    setUsername(tempUsername);
+    setFullName(tempFullName);
+    setIsEditing(false);
+    Alert.alert('Success', 'Profile updated successfully!');
   };
 
   const handleCancelEdit = () => {

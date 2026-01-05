@@ -63,6 +63,15 @@ export const initDatabase = async () => {
             updated_at INTEGER,
             sync_status TEXT DEFAULT 'pending'
         );
+
+        CREATE TABLE IF NOT EXISTS profiles (
+            id TEXT PRIMARY KEY,
+            email TEXT,
+            username TEXT,
+            full_name TEXT,
+            updated_at INTEGER,
+            sync_status TEXT DEFAULT 'pending'
+        );
     `);
 
     console.log("Database initialized successfully");
