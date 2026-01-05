@@ -1,4 +1,5 @@
 import { supabase } from "@mysuite/auth";
+import { DataRepository } from "../../providers/DataRepository";
 import { Exercise } from "./types";
 
 export async function fetchUserWorkouts(user: any) {
@@ -46,13 +47,8 @@ export async function persistWorkoutToSupabase(
 }
 
 export async function deleteWorkoutFromSupabase(user: any, id: string) {
-    if (!user) return;
-    try {
-        await supabase.from("workouts").delete().eq("workout_id", id);
-    } catch (e) {
-        console.warn("Failed to delete workout", e);
-        throw e;
-    }
+    // Local-First: Soft delete via repository
+    await DataRepository.deleteWorkout(id);
 }
 
 export async function persistUpdateSavedWorkoutToSupabase(

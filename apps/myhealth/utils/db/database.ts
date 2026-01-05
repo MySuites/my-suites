@@ -36,6 +36,7 @@ export const initDatabase = async () => {
             note TEXT,
             created_at TEXT,
             updated_at INTEGER,
+            deleted_at INTEGER,
             sync_status TEXT DEFAULT 'pending'
         );
 
@@ -94,6 +95,23 @@ export const initDatabase = async () => {
             sync_status TEXT DEFAULT 'synced' -- Libraries are usually synced from server
         );
     `);
+
+    // Migrations: Ensure new columns exist for existing installations
+    const safeAddColumn = async (
+        table: string,
+        column: string,
+        def: string,
+    ) => {
+        try {
+            await database.execAsync(
+                `ALTER TABLE ${table} ADD COLUMN ${column} ${def}`,
+            );
+        } catch {
+            // Column likely already exists, ignore
+        }
+    };
+
+    await safeAddColumn("workout_logs", "deleted_at", "INTEGER");
 
     console.log("Database initialized successfully");
 };

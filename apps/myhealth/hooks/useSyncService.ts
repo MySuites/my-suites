@@ -10,6 +10,12 @@ import {
     persistWorkoutToSupabase,
 } from "../utils/workout-api";
 
+function isUUID(str: string) {
+    const regex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return regex.test(str);
+}
+
 export function useSyncService() {
     const { user } = useAuth();
     const [isSyncing, setIsSyncing] = useState(false);
@@ -140,46 +146,78 @@ export function useSyncService() {
         try {
             console.log("Pushing data...");
             // 1. Push History
-            const history = await DataRepository.getHistory();
-            const pendingHistory = history.filter((h) =>
-                h.syncStatus === "pending"
-            );
+            // 1. Push History
+            // We need to fetch ALL history including deleted to sync deletions
+            // DataRepository.getHistory() filters out deleted. We need a way to get "syncable" items including deleted.
+            // Let's add DataRepository.getPendingSyncItems() or just expose a way to get raw logs?
+            // For now, let's assume getHistory only returns active. We might need to query DB directly here or add a new repo method?
+            // "getPendingSyncHistory"?
+            // Actually, let's modify DataRepository to have `getHistory({ includeDeleted: true })`?
+            // OR simpler: just query DB here since this is a service?
+            // Ideally we stick to Repo. Let's add `getSyncQueue()` to DataRepository?
+            // Or just `getPendingHistory`?
+
+            // Let's use a specialized method in DataRepo or just add a param to getHistory?
+            // Adding param to getHistory is cleanest but might break signature.
+            // Let's assume we can add `getPendingHistoryLogs` to DataRepo.
+
+            const pendingHistory = await DataRepository.getPendingHistoryLogs();
 
             for (const log of pendingHistory) {
-                const { error } = await persistCompletedWorkoutToSupabase(
-                    user,
-                    log.name,
-                    log.exercises,
-                    log.duration,
-                    log.workoutId,
-                    log.note,
-                    log.date || log.workoutTime,
-                );
-
-                if (!error) {
+                if ((log as any).deletedAt) {
+                    // Sync Deletion
+                    if (log.id && isUUID(log.id)) { // Only delete if it has a valid UUID (synced)
+                        await supabase.from("workout_logs").delete().eq(
+                            "id",
+                            log.id,
+                        );
+                    }
+                    // Mark as synced (and still deleted)
                     log.syncStatus = "synced";
+                } else {
+                    // Sync Creation/Update
+                    const { error } = await persistCompletedWorkoutToSupabase(
+                        user,
+                        log.name,
+                        log.exercises,
+                        log.duration,
+                        log.workoutId,
+                        log.note,
+                        log.date || log.workoutTime,
+                    );
+                    if (!error) {
+                        log.syncStatus = "synced";
+                    }
                 }
             }
-            await DataRepository.saveHistory(history);
+            await DataRepository.saveHistory(pendingHistory);
 
             // 2. Push Saved Workouts
-            const workouts = await DataRepository.getWorkouts();
-            const pendingWorkouts = workouts.filter((w: any) =>
-                w.syncStatus === "pending"
-            );
+            const pendingWorkouts = await DataRepository.getPendingWorkouts();
 
             for (const w of pendingWorkouts) {
-                const { data, error } = await persistWorkoutToSupabase(
-                    user,
-                    w.name,
-                    w.exercises,
-                );
-                if (!error && data) {
-                    w.id = data.workout_id;
+                if ((w as any).deletedAt) {
+                    // Sync Deletion
+                    if (w.id && isUUID(w.id)) {
+                        await supabase.from("workouts").delete().eq(
+                            "workout_id",
+                            w.id,
+                        );
+                    }
                     w.syncStatus = "synced";
+                } else {
+                    const { data, error } = await persistWorkoutToSupabase(
+                        user,
+                        w.name,
+                        w.exercises,
+                    );
+                    if (!error && data) {
+                        w.id = data.workout_id;
+                        w.syncStatus = "synced";
+                    }
                 }
             }
-            await DataRepository.saveWorkouts(workouts);
+            await DataRepository.saveWorkouts(pendingWorkouts);
 
             // 3. Push Body Measurements
             const allMeasurements = await DataRepository.getBodyWeightHistory(

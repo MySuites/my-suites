@@ -81,9 +81,81 @@ export const DataRepository = {
 
 
     // --- History (Logs) ---
+    getPendingHistoryLogs: async (): Promise<LocalWorkoutLog[]> => {
+        const db = await getDb();
+        // Fetch ALL pending logs (including deleted ones)
+        const logs = await db.getAllAsync<any>('SELECT * FROM workout_logs WHERE sync_status = "pending" ORDER BY workout_time DESC');
+        const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
+        
+        // Helper to map DB row to object (duplicate of getHistory logic essentially, 
+        // could refactor to private helper but duplication is safer for now to avoid breaking existing)
+        return logs.map(log => {
+             const sets = setLogs.filter(s => s.workout_log_id === log.id);
+             const exercisesMap = new Map<string, Exercise>();
+ 
+             sets.forEach(set => {
+                 const exId = set.exercise_id || 'unknown';
+                 const exName = set.exercise_name || 'Unknown Exercise';
+ 
+                 if (!exercisesMap.has(exId)) {
+                     exercisesMap.set(exId, {
+                         id: exId,
+                         name: exName,
+                         sets: 0,
+                         reps: 0,
+                         completedSets: 0,
+                         logs: [],
+                     });
+                 }
+ 
+                 const ex = exercisesMap.get(exId)!;
+                 ex.logs?.push({
+                      id: set.id,
+                      weight: set.weight,
+                      reps: set.reps,
+                      distance: set.distance,
+                      duration: set.duration,
+                      bodyweight: set.bodyweight,
+                 });
+                 ex.completedSets = (ex.completedSets || 0) + 1;
+             });
+ 
+             return {
+                 id: log.id,
+                 userId: log.user_id,
+                 date: log.workout_time,
+                 workoutTime: log.workout_time,
+                 name: log.workout_name,
+                 duration: log.duration,
+                 note: log.note,
+                 notes: log.note,
+                 exercises: Array.from(exercisesMap.values()),
+                 createdAt: log.created_at,
+                 syncStatus: log.sync_status,
+                 updatedAt: log.updated_at || new Date(log.created_at).getTime(),
+                 deletedAt: log.deleted_at 
+             } as LocalWorkoutLog;
+        });
+    },
+
+    getPendingWorkouts: async (): Promise<any[]> => {
+        const db = await getDb();
+        const rows = await db.getAllAsync<any>('SELECT * FROM workouts WHERE sync_status = "pending"');
+        return rows.map(row => ({
+            id: row.id,
+            userId: row.user_id,
+            name: row.name,
+            exercises: row.exercises ? JSON.parse(row.exercises) : [],
+            createdAt: row.created_at,
+            updatedAt: row.updated_at,
+            deletedAt: row.deleted_at,
+            syncStatus: row.sync_status
+        }));
+    },
+
     getHistory: async (): Promise<LocalWorkoutLog[]> => {
         const db = await getDb();
-        const logs = await db.getAllAsync<any>('SELECT * FROM workout_logs ORDER BY workout_time DESC');
+        const logs = await db.getAllAsync<any>('SELECT * FROM workout_logs WHERE deleted_at IS NULL ORDER BY workout_time DESC');
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
         
         return logs.map(log => {
@@ -143,8 +215,8 @@ export const DataRepository = {
              for (const l of logs) {
                  // 1. Save Log Header
                  await db.runAsync(`
-                    INSERT OR REPLACE INTO workout_logs (id, user_id, workout_time, workout_name, duration, note, created_at, updated_at, sync_status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT OR REPLACE INTO workout_logs (id, user_id, workout_time, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                  `, [
                      l.id,
                      l.userId || null,
@@ -154,6 +226,7 @@ export const DataRepository = {
                      l.note || null,
                      l.createdAt || null,
                      l.updatedAt || Date.now(),
+                     (l as any).deletedAt || null, 
                      l.syncStatus || 'synced'
                  ]);
 
@@ -186,6 +259,15 @@ export const DataRepository = {
         });
     },
 
+    deleteHistory: async (id: string): Promise<void> => {
+        const db = await getDb();
+        await db.runAsync(`
+            UPDATE workout_logs
+            SET deleted_at = ?, sync_status = 'pending', updated_at = ?
+            WHERE id = ?
+        `, [Date.now(), Date.now(), id]);
+    },
+
     saveLog: async (log: Omit<LocalWorkoutLog, 'updatedAt' | 'syncStatus' | 'id'> & { id?: string }): Promise<LocalWorkoutLog> => {
         const id = log.id || (uuid.v4() as string);
         const now = Date.now();
@@ -195,8 +277,8 @@ export const DataRepository = {
         await db.withTransactionAsync(async () => {
             // 1. Save Header
             await db.runAsync(`
-                INSERT OR REPLACE INTO workout_logs (id, user_id, workout_time, workout_name, duration, note, created_at, updated_at, sync_status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+                INSERT OR REPLACE INTO workout_logs (id, user_id, workout_time, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 'pending')
             `, [
                 id,
                 log.userId || null,

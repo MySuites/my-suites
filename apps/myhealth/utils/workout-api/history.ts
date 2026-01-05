@@ -170,14 +170,6 @@ export async function fetchFullWorkoutHistory(user: any) {
 }
 
 export async function deleteWorkoutLogFromSupabase(user: any, logId: string) {
-    if (!user) return;
-    try {
-        await supabase.from("workout_logs").delete().eq(
-            "workout_log_id",
-            logId,
-        );
-    } catch (e) {
-        console.warn("Failed to delete workout log on server", e);
-        throw e;
-    }
+    // Local-First: Soft delete via repository
+    await DataRepository.deleteHistory(logId);
 }
