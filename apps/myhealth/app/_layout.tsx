@@ -10,7 +10,7 @@ import { NavigationSettingsProvider } from '../providers/NavigationSettingsProvi
 import { useColorScheme } from '../hooks/ui/use-color-scheme';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react'; // Added useState removed
-// import { storage } from '../utils/storage'; // Added storage import removed
+import { initDatabase } from '../utils/db/database';
 import { ActiveWorkoutProvider } from '../providers/ActiveWorkoutProvider'; // Fixed import path
 import { WorkoutManagerProvider } from '../providers/WorkoutManagerProvider';
 import { FloatingButtonProvider } from '../providers/FloatingButtonContext';
@@ -74,7 +74,12 @@ export default function RootLayout() {
   const loaded = true;
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync();
+      initDatabase().then(() => {
+        SplashScreen.hideAsync();
+      }).catch(e => {
+        console.error("DB Init Failed", e);
+        SplashScreen.hideAsync();
+      });
     }
   }, [loaded]);
 
