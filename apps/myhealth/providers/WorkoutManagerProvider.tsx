@@ -310,7 +310,28 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         workoutHistory,
         fetchWorkoutLogDetails: async (id: string) => ({ data: [], error: null }), // Stub for now or impl
         saveCompletedWorkout,
-        deleteWorkoutLog: (id: string) => {}, // Stub
+        deleteWorkoutLog: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => {
+            const performDelete = async () => {
+                try {
+                    await DataRepository.deleteHistory(id);
+                    setWorkoutHistory(prev => prev.filter(h => h.id !== id));
+                    options?.onSuccess?.();
+                    showToast({ message: "Workout deleted", type: "success" });
+                } catch (e) {
+                    console.error(e);
+                    Alert.alert("Error", "Failed to delete workout log.");
+                }
+            };
+
+            if (options?.skipConfirmation) {
+                performDelete();
+            } else {
+                Alert.alert("Delete Workout", "Are you sure?", [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Delete", style: "destructive", onPress: performDelete }
+                ]);
+            }
+        },
         createCustomExercise: async (name: string, type: string) => ({}),
     };
 
