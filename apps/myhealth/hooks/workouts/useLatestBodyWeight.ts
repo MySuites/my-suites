@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase, useAuth } from "@mysuite/auth";
+import { useAuth } from "@mysuite/auth";
+import { DataRepository } from "../../providers/DataRepository";
 
 export function useLatestBodyWeight() {
     const { user } = useAuth();
@@ -7,30 +8,29 @@ export function useLatestBodyWeight() {
     const [loading, setLoading] = useState(false);
 
     const fetchWeight = useCallback(async () => {
-        if (!user) return;
+        // Local-First: We can fetch even if user is not logged in (guest)
+        // But the hook relies on 'user' to know which ID to fetch?
+        // DataRepository.getLatestBodyWeight takes userId | null.
+        // If user is null, it might return guest data or nothing depending on implementation?
+        // Let's pass user?.id || null.
+
         setLoading(true);
-
-        const { data, error } = await supabase
-            .from("body_measurements")
-            .select("weight")
-            .eq("user_id", user.id)
-            .order("date", { ascending: false })
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-        if (error) {
-            console.log("Error fetching latest body weight:", error);
-        } else if (data) {
-            setLatestWeight(data.weight);
+        try {
+            // DataRepository now handles the logic (checking local DB)
+            const weight = await DataRepository.getLatestBodyWeight(
+                user?.id || null,
+            );
+            setLatestWeight(weight);
+        } catch (e) {
+            console.error("Error fetching latest body weight:", e);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }, [user]);
 
     useEffect(() => {
-        if (user) {
-            fetchWeight();
-        }
+        // Fetch on mount or user change
+        fetchWeight();
     }, [user, fetchWeight]);
 
     return { weight: latestWeight, loading, refetch: fetchWeight };
