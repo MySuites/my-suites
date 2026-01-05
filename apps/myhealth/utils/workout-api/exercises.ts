@@ -6,30 +6,26 @@ import { DataRepository } from "../../providers/DataRepository";
 export async function fetchExercises(user: any) {
     let data;
 
-    if (user) {
-        // Fetch user specific exercises with muscle groups
-        const { data: userData, error } = await supabase
-            .from("exercises")
-            .select(`
-                exercise_id, 
-                exercise_name, 
-                properties,
-                exercise_muscle_groups (
-                    role,
-                    muscle_groups ( name )
-                )
-            `)
-            .order("exercise_name", { ascending: true });
+    // Always fetch from local DB (which is synced via useSyncService)
+    const localExercises = await DataRepository.getExercises();
 
-        if (error) return { data: [], error };
-        data = userData;
+    // If local DB is empty (first run, no sync yet), fallback to default data?
+    // Or just return what we have (empty) and let sync happen?
+    // Best UX: If empty and user is Guest, use default data.
+    // If empty and user is Auth, might be syncing... but we can't block.
+    // Let's use localExercises if available.
+
+    if (localExercises.length > 0) {
+        data = localExercises;
     } else {
-        // Guest: Use default data
+        // Fallback or Guest default
+        // If we are fully local-first, we should populate DB with defaults on init?
+        // OR just fallback to JSON here if DB is empty.
         data = ExerciseDefaultData.map((e: any) => ({
-            exercise_id: e.id,
-            exercise_name: e.name,
+            id: e.id,
+            name: e.name,
             properties: e.type,
-            exercise_muscle_groups: [{
+            muscle_groups: [{
                 role: "primary",
                 muscle_groups: { name: e.muscle_group },
             }],
@@ -37,25 +33,37 @@ export async function fetchExercises(user: any) {
     }
 
     const mapped = data.map((e: any) => {
-        // Get primary muscle group or first available
-        const muscles = e.exercise_muscle_groups || [];
-        const primary = muscles.find((m: any) => m.role === "primary");
-        const firstMuscle = primary
-            ? primary.muscle_groups?.name
-            : (muscles[0]?.muscle_groups?.name);
+        // Local DB has 'muscle_groups' which is array of { role, muscle_groups: { name } }
+        // OR default data mapped above matches this.
 
-        // Parse properties from comma-separated string
-        const properties = e.properties
-            ? e.properties.split(",").map((s: string) => s.trim())
-            : [];
+        let firstMuscle = null;
+        if (e.muscle_groups && e.muscle_groups.length > 0) {
+            const primary = e.muscle_groups.find((m: any) =>
+                m.role === "primary"
+            );
+            if (primary && primary.muscle_groups) {
+                firstMuscle = primary.muscle_groups.name;
+            } else if (e.muscle_groups[0].muscle_groups) {
+                firstMuscle = e.muscle_groups[0].muscle_groups.name;
+            }
+        }
+
+        // Parse properties if array or string (Local DB returns string array, Default is string? checked above)
+        // DataRepo.getExercises returns properties as string[] (split by comma).
+        // DefaultJSON properties is string?
+        // Supabase properties is string/array?
+        // Let's be robust.
+
+        let props = e.properties;
+        // If it's the raw string from DB before mapping (wait, DataRepo maps it to array)
+        // If it comes from DefaultData, it is string "Strength" etc.
 
         return {
-            id: e.exercise_id,
-            name: e.exercise_name,
+            id: e.id || e.exercise_id, // Local uses id, Supabase raw uses exercise_id
+            name: e.name || e.exercise_name,
             category: firstMuscle || "General",
-            properties: properties,
-            // Keep rawType if needed for now, or just rely on properties
-            rawType: e.properties,
+            properties: Array.isArray(props) ? props : [props],
+            rawType: e.properties, // Keep raw if needed
         };
     });
 

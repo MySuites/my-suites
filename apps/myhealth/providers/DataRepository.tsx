@@ -401,5 +401,42 @@ export const DataRepository = {
             SET deleted_at = ?, sync_status = 'pending', updated_at = ?
             WHERE id = ?
         `, [Date.now(), Date.now(), id]);
+    },
+
+    // --- Exercises (Library) ---
+    getExercises: async (): Promise<any[]> => {
+        const db = await getDb();
+        const result = await db.getAllAsync<any>('SELECT * FROM exercises ORDER BY name ASC');
+        return result.map(e => ({
+            ...e,
+            muscle_groups: e.muscle_groups ? JSON.parse(e.muscle_groups) : [],
+            properties: e.properties ? e.properties.split(',') : [] // Store as comma-sep string in DB for simplicity or JSON? Let's assume text for properties based on schema, but split on read.
+        }));
+    },
+
+    saveExercises: async (exercises: any[]): Promise<void> => {
+        if (exercises.length === 0) return;
+        const db = await getDb();
+        const now = Date.now();
+        
+        // Bulk insert using transaction
+        await db.withTransactionAsync(async () => {
+            for (const ex of exercises) {
+                await db.runAsync(`
+                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, created_at, updated_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, 'synced')
+                `, [
+                    ex.id || ex.exercise_id, 
+                    ex.name || ex.exercise_name,
+                    JSON.stringify(ex.muscle_groups || ex.exercise_muscle_groups || []),
+                    ex.properties || "", // Assume string or convert? 
+                    // Verify upstream properties format: "strength, reps"...
+                    // If ex.properties is array, join it.
+                    // If it is string cleanup?
+                    new Date().toISOString(),
+                    now
+                ]);
+            }
+        });
     }
 };

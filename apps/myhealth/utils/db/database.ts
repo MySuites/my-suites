@@ -83,6 +83,16 @@ export const initDatabase = async () => {
             deleted_at INTEGER,
             sync_status TEXT DEFAULT 'pending'
         );
+
+        CREATE TABLE IF NOT EXISTS exercises (
+            id TEXT PRIMARY KEY,
+            name TEXT,
+            muscle_groups TEXT, -- JSON
+            properties TEXT,
+            created_at TEXT,
+            updated_at INTEGER,
+            sync_status TEXT DEFAULT 'synced' -- Libraries are usually synced from server
+        );
     `);
 
     console.log("Database initialized successfully");

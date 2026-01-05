@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useAuth } from "@mysuite/auth";
+import { supabase, useAuth } from "@mysuite/auth";
 import { DataRepository } from "../providers/DataRepository";
 import {
     fetchBodyMeasurementHistory,
@@ -113,6 +113,22 @@ export function useSyncService() {
                 // Better approach: When pulling, if we find a local entry on the same date that matches, we update it?
                 // For now, let's just save.
                 await DataRepository.saveBodyMeasurements(mergedBody); // Upsert handles ID matches
+            }
+            // 4. Pull Exercises (Library)
+            const { data: exData, error: exError } = await supabase
+                .from("exercises")
+                .select(`
+                    exercise_id, 
+                    exercise_name, 
+                    properties,
+                    exercise_muscle_groups (
+                        role,
+                        muscle_groups ( name )
+                    )
+                `); // Fetch lightweight or full? Full is fine for 300 exercises.
+
+            if (!exError && exData) {
+                await DataRepository.saveExercises(exData);
             }
         } catch (e) {
             console.error("Pull failed", e);
