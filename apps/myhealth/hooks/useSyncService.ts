@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@mysuite/auth";
-import { DataRepository, TABLES } from "../providers/DataRepository";
+import { DataRepository } from "../providers/DataRepository";
 import {
     fetchBodyMeasurementHistory,
     fetchFullWorkoutHistory,
@@ -112,10 +112,7 @@ export function useSyncService() {
 
                 // Better approach: When pulling, if we find a local entry on the same date that matches, we update it?
                 // For now, let's just save.
-                await DataRepository.upsert(
-                    TABLES.BODY_MEASUREMENTS,
-                    mergedBody,
-                ); // Upsert handles ID matches
+                await DataRepository.saveBodyMeasurements(mergedBody); // Upsert handles ID matches
             }
         } catch (e) {
             console.error("Pull failed", e);
@@ -169,20 +166,14 @@ export function useSyncService() {
             await DataRepository.saveWorkouts(workouts);
 
             // 3. Push Body Measurements
-            // We need to access the table directly or use getBodyWeightHistory(null) to get all?
-            // getBodyWeightHistory filters by user if passed.
-            // But we might have pending items under 'guest' or 'user'?
-            // BodyWeightService.saveWeight uses (userId || 'guest').
-            // If I am logged in, I use my userId.
-            const allMeasurements = await DataRepository.table<any>(
-                TABLES.BODY_MEASUREMENTS,
-            );
+            const allMeasurements = await DataRepository.getBodyWeightHistory(
+                null,
+            ); // Fetch all
             const pendingMeasurements = allMeasurements.filter((m: any) =>
                 m.syncStatus === "pending"
             );
 
             for (const m of pendingMeasurements) {
-                // Should we check if this measurement belongs to current user?
                 // If 'guest', we claim it for current user?
                 if (m.userId === "guest" || m.userId === user.id) {
                     const { data, error } = await persistBodyMeasurement(
@@ -193,18 +184,11 @@ export function useSyncService() {
                     if (!error && data) {
                         m.syncStatus = "synced";
                         m.id = data.id; // Update local ID to match cloud ID (if possible/safe)
-                        // Note: If we update ID, we must ensure no conflict.
-                        // But wait, if we update ID, upsert might create a new one if we save it back?
-                        // No, we modify the object reference in array then save array.
-
                         m.userId = user.id; // Ensure ownership is claimed
                     }
                 }
             }
-            await DataRepository.upsert(
-                TABLES.BODY_MEASUREMENTS,
-                pendingMeasurements,
-            ); // Save updates
+            await DataRepository.saveBodyMeasurements(pendingMeasurements); // Save updates
         } catch (e) {
             console.error("Push failed", e);
         }

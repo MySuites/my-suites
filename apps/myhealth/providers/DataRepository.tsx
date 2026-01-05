@@ -1,170 +1,101 @@
-import { storage } from "../utils/storage";
+import { getDb } from "../utils/db/database";
 import type { LocalWorkoutLog, Exercise } from "../utils/workout-api/types";
 import uuid from 'react-native-uuid';
 import ExerciseDefaultData from '../assets/data/default-exercises.json';
 
-export const TABLES = {
-    EXERCISES: "exercises",
-    WORKOUTS: "workouts", // Templates
-    WORKOUT_LOGS: "workout_logs", // History Headers
-    SET_LOGS: "set_logs", // History Details
-    BODY_MEASUREMENTS: "body_measurements",
-};
-
-// Legacy keys for migration support
-const LEGACY_KEYS = {
-    WORKOUTS: "myhealth_saved_workouts",
-    HISTORY: "myhealth_workout_history",
-};
-
-// --- Generic Table AccessHelpers ---
-const table = async <T extends unknown>(tableName: string) => {
-    const raw = await storage.getItem<T[]>(tableName);
-    return raw || [];
-};
-
-const upsert = async <T extends { id?: string }>(tableName: string, data: T | T[]) => {
-    const current = await table<T>(tableName);
-    const items = Array.isArray(data) ? data : [data];
-    
-    let updated = [...current];
-    items.forEach(item => {
-        if (!item.id) item.id = uuid.v4() as string;
-        const index = updated.findIndex(existing => existing.id === item.id);
-        if (index >= 0) {
-            updated[index] = { ...updated[index], ...item };
-        } else {
-            updated.push(item);
-        }
-    });
-    
-    await storage.setItem(tableName, updated);
-    return items;
-};
+// --- Generic Helpers ---
+// We keep these for now if other sections need them during transition, 
+// but we will implement specific SQL methods for Workouts.
 
 export const DataRepository = {
-    // Expose helpers if needed (though internal usage is preferred)
-    table,
-    upsert,
     
     // --- Workouts (Templates) ---
     getWorkouts: async (): Promise<any[]> => {
-        // Try new table first
-        let workouts = await table<any>(TABLES.WORKOUTS);
+        const db = await getDb();
+        const rows = await db.getAllAsync<any>('SELECT * FROM workouts WHERE deleted_at IS NULL');
         
-        // Migration Check: If empty, check legacy and migrate
-        if (workouts.length === 0) {
-             const legacy = await storage.getItem<any[]>(LEGACY_KEYS.WORKOUTS);
-             if (legacy && legacy.length > 0) {
-                 console.log("Migrating Legacy Workouts...");
-                 await upsert(TABLES.WORKOUTS, legacy);
-                 workouts = legacy;
-             }
-        }
-
-        return workouts.filter((w: any) => !w.deletedAt);
+        return rows.map(row => ({
+            ...row,
+            exercises: row.exercises ? JSON.parse(row.exercises) : [],
+            // Map snake_case db columns back to camelCase if needed, or keep consistent.
+            // Current code expects camelCase for UI?
+            // Let's check existing types usage. existing code uses `w.id`, `w.name`, `w.exercises`.
+            // DB has `user_id`, `created_at`.
+            // We should map them to be safe.
+            userId: row.user_id,
+            createdAt: row.created_at,
+            updatedAt: row.updated_at,
+            syncStatus: row.sync_status
+        }));
     },
 
     saveWorkouts: async (workouts: any[]): Promise<void> => {
-        // Overwrite full list (legacy behavior compatibility)
-        await storage.setItem(TABLES.WORKOUTS, workouts);
+        // Bulk upsert
+        const db = await getDb();
+        
+        // We can do this in a transaction
+        await db.withTransactionAsync(async () => {
+            for (const w of workouts) {
+                await db.runAsync(`
+                    INSERT OR REPLACE INTO workouts (id, user_id, name, exercises, created_at, updated_at, deleted_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                `, [
+                    w.id,
+                    w.userId || w.user_id || null, 
+                    w.name || null,
+                    JSON.stringify(w.exercises || []),
+                    w.createdAt || w.created_at || null,
+                    w.updatedAt || Date.now(),
+                    w.deletedAt || null,
+                    w.syncStatus || 'pending'
+                ]);
+            }
+        });
     },
 
     saveWorkout: async (workout: any): Promise<void> => {
-       await upsert(TABLES.WORKOUTS, {
-           ...workout,
-           updatedAt: Date.now(),
-           syncStatus: 'pending',
-       });
+       const db = await getDb();
+       await db.runAsync(`
+            INSERT OR REPLACE INTO workouts (id, user_id, name, exercises, created_at, updated_at, deleted_at, sync_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+       `, [
+           workout.id,
+           workout.userId,
+           workout.name,
+           JSON.stringify(workout.exercises || []),
+           workout.createdAt,
+           Date.now(), // updatedAt
+           null, // deletedAt
+           'pending' // syncStatus
+       ]);
     },
 
     deleteWorkout: async (id: string): Promise<void> => {
-        const workouts = await DataRepository.getWorkouts();
-        const index = workouts.findIndex((w: any) => w.id === id);
-        if (index >= 0) {
-            workouts[index].deletedAt = Date.now();
-            workouts[index].syncStatus = 'pending';
-            await DataRepository.saveWorkouts(workouts);
-        }
+        const db = await getDb();
+        await db.runAsync(`
+            UPDATE workouts 
+            SET deleted_at = ?, sync_status = 'pending', updated_at = ?
+            WHERE id = ?
+        `, [Date.now(), Date.now(), id]);
     },
 
 
     // --- History (Logs) ---
-    
-    /**
-     * Reconstructs full workout history by joining workout_logs and set_logs.
-     * Use this for UI display.
-     */
     getHistory: async (): Promise<LocalWorkoutLog[]> => {
-        const logs = await table<any>(TABLES.WORKOUT_LOGS);
-        const setLogs = await table<any>(TABLES.SET_LOGS);
+        const db = await getDb();
+        const logs = await db.getAllAsync<any>('SELECT * FROM workout_logs ORDER BY workout_time DESC');
+        const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
         
-        // Migration Check
-        if (logs.length === 0) {
-             const legacy = await storage.getItem<LocalWorkoutLog[]>(LEGACY_KEYS.HISTORY);
-             if (legacy && legacy.length > 0) {
-                 console.log("Migrating Legacy History...");
-                 // This is complex: split legacy logs into headers and sets
-                 // For now, let's return legacy if new tables are empty to avoid data loss during dev
-                 // Ideally we run a one-time migration script.
-                 // Let's implement an on-the-fly migration to new tables:
-                 const migratedLogs: any[] = [];
-                 const migratedSets: any[] = [];
-                 
-                 legacy.forEach(l => {
-                     const logId = l.id || uuid.v4();
-                     migratedLogs.push({
-                         id: logId, // workout_log_id
-                         user_id: l.userId,
-                         workout_time: l.date,
-                         workout_name: l.name,
-                         duration: l.duration,
-                         note: l.note,
-                         created_at: l.createdAt,
-                         syncStatus: 'synced', // Assume legacy was synced if we are migrating
-                     });
-                     
-                     if (l.exercises) {
-                         l.exercises.forEach((ex: any) => {
-                             if (ex.logs) {
-                                 ex.logs.forEach((s: any) => {
-                                     migratedSets.push({
-                                         id: s.id || uuid.v4(),
-                                         workout_log_id: logId,
-                                         exercise_id: ex.id,
-                                         details: {
-                                             ...s,
-                                             exercise_name: ex.name, // denormalize name for easy display if ex missing
-                                             exercise_id: ex.id
-                                         },
-                                         created_at: l.createdAt
-                                     });
-                                 });
-                             }
-                         });
-                     }
-                 });
-                 
-                 await storage.setItem(TABLES.WORKOUT_LOGS, migratedLogs);
-                 await storage.setItem(TABLES.SET_LOGS, migratedSets);
-                 
-                 // Renamed vars for consistency below
-                 return DataRepository.getHistory(); // Recursive call now that data is migrated
-             }
-        }
-
-        // Perform Join
         return logs.map(log => {
-            // Find sets for this log
             const sets = setLogs.filter(s => s.workout_log_id === log.id);
-            
-            // Group sets by exercise to reconstruct the nested structure UI expects
+
+            // Group sets by exercise
             const exercisesMap = new Map<string, Exercise>();
-            
+
             sets.forEach(set => {
-                const exId = set.exercise_id || set.details?.exercise_id || 'unknown';
-                const exName = set.details?.exercise_name || 'Unknown Exercise';
-                
+                const exId = set.exercise_id || 'unknown';
+                const exName = set.exercise_name || 'Unknown Exercise';
+
                 if (!exercisesMap.has(exId)) {
                     exercisesMap.set(exId, {
                         id: exId,
@@ -173,25 +104,24 @@ export const DataRepository = {
                         reps: 0,
                         completedSets: 0,
                         logs: [],
-                        // Properties would ideally come from Exercises table join
                     });
                 }
-                
+
                 const ex = exercisesMap.get(exId)!;
                 ex.logs?.push({
                      id: set.id,
-                     weight: set.details?.weight,
-                     reps: set.details?.reps,
-                     distance: set.details?.distance,
-                     duration: set.details?.duration,
-                     bodyweight: set.details?.bodyweight,
+                     weight: set.weight,
+                     reps: set.reps,
+                     distance: set.distance,
+                     duration: set.duration,
+                     bodyweight: set.bodyweight, // Keep as number (0/1) if type expects number
                 });
                 ex.completedSets = (ex.completedSets || 0) + 1;
             });
-            
+
             return {
                 id: log.id,
-                workoutId: log.workout_id, // if linked to template
+                workoutId: undefined, // Template link not preserved in flat log table usually, but could add column if needed. schema has it? Schema in database.ts didn't have workout_id.
                 userId: log.user_id,
                 date: log.workout_time,
                 workoutTime: log.workout_time,
@@ -201,105 +131,109 @@ export const DataRepository = {
                 notes: log.note,
                 exercises: Array.from(exercisesMap.values()),
                 createdAt: log.created_at,
-                syncStatus: log.syncStatus || 'synced',
-                updatedAt: log.updatedAt || new Date(log.created_at).getTime(),
+                syncStatus: log.sync_status || 'synced',
+                updatedAt: log.updated_at || new Date(log.created_at).getTime(),
             };
-        }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        });
     },
 
     saveHistory: async (logs: LocalWorkoutLog[]): Promise<void> => {
-        // This method is usually called by Sync Service to overwrite local with cloud state
-        // We need to decompose the rich object back into tables
-        
-        const workoutLogs: any[] = [];
-        const setLogs: any[] = [];
-        
-        logs.forEach(l => {
-             workoutLogs.push({
-                 id: l.id,
-                 // map back fields
-                 user_id: l.userId,
-                 workout_time: l.date || l.workoutTime,
-                 workout_name: l.name,
-                 duration: l.duration,
-                 note: l.note,
-                 created_at: l.createdAt,
-                 syncStatus: l.syncStatus,
-                 updatedAt: l.updatedAt
-             });
-             
-             if (l.exercises) {
-                 l.exercises.forEach(ex => {
-                     if (ex.logs) {
-                         ex.logs.forEach(s => {
-                             setLogs.push({
-                                 id: s.id || uuid.v4(),
-                                 workout_log_id: l.id,
-                                 exercise_id: ex.id,
-                                 details: {
-                                     ...s,
-                                     exercise_name: ex.name,
-                                     exercise_id: ex.id
-                                 },
-                                 created_at: l.createdAt
-                             });
-                         });
+        const db = await getDb();
+        await db.withTransactionAsync(async () => {
+             for (const l of logs) {
+                 // 1. Save Log Header
+                 await db.runAsync(`
+                    INSERT OR REPLACE INTO workout_logs (id, user_id, workout_time, workout_name, duration, note, created_at, updated_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 `, [
+                     l.id,
+                     l.userId || null,
+                     l.date || l.workoutTime || null,
+                     l.name || null,
+                     l.duration || null,
+                     l.note || null,
+                     l.createdAt || null,
+                     l.updatedAt || Date.now(),
+                     l.syncStatus || 'synced'
+                 ]);
+
+                 // 2. Save Sets
+                 if (l.exercises) {
+                     for (const ex of l.exercises) {
+                         if (ex.logs) {
+                             for (const s of ex.logs) {
+                                 await db.runAsync(`
+                                    INSERT OR REPLACE INTO set_logs (id, workout_log_id, exercise_id, exercise_name, weight, reps, distance, duration, bodyweight, created_at, sync_status)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                 `, [
+                                     s.id || uuid.v4(),
+                                     l.id,
+                                     ex.id || null,
+                                     ex.name || null,
+                                     s.weight || null,
+                                     s.reps || null,
+                                     s.distance || null,
+                                     s.duration || null,
+                                     s.bodyweight ? 1 : 0,
+                                     l.createdAt || null,
+                                     'synced' 
+                                 ]);
+                             }
+                         }
                      }
-                 });
+                 }
              }
         });
-        
-        await storage.setItem(TABLES.WORKOUT_LOGS, workoutLogs);
-        await storage.setItem(TABLES.SET_LOGS, setLogs);
     },
 
     saveLog: async (log: Omit<LocalWorkoutLog, 'updatedAt' | 'syncStatus' | 'id'> & { id?: string }): Promise<LocalWorkoutLog> => {
         const id = log.id || (uuid.v4() as string);
         const now = Date.now();
         const timestamp = new Date().toISOString(); 
-        
-        // 1. Save Header
-        await upsert(TABLES.WORKOUT_LOGS, {
-            id: id,
-            user_id: log.userId,
-            workout_time: log.date || timestamp,
-            workout_name: log.name,
-            duration: log.duration,
-            note: log.note,
-            created_at: timestamp,
-            updatedAt: now,
-            syncStatus: 'pending'
-        });
-        
-        // 2. Save Sets
-        const newSets: any[] = [];
-        if (log.exercises) {
-            log.exercises.forEach(ex => {
-                if (ex.logs) {
-                    ex.logs.forEach(s => {
-                        newSets.push({
-                            id: s.id || uuid.v4(),
-                            workout_log_id: id,
-                            exercise_id: ex.id,
-                            details: {
-                                ...s,
-                                exercise_name: ex.name,
-                                exercise_id: ex.id
-                            },
-                            created_at: timestamp,
-                            syncStatus: 'pending' // Technically set_logs don't have syncStatus in SQL, but useful for local tracking? 
-                            // Actually sync service pushes by workout_log usually.
-                        });
-                    });
-                }
-            });
-        }
-        
-        if (newSets.length > 0) {
-            await upsert(TABLES.SET_LOGS, newSets);
-        }
+        const db = await getDb();
 
-        // Return full object for UI
+        await db.withTransactionAsync(async () => {
+            // 1. Save Header
+            await db.runAsync(`
+                INSERT OR REPLACE INTO workout_logs (id, user_id, workout_time, workout_name, duration, note, created_at, updated_at, sync_status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+            `, [
+                id,
+                log.userId || null,
+                log.date || timestamp,
+                log.name || null,
+                log.duration || null,
+                log.note || null,
+                timestamp,
+                now
+            ]);
+
+            // 2. Save Sets
+            if (log.exercises) {
+                for (const ex of log.exercises) {
+                    if (ex.logs) {
+                        for (const s of ex.logs) {
+                            await db.runAsync(`
+                                INSERT INTO set_logs (id, workout_log_id, exercise_id, exercise_name, weight, reps, distance, duration, bodyweight, created_at, sync_status)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+                            `, [
+                                s.id || uuid.v4(),
+                                id,
+                                ex.id || null,
+                                ex.name || null,
+                                s.weight || null,
+                                s.reps || null,
+                                s.distance || null,
+                                s.duration || null,
+                                s.bodyweight ? 1 : 0,
+                                timestamp
+                            ]);
+                        }
+                    }
+                }
+            }
+        });
+
         return {
             ...log,
             id,
@@ -310,35 +244,34 @@ export const DataRepository = {
     
     // --- Stats ---
     getExerciseStats: async (exerciseName: string) => {
-        // More efficient query now: just scan set_logs
-        const setLogs = await table<any>(TABLES.SET_LOGS);
+        const db = await getDb();
+        // Use SQL aggregation for efficiency
+        const result = await db.getAllAsync<{ maxWeight: number, totalVolume: number, prDate: string }>(`
+            SELECT 
+                MAX(weight) as maxWeight,
+                SUM(weight * reps) as totalVolume -- approximate volume
+            FROM set_logs 
+            WHERE exercise_name = ?
+        `, [exerciseName]);
         
-        let maxWeight = 0;
-        let totalVolume = 0;
+        // SQLite aggregation returns one row with nulls if empty
+        const row = result[0];
+        
+        // Need Date of PR. 
+        // Complex query: SELECT created_at FROM set_logs WHERE exercise_name = ? AND weight = (SELECT MAX(weight) ...)
+        // Let's do a separate query if maxWeight > 0
         let prDate = null;
-
-        // Filter and iterate
-        // In SQL: SELECT * FROM set_logs WHERE details->>'exercise_name' = ?
-        for (const set of setLogs) {
-            if (set.details?.exercise_name === exerciseName) {
-                const weight = set.details.weight;
-                const reps = set.details.reps;
-                
-                if (weight && weight > maxWeight) {
-                    maxWeight = weight;
-                    // We need date. set_logs has created_at
-                    prDate = set.created_at;
-                }
-                if (weight && reps) {
-                    totalVolume += weight * reps;
-                }
-            }
+        if (row && row.maxWeight > 0) {
+            const dateParams = await db.getFirstAsync<{ created_at: string }>(`
+                SELECT created_at FROM set_logs WHERE exercise_name = ? AND weight = ? LIMIT 1
+            `, [exerciseName, row.maxWeight]);
+            prDate = dateParams?.created_at;
         }
 
         return {
-            maxWeight,
-            prDate,
-            totalVolume
+            maxWeight: row?.maxWeight || 0,
+            prDate: prDate,
+            totalVolume: row?.totalVolume || 0
         };
     },
     
@@ -349,62 +282,90 @@ export const DataRepository = {
 
     // --- Body Measurements ---
     getLatestBodyWeight: async (userId: string | null): Promise<number | null> => {
-        // userId is mainly for validation if we ever scope strictly, but for local first
-        // we generally just store everything. However, if we support multi-user on one device (rare),
-        // we might filter. For now, we assume one active user or guest.
-        // If userId is null, it's a guest.
+        const db = await getDb();
+        let query = 'SELECT weight FROM body_measurements ';
+        let params: any[] = [];
         
-        const logs = await table<any>(TABLES.BODY_MEASUREMENTS);
-        if (!logs || logs.length === 0) return null;
-
-        // Filter by userId if provided, or allow all if we assume single-tenant local storage
-        // Ideally we filter to be safe.
-        const filtered = userId 
-            ? logs.filter(l => l.user_id === userId || l.userId === userId) // handle potential casing legacy
-            : logs;
-
-        if (filtered.length === 0) return null;
-
-        // Sort by date desc, then created_at desc
-        filtered.sort((a, b) => {
-            const dateA = new Date(a.date).getTime();
-            const dateB = new Date(b.date).getTime();
-            if (dateA !== dateB) return dateB - dateA;
-            return (new Date(b.createdAt).getTime()) - (new Date(a.createdAt).getTime());
-        });
-
-        return filtered[0].weight;
+        if (userId) {
+            query += 'WHERE user_id = ? ';
+            params.push(userId);
+        }
+        
+        query += 'ORDER BY date DESC, created_at DESC LIMIT 1';
+        
+        const res = await db.getFirstAsync<{ weight: number }>(query, params);
+        return res ? res.weight : null;
     },
 
     getBodyWeightHistory: async (userId: string | null, startDate?: string): Promise<any[]> => {
-        const logs = await table<any>(TABLES.BODY_MEASUREMENTS);
+        const db = await getDb();
+        let query = 'SELECT * FROM body_measurements ';
+        let params: any[] = [];
         
-        // Filter
-        let filtered = userId 
-             ? logs.filter(l => l.user_id === userId || l.userId === userId)
-             : logs;
-
-        if (startDate) {
-            filtered = filtered.filter(l => l.date >= startDate);
+        // Dynamic WHERE clause
+        const conditions = [];
+        if (userId) {
+            conditions.push('user_id = ?');
+            params.push(userId);
         }
+        if (startDate) {
+            conditions.push('date >= ?');
+            params.push(startDate);
+        }
+        
+        if (conditions.length > 0) {
+            query += 'WHERE ' + conditions.join(' AND ');
+        }
+        
+        query += ' ORDER BY date ASC';
+        
+        const rows = await db.getAllAsync<any>(query, params);
+        
+        return rows.map(r => ({
+            ...r,
+            userId: r.user_id,
+            createdAt: r.created_at,
+            updatedAt: r.updated_at,
+            syncStatus: r.sync_status
+        }));
+    },
 
-        // Sort by date asc for charts
-        return filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    saveBodyMeasurements: async (measurements: any[]): Promise<void> => {
+        const db = await getDb();
+        await db.withTransactionAsync(async () => {
+            for (const m of measurements) {
+                 await db.runAsync(`
+                    INSERT OR REPLACE INTO body_measurements (id, user_id, weight, date, created_at, updated_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                 `, [
+                    m.id,
+                    m.userId || m.user_id || null, // handle variety of input shapes from sync
+                    m.weight,
+                    m.date,
+                    m.createdAt || m.created_at || new Date().toISOString(),
+                    m.updatedAt || m.updated_at || Date.now(),
+                    m.syncStatus || 'pending'
+                 ]);
+            }
+        });
     },
 
     saveBodyWeight: async (log: { userId: string, weight: number, date: string, id?: string }): Promise<void> => {
         const id = log.id || (uuid.v4() as string);
         const now = Date.now();
         const timestamp = new Date().toISOString();
+        const db = await getDb();
 
-        await upsert(TABLES.BODY_MEASUREMENTS, {
+        await db.runAsync(`
+            INSERT OR REPLACE INTO body_measurements (id, user_id, weight, date, created_at, updated_at, sync_status)
+            VALUES (?, ?, ?, ?, ?, ?, 'pending')
+        `, [
             id,
-            userId: log.userId,
-            weight: log.weight,
-            date: log.date,
-            createdAt: timestamp,
-            updatedAt: now,
-            syncStatus: 'pending'
-        });
+            log.userId,
+            log.weight,
+            log.date,
+            timestamp,
+            now
+        ]);
     }
 };
