@@ -5,12 +5,14 @@ import { useUITheme, RaisedButton, IconSymbol } from '@mysuite/ui';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { ProfileRepository } from '../../providers/ProfileRepository';
+import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 
 // Removed AuthForm import
 
 export default function ProfileScreen() {
   const { user } = useAuth();
   const theme = useUITheme();
+  const { lastSyncedAt } = useWorkoutManager();
   // const router = useRouter(); // If needed for redirects, but auth state change handles it? 
   // No, useAuth handles session changes.
   
@@ -309,6 +311,10 @@ export default function ProfileScreen() {
             className="h-12 w-full"
             textClassName="text-red-500 font-bold text-lg"
             />
+            
+            <Text className="text-center text-xs text-gray-400 dark:text-gray-600 mt-4 mb-8">
+                Last synced: {lastSyncedAt ? lastSyncedAt.toLocaleString() : 'Never'}
+            </Text>
         </View>
       </ScrollView>
     </View>

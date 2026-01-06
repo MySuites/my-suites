@@ -42,6 +42,7 @@ interface WorkoutManagerContextType {
     fetchWorkoutLogDetails: (logId: string) => Promise<{ data: any[], error: any }>;
     saveCompletedWorkout: (name: string, exercises: Exercise[], duration: number, onSuccess?: () => void, note?: string, routineId?: string) => Promise<void>;
     deleteWorkoutLog: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => void;
+    lastSyncedAt: Date | null; // Added
 }
 
 const WorkoutManagerContext = createContext<WorkoutManagerContextType | undefined>(undefined);
@@ -55,7 +56,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
-    useSyncService(); // Start background sync
+    const { lastSyncedAt } = useSyncService(); // Start background sync
 
     const {
         activeRoutine,
@@ -333,6 +334,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
             }
         },
         createCustomExercise: async (name: string, type: string) => ({}),
+        lastSyncedAt,
     };
 
     return <WorkoutManagerContext.Provider value={value}>{children}</WorkoutManagerContext.Provider>;

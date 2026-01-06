@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase, useAuth } from "@mysuite/auth";
 import { DataRepository } from "../providers/DataRepository";
 import {
@@ -19,6 +20,7 @@ function isUUID(str: string) {
 export function useSyncService() {
     const { user } = useAuth();
     const [isSyncing, setIsSyncing] = useState(false);
+    const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
     const isSyncingRef = useRef(false);
 
     const pullData = useCallback(async () => {
@@ -257,6 +259,12 @@ export function useSyncService() {
         try {
             await pushData();
             await pullData();
+            const now = new Date();
+            setLastSyncedAt(now);
+            await AsyncStorage.setItem(
+                "lastSyncedAt",
+                now.getTime().toString(),
+            );
             console.log("Data sync complete");
         } finally {
             isSyncingRef.current = false;
@@ -270,8 +278,18 @@ export function useSyncService() {
         }
     }, [user, sync]);
 
+    // Load persisted sync time on mount
+    useEffect(() => {
+        AsyncStorage.getItem("lastSyncedAt").then((val) => {
+            if (val) {
+                setLastSyncedAt(new Date(parseInt(val, 10)));
+            }
+        });
+    }, []);
+
     return {
         isSyncing,
+        lastSyncedAt,
         sync,
     };
 }
