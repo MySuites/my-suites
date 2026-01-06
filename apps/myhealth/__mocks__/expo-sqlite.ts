@@ -3,7 +3,7 @@ const mockTx = {
     executeSql: jest.fn((sql, args, success, error) => {
         if (success) {
             success(mockTx, {
-                rows: { _array: [], length: 0, item: (i) => null },
+                rows: { _array: [], length: 0, item: (i: number) => null },
             });
         }
     }),

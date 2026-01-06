@@ -1,11 +1,7 @@
 import { DataRepository } from '../providers/DataRepository';
 import { openDatabaseAsync } from 'expo-sqlite';
-import * as uuid from 'react-native-uuid';
-import { useSyncService } from '../hooks/useSyncService';
-
 // Mock dependencies
 jest.mock('expo-sqlite');
-jest.mock('react-native-uuid');
 
 // Mock specific database behavior for this test
 const mockDb = {
