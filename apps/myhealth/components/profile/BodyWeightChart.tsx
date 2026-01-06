@@ -27,37 +27,88 @@ export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af'
   const sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const screenWidth = Dimensions.get('window').width;
-  const paddingHorizontal = 75; // Card mx-4 (32) + p-4 (32) + buffer
-  const yAxisLabelWidth = 20;
-  const chartWidth = screenWidth - paddingHorizontal;
-  const DRAWING_PADDING = 10;
-  const availableDrawingWidth = chartWidth - yAxisLabelWidth - DRAWING_PADDING;
+  const paddingHorizontal = 64; // Card mx-4 (32) + p-4 (32)
+  const yAxisWidth = 30; // Dedicated space for custom Y-axis labels
+  const availableChartWidth = screenWidth - paddingHorizontal - yAxisWidth;
+  
+  // We want the chart to fill the available width exactly
+  let computedWidth = availableChartWidth;
 
   let spacing = 40;
-  let initialSpacing = DRAWING_PADDING;
-  let computedWidth = chartWidth;
+  let initialSpacing = 0;
+  
+  // Prepare Normalized Data
+  let normalizedData: any[] = [];
 
-  if (maxPoints || (sortedData.length > 1 && sortedData.length <= 32)) {
-    const pointsCount = maxPoints || sortedData.length;
-    const unitSpacing = availableDrawingWidth / (pointsCount - 1);
+  if (maxPoints && sortedData.length > 0) {
+    const pointsCount = maxPoints;
+    // Strict uniform spacing
+    spacing = availableChartWidth / (pointsCount - 1);
+    initialSpacing = 0; // Starts at 0
     
-    spacing = unitSpacing;
-    initialSpacing = (sortedData[0].spineIndex ?? (maxPoints ? 0 : 0)) * unitSpacing + (maxPoints ? 0 : DRAWING_PADDING);
-    
-    // In fixed timeline mode, initialSpacing starts from 0 (relative to drawing area)
-    if (maxPoints) initialSpacing = (sortedData[0].spineIndex ?? 0) * unitSpacing;
-
-    sortedData.forEach((item, i) => {
-      const currentIdx = item.spineIndex ?? i;
-      const nextIdx = sortedData[i + 1]?.spineIndex ?? (currentIdx + 1);
-      (item as any).spacing = (nextIdx - currentIdx) * unitSpacing;
-    });
+    // Create dense array
+    for (let i = 0; i < pointsCount; i++) {
+        const realPoint = sortedData.find(d => (d.spineIndex ?? -1) === i);
+        if (realPoint) {
+            normalizedData.push({ ...realPoint, isInterpolated: false });
+        } else {
+            // Interpolate
+            // Find Prev
+            let prevPoint = null;
+            let nextPoint = null;
+            
+            // Search backwards
+            for (let j = i - 1; j >= 0; j--) {
+                const found = sortedData.find(d => (d.spineIndex ?? -1) === j);
+                if (found) { prevPoint = found; break; }
+            }
+             // Search forwards
+            for (let k = i + 1; k < pointsCount; k++) {
+                const found = sortedData.find(d => (d.spineIndex ?? -1) === k);
+                if (found) { nextPoint = found; break; }
+            }
+            
+            let interpolatedValue = 0;
+            if (prevPoint && nextPoint) {
+                const totalDist = (nextPoint.spineIndex ?? 0) - (prevPoint.spineIndex ?? 0);
+                const currDist = i - (prevPoint.spineIndex ?? 0);
+                const valDiff = nextPoint.value - prevPoint.value;
+                interpolatedValue = prevPoint.value + (valDiff * (currDist / totalDist));
+            } else if (prevPoint) {
+                interpolatedValue = prevPoint.value; // Clamp forward
+            } else if (nextPoint) {
+                interpolatedValue = nextPoint.value; // Clamp backward
+            }
+            
+            normalizedData.push({
+                value: interpolatedValue,
+                date: '', // No date for gaps
+                label: '',
+                isInterpolated: true,
+                hideDataPoint: true,
+                dataPointText: '',
+            });
+        }
+    }
   } else {
-    // Large dataset ('All' range)
-    const contentWidth = (sortedData.length - 1) * spacing;
-    const calculatedInitialSpacing = availableDrawingWidth - contentWidth;
-    initialSpacing = Math.max(DRAWING_PADDING, calculatedInitialSpacing);
-    computedWidth = Math.max(chartWidth, contentWidth + initialSpacing + DRAWING_PADDING);
+    // Large dataset or no maxPoints fallback
+    normalizedData = sortedData.map(d => ({ ...d, isInterpolated: false }));
+    
+    if (sortedData.length > 1 && sortedData.length <= 32) {
+         // Auto-fit logic for small non-fixed datasets? 
+         // For now, adhere to existing logic or just use uniform default if not maxPoints
+         const pointsCount = sortedData.length;
+         spacing = availableChartWidth / (pointsCount - 1);
+    } else {
+         spacing = 10;
+         initialSpacing = 10;
+        //  computedWidth is auto-calc handled by Gifted Charts or we set it?
+        // Reuse old logic for scrolling:
+         const contentWidth = (sortedData.length - 1) * spacing;
+         const calculatedInitialSpacing = availableChartWidth - contentWidth;
+         initialSpacing = Math.max(10, calculatedInitialSpacing);
+         computedWidth = Math.max(availableChartWidth, contentWidth + initialSpacing + 10);
+    }
   }
 
   // Generate Fixed Labels if in Fixed Mode
@@ -83,142 +134,160 @@ export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af'
     });
   }
 
-  // Calculate Y-Axis bounds centered on average
-  const values = sortedData.map(d => d.value);
-  const minData = Math.min(...values);
-  const maxData = Math.max(...values);
-  const avg = values.reduce((a, b) => a + b, 0) / values.length;
+  // Calculate Y-Axis bounds centered on average (Use REAL values only)
+  const realValues = sortedData.map(d => d.value);
+  const minData = Math.min(...realValues);
+  const maxData = Math.max(...realValues);
+  const avg = realValues.length > 0 ? realValues.reduce((a, b) => a + b, 0) / realValues.length : 0;
   
   const targetSections = 4;
   let stepValue = 10;
   let minAxis = 0;
 
   // Search for the smallest stepValue (10, 20, 30...) that fits the data centered on avg
-  for (let s = 10; s <= 1000; s += 10) {
-    const range = s * targetSections;
-    const start = Math.max(0, Math.floor((avg - range / 2) / 10) * 10);
-    if (minData >= start && maxData <= start + range) {
-      stepValue = s;
-      minAxis = start;
-      break;
-    }
+  if (realValues.length > 0) {
+      for (let s = 10; s <= 1000; s += 10) {
+        const range = s * targetSections;
+        const start = Math.max(0, Math.floor((avg - range / 2) / 10) * 10);
+        if (minData >= start && maxData <= start + range) {
+          stepValue = s;
+          minAxis = start;
+          break;
+        }
+      }
   }
 
   const yAxisLabelTexts = Array.from({ length: targetSections + 1 }, (_, i) => (minAxis + i * stepValue).toString());
 
   // Format for gifted-charts - SUBTRACT minAxis to ensure perfect alignment
-  const chartData = sortedData.map(item => ({
+  const chartData = normalizedData.map(item => ({
     value: item.value - minAxis,
     label: item.label,
     realValue: item.value,
     date: item.date,
+    isInterpolated: item.isInterpolated,
+    hideDataPoint: item.isInterpolated,
     dataPointText: '', 
-    spacing: (item as any).spacing, // Pass calculated spacing
+    // No custom spacing needed for maxPoints mode as we rely on global spacing
   }));
 
   return (
     <View style={{ paddingTop: 10, paddingBottom: 16 }}>
-      {/* Grid Overlay for Fixed Timeline */}
-      {maxPoints && (
-          <View 
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              top: 10,
-              left: 0,
-              width: chartWidth - yAxisLabelWidth,
-              height: 151,
-              borderWidth: 1,
-              borderColor: textColor,
-              opacity: 0.08,
-            }}
-          >
-             {/* Cross-hair Style Grid */}
-             {[0.25, 0.5, 0.75].map(p => (
-               <React.Fragment key={p}>
-                 <View style={{ position: 'absolute', left: `${p * 100}%`, top: 0, bottom: 0, width: 1, backgroundColor: textColor }} />
-                 <View style={{ position: 'absolute', top: `${p * 100}%`, left: 0, right: 0, height: 1, backgroundColor: textColor }} />
-               </React.Fragment>
-             ))}
-          </View>
-      )}
-      <LineChart
-        data={chartData}
-        color={color}
-        thickness={3}
-        startFillColor={color}
-        endFillColor={color}
-        startOpacity={0.2}
-        endOpacity={0.0}
-        areaChart
-        yAxisThickness={0}
-        xAxisThickness={0}
-        xAxisLabelTextStyle={{ color: maxPoints ? 'transparent' : textColor, fontSize: 10, width: 40 }}
-        yAxisTextStyle={{ 
-          color: textColor, 
-          fontSize: 10,
-          transform: [{ translateY: -6 }] // Center numbers on grid lines
-        }}
-        yAxisLabelContainerStyle={{ justifyContent: 'center' }}
-        {...({ containerToDataUpperPadding: 0 } as any)} // Force-remove internal top offset
-        hideRules
-        hideDataPoints={false}
-        dataPointsColor={color}
-        dataPointsRadius={6}
-        width={computedWidth}
-        height={150}
-        spacing={spacing}
-        initialSpacing={initialSpacing}
-        endSpacing={0}
-        curved={sortedData.length > 1}
-        scrollToEnd={!maxPoints}
-        disableScroll={!!maxPoints}
-        yAxisLabelWidth={yAxisLabelWidth}
-        yAxisSide={1}
-        maxValue={stepValue * targetSections}
-        noOfSections={targetSections}
-        yAxisOffset={0}
-        yAxisLabelTexts={yAxisLabelTexts}
-        formatYLabel={(label: string) => JSON.stringify(label)}
-        onPress={(item: any) => {
-          onPointSelect?.({ value: item.realValue, date: item.date });
-        }}
-        onBackgroundPress={() => {
-          onPointSelect?.(null);
-        }}
-        focusEnabled
-        showStripOnFocus
-        pointerConfig={{
-          pointerStripUptoDataPoint: true,
-          pointerStripColor: textColor,
-          pointerStripWidth: 1,
-          strokeDashArray: [2, 4],
-          pointerColor: color,
-          radius: 0, // Hide redundant pointer dot, use data points instead
-          activatePointersOnLongPress: false,
-          autoAdjustPointerLabelPosition: true,
-          pointerVibrateOnPress: true,
-          pointerOnPress: true,
-          persistPointer: false,
-          onPointerChange: (items: any) => {
-            if (items && items.length > 0 && items[0].realValue !== undefined) {
-              onPointSelect?.({ value: items[0].realValue, date: items[0].date });
-            } else if (!items || items.length === 0) {
-              onPointSelect?.(null);
-            }
-          },
-        }}
-      />
+      
+      <View style={{ flexDirection: 'row' }}>
+         {/* Main Chart Area */}
+         <View style={{ width: availableChartWidth }}>
+            {/* Grid Overlay for Fixed Timeline */}
+            {maxPoints && (
+                <View 
+                    pointerEvents="none"
+                    style={{
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    borderWidth: 1,
+                    borderColor: textColor,
+                    opacity: 0.08,
+                    }}
+                >
+                    {/* Cross-hair Style Grid */}
+                    {[0.25, 0.5, 0.75].map(p => (
+                    <React.Fragment key={p}>
+                        <View style={{ position: 'absolute', left: `${p * 100}%`, top: 0, bottom: 0, width: 1, backgroundColor: textColor }} />
+                        <View style={{ position: 'absolute', top: `${p * 100}%`, left: 0, right: 0, height: 1, backgroundColor: textColor }} />
+                    </React.Fragment>
+                    ))}
+                </View>
+            )}
+
+            <LineChart
+                data={chartData}
+                color={color}
+                thickness={3}
+                startFillColor={color}
+                endFillColor={color}
+                startOpacity={0.2}
+                endOpacity={0.0}
+                areaChart
+                yAxisThickness={0}
+                xAxisThickness={0}
+                hideYAxisText
+                xAxisLabelTextStyle={{ color: maxPoints ? 'transparent' : textColor, fontSize: 10, width: 40 }}
+                yAxisLabelContainerStyle={{ width: 0 }} // Effectively hide internal Y container
+                {...({ containerToDataUpperPadding: 0 } as any)} // Force-remove internal top offset
+                hideRules
+                hideDataPoints={false}
+                dataPointsColor={color}
+                dataPointsRadius={6}
+                width={computedWidth}
+                height={150}
+                spacing={spacing}
+                initialSpacing={initialSpacing}
+                endSpacing={0}
+                curved={false}
+                scrollToEnd={!maxPoints}
+                disableScroll={!!maxPoints}
+                yAxisLabelWidth={0} // Disable internal Y-axis width reservation
+                maxValue={stepValue * targetSections}
+                noOfSections={targetSections}
+                yAxisOffset={0}
+                onPress={(item: any) => {
+                  if (!item.isInterpolated) {
+                     onPointSelect?.({ value: item.realValue, date: item.date });
+                  }
+                }}
+                onBackgroundPress={() => {
+                  onPointSelect?.(null);
+                }}
+                focusEnabled
+                showStripOnFocus
+                pointerConfig={{
+                pointerStripUptoDataPoint: true,
+                pointerStripColor: textColor,
+                pointerStripWidth: 1,
+                strokeDashArray: [2, 4],
+                pointerColor: color,
+                radius: 0, 
+                activatePointersOnLongPress: false,
+                autoAdjustPointerLabelPosition: true,
+                pointerVibrateOnPress: true,
+                pointerOnPress: true,
+                persistPointer: false,
+                onPointerChange: (items: any) => {
+                    if (items && items.length > 0 && items[0].realValue !== undefined && !items[0].isInterpolated) {
+                       onPointSelect?.({ value: items[0].realValue, date: items[0].date });
+                    } else if (!items || items.length === 0 || (items[0] && items[0].isInterpolated)) {
+                       // Do not clear selection if just passing over a gap? 
+                       // Or clear it? Better to clear or keep last valid?
+                       // User expects touch on gap to do nothing or clear.
+                       onPointSelect?.(null);
+                    }
+                },
+                }}
+            />
+         </View>
+
+         {/* Custom Y-Axis Labels */}
+         <View style={{ width: yAxisWidth, height: 151,  justifyContent: 'space-between', marginLeft: 8 }}>
+            {[...yAxisLabelTexts].reverse().map((label, idx) => (
+                <View key={idx} style={{ height: 20, justifyContent: 'center', alignItems: 'flex-end', marginTop: idx === 0 ? -10 : 0, marginBottom: idx === yAxisLabelTexts.length - 1 ? -10 : 0 }}>
+                    <Text style={{ color: textColor, fontSize: 10 }}>{label}</Text>
+                </View>
+            ))}
+         </View>
+      </View>
+
       {/* Custom X-Axis Labels for Fixed Timeline */}
       {maxPoints && fixedLabels.length > 0 && (
           <View 
             style={{ 
-                width: chartWidth - yAxisLabelWidth, // Drawing area width
-                marginLeft: 0, // Starts at left edge
+                width: availableChartWidth, 
                 paddingLeft: 0, 
                 paddingRight: 0 
             }} 
-            className="flex-row justify-between -mt-1"
+            className="flex-row justify-between mt-2"
           >
               {fixedLabels.map((label, idx) => (
                   <View key={idx} style={{ width: 40, alignItems: idx === 0 ? 'flex-start' : idx === 4 ? 'flex-end' : 'center' }}>
