@@ -801,77 +801,77 @@
     "id": "frog_stand",
     "name": "Frog Stand",
     "type": "Bodyweight, Duration",
-    "muscle_group": "Other",
+    "muscle_group": "Shoulders",
     "equipment": "Bodyweight"
   },
   {
     "id": "crow_stand",
     "name": "Crow Stand",
     "type": "Bodyweight, Duration",
-    "muscle_group": "Other",
-    "equipment": "Cable"
+    "muscle_group": "Shoulders",
+    "equipment": "Bodyweight"
   },
   {
-    "id": "threadmill",
-    "name": "Threadmill",
+    "id": "treadmill",
+    "name": "Treadmill",
     "type": "Distance, Duration",
-    "muscle_group": "Other",
-    "equipment": "Bodyweight"
+    "muscle_group": "Cardio",
+    "equipment": "Machine"
   },
   {
     "id": "elliptical",
     "name": "Elliptical",
     "type": "Distance, Duration",
-    "muscle_group": "Other",
-    "equipment": "Bodyweight"
+    "muscle_group": "Cardio",
+    "equipment": "Machine"
   },
   {
     "id": "rowing_machine",
     "name": "Rowing Machine",
     "type": "Distance, Duration",
-    "muscle_group": "Other",
-    "equipment": "Cable"
+    "muscle_group": "Cardio",
+    "equipment": "Machine"
   },
   {
     "id": "stationary_bike",
     "name": "Stationary Bike",
     "type": "Distance, Duration",
-    "muscle_group": "Other",
-    "equipment": "Bodyweight"
+    "muscle_group": "Cardio",
+    "equipment": "Machine"
   },
   {
     "id": "jump_rope",
     "name": "Jump Rope",
     "type": "Reps, Duration",
-    "muscle_group": "Other",
-    "equipment": "Bodyweight"
+    "muscle_group": "Cardio",
+    "equipment": "Other"
   },
   {
     "id": "cycling",
     "name": "Cycling",
     "type": "Distance, Duration",
-    "muscle_group": "Other",
-    "equipment": "Bodyweight"
+    "muscle_group": "Cardio",
+    "equipment": "Other"
   },
   {
     "id": "swimming",
     "name": "Swimming",
     "type": "Distance, Duration",
-    "muscle_group": "Other",
-    "equipment": "Bodyweight"
+    "muscle_group": "Cardio",
+    "equipment": "Other"
   },
   {
     "id": "rowing",
     "name": "Rowing",
     "type": "Distance, Duration",
-    "muscle_group": "Other",
-    "equipment": "Cable"
+    "muscle_group": "Cardio",
+    "equipment": "Other"
   },
   {
     "id": "farmers_walk",
     "name": "Farmers Walk",
     "type": "Weighted, Distance",
     "muscle_group": "Other",
-    "equipment": "Weighted Bodyweight"
+    "equipment": "Dumbbell"
   }
 ]
