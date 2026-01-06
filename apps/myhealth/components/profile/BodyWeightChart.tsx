@@ -270,9 +270,21 @@ export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af'
          </View>
 
          {/* Custom Y-Axis Labels */}
-         <View style={{ width: yAxisWidth, height: 151,  justifyContent: 'space-between', marginLeft: 8 }}>
+         <View style={{ width: yAxisWidth, height: 175, marginLeft: 8 }}>
             {[...yAxisLabelTexts].reverse().map((label, idx) => (
-                <View key={idx} style={{ height: 20, justifyContent: 'center', alignItems: 'flex-end', marginTop: idx === 0 ? -10 : 0, marginBottom: idx === yAxisLabelTexts.length - 1 ? -10 : 0 }}>
+                <View 
+                    key={idx} 
+                    style={{ 
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        top: `${(idx / targetSections) * 100}%`,
+                        height: 30,
+                        marginTop: -13,
+                        justifyContent: 'center', 
+                        alignItems: 'flex-end' 
+                    }}
+                >
                     <Text style={{ color: textColor, fontSize: 10 }}>{label}</Text>
                 </View>
             ))}
