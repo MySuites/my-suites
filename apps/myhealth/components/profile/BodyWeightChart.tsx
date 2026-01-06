@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Dimensions, Text } from 'react-native';
+import { View, Dimensions, Text, TouchableWithoutFeedback } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 
 type DateRange = 'Week' | 'Month' | '6Month' | 'Year';
@@ -27,7 +27,7 @@ export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af'
   const sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const screenWidth = Dimensions.get('window').width;
-  const paddingHorizontal = 64; // Card mx-4 (32) + p-4 (32)
+  const paddingHorizontal = 70; // Card mx-4 (32) + p-4 (32)
   const yAxisWidth = 30; // Dedicated space for custom Y-axis labels
   const availableChartWidth = screenWidth - paddingHorizontal - yAxisWidth;
   
@@ -172,6 +172,7 @@ export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af'
   }));
 
   return (
+    <TouchableWithoutFeedback onPress={() => onPointSelect?.(null)}>
     <View style={{ paddingTop: 10, paddingBottom: 16 }}>
       
       <View style={{ flexDirection: 'row' }}>
@@ -309,5 +310,6 @@ export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af'
           </View>
       )}
     </View>
+    </TouchableWithoutFeedback>
   );
 }
