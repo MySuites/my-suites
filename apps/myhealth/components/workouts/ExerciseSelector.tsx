@@ -89,9 +89,8 @@ export const ExerciseSelector = ({
                         )
                     }
                 />
-                
                 <View className="flex-1 px-4 pt-32">
-                    <View className="flex-row items-center mb-4 gap-3">
+                    <View className="flex-row items-center gap-2 z-20">
                         <RaisedCard className="flex-1 flex-row items-center px-2.5 h-12 rounded-xl">
                             <IconSymbol name="magnifyingglass" size={20} color={theme.icon} />
                             <TextInput
@@ -122,9 +121,9 @@ export const ExerciseSelector = ({
                         </RaisedButton>
                     </View>
 
-                    {/* Filter Chips */}
+                    {/* Filter Menu */}
                     {isFilterVisible && (
-                        <View className="bg-light-lighter dark:bg-border-dark rounded-xl p-4 mb-4">
+                        <RaisedCard className="rounded-xl p-4 mb-4 z-10 -mt-14 pt-16">
                             <ScrollView showsVerticalScrollIndicator={false} className="max-h-96">
                                 <TouchableOpacity 
                                     onPress={() => toggleCategory("All")}
@@ -171,7 +170,7 @@ export const ExerciseSelector = ({
                                     );
                                 })}
                             </ScrollView>
-                        </View>
+                        </RaisedCard>
                     )}
 
                     {isLoading ? (
