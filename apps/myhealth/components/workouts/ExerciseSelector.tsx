@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Modal, ScrollView } from 'react-native';
-import { useUITheme, RaisedButton, HollowedCard, Skeleton, IconSymbol } from '@mysuite/ui';
+import { useUITheme, RaisedButton, HollowedCard, RaisedCard, Skeleton, IconSymbol } from '@mysuite/ui';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { BackButton } from '../ui/BackButton';
 
@@ -92,7 +92,7 @@ export const ExerciseSelector = ({
                 
                 <View className="flex-1 px-4 pt-32">
                     <View className="flex-row items-center space-x-2 mb-4 gap-1">
-                        <View className="flex-1 flex-row items-center bg-light-lighter dark:bg-border-dark rounded-xl px-2.5 h-12">
+                        <RaisedCard className="flex-1 flex-row items-center px-2.5 h-12 rounded-xl">
                             <IconSymbol name="magnifyingglass" size={20} color={theme.icon} />
                             <TextInput
                                 className="flex-1 ml-2 text-base text-light dark:text-dark"
@@ -108,7 +108,7 @@ export const ExerciseSelector = ({
                                         <IconSymbol name="xmark.circle.fill" size={20} color={theme.primary} />
                                 </TouchableOpacity>
                             )}
-                        </View>
+                        </RaisedCard>
                         <TouchableOpacity 
                             onPress={() => setIsFilterVisible(!isFilterVisible)}
                             className={`w-12 h-12 rounded-xl items-center justify-center ${selectedCategories.size > 0 ? 'bg-primary/10 border-primary dark:border-primary-dark' : 'bg-light-lighter dark:bg-border-dark'}`}
