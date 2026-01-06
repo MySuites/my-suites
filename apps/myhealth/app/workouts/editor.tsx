@@ -95,7 +95,6 @@ export default function CreateWorkoutScreen() {
     }
 
     async function fetchAvailableExercises() {
-        if (!user) return;
         setIsLoadingExercises(true);
         try {
              const { data } = await fetchExercises(user);
