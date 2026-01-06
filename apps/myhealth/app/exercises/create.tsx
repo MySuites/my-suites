@@ -115,7 +115,7 @@ export default function CreateExerciseScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1 p-6"
       >
-        <View className="mb-6">
+        <View className="mt-28 mb-6">
             <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Name</Text>
             <TextInput 
                 className="bg-light-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-base border border-transparent dark:border-highlight-dark"
