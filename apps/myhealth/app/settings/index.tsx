@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { View, Text, Alert, ScrollView } from 'react-native';
 import { useAuth, supabase } from '@mysuite/auth';
 import { useUITheme, ThemeToggle, IconSymbol, useToast, RaisedButton } from '@mysuite/ui';
 import { DataRepository } from '../../providers/DataRepository';
@@ -9,8 +9,7 @@ import { BackButton } from '../../components/ui/BackButton';
 import { ProfileButton } from '../../components/ui/ProfileButton';
 import { BodyWeightCard } from '../../components/profile/BodyWeightCard';
 import { WeightLogModal } from '../../components/profile/WeightLogModal';
-import { BodyWeightService } from '../../services/BodyWeightService';
-import { Colors } from '../../constants/theme';
+import { BodyWeightService, BodyWeightEntry } from '../../services/BodyWeightService';
 
 type DateRange = 'Week' | 'Month' | '6Month' | 'Year';
 
@@ -21,8 +20,8 @@ export default function SettingsScreen() {
   const { showToast } = useToast();
 
   const [latestWeight, setLatestWeight] = useState<number | null>(null);
-  const [weightHistory, setWeightHistory] = useState<{ value: number; label: string; date: string }[]>([]);
-  const [rangeAverage, setRangeAverage] = useState<number | null>(null);
+  const [allWeightHistory, setAllWeightHistory] = useState<BodyWeightEntry[]>([]);
+  // Derived state for chart
   const [isWeightModalVisible, setIsWeightModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedRange, setSelectedRange] = useState<DateRange>('Week');
@@ -34,29 +33,31 @@ export default function SettingsScreen() {
   }, [user]);
 
   // Helper to format date label
-  const formatDateLabel = (dateStr: string, range: DateRange) => {
-      const d = new Date(dateStr);
-      const utcDate = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-      
-      if (range === 'Week' || range === 'Month' || range === '6Month') return utcDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-      if (range === 'Year') return utcDate.toLocaleDateString(undefined, { month: 'short' });
-      return utcDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  };
+  // Moved logic inside useMemo or keep separate if used elsewhere (it's redundant now but harmless)
+  // Warning: The useMemo logic above uses its own formatLabel.
+  // I will leave this here if other parts use it, but they don't seem to.
+  // Actually, I can remove it if I defined formatLabel inside useMemo.
+  /* const formatDateLabel = ... */ 
+  // Wait, I will just remove it to suppress lint warnings about unused function.
 
-  const fetchWeightHistory = useCallback(async () => {
+  const fetchAllWeightHistory = useCallback(async () => {
     setIsLoading(true);
+    const history = await BodyWeightService.getWeightHistory(user?.id || null);
+    setAllWeightHistory(history);
+    setIsLoading(false);
+  }, [user]);
 
-    // 1. Generate Spine (Target Dates)
+  const { weightHistory, rangeAverage } = useMemo(() => {
+    // 1. Generate Spine
     let spine: string[] = [];
     const now = new Date();
-    // Get "Today" as YYYY-MM-DD string (Local)
     const todayY = now.getFullYear();
     const todayM = String(now.getMonth() + 1).padStart(2, '0');
     const todayD = String(now.getDate()).padStart(2, '0');
     const todayStr = `${todayY}-${todayM}-${todayD}`;
 
     if (selectedRange === 'Week') {
-        const d = new Date(todayStr); // UTC Mid
+        const d = new Date(todayStr);
         for (let i = 6; i >= 0; i--) {
             const temp = new Date(d);
             temp.setUTCDate(d.getUTCDate() - i);
@@ -72,7 +73,6 @@ export default function SettingsScreen() {
     } else if (selectedRange === '6Month') {
         const lastWeekStart = new Date(todayStr);
         lastWeekStart.setUTCDate(lastWeekStart.getUTCDate() - 6);
-        
         for (let i = 25; i >= 0; i--) {
              const temp = new Date(lastWeekStart);
              temp.setUTCDate(lastWeekStart.getUTCDate() - (i * 7));
@@ -88,22 +88,17 @@ export default function SettingsScreen() {
         }
     }
 
-    // 2. Fetch Data
-    const rawData = await BodyWeightService.getWeightHistory(user?.id || null, spine[0]);
-
-    if (!rawData || rawData.length === 0) {
-        setWeightHistory([]);
-        setRangeAverage(null);
-        setIsLoading(false);
-        return;
+    if (allWeightHistory.length === 0) {
+        return { weightHistory: [], rangeAverage: null };
     }
 
-    // Calculate true overall average from all individual logs in the range
-    // MOVED: Average is now calculated after aggregation (see step 4 below) to match visual data points exactly.
-
-    // 3. Process Data (Aggregation)
+    // 2. Filter & Aggregate
+    const spineStartDate = spine[0];
     const groups: Record<string, { total: number, count: number }> = {};
-    rawData.forEach(item => {
+    
+    allWeightHistory.forEach(item => {
+        if (item.date < spineStartDate) return;
+
         let key = '';
         if (selectedRange === 'Week' || selectedRange === 'Month') {
             key = item.date;
@@ -127,9 +122,18 @@ export default function SettingsScreen() {
         }
     });
     
-    // 4. Map existing data to their positions in the spine.
+    // 3. Map to Spine
     const result: { value: number; label: string; date: string; spineIndex: number }[] = [];
     
+    const formatLabel = (dateStr: string) => {
+        const d = new Date(dateStr);
+        const utcDate = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+        
+        if (selectedRange === 'Week' || selectedRange === 'Month' || selectedRange === '6Month') return utcDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        if (selectedRange === 'Year') return utcDate.toLocaleDateString(undefined, { month: 'short' });
+        return utcDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    };
+
     spine.forEach((date, index) => {
         if (groups[date]) {
              let label = '';
@@ -143,7 +147,7 @@ export default function SettingsScreen() {
              ];
              
              if (indices.includes(index)) {
-                 label = formatDateLabel(date, selectedRange);
+                 label = formatLabel(date);
              }
 
              result.push({
@@ -155,28 +159,27 @@ export default function SettingsScreen() {
         }
     });
  
-    // Calculate Average from the AGGREGATED result (visual points) rather than raw logs
+    // 4. Calculate Average
+    let avg = null;
     if (result.length > 0) {
         const totalSum = result.reduce((sum, item) => sum + item.value, 0);
-        setRangeAverage(Math.round((totalSum / result.length) * 100) / 100);
-    } else {
-        setRangeAverage(null);
+        avg = Math.round((totalSum / result.length) * 100) / 100;
     }
 
-    setWeightHistory(result);
-    setIsLoading(false);
-  }, [user, selectedRange]);
+    return { weightHistory: result, rangeAverage: avg };
+
+  }, [allWeightHistory, selectedRange]);
 
   useEffect(() => {
      fetchLatestWeight();
-     fetchWeightHistory().catch(err => console.error(err));
-  }, [user, fetchLatestWeight, fetchWeightHistory]);
+     fetchAllWeightHistory().catch(err => console.error(err));
+  }, [user, fetchLatestWeight, fetchAllWeightHistory]);
 
   const handleSaveWeight = async (weight: number, date: Date) => {
     try {
         await BodyWeightService.saveWeight(user?.id || null, weight, date);
         fetchLatestWeight();
-        fetchWeightHistory();
+        fetchAllWeightHistory();
     } catch (error) {
         console.log('Error saving weight:', error);
         showToast({ message: "Failed to save weight", type: 'error' });
@@ -217,7 +220,7 @@ export default function SettingsScreen() {
 
                         // 3. Refresh State
                         await fetchLatestWeight();
-                        await fetchWeightHistory();
+                        await fetchAllWeightHistory();
                         
                         showToast({ message: "All data deleted", type: 'success' });
                     } catch (error) {

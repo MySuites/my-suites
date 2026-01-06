@@ -57,7 +57,7 @@ export const BodyWeightService = {
      */
     async getWeightHistory(
         userId: string | null,
-        startDate: string,
+        startDate?: string,
     ): Promise<BodyWeightEntry[]> {
         await this.migrateGuestDataIfNeeded(userId);
         const history = await DataRepository.getBodyWeightHistory(
