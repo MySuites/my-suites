@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import { useAuth } from '@mysuite/auth';
+import { useAuth, supabase } from '@mysuite/auth';
 import { useUITheme, ThemeToggle, IconSymbol, useToast } from '@mysuite/ui';
+import { DataRepository } from '../../providers/DataRepository';
 import { useThemePreference } from '../../providers/AppThemeProvider';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
@@ -9,6 +10,7 @@ import { ProfileButton } from '../../components/ui/ProfileButton';
 import { BodyWeightCard } from '../../components/profile/BodyWeightCard';
 import { WeightLogModal } from '../../components/profile/WeightLogModal';
 import { BodyWeightService } from '../../services/BodyWeightService';
+import { Colors } from '../../constants/theme';
 
 type DateRange = 'Week' | 'Month' | '6Month' | 'Year';
 
@@ -181,6 +183,55 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleDeleteData = () => {
+    Alert.alert(
+        "Delete All Data?",
+        user 
+          ? "This will permanently delete ALL workouts, logs, and measurements from both this device AND the cloud. This action cannot be undone."
+          : "This will permanently delete ALL workouts, logs, and measurements stored on this device. This action cannot be undone.",
+        [
+            { text: "Cancel", style: "cancel" },
+            { 
+                text: "Delete", 
+                style: "destructive", 
+                onPress: async () => {
+                    try {
+                        setIsLoading(true);
+                        
+                        // 1. Delete Local Data (Always)
+                        await DataRepository.clearAllLocalData();
+                        
+                        // 2. Delete Cloud Data (If signed in)
+                        if (user) {
+                            // Delete each table's data for this user
+                            // Note: RLS usually prevents 'delete all', but eq('user_id', ...) is standard.
+                            await supabase.from('workouts').delete().eq('user_id', user.id);
+                            await supabase.from('workout_logs').delete().eq('user_id', user.id);
+                            await supabase.from('set_logs').delete().eq('user_id', user.id).then(async ({error}) => {
+                                // sets usually cascade from workouts/logs, but strict cleanup if needed
+                                // If cascade is on DB, this might be redundant but safe.
+                            });
+                             await supabase.from('body_measurements').delete().eq('user_id', user.id);
+                             await supabase.from('routines').delete().eq('user_id', user.id);
+                        }
+
+                        // 3. Refresh State
+                        await fetchLatestWeight();
+                        await fetchWeightHistory();
+                        
+                        showToast({ message: "All data deleted", type: 'success' });
+                    } catch (error) {
+                        console.error("Delete data error:", error);
+                        Alert.alert("Error", "Failed to delete data.");
+                    } finally {
+                        setIsLoading(false);
+                    }
+                }
+            }
+        ]
+    );
+  };
+
 
 
   return (
@@ -223,9 +274,14 @@ export default function SettingsScreen() {
             <IconSymbol name="chevron.right" size={20} color={theme.primary} />
           </TouchableOpacity>
         </View>
-        
 
-
+        <View className="mb-6">
+          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Data</Text>
+          <TouchableOpacity className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark" onPress={handleDeleteData}>
+            <Text className="text-base text-red-500">Delete Data</Text>
+            <IconSymbol name="trash.fill" size={20} color={Colors.light.danger} />
+          </TouchableOpacity>
+        </View>
         
         <Text className="text-center text-xs text-gray-500 mt-6">Version 1.0.0</Text>
       </ScrollView>

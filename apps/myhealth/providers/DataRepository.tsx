@@ -520,5 +520,17 @@ export const DataRepository = {
                 ]);
             }
         });
+    },
+    
+    clearAllLocalData: async (): Promise<void> => {
+        const db = await getDb();
+        await db.withTransactionAsync(async () => {
+            await db.runAsync('DELETE FROM workouts');
+            await db.runAsync('DELETE FROM workout_logs');
+            await db.runAsync('DELETE FROM set_logs');
+            await db.runAsync('DELETE FROM body_measurements');
+            await db.runAsync('DELETE FROM routines');
+            // We purposely do NOT delete 'exercises' as that contains the base library
+        });
     }
 };
