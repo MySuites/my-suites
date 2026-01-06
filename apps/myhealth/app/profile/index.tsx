@@ -116,14 +116,29 @@ export default function ProfileScreen() {
   const handleDeleteAccount = () => {
     Alert.alert(
       'Delete Account',
-      'Are you sure you want to delete your account? This action cannot be undone.',
+      'Are you sure you want to delete your account? This action cannot be undone. All your data will be permanently lost.',
       [
         { text: 'Cancel', style: 'cancel' },
         { 
           text: 'Delete', 
           style: 'destructive', 
           onPress: async () => {
-            Alert.alert('Not Implemented', 'Account deletion logic to be implemented.');
+             if (!user) return;
+             try {
+               setLoading(true);
+               const { error } = await supabase.functions.invoke('delete-account', {
+                 body: { user_id: user.id }
+               });
+ 
+               if (error) throw error;
+               
+               await supabase.auth.signOut();
+             } catch (error) {
+               console.error('Delete account error:', error);
+               Alert.alert("Error", "Failed to delete account. Please try again.");
+             } finally {
+               setLoading(false);
+             }
           } 
         }
       ]

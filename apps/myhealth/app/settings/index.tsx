@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import { useAuth, supabase } from '@mysuite/auth';
+import { useAuth } from '@mysuite/auth';
 import { useUITheme, ThemeToggle, IconSymbol, useToast } from '@mysuite/ui';
-import { Colors } from '../../constants/theme';
 import { useThemePreference } from '../../providers/AppThemeProvider';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
@@ -182,38 +181,7 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!user) return;
 
-    Alert.alert(
-      "Delete Account?",
-      "This action cannot be undone. All your data will be permanently lost.",
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
-          style: "destructive", 
-          onPress: async () => {
-            try {
-              setIsLoading(true);
-              const { error } = await supabase.functions.invoke('delete-account', {
-                body: { user_id: user.id }
-              });
-
-              if (error) throw error;
-              
-              await supabase.auth.signOut();
-            } catch (error) {
-              console.error('Delete account error:', error);
-              Alert.alert("Error", "Failed to delete account. Please try again.");
-            } finally {
-              setIsLoading(false);
-            }
-          }
-        }
-      ]
-    );
-  };
 
   return (
     <View className="flex-1 bg-light dark:bg-dark">
@@ -257,13 +225,7 @@ export default function SettingsScreen() {
         </View>
         
 
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Account</Text>
-          <TouchableOpacity className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark" onPress={handleDeleteAccount}>
-            <Text className="text-base text-red-500">Delete Account</Text>
-            <IconSymbol name="trash.fill" size={20} color={Colors.light.danger} />
-          </TouchableOpacity>
-        </View>
+
         
         <Text className="text-center text-xs text-gray-500 mt-6">Version 1.0.0</Text>
       </ScrollView>
