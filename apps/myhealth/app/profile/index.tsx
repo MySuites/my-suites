@@ -259,10 +259,10 @@ export default function ProfileScreen() {
                     <Text className="text-sm text-gray-500 font-medium">Username</Text>
                     {isEditing ? (
                         <View 
-                        className="h-8 bg-black/5 dark:bg-white/5 rounded-lg border border-transparent min-w-[150px] justify-center pr-1"
+                        className="h-8 bg-light-lighter dark:bg-dark-lighter rounded-lg border border-transparent min-w-[150px] justify-center pr-1"
                         >
                         <TextInput
-                            className="text-base text-gray-900 dark:text-white text-right leading-none"
+                            className="text-base text-light dark:text-dark text-right leading-none"
                             style={{ paddingTop: 0, paddingBottom: 0, height: '100%' }}
                             value={tempUsername}
                             onChangeText={setTempUsername}
@@ -280,10 +280,10 @@ export default function ProfileScreen() {
                     <Text className="text-sm text-gray-500 font-medium">Full Name</Text>
                     {isEditing ? (
                         <View 
-                        className="h-8 bg-black/5 dark:bg-white/5 rounded-lg border border-transparent min-w-[150px] justify-center pr-1"
+                        className="h-8 bg-light-lighter dark:bg-dark-lighter rounded-lg border border-transparent min-w-[150px] justify-center pr-1"
                         >
                         <TextInput
-                            className="text-base text-gray-900 dark:text-white text-right leading-none"
+                            className="text-base text-light dark:text-dark text-right leading-none"
                             style={{ paddingTop: 0, paddingBottom: 0, height: '100%' }}
                             value={tempFullName}
                             onChangeText={setTempFullName}

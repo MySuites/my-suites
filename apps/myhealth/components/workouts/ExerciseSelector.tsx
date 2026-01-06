@@ -22,10 +22,26 @@ export const ExerciseSelector = ({
 }: ExerciseSelectorProps) => {
     const theme = useUITheme();
     const [exerciseSearchQuery, setExerciseSearchQuery] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState("All");
+    const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isFilterVisible, setIsFilterVisible] = useState(false);
 
     const uniqueCategories = ["All", ...Array.from(new Set(exercises.map(e => e.category))).filter(Boolean).sort()];
+
+    const toggleCategory = (category: string) => {
+        if (category === "All") {
+            setSelectedCategories(new Set());
+            return;
+        }
+        
+        const newSet = new Set(selectedCategories);
+        if (newSet.has(category)) {
+            newSet.delete(category);
+        } else {
+            newSet.add(category);
+        }
+        setSelectedCategories(newSet);
+    };
 
     const toggleSelection = (id: string) => {
         const newSelected = new Set(selectedIds);
@@ -75,39 +91,87 @@ export const ExerciseSelector = ({
                 />
                 
                 <View className="flex-1 px-4 pt-32">
+                    <View className="flex-row items-center space-x-2 mb-4 gap-1">
+                        <View className="flex-1 flex-row items-center bg-light-lighter dark:bg-border-dark rounded-xl px-2.5 h-12">
+                            <IconSymbol name="magnifyingglass" size={20} color={theme.icon} />
+                            <TextInput
+                                className="flex-1 ml-2 text-base text-light dark:text-dark"
+                                style={{ paddingTop: 0, paddingBottom: 0, height: '100%' }}
+                                placeholder="Search exercises..."
+                                placeholderTextColor={theme.placeholder}
+                                value={exerciseSearchQuery}
+                                onChangeText={setExerciseSearchQuery}
+                                autoCorrect={false}
+                            />
+                            {exerciseSearchQuery.length > 0 && (
+                                <TouchableOpacity onPress={() => setExerciseSearchQuery('')}>
+                                        <IconSymbol name="xmark.circle.fill" size={20} color={theme.primary} />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                        <TouchableOpacity 
+                            onPress={() => setIsFilterVisible(!isFilterVisible)}
+                            className={`w-12 h-12 rounded-xl items-center justify-center ${selectedCategories.size > 0 ? 'bg-primary/10 border-primary dark:border-primary-dark' : 'bg-light-lighter dark:bg-border-dark'}`}
+                        >
+                            <IconSymbol 
+                                name={"line.3.horizontal.decrease" as any} 
+                                size={20} 
+                                color={selectedCategories.size > 0 ? theme.primary : (theme.icon || '#888')} 
+                            />
+                        </TouchableOpacity>
+                    </View>
+
                     {/* Filter Chips */}
-                    <View className="mb-4">
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-                            {uniqueCategories.map((category) => (
+                    {isFilterVisible && (
+                        <View className="bg-light-lighter dark:bg-border-dark rounded-xl p-4 mb-4">
+                            <ScrollView showsVerticalScrollIndicator={false} className="max-h-96">
                                 <TouchableOpacity 
-                                    key={category} 
-                                    onPress={() => setSelectedCategory(category)}
-                                    className={`px-4 py-2 rounded-full mr-2 border ${selectedCategory === category ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
+                                    onPress={() => toggleCategory("All")}
+                                    className={`self-start px-4 py-2 rounded-full mb-4 border ${selectedCategories.size === 0 ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
                                 >
-                                    <Text className={`font-semibold ${selectedCategory === category ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>
-                                        {category}
+                                    <Text className={`font-semibold ${selectedCategories.size === 0 ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                                        All
                                     </Text>
                                 </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-                    </View>
-                    
-                    <View className="flex-row items-center bg-light-lighter dark:bg-border-dark rounded-lg px-2.5 h-12 mb-4 border border-black/5 dark:border-white/10">
-                        <IconSymbol name="magnifyingglass" size={20} color={theme.icon || '#888'} />
-                        <TextInput
-                            className="flex-1 ml-2 text-base h-full text-light dark:text-dark"
-                            placeholder="Search exercises..."
-                            placeholderTextColor={theme.icon || '#888'}
-                            value={exerciseSearchQuery}
-                            onChangeText={setExerciseSearchQuery}
-                            autoCorrect={false}
-                        />
-                        {exerciseSearchQuery.length > 0 && (
-                            <TouchableOpacity onPress={() => setExerciseSearchQuery('')}>
-                                    <IconSymbol name="xmark.circle.fill" size={20} color={theme.icon || '#888'} />
-                            </TouchableOpacity>
-                        )}
-                    </View>
+
+                                {["Chest & Arms", "Back & Core", "Lower Body", "Other"].map(group => {
+                                    // Filter uniqueCategories that belong to this group
+                                    const catsInGroup = uniqueCategories.filter(cat => {
+                                        if (cat === "All") return false;
+                                        const NOTE_GROUPS: any = {
+                                            "Chest & Arms": ["Chest", "Shoulders", "Biceps", "Triceps", "Forearms"],
+                                            "Back & Core": ["Back", "Neck", "Traps", "Lats","Abdominals", "Abs", "Core", "Lower Back", "Upper Back"],
+                                            "Lower Body": ["Quadriceps", "Hamstrings", "Calves", "Glutes", "Adductors", "Abductors", "Legs"],
+                                            "General": ["Cardio", "Olympic", "Full Body", "Other", "Plyometrics", "Strongman", "Powerlifting", "Stretching"]
+                                        };
+                                        const foundGroup = Object.keys(NOTE_GROUPS).find(g => NOTE_GROUPS[g].includes(cat)) || "Other";
+                                        return foundGroup === group;
+                                    });
+
+                                    if (catsInGroup.length === 0) return null;
+
+                                    return (
+                                        <View key={group} className="mb-4">
+                                            <Text className="text-light-muted dark:text-dark-muted font-bold mb-2 uppercase text-xs tracking-wider">{group}</Text>
+                                            <View className="flex-row flex-wrap gap-2">
+                                                {catsInGroup.map((category) => (
+                                                    <TouchableOpacity 
+                                                        key={category} 
+                                                        onPress={() => toggleCategory(category)}
+                                                        className={`px-4 py-2 rounded-full border ${selectedCategories.has(category) ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
+                                                    >
+                                                        <Text className={`font-semibold ${selectedCategories.has(category) ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                            {category}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        </View>
+                                    );
+                                })}
+                            </ScrollView>
+                        </View>
+                    )}
 
                     {isLoading ? (
                         <View className="mt-4">
@@ -125,7 +189,7 @@ export const ExerciseSelector = ({
                         <FlatList
                             data={exercises.filter(ex => {
                                 const matchesSearch = ex.name.toLowerCase().includes(exerciseSearchQuery.toLowerCase());
-                                const matchesCategory = selectedCategory === "All" || ex.category === selectedCategory;
+                                const matchesCategory = selectedCategories.size === 0 || selectedCategories.has(ex.category);
                                 return matchesSearch && matchesCategory;
                             })}
                             keyExtractor={(item) => item.id}
