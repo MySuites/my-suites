@@ -91,7 +91,7 @@ export const ExerciseSelector = ({
                 />
                 
                 <View className="flex-1 px-4 pt-32">
-                    <View className="flex-row items-center space-x-2 mb-4 gap-1">
+                    <View className="flex-row items-center mb-4 gap-3">
                         <RaisedCard className="flex-1 flex-row items-center px-2.5 h-12 rounded-xl">
                             <IconSymbol name="magnifyingglass" size={20} color={theme.icon} />
                             <TextInput
@@ -109,16 +109,17 @@ export const ExerciseSelector = ({
                                 </TouchableOpacity>
                             )}
                         </RaisedCard>
-                        <TouchableOpacity 
+                        <RaisedButton 
                             onPress={() => setIsFilterVisible(!isFilterVisible)}
-                            className={`w-12 h-12 rounded-xl items-center justify-center ${selectedCategories.size > 0 ? 'bg-primary/10 border-primary dark:border-primary-dark' : 'bg-light-lighter dark:bg-border-dark'}`}
+                            borderRadius={12}
+                            className={`w-12 h-12 p-0 items-center justify-center ${selectedCategories.size > 0 ? 'bg-primary/10' : ''}`}
                         >
                             <IconSymbol 
                                 name={"line.3.horizontal.decrease" as any} 
                                 size={20} 
                                 color={selectedCategories.size > 0 ? theme.primary : (theme.icon || '#888')} 
                             />
-                        </TouchableOpacity>
+                        </RaisedButton>
                     </View>
 
                     {/* Filter Chips */}
