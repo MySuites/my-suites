@@ -1,7 +1,9 @@
-
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import ProfileScreen from '../app/profile/index';
+// Import useAuth to mock implementation per test
+import { useAuth } from '@mysuite/auth';
+import { useWorkoutManager } from '../providers/WorkoutManagerProvider';
 
 // Mocks
 jest.mock('@mysuite/auth', () => ({
@@ -17,11 +19,14 @@ jest.mock('@mysuite/auth', () => ({
   }
 }));
 
-jest.mock('@mysuite/ui', () => ({
-  useUITheme: jest.fn(() => ({ primary: 'blue', danger: 'red', placeholder: 'gray' })),
-  RaisedButton: 'RaisedButton',
-  IconSymbol: 'IconSymbol'
-}));
+jest.mock('@mysuite/ui', () => {
+  const { Text } = jest.requireActual('react-native');
+  return {
+    useUITheme: jest.fn(() => ({ primary: 'blue', danger: 'red', placeholder: 'gray' })),
+    RaisedButton: ({ title }: any) => <Text>{title}</Text>,
+    IconSymbol: 'IconSymbol'
+  };
+});
 
 jest.mock('../components/ui/ScreenHeader', () => ({
   ScreenHeader: 'ScreenHeader'
@@ -31,16 +36,18 @@ jest.mock('../components/ui/BackButton', () => ({
   BackButton: 'BackButton'
 }));
 
-jest.mock('../components/ui/BackButton', () => ({
-  BackButton: 'BackButton'
+jest.mock('../providers/WorkoutManagerProvider', () => ({
+  useWorkoutManager: jest.fn()
 }));
-
-// Import useAuth to mock implementation per test
-import { useAuth } from '@mysuite/auth';
 
 describe('ProfileScreen', () => {
   it('renders auth inputs when user is null (guest)', () => {
     (useAuth as jest.Mock).mockReturnValue({ user: null });
+    (useWorkoutManager as jest.Mock).mockReturnValue({ 
+      lastSyncedAt: null,
+      sync: jest.fn(),
+      isSyncing: false
+    });
     
     const { getByText, getByPlaceholderText } = render(<ProfileScreen />);
     
@@ -63,11 +70,17 @@ describe('ProfileScreen', () => {
 
   it('renders Profile content when user is logged in', () => {
     (useAuth as jest.Mock).mockReturnValue({ user: { id: '123', email: 'test@example.com' } });
+    (useWorkoutManager as jest.Mock).mockReturnValue({ 
+      lastSyncedAt: new Date('2024-01-01T12:00:00Z'),
+      sync: jest.fn(),
+      isSyncing: false
+    });
     
     const { queryByText, getByText } = render(<ProfileScreen />);
     
     expect(queryByText('Sign in to view your profile')).toBeNull();
     expect(getByText('Account')).toBeTruthy(); // Part of profile view
     expect(getByText('test@example.com')).toBeTruthy();
+    expect(getByText('Sync Now')).toBeTruthy();
   });
 });

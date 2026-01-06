@@ -12,7 +12,7 @@ import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 export default function ProfileScreen() {
   const { user } = useAuth();
   const theme = useUITheme();
-  const { lastSyncedAt } = useWorkoutManager();
+  const { lastSyncedAt, sync, isSyncing } = useWorkoutManager();
   // const router = useRouter(); // If needed for redirects, but auth state change handles it? 
   // No, useAuth handles session changes.
   
@@ -312,9 +312,17 @@ export default function ProfileScreen() {
             textClassName="text-red-500 font-bold text-lg"
             />
             
-            <Text className="text-center text-xs text-gray-400 dark:text-gray-600 mt-4 mb-8">
+            <Text className="text-center text-xs text-gray-400 dark:text-gray-600 mt-4 mb-2">
                 Last synced: {lastSyncedAt ? lastSyncedAt.toLocaleString() : 'Never'}
             </Text>
+
+            <RaisedButton
+                title={isSyncing ? "Syncing..." : "Sync Now"}
+                onPress={sync}
+                disabled={isSyncing}
+                className="h-10 w-full bg-gray-200 dark:bg-gray-800"
+                textClassName="text-sm font-medium text-gray-900 dark:text-gray-100"
+            />
         </View>
       </ScrollView>
     </View>
