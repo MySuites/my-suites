@@ -1,8 +1,8 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import { Text, View, Button } from 'react-native';
-import { useAuth } from '@mysuite/auth';
-import { useRouter } from 'expo-router';
+import { render, fireEvent, act } from '@testing-library/react-native';
+import { Alert } from 'react-native';
+import { useAuth, supabase } from '@mysuite/auth';
+import SettingsScreen from '../../app/settings/index';
 
 // Mock dependencies
 jest.mock('@mysuite/auth', () => ({
@@ -10,6 +10,9 @@ jest.mock('@mysuite/auth', () => ({
     supabase: {
         auth: {
             signOut: jest.fn(() => Promise.resolve({ error: null })),
+        },
+        functions: {
+            invoke: jest.fn(() => Promise.resolve({ data: null, error: null })),
         }
     }
 }));
@@ -19,76 +22,86 @@ jest.mock('expo-router', () => ({
     Stack: { Screen: () => null }
 }));
 
-// Mock UI
-jest.mock('@mysuite/ui', () => ({
-    useUITheme: () => ({ primary: 'blue', textMuted: 'gray' }),
-    RaisedButton: ({ children, onPress }: any) => {
-        // We cannot reference Button from outer scope in jest.mock factory.
-        // We must stick to safe returns or require internally if safe.
-        // Simplest: Just call onPress immediately or return a dummy view.
-        // But we want to simulate press.
-        // We can just return 'RaisedButton' string/element if we use testing-library.
-        return children || null;
-    },
-    useToast: () => ({ showToast: jest.fn() }),
-    IconSymbol: () => null,
-    ToastProvider: ({ children }: any) => children,
+// Mock Services
+jest.mock('../../services/BodyWeightService', () => ({
+    BodyWeightService: {
+        getLatestWeight: jest.fn(() => Promise.resolve(75)),
+        getWeightHistory: jest.fn(() => Promise.resolve([])),
+    }
 }));
 
-// Mock Settings Screen Component (Simplification as we don't have the full file content handy/verified)
-// But we should use the REAL component if possible.
-// app/settings/index.tsx? Or usually profile/settings?
-// The prompt said "Implement Settings Tests: Create __tests__/flows/settings-flow.test.tsx to test basic settings rendering and the sign-out flow."
+// Mock Providers
+jest.mock('../../providers/AppThemeProvider', () => ({
+    useThemePreference: () => ({ preference: 'system', setPreference: jest.fn() })
+}));
 
-// Let's assume there is a Settings screen or Profile screen with sign out.
-// Profile screen (`app/profile/index.tsx`) has sign out?
-// Let's use a TestComponent that simulates the Sign Out flow if we can't find the Settings screen file path easily.
-// Actually, `app/profile/index.tsx` was viewed earlier. It has "Sign Out" button?
-// Let's render the generic "SettingsFlow" assuming logic.
-// Better: Check `app/profile/index.tsx` content from history?
-// It simulates the profile setting flow.
+// Mock UI
+jest.mock('@mysuite/ui', () => ({
+    useUITheme: () => ({ primary: 'blue', textMuted: 'gray', danger: 'red', bg: 'white' }),
+    ThemeToggle: () => null,
+    IconSymbol: () => null,
+    useToast: () => ({ showToast: jest.fn() }),
+}));
 
-const SettingsTestComponent = () => {
-    const { signOut } = useAuth();
-    const router = useRouter();
-
-    const handleSignOut = async () => {
-        await signOut();
-        router.replace('/login');
-    };
-
-    return (
-        <View>
-            <Text>Settings</Text>
-            <Button title="Sign Out" onPress={handleSignOut} />
-        </View>
-    );
-};
+// Mock Components
+jest.mock('../../components/ui/ScreenHeader', () => ({
+    ScreenHeader: () => null
+}));
+jest.mock('../../components/ui/BackButton', () => ({
+    BackButton: () => null
+}));
+jest.mock('../../components/ui/ProfileButton', () => ({
+    ProfileButton: () => null
+}));
+jest.mock('../../components/profile/BodyWeightCard', () => ({
+    BodyWeightCard: () => null
+}));
+jest.mock('../../components/profile/WeightLogModal', () => ({
+    WeightLogModal: () => null
+}));
 
 describe('Settings Flow', () => {
 
-    it('renders settings and handles sign out', async () => {
-        const mockSignOut = jest.fn(() => Promise.resolve());
-        const mockReplace = jest.fn();
+    it('renders settings and handles account deletion', async () => {
+        const mockSignOut = supabase.auth.signOut as jest.Mock;
+        const mockInvoke = supabase.functions.invoke as jest.Mock;
         
         (useAuth as jest.Mock).mockReturnValue({ 
-            user: { id: 'test' },
-            signOut: mockSignOut
-        });
-        (useRouter as jest.Mock).mockReturnValue({
-            replace: mockReplace
+            user: { id: 'test-user-id' }
         });
 
-        const { getByText } = render(<SettingsTestComponent />);
+        // Spy on Alert
+        jest.spyOn(Alert, 'alert');
 
-        expect(getByText('Settings')).toBeTruthy();
-        expect(getByText('Sign Out')).toBeTruthy();
+        const { getByText } = render(<SettingsScreen />);
 
-        fireEvent.press(getByText('Sign Out'));
+        // Check if Delete Account button is present
+        const deleteButton = getByText('Delete Account');
+        expect(deleteButton).toBeTruthy();
 
-        await waitFor(() => {
-            expect(mockSignOut).toHaveBeenCalled();
-            expect(mockReplace).toHaveBeenCalledWith('/login');
+        // Press Delete Account
+        fireEvent.press(deleteButton);
+
+        // Expect Alert to be shown
+        expect(Alert.alert).toHaveBeenCalledWith(
+            "Delete Account?",
+            expect.any(String),
+            expect.any(Array)
+        );
+
+        // Simulate confirming deletion
+        // @ts-ignore
+        const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2];
+        const deleteAction = alertButtons.find((b: any) => b.text === 'Delete');
+        
+        await act(async () => {
+            await deleteAction.onPress();
         });
+
+        // Verify API calls
+        expect(mockInvoke).toHaveBeenCalledWith('delete-account', {
+            body: { user_id: 'test-user-id' }
+        });
+        expect(mockSignOut).toHaveBeenCalled();
     });
 });
