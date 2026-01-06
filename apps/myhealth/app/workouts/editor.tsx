@@ -111,8 +111,10 @@ export default function CreateWorkoutScreen() {
         fetchAvailableExercises();
     }
 
-    function handleAddExercise(exercise: any) {
-        addExercise(exercise);
+    function handleAddExercise(exercises: any[]) {
+        exercises.forEach(exercise => {
+            addExercise(exercise);
+        });
         setIsAddingExercise(false);
     }
 
@@ -169,9 +171,6 @@ export default function CreateWorkoutScreen() {
                 {workoutDraftExercises.length === 0 ? (
                     <View className="flex-1 justify-center items-center opacity-50">
                         <Text className="leading-6 mb-2 text-lg text-light-muted dark:text-dark-muted">No exercises added yet</Text>
-                        <TouchableOpacity onPress={handleOpenAddExercise}>
-                            <Text className="text-base leading-[30px] text-primary dark:text-primary-dark" style={{ fontSize: 18 }}>Add Exercise</Text>
-                        </TouchableOpacity>
                     </View>
                 ) : (
                     <FlatList

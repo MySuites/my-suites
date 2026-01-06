@@ -8,7 +8,7 @@ import { BackButton } from '../ui/BackButton';
 interface ExerciseSelectorProps {
     visible: boolean;
     onClose: () => void;
-    onSelect: (exercise: any) => void;
+    onSelect: (exercises: any[]) => void;
     exercises: any[];
     isLoading: boolean;
 }
@@ -23,8 +23,28 @@ export const ExerciseSelector = ({
     const theme = useUITheme();
     const [exerciseSearchQuery, setExerciseSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const uniqueCategories = ["All", ...Array.from(new Set(exercises.map(e => e.category))).filter(Boolean).sort()];
+
+    const toggleSelection = (id: string) => {
+        const newSelected = new Set(selectedIds);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedIds(newSelected);
+    };
+
+    const handleConfirm = () => {
+        if (selectedIds.size === 0) return;
+        const selectedExercises = exercises.filter(ex => selectedIds.has(ex.id));
+        onSelect(selectedExercises);
+        setSelectedIds(new Set()); // Reset selection
+        setExerciseSearchQuery("");
+        onClose();
+    };
 
     return (
         <Modal
@@ -37,6 +57,21 @@ export const ExerciseSelector = ({
                 <ScreenHeader 
                     title="Add Exercise" 
                     leftAction={<BackButton onPress={onClose} />}
+                    rightAction={
+                        selectedIds.size > 0 && (
+                            <RaisedButton 
+                                onPress={handleConfirm}
+                                borderRadius={20}
+                                className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center bg-light dark:bg-dark-lighter"
+                            >
+                                <IconSymbol 
+                                    name="checkmark" 
+                                    size={20} 
+                                    color={theme.primary} 
+                                />
+                            </RaisedButton>
+                        )
+                    }
                 />
                 
                 <View className="flex-1 px-4 pt-32">
@@ -95,33 +130,22 @@ export const ExerciseSelector = ({
                             })}
                             keyExtractor={(item) => item.id}
                             className="flex-1"
-                            renderItem={({ item }) => (
-                                <TouchableOpacity 
-                                    className="flex-row items-center justify-between py-3 border-b border-light dark:border-dark"
-                                    onPress={() => {
-                                        onSelect(item);
-                                        setExerciseSearchQuery(""); // Clear search on select
-                                    }}
-                                >
-                                    <View>
-                                        <Text className="text-base leading-6 font-semibold" style={{ fontSize: 18 }}>{item.name}</Text>
-                                        <Text className="text-gray-500 dark:text-gray-400 text-sm">
-                                            {item.category} • {item.properties?.join(', ') || item.type || item.rawType}
-                                        </Text> 
-                                    </View>
-                                    <RaisedButton
-                                        onPress={(e) => {
-                                            e.stopPropagation();
-                                            onSelect(item);
-                                            setExerciseSearchQuery(""); // Clear search on select
-                                        }}
-                                        className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter right-2"
-                                        borderRadius={20}
+                            renderItem={({ item }) => {
+                                const isSelected = selectedIds.has(item.id);
+                                return (
+                                    <TouchableOpacity 
+                                        className={`flex-row items-center justify-between py-3 px-2 border-b ${isSelected ? 'bg-primary/10 dark:bg-primary-dark/10 border-transparent rounded-xl' : 'border-light dark:border-dark'}`}
+                                        onPress={() => toggleSelection(item.id)}
                                     >
-                                        <IconSymbol name="plus" size={24} color={theme.primary} />
-                                    </RaisedButton>
-                                </TouchableOpacity>
-                            )}
+                                        <View className="flex-1">
+                                            <Text className={`text-base leading-6 font-semibold`} style={{ fontSize: 18 }}>{item.name}</Text>
+                                            <Text className="text-gray-500 dark:text-gray-400 text-sm">
+                                                {item.category} • {item.properties?.join(', ') || item.type || item.rawType}
+                                            </Text> 
+                                        </View>
+                                    </TouchableOpacity>
+                                );
+                            }}
                             ListEmptyComponent={
                                 <View className="py-8">
                                     <HollowedCard className="p-8">
