@@ -298,7 +298,19 @@ export default function ProfileScreen() {
             </View>
         </View>
 
-        <View className="px-4">
+        <View className="px-4">            
+            <Text className="text-center text-xs text-gray-400 dark:text-gray-600 mb-2">
+                Last synced: {lastSyncedAt ? lastSyncedAt.toLocaleString() : 'Never'}
+            </Text>
+
+            <RaisedButton
+                title={isSyncing ? "Syncing..." : "Sync Now"}
+                onPress={sync}
+                disabled={isSyncing}
+                className="h-10 w-full bg-gray-200 dark:bg-gray-800 mb-60"
+                textClassName="text-md font-medium text-primary dark:text-primary"
+            />
+
             <RaisedButton 
             title="Sign Out" 
             onPress={handleSignOut} 
@@ -310,18 +322,6 @@ export default function ProfileScreen() {
             onPress={handleDeleteAccount} 
             className="h-12 w-full"
             textClassName="text-red-500 font-bold text-lg"
-            />
-            
-            <Text className="text-center text-xs text-gray-400 dark:text-gray-600 mt-4 mb-2">
-                Last synced: {lastSyncedAt ? lastSyncedAt.toLocaleString() : 'Never'}
-            </Text>
-
-            <RaisedButton
-                title={isSyncing ? "Syncing..." : "Sync Now"}
-                onPress={sync}
-                disabled={isSyncing}
-                className="h-10 w-full bg-gray-200 dark:bg-gray-800"
-                textClassName="text-sm font-medium text-gray-900 dark:text-gray-100"
             />
         </View>
       </ScrollView>
