@@ -307,8 +307,8 @@ export default function ProfileScreen() {
                 title={isSyncing ? "Syncing..." : "Sync Now"}
                 onPress={sync}
                 disabled={isSyncing}
-                className="h-10 w-full bg-gray-200 dark:bg-gray-800 mb-60"
-                textClassName="text-md font-medium text-primary dark:text-primary"
+                className="h-12 w-full bg-gray-200 dark:bg-gray-800 mb-60"
+                textClassName="font-bold text-lg text-primary dark:text-primary"
             />
 
             <RaisedButton 
@@ -321,7 +321,7 @@ export default function ProfileScreen() {
             title="Delete Account" 
             onPress={handleDeleteAccount} 
             className="h-12 w-full"
-            textClassName="text-red-500 font-bold text-lg"
+            textClassName="text-danger font-bold text-lg"
             />
         </View>
       </ScrollView>
