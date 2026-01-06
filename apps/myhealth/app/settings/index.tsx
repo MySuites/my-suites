@@ -97,8 +97,7 @@ export default function SettingsScreen() {
     }
 
     // Calculate true overall average from all individual logs in the range
-    const totalSum = rawData.reduce((sum, item) => sum + parseFloat(item.weight.toString()), 0);
-    setRangeAverage(Math.round((totalSum / rawData.length) * 10) / 10);
+    // MOVED: Average is now calculated after aggregation (see step 4 below) to match visual data points exactly.
 
     // 3. Process Data (Aggregation)
     const groups: Record<string, { total: number, count: number }> = {};
@@ -153,6 +152,14 @@ export default function SettingsScreen() {
              });
         }
     });
+ 
+    // Calculate Average from the AGGREGATED result (visual points) rather than raw logs
+    if (result.length > 0) {
+        const totalSum = result.reduce((sum, item) => sum + item.value, 0);
+        setRangeAverage(Math.round((totalSum / result.length) * 100) / 100);
+    } else {
+        setRangeAverage(null);
+    }
 
     setWeightHistory(result);
     setIsLoading(false);
