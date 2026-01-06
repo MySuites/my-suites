@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { useAuth, supabase } from '@mysuite/auth';
-import { useUITheme, ThemeToggle, IconSymbol, useToast } from '@mysuite/ui';
+import { useUITheme, ThemeToggle, IconSymbol, useToast, RaisedButton } from '@mysuite/ui';
 import { DataRepository } from '../../providers/DataRepository';
 import { useThemePreference } from '../../providers/AppThemeProvider';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -265,22 +265,40 @@ export default function SettingsScreen() {
 
         <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Legal</Text>
-          <TouchableOpacity className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark" onPress={() => Alert.alert('Privacy Policy', 'Link to Privacy Policy')}>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Privacy Policy</Text>
-            <IconSymbol name="chevron.right" size={20} color={theme.primary} />
-          </TouchableOpacity>
-          <TouchableOpacity className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark" onPress={() => Alert.alert('Terms of Service', 'Link to Terms of Service')}>
+            <RaisedButton 
+              onPress={() => Alert.alert('Privacy Policy', 'Link to Privacy Policy')}
+              className="w-10 h-10 p-0 rounded-full items-center justify-center"
+              borderRadius={20}
+            >
+              <IconSymbol name="chevron.right" size={20} color={theme.primary} />
+            </RaisedButton>
+          </View>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Terms of Service</Text>
-            <IconSymbol name="chevron.right" size={20} color={theme.primary} />
-          </TouchableOpacity>
+            <RaisedButton 
+              onPress={() => Alert.alert('Terms of Service', 'Link to Terms of Service')}
+              className="w-10 h-10 p-0 rounded-full items-center justify-center"
+              borderRadius={20}
+            >
+              <IconSymbol name="chevron.right" size={20} color={theme.primary} />
+            </RaisedButton>
+          </View>
         </View>
 
         <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Data</Text>
-          <TouchableOpacity className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark" onPress={handleDeleteData}>
-            <Text className="text-base text-red-500">Delete Data</Text>
-            <IconSymbol name="trash.fill" size={20} color={Colors.light.danger} />
-          </TouchableOpacity>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+            <Text className="text-base text-danger">Delete Data</Text>
+            <RaisedButton
+              onPress={handleDeleteData}
+              className="w-10 h-10 p-0 rounded-full items-center justify-center"
+              borderRadius={20}
+            >
+              <IconSymbol name="trash.fill" size={20} color={theme.danger} />
+            </RaisedButton>
+          </View>
         </View>
         
         <Text className="text-center text-xs text-gray-500 mt-6">Version 1.0.0</Text>
