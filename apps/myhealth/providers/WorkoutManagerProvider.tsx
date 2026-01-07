@@ -15,7 +15,7 @@ import uuid from 'react-native-uuid';
 
 // Re-export types for compatibility
 export type { Exercise, SetLog, WorkoutLog } from "../utils/workout-api";
-export { fetchExercises, fetchMuscleGroups, fetchExerciseStats } from "../utils/workout-api";
+export { fetchExercises, fetchMuscleGroups, fetchExerciseStats, fetchLastExercisePerformance } from "../utils/workout-api";
 
 interface WorkoutManagerContextType {
     savedWorkouts: any[];
