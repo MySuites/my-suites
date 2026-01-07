@@ -47,7 +47,15 @@ export function BodyWeightCard({
   const displayWeight = selectedPoint ? selectedPoint.value : (rangeAverage || weight);
 
   const getSelectionLabel = () => {
-    if (!selectedPoint) return `${selectedRange} Average`;
+    if (!selectedPoint) {
+      const labels: Record<DateRange, string> = {
+        W: 'Week',
+        M: 'Month',
+        '6M': '6 Month',
+        Y: 'Year',
+      };
+      return `${labels[selectedRange]} Average`;
+    }
     
     const d = new Date(selectedPoint.date);
     const date = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
