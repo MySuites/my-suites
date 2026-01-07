@@ -122,7 +122,7 @@ export function ActiveWorkoutOverlay() {
                         
                         {/* Center: Title */}
                         <Text 
-                            className="text-xl font-bold text-light dark:text-dark text-center flex-1 mx-20" 
+                            className="text-lg font-bold text-light dark:text-dark text-center flex-1 mx-20" 
                             numberOfLines={1}
                             pointerEvents="none"
                         >
@@ -133,7 +133,7 @@ export function ActiveWorkoutOverlay() {
                         <View className="absolute right-5 z-10 flex-row gap-2">
                             <RaisedCard 
                                 onPress={handleEnd}
-                                className="h-8 px-3 py-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                                className="h-10 px-2 py-0 bg-light dark:bg-dark-lighter items-center justify-center"
                                 style={{ borderRadius: 9999 }}
                             >
                                 <Text className="text-danger text-xs font-bold">End</Text>
@@ -143,7 +143,7 @@ export function ActiveWorkoutOverlay() {
                                 className="h-10 w-10 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
                                 style={{ borderRadius: 9999 }}
                             >
-                                <IconSymbol name="arrow.down.right.and.arrow.up.left" size={22} className="text-primary dark:text-primary-dark" />
+                                <IconSymbol name="arrow.down.right.and.arrow.up.left" size={20} className="text-primary dark:text-primary-dark" />
                             </RaisedCard>
                         </View>
                     </View>
@@ -193,7 +193,7 @@ export function ActiveWorkoutOverlay() {
                      <View className="absolute right-4 z-10 flex-row gap-2">
                          <RaisedCard 
                             onPress={handleEnd}
-                            className="h-8 px-3 py-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                            className="h-10 px-2 py-0 bg-light dark:bg-dark-lighter items-center justify-center"
                             style={{ borderRadius: 9999 }}
                          >
                              <Text className="text-danger text-xs font-bold">End</Text>

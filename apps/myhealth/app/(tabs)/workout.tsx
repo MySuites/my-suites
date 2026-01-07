@@ -165,22 +165,22 @@ export default function Workout() {
                                 <RaisedCard 
                                     onPress={handleCreateSavedWorkout}
                                     style={{ borderRadius: 9999 }}
-                                    className="w-10 h-10 p-0 my-0 items-center justify-center"
+                                    className="w-12 h-12 p-0 my-0 items-center justify-center"
                                 >
                                     <IconSymbol 
                                         name="square.and.pencil" 
-                                        size={20} 
+                                        size={24} 
                                         color={theme.primary} 
                                     />
                                 </RaisedCard>
                                 <RaisedCard 
                                     onPress={() => router.push('/workouts/saved')}
                                     style={{ borderRadius: 9999 }}
-                                    className="w-10 h-10 p-0 my-0 items-center justify-center"
+                                    className="w-12 h-12 p-0 my-0 items-center justify-center"
                                 >
                                     <IconSymbol 
                                         name="line.3.horizontal" 
-                                        size={20} 
+                                        size={24} 
                                         color={theme.primary} 
                                     />
                                 </RaisedCard>
@@ -264,11 +264,11 @@ export default function Workout() {
                                         <RaisedCard 
                                             onPress={() => router.push('/routines')}
                                             style={{ borderRadius: 9999 }}
-                                            className="w-10 h-10 p-0 my-0 items-center justify-center"
+                                            className="w-12 h-12 p-0 my-0 items-center justify-center"
                                         >
                                             <IconSymbol 
                                                 name="line.3.horizontal" 
-                                                size={20} 
+                                                size={24} 
                                                 color={theme.primary} 
                                             />
                                         </RaisedCard>

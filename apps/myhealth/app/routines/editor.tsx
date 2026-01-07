@@ -147,7 +147,7 @@ export default function CreateRoutineScreen() {
                     <RaisedCard 
                         onPress={handleSaveRoutine} 
                         disabled={isSaving} 
-                        className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter items-center justify-center" 
+                        className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
                         style={{ borderRadius: 9999 }}
                     >
                         {isSaving ? (
@@ -174,7 +174,7 @@ export default function CreateRoutineScreen() {
                         <RaisedCard 
                             onPress={() => setIsAddingDay(true)}
                             style={{ borderRadius: 9999 }}
-                            className="h-9 px-3 items-center justify-center"
+                            className="h-10 px-4 items-center justify-center"
                         >
                             <Text className="text-sm text-primary font-semibold">Add Day</Text>
                         </RaisedCard>

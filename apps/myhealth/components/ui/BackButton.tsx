@@ -47,7 +47,7 @@ export function BackButton({ onPress }: { onPress?: () => void }) {
         >
             <IconSymbol
                 name="chevron.left"
-                size={28}
+                size={24}
                 color={theme.primary}
             />
         </RaisedCard>

@@ -135,7 +135,7 @@ export default function CreateWorkoutScreen() {
                     <RaisedCard 
                         onPress={handleSaveWorkoutDraft} 
                         disabled={isSaving} 
-                        className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter items-center justify-center" 
+                        className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
                         style={{ borderRadius: 9999 }}
                     >
                         {isSaving ? (
@@ -160,7 +160,7 @@ export default function CreateWorkoutScreen() {
                     <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Exercises</Text>
                     <RaisedCard 
                         onPress={handleOpenAddExercise}
-                        className="w-28 h-8 p-0 rounded-full items-center justify-center"
+                        className="h-10 px-4 rounded-full items-center justify-center"
                         style={{ borderRadius: 9999 }}
                     >
                         <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>

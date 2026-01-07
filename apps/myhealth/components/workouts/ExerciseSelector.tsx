@@ -111,7 +111,7 @@ export const ExerciseSelector = ({
                         <RaisedCard 
                             onPress={() => setIsFilterVisible(!isFilterVisible)}
                             style={{ borderRadius: 14 }}
-                            className={`w-14 h-14 p-0 items-center justify-center ${selectedCategories.size > 0 ? 'bg-primary/10' : ''}`}
+                            className={`w-12 h-12 p-0 items-center justify-center ${selectedCategories.size > 0 ? 'bg-primary/10' : ''}`}
                         >
                             <IconSymbol 
                                 name={"line.3.horizontal.decrease" as any} 

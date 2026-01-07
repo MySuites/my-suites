@@ -42,11 +42,11 @@ export default function SavedWorkoutsScreen() {
             <RaisedCard 
                 onPress={() => router.push('/workouts/editor')}
                 style={{ borderRadius: 9999 }}
-                className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
+                className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center"
             >
                 <IconSymbol 
                     name="square.and.pencil" 
-                    size={20} 
+                    size={24} 
                     color={theme.primary} 
                 />
             </RaisedCard>
@@ -102,7 +102,7 @@ export default function SavedWorkoutsScreen() {
                     >
                         <IconSymbol 
                             name="play.fill" 
-                            size={15} 
+                            size={20} 
                             color={theme.primary} 
                         />
                     </RaisedCard>
