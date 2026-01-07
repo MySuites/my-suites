@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, TouchableOpacity, View, TextInput, Alert, Text } from 'react-native'; 
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { FlatList, TouchableOpacity, View, TextInput, Text } from 'react-native'; 
+import { useRouter } from 'expo-router';
 
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, useToast, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
 import { fetchExercises } from '../../providers/WorkoutManagerProvider';
-import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
+
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 
 export default function ExercisesScreen() {
   const router = useRouter();
-  const { mode } = useLocalSearchParams();
+  // const { mode } = useLocalSearchParams();
   const theme = useUITheme();
 
   const { user } = useAuth();
@@ -20,16 +20,7 @@ export default function ExercisesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const { showToast } = useToast();
-  const { addExercise, hasActiveSession } = useActiveWorkout();
 
-  const handleAddExercise = (exercise: any) => {
-      if (!hasActiveSession) {
-          Alert.alert("No Active Workout", "Please start a workout first.");
-          return;
-      }
-      addExercise(exercise.name, "3", "10", exercise.properties);
-      router.back();
-  };
 
   useEffect(() => {
     let isMounted = true; // For cleanup to prevent state updates on unmounted component
@@ -120,18 +111,7 @@ export default function ExercisesScreen() {
                     {item.category} • {item.properties?.join(', ') || item.rawType}
                 </Text> 
             </View>
-            {hasActiveSession && mode === 'add' && (
-              <RaisedCard 
-                onPress={(e) => {
-                  e.stopPropagation(); // Prevent navigation
-                  handleAddExercise(item);
-                }}
-                className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter items-center justify-center"
-                style={{ borderRadius: 9999 }}
-              >
-                  <IconSymbol name="plus" size={24} color={theme.primary} />
-              </RaisedCard>
-            )}
+
           </TouchableOpacity>
         )}
         className="flex-1"

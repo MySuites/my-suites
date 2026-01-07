@@ -2,8 +2,11 @@ import React, { useEffect } from 'react';
 import { View, ScrollView, BackHandler, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
+import { fetchExercises } from '../../providers/WorkoutManagerProvider';
+import { useAuth } from '@mysuite/auth';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
+import { ExerciseSelector } from './ExerciseSelector';
 import { ExerciseCard } from '../exercises/ExerciseCard';
 import { HollowedCard, RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
@@ -26,8 +29,40 @@ export function ActiveWorkoutOverlay() {
         workoutSeconds,
         workoutName,
         hasActiveSession,
-        pauseWorkout
+        pauseWorkout,
+        addExercise
     } = useActiveWorkout();
+    
+    const { user } = useAuth();
+    const [isAddingExercise, setIsAddingExercise] = React.useState(false);
+    const [availableExercises, setAvailableExercises] = React.useState<any[]>([]);
+    const [isLoadingExercises, setIsLoadingExercises] = React.useState(false);
+
+    async function fetchAvailableExercises() {
+        setIsLoadingExercises(true);
+        try {
+             // In a real app we might cache this or use a query hook
+             const { data } = await fetchExercises(user);
+             setAvailableExercises(data || []);
+        } catch (e) {
+            console.error("Failed to fetch exercises", e);
+        } finally {
+            setIsLoadingExercises(false);
+        }
+    }
+
+    function handleOpenAddExercise() {
+        setIsAddingExercise(true);
+        fetchAvailableExercises();
+    }
+
+    function handleAddExercise(newExercises: any[]) {
+        newExercises.forEach(exercise => {
+            // Default to 3 sets of 10 reps if not specified
+            addExercise(exercise.name, "3", "10", exercise.properties);
+        });
+        setIsAddingExercise(false);
+    }
 
     useEffect(() => {
         if (!isExpanded) return;
@@ -182,6 +217,7 @@ export function ActiveWorkoutOverlay() {
     }
 
     return (
+        <>
         <Animated.View 
             className="absolute inset-0 z-[999] bg-light dark:bg-dark"
             entering={SlideInDown.duration(400)} 
@@ -213,7 +249,7 @@ export function ActiveWorkoutOverlay() {
                      )}
 
                     <HollowedCard
-                        onPress={() => router.push({ pathname: '/exercises', params: { mode: 'add' } })}
+                        onPress={handleOpenAddExercise}
                         className="mt-5 items-center justify-center p-4"
                     >
                         <Text className="text-base font-semibold text-primary dark:text-primary-dark text-center">
@@ -246,6 +282,14 @@ export function ActiveWorkoutOverlay() {
             </View>
 
         </Animated.View>
+            <ExerciseSelector
+                visible={isAddingExercise}
+                onClose={() => setIsAddingExercise(false)}
+                onSelect={handleAddExercise}
+                exercises={availableExercises}
+                isLoading={isLoadingExercises}
+            />
+        </>
     );
 }
 
