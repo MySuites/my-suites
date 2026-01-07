@@ -29,7 +29,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
     return (
         <RaisedCard>
 
-            <View className="flex-row justify-between items-center">
+            <View className="flex-row justify-between items-center p-4">
                 <View className="flex-1">
                     <Text className="text-lg font-bold text-light dark:text-dark">{exercise.name}</Text>
                 </View>
@@ -47,7 +47,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
                 </View>
             </View>
 
-            <View className="pt-3">
+            <View className="p-4">
                 {/* Headers */}
                 <View className="flex-row mb-2 px-1">
                     <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[30px] text-light-muted dark:text-dark-muted">SET</Text>
