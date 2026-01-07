@@ -220,7 +220,7 @@ export default function ProfileScreen() {
       />
       
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <View className="mt-36 px-4 mb-6">
+        <RaisedCard className="mt-36 mx-4 mb-6 p-4">
             <View className="flex-row items-center justify-between mb-4">
             <Text className="text-lg font-semibold text-light dark:text-dark">Account</Text>
             {isEditing ? (
@@ -253,10 +253,10 @@ export default function ProfileScreen() {
             )}
             </View>
             
-            <View className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden p-4">
+            {/* Content fields merged into main card */}
                 <View className="flex-row items-center justify-between py-2 border-b border-gray-100 dark:border-white/5">
                     <Text className="text-sm text-gray-500 font-medium">Email</Text>
-                    <Text className="text-base text-gray-900 dark:text-white">{user?.email}</Text>
+                    <Text className="text-base text-light dark:text-dark">{user?.email}</Text>
                 </View>
                 
                 <View className="flex-row items-center justify-between py-2 border-b border-gray-100 dark:border-white/5">
@@ -276,7 +276,7 @@ export default function ProfileScreen() {
                         />
                         </View>
                     ) : (
-                        <Text className="h-8 text-base text-gray-900 dark:text-white pr-1 pt-1">{username || 'Not set'}</Text>
+                        <Text className="h-8 text-base text-light dark:text-dark pr-1 pt-1">{username || 'Not set'}</Text>
                     )}
                 </View>
 
@@ -296,21 +296,20 @@ export default function ProfileScreen() {
                         />
                         </View>
                     ) : (
-                        <Text className="h-8 text-base text-gray-900 dark:text-white pr-1 pt-1">{fullName || 'Not set'}</Text>
+                        <Text className="h-8 text-base text-light dark:text-dark pr-1 pt-1">{fullName || 'Not set'}</Text>
                     )}
                 </View>
-            </View>
-        </View>
+        </RaisedCard>
 
         <View className="px-4">            
-            <Text className="text-center text-xs text-gray-400 dark:text-gray-600 mb-2">
+            <Text className="text-center text-xs text-light-muted dark:text-dark-muted mb-2">
                 Last synced: {lastSyncedAt ? lastSyncedAt.toLocaleString() : 'Never'}
             </Text>
 
             <RaisedCard
                 onPress={sync}
                 disabled={isSyncing}
-                className="h-12 w-full bg-gray-200 dark:bg-gray-800 mb-60 items-center justify-center"
+                className="h-12 w-full bg-light dark:bg-dark-lighter mb-60 items-center justify-center"
             >
                 <Text className="font-bold text-lg text-primary dark:text-primary">
                     {isSyncing ? "Syncing..." : "Sync Now"}
