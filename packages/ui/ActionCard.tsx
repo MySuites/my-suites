@@ -371,7 +371,7 @@ function CardSwipeAction({
                                 height: BUTTON_HEIGHT,
                                 borderRadius: BORDER_RADIUS,
                             }}
-                            className="bg-info dark:bg-info p-0 items-center justify-center"
+                            className="!bg-info dark:!bg-info p-0 items-center justify-center"
                         >
                             <IconSymbol name="pencil" size={20} color="white" />
                         </RaisedCard>
@@ -396,7 +396,7 @@ function CardSwipeAction({
                                 flex: 1,
                                 borderRadius: BORDER_RADIUS,
                             }} 
-                           className="bg-danger dark:bg-danger p-0 items-center justify-center"
+                           className="!bg-danger dark:!bg-danger p-0 items-center justify-center"
                         >
                             <Animated.View style={deleteIconStyle}>
                                 <IconSymbol name="trash.fill" size={20} color="white" />
