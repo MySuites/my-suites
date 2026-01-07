@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { IconSymbol } from './IconSymbol';
-import { RaisedButton } from './RaisedButton';
+import { RaisedCard } from './RaisedCard';
 import { cssInterop } from 'nativewind';
 
 cssInterop(Pressable, { className: 'style' });
@@ -364,20 +364,17 @@ function CardSwipeAction({
              {hasEdit && (
                  <View style={{ marginRight: GAP }} className="items-center justify-center">
                     <Animated.View style={editStyle} className="justify-center items-center">
-                        <RaisedButton 
+                        <RaisedCard 
                             onPress={onEdit} 
                             style={{ 
                                 width: BUTTON_HEIGHT, 
                                 height: BUTTON_HEIGHT,
+                                borderRadius: BORDER_RADIUS,
                             }}
-                            borderRadius={BORDER_RADIUS}
-                            showGradient={false}
-                            variant="custom"
-                            // Re-adding p-0 my-0 because default p-4 is too big for 40px button
-                            className="bg-info dark:bg-info"
+                            className="bg-info dark:bg-info p-0 items-center justify-center"
                         >
                             <IconSymbol name="pencil" size={20} color="white" />
-                        </RaisedButton>
+                        </RaisedCard>
                     </Animated.View>
                  </View>
              )}
@@ -393,20 +390,18 @@ function CardSwipeAction({
                     <Animated.View 
                         style={deleteStyle} 
                     >
-                        <RaisedButton 
+                        <RaisedCard 
                             onPress={onDelete} 
                             style={{ 
                                 flex: 1,
+                                borderRadius: BORDER_RADIUS,
                             }} 
-                            borderRadius={BORDER_RADIUS}
-                            showGradient={false}
-                            variant="custom"
-                            className="bg-danger dark:bg-danger"
+                           className="bg-danger dark:bg-danger p-0 items-center justify-center"
                         >
                             <Animated.View style={deleteIconStyle}>
                                 <IconSymbol name="trash.fill" size={20} color="white" />
                             </Animated.View>
-                        </RaisedButton>
+                        </RaisedCard>
                     </Animated.View>
             </View>
         </View>

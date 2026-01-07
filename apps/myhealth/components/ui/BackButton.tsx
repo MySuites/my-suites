@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { useRouter, usePathname } from 'expo-router';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
-import { useUITheme, RaisedButton, IconSymbol } from '@mysuite/ui';
+import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 
 export function useBackButtonAction() {
     const router = useRouter();
@@ -40,16 +40,16 @@ export function BackButton({ onPress }: { onPress?: () => void }) {
     const { handleBack } = useBackButtonAction();
 
     return (
-        <RaisedButton
+        <RaisedCard
             onPress={onPress || handleBack}
             className="w-10 h-10 p-0 rounded-full items-center justify-center"
-            borderRadius={20}
+            style={{ borderRadius: 9999 }}
         >
             <IconSymbol
                 name="chevron.left"
                 size={24}
                 color={theme.primary}
             />
-        </RaisedButton>
+        </RaisedCard>
     );
 }

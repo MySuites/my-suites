@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { ActionCard, RaisedButton, IconSymbol, useUITheme } from "@mysuite/ui";
+import { ActionCard, RaisedCard, IconSymbol, useUITheme } from "@mysuite/ui";
 import { SavedWorkout } from '../../types';
 
 interface SavedWorkoutItemProps {
@@ -39,9 +39,9 @@ export const SavedWorkoutItem = ({
                 </View>
                 
                 <View className="flex-row items-center">
-                    <RaisedButton 
+                    <RaisedCard 
                         onPress={onStart}
-                        borderRadius={20}
+                        style={{ borderRadius: 9999 }}
                         className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
                     >
                         <IconSymbol 
@@ -49,7 +49,7 @@ export const SavedWorkoutItem = ({
                             size={18} 
                             color={theme.primary} 
                         />
-                    </RaisedButton>
+                    </RaisedCard>
                 </View>
             </View>
         </ActionCard>

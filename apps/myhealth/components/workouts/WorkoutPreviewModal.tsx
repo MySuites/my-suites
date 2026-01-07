@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Modal, FlatList } from 'react-native';
-import { useUITheme as useTheme, RaisedButton, IconSymbol } from '@mysuite/ui';
+import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 
 interface WorkoutPreviewModalProps {
     visible: boolean;
@@ -20,9 +20,13 @@ export function WorkoutPreviewModal({ visible, onClose, workout }: WorkoutPrevie
                         <Text className="text-xl font-bold text-light dark:text-dark flex-1 mr-4" numberOfLines={1}>
                             {workout.name}
                         </Text>
-                        <RaisedButton onPress={onClose} className="w-10 h-10 p-0 rounded-full" borderRadius={20}>
+                        <RaisedCard 
+                            onPress={onClose} 
+                            className="w-10 h-10 p-0 rounded-full items-center justify-center" 
+                            style={{ borderRadius: 9999 }}
+                        >
                             <IconSymbol name="xmark" size={20} color={theme.primary} />
-                        </RaisedButton>
+                        </RaisedCard>
                     </View>
 
                     <FlatList

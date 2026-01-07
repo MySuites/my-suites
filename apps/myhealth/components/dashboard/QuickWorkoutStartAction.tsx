@@ -3,7 +3,7 @@ import { View, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
-import { RaisedCard, RaisedButton } from '@mysuite/ui';
+import { RaisedCard } from '@mysuite/ui';
 
 export function QuickWorkoutStartAction() {
     const router = useRouter();
@@ -53,10 +53,12 @@ export function QuickWorkoutStartAction() {
                 <RaisedCard className="p-4">
                     <Text className="text-lg font-bold text-light dark:text-dark mb-2">No Active Routine</Text>
                     <Text className="text-gray-500 mb-4">Set a routine to get quick access to your daily workouts.</Text>
-                    <RaisedButton 
-                        title="Choose Routine" 
+                    <RaisedCard 
                         onPress={() => router.push('/routines' as any)}
-                    />
+                        className="items-center justify-center"
+                    >
+                        <Text className="text-center text-primary font-bold text-lg">Choose Routine</Text>
+                    </RaisedCard>
                 </RaisedCard>
             </View>
         );
@@ -104,11 +106,12 @@ export function QuickWorkoutStartAction() {
                 <Text className="text-sm font-semibold text-primary dark:text-primary-dark uppercase tracking-wider mb-1">Today&apos;s Workout</Text>
                 <Text className="text-2xl font-bold text-light dark:text-dark mb-4">{todaysItem?.name || todaysItem?.workout?.name || "Workout"}</Text>
                 
-                <RaisedButton
-                    title="Start Workout" 
+                <RaisedCard
                     onPress={handleStart}
-                    className="w-full"
-                />
+                    className="w-full items-center justify-center"
+                >
+                    <Text className="text-center text-primary font-bold text-lg">Start Workout</Text>
+                </RaisedCard>
             </RaisedCard>
         </View>
     );

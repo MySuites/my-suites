@@ -21,14 +21,7 @@ import { useRoutineManager } from '../../hooks/routines/useRoutineManager';
 import { WorkoutManagerProvider, useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 
 // We need to mock the API calls again or use the existing mock structure
-jest.mock('../../utils/workout-api', () => ({
-    fetchUserWorkouts: jest.fn(() => Promise.resolve({ data: [], error: null })),
-    fetchUserRoutines: jest.fn(() => Promise.resolve({ data: [], error: null })),
-    fetchWorkoutHistory: jest.fn(() => Promise.resolve({ data: [], error: null })),
-    persistRoutineToSupabase: jest.fn(),
-    persistUpdateRoutineToSupabase: jest.fn(),
-    deleteRoutineFromSupabase: jest.fn(),
-}));
+
 
 const testUser = { id: 'test-user' };
 jest.mock('@mysuite/auth', () => ({
@@ -40,7 +33,25 @@ jest.mock('@mysuite/auth', () => ({
 }));
 
 // Mock API
-import * as workoutApi from '../../utils/workout-api';
+// We need to mock the DataRepository
+import { DataRepository } from '../../providers/DataRepository';
+import { ProfileRepository } from '../../providers/ProfileRepository';
+
+jest.mock('../../providers/DataRepository', () => ({
+    DataRepository: {
+        getRoutines: jest.fn(),
+        saveRoutine: jest.fn(),
+        deleteRoutine: jest.fn(),
+        getWorkouts: jest.fn(() => Promise.resolve([])),
+        getHistory: jest.fn(() => Promise.resolve([])),
+    }
+}));
+
+jest.mock('../../providers/ProfileRepository', () => ({
+    ProfileRepository: {
+        getProfile: jest.fn(() => Promise.resolve(null))
+    }
+}));
 
 const RoutineFlowTestComponent = () => {
     const { routines, activeRoutine, saveRoutineDraft, startActiveRoutine } = useWorkoutManager();
@@ -78,20 +89,17 @@ describe('Routine Management Flow', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        (workoutApi.fetchUserWorkouts as jest.Mock).mockResolvedValue({ data: [], error: null });
-        (workoutApi.fetchUserRoutines as jest.Mock).mockResolvedValue({ data: [], error: null });
-        (workoutApi.fetchWorkoutHistory as jest.Mock).mockResolvedValue({ data: [], error: null });
+        (DataRepository.getRoutines as jest.Mock).mockResolvedValue([]);
+        (DataRepository.getWorkouts as jest.Mock).mockResolvedValue([]);
+        (DataRepository.getHistory as jest.Mock).mockResolvedValue([]);
     });
 
     it('displays existing routines', async () => {
         const mockRoutines = [
-            { routine_id: 'r1', routine_name: 'PPL', created_at: '2023-01-01', description: '[]' },
-            { routine_id: 'r2', routine_name: 'Bro Split', created_at: '2023-01-02', description: '[]' }
+            { id: 'r1', name: 'PPL', created_at: '2023-01-01', sequence: [] },
+            { id: 'r2', name: 'Bro Split', created_at: '2023-01-02', sequence: [] }
         ];
-        (workoutApi.fetchUserRoutines as jest.Mock).mockResolvedValue({
-            data: mockRoutines,
-            error: null
-        });
+        (DataRepository.getRoutines as jest.Mock).mockResolvedValue(mockRoutines);
 
         const { getByText, getByTestId } = render(
             <WorkoutManagerProvider>
@@ -111,23 +119,14 @@ describe('Routine Management Flow', () => {
         const mockRoutines: any[] = [];
         
         // Mock fetch to return current state
-        (workoutApi.fetchUserRoutines as jest.Mock).mockImplementation(() => {
-            return Promise.resolve({ data: [...mockRoutines], error: null });
+        (DataRepository.getRoutines as jest.Mock).mockImplementation(() => {
+            return Promise.resolve([...mockRoutines]);
         });
 
         // Mock creation success: update state
-        (workoutApi.persistRoutineToSupabase as jest.Mock).mockImplementation((_u, name, desc) => {
-            const newRoutine = {
-                routine_id: 'new-r',
-                routine_name: name,
-                description: JSON.stringify(desc),
-                created_at: new Date().toISOString()
-            };
-            mockRoutines.unshift(newRoutine);
-            return Promise.resolve({
-                data: newRoutine,
-                error: null
-            });
+        (DataRepository.saveRoutine as jest.Mock).mockImplementation((routine) => {
+            mockRoutines.unshift(routine);
+            return Promise.resolve();
         });
 
         const { getByText, getByTestId } = render(
@@ -146,10 +145,8 @@ describe('Routine Management Flow', () => {
         fireEvent.press(getByText('Create Routine'));
 
         await waitFor(() => {
-            expect(workoutApi.persistRoutineToSupabase).toHaveBeenCalledWith(
-                expect.anything(),
-                'Full Body',
-                [{ dayName: 'Day 1' }]
+            expect(DataRepository.saveRoutine).toHaveBeenCalledWith(
+                expect.objectContaining({ name: 'Full Body', sequence: [{ dayName: 'Day 1' }] })
             );
             expect(getByTestId('routine-count').children[0]).toBe('1');
             expect(getByText('Full Body')).toBeTruthy();
@@ -157,10 +154,10 @@ describe('Routine Management Flow', () => {
     });
 
     it('starts a routine', async () => {
-        const mockRoutines = [{ routine_id: 'r1', routine_name: 'PPL', created_at: '2023-01-01', description: '[]' }];
+        const mockRoutines = [{ id: 'r1', name: 'PPL', created_at: '2023-01-01', sequence: [] }];
         
-        (workoutApi.fetchUserRoutines as jest.Mock).mockImplementation(() => {
-             return Promise.resolve({ data: mockRoutines, error: null });
+        (DataRepository.getRoutines as jest.Mock).mockImplementation(() => {
+             return Promise.resolve(mockRoutines);
         });
 
         const { getByText, getByTestId } = render(

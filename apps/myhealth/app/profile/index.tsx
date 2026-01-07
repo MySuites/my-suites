@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, ScrollView, Text, TextInput, Alert } from 'react-native';
 import { useAuth, supabase } from '@mysuite/auth';
-import { useUITheme, RaisedButton, IconSymbol } from '@mysuite/ui';
+import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { ProfileRepository } from '../../providers/ProfileRepository';
@@ -199,8 +199,12 @@ export default function ProfileScreen() {
                   {authStatus.message ?? (authStatus.type === 'typing' ? 'Typing...' : '')}
                 </Text>
               )}
-              <RaisedButton title="Sign In" onPress={handleSignIn} className="h-12 my-2 w-full" />
-              <RaisedButton title="Sign Up" onPress={handleSignUp} className="h-12 my-2 w-full" />
+              <RaisedCard onPress={handleSignIn} className="h-12 my-2 w-full items-center justify-center">
+                  <Text className="text-center text-primary font-bold text-lg">Sign In</Text>
+              </RaisedCard>
+              <RaisedCard onPress={handleSignUp} className="h-12 my-2 w-full items-center justify-center">
+                  <Text className="text-center text-primary font-bold text-lg">Sign Up</Text>
+              </RaisedCard>
             </View>
 
         </View>
@@ -221,31 +225,31 @@ export default function ProfileScreen() {
             <Text className="text-lg font-semibold text-light dark:text-dark">Account</Text>
             {isEditing ? (
                 <View className="flex-row gap-2">
-                <RaisedButton 
+                <RaisedCard 
                     onPress={handleCancelEdit} 
                     disabled={loading}
-                    borderRadius={20}
+                    style={{ borderRadius: 9999 }}
                     className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center bg-gray-200 dark:bg-white/10"
                 >
                     <IconSymbol name="xmark" size={18} color={theme.danger} />
-                </RaisedButton>
-                <RaisedButton 
+                </RaisedCard>
+                <RaisedCard 
                     onPress={handleUpdateProfile} 
                     disabled={loading}
-                    borderRadius={20}
+                    style={{ borderRadius: 9999 }}
                     className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
                 >
                     <IconSymbol name="checkmark" size={18} color={theme.primary} />
-                </RaisedButton>
+                </RaisedCard>
                 </View>
             ) : (
-                <RaisedButton 
+                <RaisedCard 
                 onPress={() => setIsEditing(true)}
-                borderRadius={20}
+                style={{ borderRadius: 9999 }}
                 className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
                 >
                 <IconSymbol name="pencil" size={18} color={theme.primary} />
-                </RaisedButton>
+                </RaisedCard>
             )}
             </View>
             
@@ -303,26 +307,29 @@ export default function ProfileScreen() {
                 Last synced: {lastSyncedAt ? lastSyncedAt.toLocaleString() : 'Never'}
             </Text>
 
-            <RaisedButton
-                title={isSyncing ? "Syncing..." : "Sync Now"}
+            <RaisedCard
                 onPress={sync}
                 disabled={isSyncing}
-                className="h-12 w-full bg-gray-200 dark:bg-gray-800 mb-60"
-                textClassName="font-bold text-lg text-primary dark:text-primary"
-            />
+                className="h-12 w-full bg-gray-200 dark:bg-gray-800 mb-60 items-center justify-center"
+            >
+                <Text className="font-bold text-lg text-primary dark:text-primary">
+                    {isSyncing ? "Syncing..." : "Sync Now"}
+                </Text>
+            </RaisedCard>
 
-            <RaisedButton 
-            title="Sign Out" 
-            onPress={handleSignOut} 
-            className="mb-4 h-12 w-full"
-            />
+            <RaisedCard 
+                onPress={handleSignOut} 
+                className="mb-4 h-12 w-full items-center justify-center"
+            >
+                <Text className="text-center text-primary font-bold text-lg">Sign Out</Text>
+            </RaisedCard>
             
-            <RaisedButton 
-            title="Delete Account" 
-            onPress={handleDeleteAccount} 
-            className="h-12 w-full"
-            textClassName="text-danger font-bold text-lg"
-            />
+            <RaisedCard 
+                onPress={handleDeleteAccount} 
+                className="h-12 w-full items-center justify-center"
+            >
+                <Text className="text-danger font-bold text-lg">Delete Account</Text>
+            </RaisedCard>
         </View>
       </ScrollView>
     </View>

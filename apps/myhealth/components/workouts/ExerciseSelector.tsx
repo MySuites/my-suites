@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Modal, ScrollView } from 'react-native';
-import { useUITheme, RaisedButton, HollowedCard, RaisedCard, Skeleton, IconSymbol } from '@mysuite/ui';
+import { useUITheme, HollowedCard, RaisedCard, Skeleton, IconSymbol } from '@mysuite/ui';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { BackButton } from '../ui/BackButton';
 
@@ -75,9 +75,9 @@ export const ExerciseSelector = ({
                     leftAction={<BackButton onPress={onClose} />}
                     rightAction={
                         selectedIds.size > 0 && (
-                            <RaisedButton 
+                            <RaisedCard 
                                 onPress={handleConfirm}
-                                borderRadius={20}
+                                style={{ borderRadius: 9999 }}
                                 className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center bg-light dark:bg-dark-lighter"
                             >
                                 <IconSymbol 
@@ -85,7 +85,7 @@ export const ExerciseSelector = ({
                                     size={20} 
                                     color={theme.primary} 
                                 />
-                            </RaisedButton>
+                            </RaisedCard>
                         )
                     }
                 />
@@ -108,9 +108,9 @@ export const ExerciseSelector = ({
                                 </TouchableOpacity>
                             )}
                         </RaisedCard>
-                        <RaisedButton 
+                        <RaisedCard 
                             onPress={() => setIsFilterVisible(!isFilterVisible)}
-                            borderRadius={12}
+                            style={{ borderRadius: 12 }}
                             className={`w-12 h-12 p-0 items-center justify-center ${selectedCategories.size > 0 ? 'bg-primary/10' : ''}`}
                         >
                             <IconSymbol 
@@ -118,7 +118,7 @@ export const ExerciseSelector = ({
                                 size={20} 
                                 color={selectedCategories.size > 0 ? theme.primary : (theme.icon || '#888')} 
                             />
-                        </RaisedButton>
+                        </RaisedCard>
                     </View>
 
                     {/* Filter Menu */}

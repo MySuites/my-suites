@@ -16,7 +16,7 @@ import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { ActiveRoutineCard } from '../../components/routines/ActiveRoutineCard';
 import { SavedWorkoutItem } from '../../components/workouts/SavedWorkoutItem';
 import { useRoutineTimeline } from '../../hooks/routines/useRoutineManager';
-import { HollowedCard, RaisedButton, RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
+import { HollowedCard, RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 
 import { SavedWorkout } from '../../types';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -133,27 +133,27 @@ export default function Workout() {
 			>
 				{/* Controls Row */}
 				<View className="flex-row gap-2 my-6 px-4">
-                    <RaisedButton 
-                        title="Exercises" 
+                    <RaisedCard 
                         onPress={() => router.push('/exercises' as any)} 
                         accessibilityLabel="Exercises"
-                        className="flex-1 mr-0 p-2.5 my-0"
-                        textClassName="text-light dark:text-dark text-center"
-                    />
-					<RaisedButton 
-                        title="Start Empty" 
+                        className="flex-1 mr-0 p-2.5 my-0 items-center justify-center"
+                    >
+                        <Text className="text-light dark:text-dark text-center font-semibold">Exercises</Text>
+                    </RaisedCard>
+					<RaisedCard 
                         onPress={handleStartEmpty} 
                         accessibilityLabel="Start empty workout"
-                        className="flex-1 mr-0 p-2.5 my-0"
-                        textClassName="text-light dark:text-dark text-center"
-                    />
-					<RaisedButton 
-                        title="History" 
+                        className="flex-1 mr-0 p-2.5 my-0 items-center justify-center"
+                    >
+                        <Text className="text-light dark:text-dark text-center font-semibold">Start Empty</Text>
+                    </RaisedCard>
+					<RaisedCard 
                         onPress={() => router.push('/workouts/history' as any)} 
                         accessibilityLabel="History"
-                        className="flex-1 mr-0 p-2.5 my-0"
-                        textClassName="text-light dark:text-dark text-center"
-                    />
+                        className="flex-1 mr-0 p-2.5 my-0 items-center justify-center"
+                    >
+                        <Text className="text-light dark:text-dark text-center font-semibold">History</Text>
+                    </RaisedCard>
 				</View>
 					
                 <View className="px-4 mb-2">
@@ -162,28 +162,28 @@ export default function Workout() {
                         <View className="flex-row justify-between items-center mb-3">
                              <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">Saved Workouts</Text>
                              <View className="flex-row items-center gap-4">
-                                <RaisedButton 
+                                <RaisedCard 
                                     onPress={handleCreateSavedWorkout}
-                                    borderRadius={20}
-                                    className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
+                                    style={{ borderRadius: 9999 }}
+                                    className="w-10 h-10 p-0 my-0 items-center justify-center"
                                 >
                                     <IconSymbol 
                                         name="square.and.pencil" 
                                         size={20} 
                                         color={theme.primary} 
                                     />
-                                </RaisedButton>
-                                <RaisedButton 
+                                </RaisedCard>
+                                <RaisedCard 
                                     onPress={() => router.push('/workouts/saved')}
-                                    borderRadius={20}
-                                    className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
+                                    style={{ borderRadius: 9999 }}
+                                    className="w-10 h-10 p-0 my-0 items-center justify-center"
                                 >
                                     <IconSymbol 
                                         name="line.3.horizontal" 
                                         size={20} 
                                         color={theme.primary} 
                                     />
-                                </RaisedButton>
+                                </RaisedCard>
                              </View>
                         </View>
 
@@ -261,17 +261,17 @@ export default function Workout() {
                                 <RaisedCard className="p-4">
                                     <View className="flex-row justify-between items-center mb-3">
                                         <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">No Active Routine</Text>
-                                        <RaisedButton 
+                                        <RaisedCard 
                                             onPress={() => router.push('/routines')}
-                                            borderRadius={20}
-                                            className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
+                                            style={{ borderRadius: 9999 }}
+                                            className="w-10 h-10 p-0 my-0 items-center justify-center"
                                         >
                                             <IconSymbol 
                                                 name="line.3.horizontal" 
                                                 size={20} 
                                                 color={theme.primary} 
                                             />
-                                        </RaisedButton>
+                                        </RaisedCard>
                                     </View>
                                     <HollowedCard className="p-4">
                                         <View className="p-5 items-center">

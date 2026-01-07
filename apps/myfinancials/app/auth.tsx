@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { View, TextInput, Text } from 'react-native';
 import { supabase } from '@mysuite/auth';
-import { RaisedButton } from '@mysuite/ui';
+import { RaisedCard } from '@mysuite/ui';
 
 export default function AuthScreen() {
   const [email, setEmail] = useState('');
@@ -83,8 +83,12 @@ export default function AuthScreen() {
           {status.message ?? (status.type === 'typing' ? 'Typing...' : '')}
         </Text>
       )}
-      <RaisedButton title="Sign In" onPress={handleSignIn} />
-      <RaisedButton title="Sign Up" onPress={handleSignUp} />
+      <RaisedCard onPress={handleSignIn} className="h-12 rounded-full bg-primary dark:bg-primary-dark items-center justify-center mb-4">
+        <Text className="text-white font-bold text-lg">Sign In</Text>
+      </RaisedCard>
+      <RaisedCard onPress={handleSignUp} className="h-12 rounded-full bg-light-lighter dark:bg-dark-lighter items-center justify-center">
+        <Text className="text-primary dark:text-primary-dark font-bold text-lg">Sign Up</Text>
+      </RaisedCard>
     </View>
   );
 }

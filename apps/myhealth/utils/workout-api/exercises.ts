@@ -62,7 +62,11 @@ export async function fetchExercises(user: any) {
             id: e.id || e.exercise_id, // Local uses id, Supabase raw uses exercise_id
             name: e.name || e.exercise_name,
             category: firstMuscle || "General",
-            properties: Array.isArray(props) ? props : [props],
+            properties: Array.isArray(props)
+                ? props
+                : (typeof props === "string"
+                    ? props.split(",").map((s) => s.trim())
+                    : []),
             rawType: e.properties, // Keep raw if needed
         };
     });

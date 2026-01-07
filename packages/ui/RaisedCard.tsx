@@ -1,20 +1,21 @@
 import * as React from 'react';
-import { View, Pressable, ViewProps, PressableProps, useWindowDimensions } from 'react-native';
+import { View, Pressable, ViewProps, PressableProps, useWindowDimensions, GestureResponderEvent } from 'react-native';
 import { cssInterop, useColorScheme } from 'nativewind';
 import { LinearGradient } from 'expo-linear-gradient';
 
 cssInterop(Pressable, { className: 'style' });
 
 interface CardProps extends ViewProps {
-  onPress?: () => void;
+  onPress?: (event: GestureResponderEvent) => void;
   activeOpacity?: number;
+  disabled?: boolean;
 }
 
 export function RaisedCard({ children, style, className, onPress, activeOpacity = 0.9, ...props }: CardProps) {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === 'dark';
   // Refined Neumorphic RaisedCard: matches background, uses highlight top-border and soft bottom shadow
-  const baseClassName = `bg-light dark:bg-dark-lighter rounded-xl p-3 w-full mb-1 border border-light dark:border-dark border-t-highlight dark:border-t-highlight-dark border-l-highlight dark:border-l-highlight-dark ${className || ''}`;
+  const baseClassName = `bg-light dark:bg-dark-lighter rounded-xl border border-light dark:border-dark border-t-highlight dark:border-t-highlight-dark border-l-highlight dark:border-l-highlight-dark ${className || ''}`;
   const shadowStyle = { 
       shadowColor: '#000',
       shadowOffset: { width: 2, height: 4 }, 
@@ -24,14 +25,14 @@ export function RaisedCard({ children, style, className, onPress, activeOpacity 
       overflow: 'visible' as const
   };
 
-  const Gradient = (
+  const HoverGradient = (
     <LinearGradient
         colors={isDark 
-          ? ['hsla(0, 0%, 10%, 0.2)', 'hsla(0, 0%, 0%, 0.3)'] 
-          : ['hsla(0, 0%, 97%, 0.7)', 'hsla(0, 0%, 90%, 0.05)']}
+          ? ['hsla(0, 0%, 15%, 0.3)', 'hsla(0, 0%, 0%, 0.4)'] 
+          : ['hsla(0, 0%, 98%, 0.85)', 'hsla(0, 0%, 90%, 0.15)']}
         locations={[0, 1]}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0.2, y: 3 }} // Steep vector to create diagonal look on wide cards
+        end={{ x: 0.2, y: 3 }}
         style={{
             position: 'absolute',
             top: 0,
@@ -45,6 +46,27 @@ export function RaisedCard({ children, style, className, onPress, activeOpacity 
     />
   );
 
+  const PressedGradient = (
+    <LinearGradient
+        colors={isDark 
+            ? ['hsla(0, 0%, 0%, 0.3)', 'hsla(0, 0%, 0%, 0.4)'] 
+            : ['hsla(0, 0%, 80%, 0.1)', 'hsla(0, 0%, 60%, 0.05)']}
+        locations={[0, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            borderRadius: 12,
+            zIndex: -1,
+        }}
+        pointerEvents="none"
+    />
+  );
+
   return onPress ? (
     <Pressable 
         style={[style, shadowStyle]} 
@@ -52,14 +74,17 @@ export function RaisedCard({ children, style, className, onPress, activeOpacity 
         onPress={onPress} 
         {...(props as PressableProps)}
     >
-        {({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => (
+        {({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => {
+            return (
         <>
-            {(pressed || hovered) && Gradient}
+            {hovered && !pressed && HoverGradient}
+            {pressed && PressedGradient}
             <View style={{ zIndex: 1 }}>
                 {children}
             </View>
         </>
-        )}
+        );
+        }}
     </Pressable>
   ) : (
     <View style={[style, shadowStyle]} className={baseClassName} {...props}>

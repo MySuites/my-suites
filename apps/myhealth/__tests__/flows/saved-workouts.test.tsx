@@ -36,13 +36,13 @@ jest.mock('@mysuite/auth', () => ({
 
 jest.mock('@mysuite/ui', () => {
     return {
-        useUITheme: () => ({ primary: 'blue' }),
-        RaisedButton: ({ children, onPress, testID }: any) => (
-            <mockRN.TouchableOpacity onPress={onPress} testID={testID}>
-                {children}
-            </mockRN.TouchableOpacity>
-        ),
-        RaisedCard: ({ children, testID }: any) => <mockRN.View testID={testID}>{children}</mockRN.View>,
+        useUITheme: () => ({ primary: 'blue', textMuted: 'gray', danger: 'red', bg: 'white' }),
+
+        RaisedCard: (props: any) => {
+            const { TouchableOpacity } = require('react-native');
+            return <TouchableOpacity {...props} />;
+        },
+
         HollowedCard: ({ children }: any) => <mockRN.View>{children}</mockRN.View>,
         Skeleton: () => <mockRN.View />,
         IconSymbol: ({ name }: any) => <mockRN.Text>Icon:{name}</mockRN.Text>,

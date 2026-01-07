@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, View, Text, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useUITheme, RaisedButton, IconSymbol } from '@mysuite/ui';
+import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { SelectionModal } from '../../components/ui/SelectionModal';
 import { useWorkoutManager, fetchMuscleGroups } from '../../providers/WorkoutManagerProvider';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -95,19 +95,18 @@ export default function CreateExerciseScreen() {
         title="New Exercise"
         leftAction={<BackButton />}
         rightAction={
-            <RaisedButton 
+            <RaisedCard 
                 onPress={handleCreate} 
                 disabled={isSubmitting} 
-                className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter" 
-                variant="default"
-                borderRadius={20}
+                className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter items-center justify-center" 
+                style={{ borderRadius: 9999 }}
             >
                 {isSubmitting ? (
                     <ActivityIndicator size="small" color={theme.primary} />
                 ) : (
                     <IconSymbol name="checkmark" size={24} color={theme.primary} />
                 )}
-            </RaisedButton>
+            </RaisedCard>
         }
       />
 

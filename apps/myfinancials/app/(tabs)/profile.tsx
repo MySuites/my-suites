@@ -1,8 +1,8 @@
 // apps/mycfo/app/(tabs)/profile.tsx
 import { useState, useEffect } from 'react';
-import { View, TextInput, Alert, StyleSheet } from 'react-native';
+import { View, TextInput, Alert, StyleSheet, Text } from 'react-native';
 import { useAuth, supabase } from '@mysuite/auth';
-import { RaisedButton } from '@mysuite/ui';
+import { RaisedCard } from '@mysuite/ui';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import { useUITheme } from '@mysuite/ui';
 
@@ -69,8 +69,12 @@ export default function ProfileScreen() {
         value={fullName}
         onChangeText={setFullName}
       />
-      <RaisedButton title="Update Profile" onPress={handleUpdateProfile} />
-      <RaisedButton title="Sign Out" onPress={handleSignOut} />
+      <RaisedCard onPress={handleUpdateProfile} className="h-12 rounded-full bg-primary dark:bg-primary-dark items-center justify-center mb-4">
+        <Text className="text-white font-bold text-lg">Update Profile</Text>
+      </RaisedCard>
+      <RaisedCard onPress={handleSignOut} className="h-12 rounded-full bg-light-lighter dark:bg-dark-lighter items-center justify-center">
+        <Text className="text-danger font-bold text-lg">Sign Out</Text>
+      </RaisedCard>
     </View>
   );
 }

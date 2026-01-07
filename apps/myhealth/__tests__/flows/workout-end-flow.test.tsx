@@ -32,14 +32,13 @@ jest.mock('../../providers/WorkoutManagerProvider', () => ({
 jest.mock('@mysuite/ui', () => {
     const MockIcon = (props: any) => <mockRN.View {...props} testID="icon-symbol" />;
     return {
-        RaisedButton: ({ title, onPress, children }: any) => (
-            <mockRN.TouchableOpacity onPress={onPress}>
-                <mockRN.Text>{title}</mockRN.Text>
-                {children}
-            </mockRN.TouchableOpacity>
-        ),
-        useUITheme: () => ({ primary: 'blue', light: 'white', dark: 'black' }),
-        IconSymbol: MockIcon,
+
+        useUITheme: () => ({ primary: 'blue', textMuted: 'gray', danger: 'red', bg: 'white' }),
+        IconSymbol: () => null,
+        RaisedCard: (props: any) => { 
+            const { TouchableOpacity } = require('react-native');
+            return <TouchableOpacity {...props} />;
+        },
     };
 });
 
@@ -111,15 +110,7 @@ describe('End Workout Flow', () => {
     it('saves history immediately if no template source and user chooses "History Only"', () => {
         const { getByTestId } = render(<EndWorkoutScreen />);
         
-        // Find the checkmark button (in header right action)
-        // Since we mocked RaisedButton to render children, we look for the icon or button
-        // The header renders rightAction wrapped.
-        // We'll traverse or just use testID if we added one, but we didn't add testID to RaisedButton in screen.
-        // But RaisedButton is mocked to be a TouchableOpacity.
-        // Let's assume we can trigger handleSave by finding the button with the checkmark icon.
-        // Or better, add testID to the screen button in a previous step? No, avoiding edits if possible.
-        // The mock IconSymbol has testID="icon-symbol". The button wraps it.
-        const saveButton = getByTestId('icon-symbol').parent; 
+        const saveButton = getByTestId('save-workout-btn');
         
         fireEvent.press(saveButton);
 
@@ -146,7 +137,7 @@ describe('End Workout Flow', () => {
 
     it('prompts and saves as new template if user chooses to', async () => {
         const { getByTestId, getByText } = render(<EndWorkoutScreen />);
-        const saveButton = getByTestId('icon-symbol').parent; 
+        const saveButton = getByTestId('save-workout-btn');
         fireEvent.press(saveButton);
 
         const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
@@ -189,7 +180,7 @@ describe('End Workout Flow', () => {
         // Current exercises has Squats, so it IS different.
 
         const { getByTestId } = render(<EndWorkoutScreen />);
-        const saveButton = getByTestId('icon-symbol').parent; 
+        const saveButton = getByTestId('save-workout-btn');
         fireEvent.press(saveButton);
 
         expect(Alert.alert).toHaveBeenCalledWith(

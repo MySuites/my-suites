@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Modal, ScrollView } from 'react-native';
-import { useUITheme, RaisedCard, RaisedButton, IconSymbol } from '@mysuite/ui';
+import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { BackButton } from '../ui/BackButton';
 import { WorkoutPreviewModal } from '../workouts/WorkoutPreviewModal';
@@ -70,16 +70,16 @@ export const AddDay = ({
                                         <Text className="font-semibold text-lg text-light dark:text-dark">{workout.name}</Text>
                                         <Text className="text-light-muted dark:text-dark-muted text-sm">{workout.exercises?.length || 0} Exercises</Text>
                                     </View>
-                                    <RaisedButton
+                                    <RaisedCard
                                         onPress={(e) => {
                                             e.stopPropagation();
                                             onAddWorkout(workout);
                                         }}
-                                        className="w-10 h-10 p-0 rounded-full"
-                                        borderRadius={20}
+                                        className="w-10 h-10 p-0 rounded-full items-center justify-center"
+                                        style={{ borderRadius: 9999 }}
                                     >
                                         <IconSymbol name="plus" size={20} color={theme.primary} />
-                                    </RaisedButton>
+                                    </RaisedCard>
                                 </View>
                             </RaisedCard>
                         ))

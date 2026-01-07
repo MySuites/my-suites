@@ -70,14 +70,13 @@ jest.mock('../../components/routines/AddDay', () => {
 
 jest.mock('@mysuite/ui', () => {
     return {
-        RaisedButton: ({ title, onPress, children }: any) => (
-            <mockRN.TouchableOpacity onPress={onPress}>
-                <mockRN.Text>{title}</mockRN.Text>
-                {children}
-            </mockRN.TouchableOpacity>
-        ),
+
+        RaisedCard: (props: any) => { 
+            const { TouchableOpacity } = require('react-native');
+            return <TouchableOpacity {...props} />;
+        },
         IconSymbol: (props: any) => <mockRN.View {...props} testID="icon-symbol" />,
-        useUITheme: () => ({ primary: 'blue' }),
+        useUITheme: () => ({ primary: 'blue', textMuted: 'gray', danger: 'red', bg: 'white' }),
     };
 });
 

@@ -10,6 +10,11 @@ const mockRN = RN;
 // Mocks
 jest.mock('@mysuite/ui', () => ({
     useUITheme: () => ({ bgDark: 'black' }),
+    RaisedCard: (props: any) => { 
+        const { TouchableOpacity } = require('react-native');
+        return <TouchableOpacity {...props} />;
+    },
+    IconSymbol: () => null
 }));
 
 jest.mock('expo-router', () => ({

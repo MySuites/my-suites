@@ -3,7 +3,7 @@
 This package contains shared UI primitives for the monorepo and a small example showing how apps can provide their own theme palette.
 
 Key exports
-- `RaisedButton` — a simple button component using Tailwind tokens (`bg-primary`, etc.).
+- `RaisedCard` — a neumorphic card/button component using Tailwind tokens.
 - `UIThemeProvider` — React provider that accepts a theme object and makes it available to shared components.
 - `useUITheme()` — hook to access the runtime theme object (useful for `StyleSheet`-based components).
 - `ThemedCard` — an example StyleSheet-based component under `examples/` showing `useUITheme()` usage.
@@ -32,8 +32,8 @@ const theme = useUITheme();
 3. Use Tailwind tokens in components that render `className` (NativeWind):
 
 ```tsx
-import { RaisedButton } from '@mysuite/ui';
-<RaisedButton title="OK" />
+import { RaisedCard } from '@mysuite/ui';
+<RaisedCard><Text>OK</Text></RaisedCard>
 ```
 
 Notes

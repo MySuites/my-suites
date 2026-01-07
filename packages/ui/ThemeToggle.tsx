@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { View, TouchableOpacity, LayoutChangeEvent, Platform } from 'react-native';
 import { IconSymbol } from './IconSymbol';
-import { RaisedButton } from './RaisedButton';
+import { RaisedCard } from './RaisedCard';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
@@ -67,16 +67,15 @@ export const ThemeToggle = ({ preference, setPreference }: ThemeToggleProps) => 
             zIndex: 0 
           }
         ]}>
-           <RaisedButton
-            className="w-full h-full"
-            style={{ margin: 0 }} 
-            borderRadius={9999}
+           <RaisedCard
+            className="w-full h-full p-0 items-center justify-center"
+            style={{ margin: 0, borderRadius: 9999 }} 
             onPress={() => {}}
             disabled={true}
           >
            {/* Empty children */}
             <View /> 
-          </RaisedButton>
+          </RaisedCard>
         </Animated.View>
       )}
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { FlatList, TouchableOpacity, View, Alert, Text } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useUITheme, RaisedButton, RaisedCard, HollowedCard, Skeleton, IconSymbol } from '@mysuite/ui';
+import { useUITheme, RaisedCard, HollowedCard, Skeleton, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { useFloatingButton } from '../../providers/FloatingButtonContext';
@@ -50,9 +50,9 @@ export default function RoutinesScreen() {
         title="My Routines"
         leftAction={<BackButton />}
         rightAction={
-            <RaisedButton 
+            <RaisedCard 
                 onPress={() => router.push('/routines/editor')}
-                borderRadius={20}
+                style={{ borderRadius: 9999 }}
                 className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
             >
                 <IconSymbol 
@@ -60,7 +60,7 @@ export default function RoutinesScreen() {
                     size={20} 
                     color={theme.primary} 
                 />
-            </RaisedButton>
+            </RaisedCard>
         }
       />
       
@@ -104,15 +104,15 @@ export default function RoutinesScreen() {
                     </Text> 
                 </View>
                 <View className="flex-row gap-2">
-                    <RaisedButton 
-                        title="Set Active"
+                    <RaisedCard 
                         onPress={(e) => {
                             e.stopPropagation();
                             handleSetRoutine(item.id, item.name, item.sequence);
                         }} 
-                        className="px-3 h-8 my-0"
-                        textClassName="text-primary dark:text-primary-dark text-sm font-semibold"
-                    />
+                        className="px-3 h-8 my-0 items-center justify-center"
+                    >
+                        <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Set Active</Text>
+                    </RaisedCard>
 
                 </View>
               </RaisedCard>

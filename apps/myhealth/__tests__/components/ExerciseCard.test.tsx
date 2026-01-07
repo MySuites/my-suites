@@ -10,12 +10,17 @@ const mockRN = RN;
 // Local mock for UI to ensure proper text rendering
 jest.mock('@mysuite/ui', () => {
     return {
-        // Mock components properly wrapping text
-        RaisedCard: ({ children }: any) => children,
-        HollowedButton: ({ title }: any) => <mockRN.TouchableOpacity><mockRN.Text>{title}</mockRN.Text></mockRN.TouchableOpacity>,
-        RaisedButton: ({ title }: any) => <mockRN.TouchableOpacity><mockRN.Text>{title}</mockRN.Text></mockRN.TouchableOpacity>,
+        RaisedCard: (props: any) => { 
+            const { TouchableOpacity } = require('react-native');
+            return <TouchableOpacity {...props} />;
+        },
+        HollowedButton: ({ title }: any) => {
+            const { TouchableOpacity, Text } = require('react-native');
+            return <TouchableOpacity><Text>{title}</Text></TouchableOpacity>;
+        },
+
         IconSymbol: () => null,
-        useUITheme: () => ({ primary: 'blue', text: 'black' }),
+        useUITheme: () => ({ primary: 'blue', text: 'black', textMuted: 'gray', danger: 'red', bg: 'white' }),
     };
 });
 

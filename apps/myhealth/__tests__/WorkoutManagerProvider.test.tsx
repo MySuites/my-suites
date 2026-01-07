@@ -2,26 +2,29 @@ import React from 'react';
 import { render, waitFor, fireEvent } from '@testing-library/react-native';
 import { Button, Text, View, Alert } from 'react-native';
 import { WorkoutManagerProvider, useWorkoutManager } from '../providers/WorkoutManagerProvider';
-import * as workoutApi from '../utils/workout-api';
+
 
 // Mock mocks
-jest.mock('../utils/workout-api', () => ({
-    fetchUserWorkouts: jest.fn(),
-    fetchUserRoutines: jest.fn(),
-    fetchWorkoutHistory: jest.fn(),
-    persistWorkoutToSupabase: jest.fn(),
-    persistCompletedWorkoutToSupabase: jest.fn(),
-    deleteWorkoutFromSupabase: jest.fn(),
-    persistUpdateSavedWorkoutToSupabase: jest.fn(),
-    persistRoutineToSupabase: jest.fn(),
-    persistUpdateRoutineToSupabase: jest.fn(),
-    deleteRoutineFromSupabase: jest.fn(),
-    deleteWorkoutLogFromSupabase: jest.fn(),
-    createCustomExerciseInSupabase: jest.fn(),
-    fetchExercises: jest.fn(),
-    fetchMuscleGroups: jest.fn(),
-    fetchExerciseStats: jest.fn(),
-    fetchLastExercisePerformance: jest.fn()
+// We need to mock the DataRepository and ProfileRepository
+import { DataRepository } from '../providers/DataRepository';
+import { ProfileRepository } from '../providers/ProfileRepository';
+
+jest.mock('../providers/DataRepository', () => ({
+    DataRepository: {
+        getWorkouts: jest.fn(() => Promise.resolve([])),
+        saveWorkout: jest.fn(),
+        deleteWorkout: jest.fn(),
+        getHistory: jest.fn(() => Promise.resolve([])),
+        getRoutines: jest.fn(() => Promise.resolve([])),
+        saveRoutine: jest.fn(),
+        saveLog: jest.fn(),
+    }
+}));
+
+jest.mock('../providers/ProfileRepository', () => ({
+    ProfileRepository: {
+        getProfile: jest.fn(() => Promise.resolve(null))
+    }
 }));
 
 // Mock useAuth (keep this as provider uses it)
@@ -36,7 +39,6 @@ jest.mock('@mysuite/auth', () => ({
     }
 }));
 
-// Mock useRoutineManager
 // Mock useRoutineManager
 jest.mock('../hooks/routines/useRoutineManager', () => {
     const mockSetRoutineState = jest.fn();
@@ -59,7 +61,6 @@ describe('WorkoutManagerProvider', () => {
 
     const TestConsumer = () => {
         const { savedWorkouts, saveWorkout } = useWorkoutManager();
-        console.log('TestConsumer savedWorkouts:', JSON.stringify(savedWorkouts));
         return (
             <View>
                 <Text testID="saved-count">{savedWorkouts.length}</Text>
@@ -78,13 +79,10 @@ describe('WorkoutManagerProvider', () => {
         mockUseAuth.mockReturnValue({ user: testUser });
         jest.clearAllMocks();
         
-        // Default returns for API mocks
-        (workoutApi.fetchUserWorkouts as jest.Mock).mockImplementation(() => {
-            console.log("Mock fetchUserWorkouts called (default)");
-            return Promise.resolve({ data: [], error: null });
-        });
-        (workoutApi.fetchUserRoutines as jest.Mock).mockResolvedValue({ data: [], error: null });
-        (workoutApi.fetchWorkoutHistory as jest.Mock).mockResolvedValue({ data: [], error: null });
+        // Default returns for DataRepository mocks
+        (DataRepository.getWorkouts as jest.Mock).mockResolvedValue([]);
+        (DataRepository.getRoutines as jest.Mock).mockResolvedValue([]);
+        (DataRepository.getHistory as jest.Mock).mockResolvedValue([]);
     });
 
     it('initializes and handles race conditions correctly', async () => {
@@ -100,34 +98,20 @@ describe('WorkoutManagerProvider', () => {
         });
     });
 
-    it('saves a workout to server when user is logged in', async () => {
+    it('saves a workout (updates local state via re-fetch)', async () => {
         // Mutable mock database
         const mockWorkouts = [
-            { workout_id: 'existing', workout_name: 'Existing', created_at: '2023-01-01' }
+            { id: 'existing', name: 'Existing', created_at: '2023-01-01' }
         ];
 
-        // Initial state: return current server state
-        (workoutApi.fetchUserWorkouts as jest.Mock).mockImplementation(() => {
-             console.log("Mock fetchUserWorkouts called - returning", mockWorkouts.length, "items");
-             return Promise.resolve({ 
-                data: [...mockWorkouts], 
-                error: null 
-            });
-        });
+        // Initial state
+        (DataRepository.getWorkouts as jest.Mock).mockResolvedValue([...mockWorkouts]);
 
-        // Mock save success: update server state
-        (workoutApi.persistWorkoutToSupabase as jest.Mock).mockImplementation((_u, name, _ex) => {
-            console.log("Mock persistWorkoutToSupabase called");
-            const newWorkout = {
-                workout_id: 'new-id',
-                workout_name: name,
-                created_at: new Date().toISOString()
-            };
-            mockWorkouts.unshift(newWorkout); // Add to "server"
-            return Promise.resolve({
-                data: newWorkout,
-                error: null
-            });
+        // Mock save implementation
+        (DataRepository.saveWorkout as jest.Mock).mockImplementation((workout) => {
+             // Simulate save logic?
+             // Since Provider calls getWorkouts AFTER save, we need getWorkouts to return updated list
+             return Promise.resolve(); 
         });
 
         const { getByText, getByTestId } = render(
@@ -141,6 +125,10 @@ describe('WorkoutManagerProvider', () => {
             expect(getByTestId('saved-count').children[0]).toBe('1');
         });
 
+        // Update mock for next refetch
+        const newWorkout = { id: 'new-id', name: 'New Workout', exercises: [] };
+        (DataRepository.getWorkouts as jest.Mock).mockResolvedValue([newWorkout, ...mockWorkouts]);
+
         // Perform save
         fireEvent.press(getByText('Save'));
 
@@ -149,17 +137,14 @@ describe('WorkoutManagerProvider', () => {
              expect(getByTestId('saved-count').children[0]).toBe('2');
         });
         
-        expect(workoutApi.persistWorkoutToSupabase).toHaveBeenCalledWith(
-            expect.anything(), 
-            'New Workout', 
-            []
+        expect(DataRepository.saveWorkout).toHaveBeenCalledWith(
+            expect.objectContaining({ name: 'New Workout' })
         );
     });
 
-    it('saves a workout locally when user is NOT logged in', async () => {
+    it('saves a workout works same for guest (logic unified in repository)', async () => {
         mockUseAuth.mockReturnValue({ user: null });
-        // Local storage mocking is implicit via provider behavior (it bypasses API calls)
-        // But provider might check AsyncStorage. We mock AsyncStorage globally in setup.
+        (DataRepository.getWorkouts as jest.Mock).mockResolvedValue([]);
 
         const { getByText, getByTestId } = render(
             <WorkoutManagerProvider>
@@ -172,31 +157,15 @@ describe('WorkoutManagerProvider', () => {
             expect(getByTestId('saved-count').children[0]).toBe('0');
         });
 
+        // Mock update
+        (DataRepository.getWorkouts as jest.Mock).mockResolvedValue([{ id: 'guest-w', name: 'New Workout' }]);
+        
         fireEvent.press(getByText('Save'));
 
         await waitFor(() => {
              expect(getByTestId('saved-count').children[0]).toBe('1');
         });
 
-        expect(workoutApi.persistWorkoutToSupabase).not.toHaveBeenCalled();
-    });
-
-    it('filters out routine-specific workouts by querying routine_id IS NULL', async () => {
-        // This test was checking if Supabase was called with .is('routine_id', null)
-        // Since we are mocking fetchUserWorkouts, we assume fetchUserWorkouts handles that internally.
-        // We can verify that fetchUserWorkouts IS called.
-        // Or if we really want to test that specific logic, we should unit test fetchUserWorkouts separately.
-        // For Provider test, it's sufficient to ensure it calls fetchUserWorkouts.
-
-        render(
-            <WorkoutManagerProvider>
-                <TestConsumer />
-            </WorkoutManagerProvider>
-        );
-
-        // Wait for fetch
-         await waitFor(() => {
-             expect(workoutApi.fetchUserWorkouts).toHaveBeenCalled();
-         });
+        expect(DataRepository.saveWorkout).toHaveBeenCalled();
     });
 });

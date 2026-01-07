@@ -7,7 +7,7 @@ import { useUITheme } from './theme';
 cssInterop(Pressable, { className: 'style' });
 cssInterop(Text, { className: 'style' });
 
-export { RaisedButton } from './RaisedButton';
+export * from './RaisedCard';
 export { HollowedButton } from './HollowedButton';
 export { RaisedCard } from './RaisedCard';
 export { HollowedCard } from './HollowedCard';

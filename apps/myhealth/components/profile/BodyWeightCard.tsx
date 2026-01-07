@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { BodyWeightChart } from './BodyWeightChart';
 import { SegmentedControl, SegmentedControlOption } from '../ui/SegmentedControl';
-import { RaisedCard, HollowedCard, RaisedButton, useUITheme, Skeleton, IconSymbol } from '@mysuite/ui';
+import { RaisedCard, HollowedCard, useUITheme, Skeleton, IconSymbol } from '@mysuite/ui';
 
 // Defined locally to avoid circular dependencies if any
 type DateRange = 'Week' | 'Month' | '6Month' | 'Year';
@@ -81,13 +81,13 @@ export function BodyWeightCard({
             </View>
             <Text className="font-semibold text-base text-light dark:text-dark">Body Weight</Text>
         </View>
-        <RaisedButton 
+        <RaisedCard 
             onPress={onLogWeight}
-            className="w-8 h-8 p-0 rounded-full items-center justify-center"
-            borderRadius={16}
+            className="w-8 h-8 p-0 items-center justify-center"
+            style={{ borderRadius: 16 }}
         >
           <IconSymbol name="plus" size={20} color={primaryColor || theme.primary} />
-        </RaisedButton>
+        </RaisedCard>
       </View>
       
       <View className="mt-2">

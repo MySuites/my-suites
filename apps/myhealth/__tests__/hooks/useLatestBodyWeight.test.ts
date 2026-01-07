@@ -1,39 +1,27 @@
 import { renderHook, waitFor } from "@testing-library/react-native";
 import { useLatestBodyWeight } from "../../hooks/workouts/useLatestBodyWeight";
-import { supabase } from "@mysuite/auth";
+import { DataRepository } from "../../providers/DataRepository";
 
 jest.mock("@mysuite/auth", () => ({
     useAuth: jest.fn(() => ({ user: { id: "u1" } })),
-    supabase: {
-        from: jest.fn(),
+}));
+
+// Mock DataRepository
+jest.mock("../../providers/DataRepository", () => ({
+    DataRepository: {
+        getLatestBodyWeight: jest.fn(),
     },
 }));
 
 describe("useLatestBodyWeight", () => {
-    let mockMaybeSingle: jest.Mock;
-
     beforeEach(() => {
         jest.clearAllMocks();
-
-        mockMaybeSingle = jest.fn();
-
-        // Mock Chain
-        const mockLimit = jest.fn().mockReturnValue({
-            maybeSingle: mockMaybeSingle,
-        });
-        const mockOrder2 = jest.fn().mockReturnValue({ limit: mockLimit });
-        const mockOrder1 = jest.fn().mockReturnValue({ order: mockOrder2 });
-        const mockEq = jest.fn().mockReturnValue({ order: mockOrder1 });
-        const mockSelect = jest.fn().mockReturnValue({ eq: mockEq });
-
-        (supabase.from as jest.Mock).mockReturnValue({ select: mockSelect });
     });
 
     it("fetches weight on mount", async () => {
-        mockMaybeSingle.mockResolvedValue({
-            data: { weight: 75.5 },
-            error: null,
-        });
+        (DataRepository.getLatestBodyWeight as jest.Mock).mockResolvedValue(
+            75.5,
+        );
 
         const { result } = renderHook(() => useLatestBodyWeight());
 
@@ -44,15 +32,14 @@ describe("useLatestBodyWeight", () => {
         });
 
         expect(result.current.weight).toBe(75.5);
-        expect(supabase.from).toHaveBeenCalledWith("body_measurements");
+        expect(DataRepository.getLatestBodyWeight).toHaveBeenCalledWith("u1");
     });
 
     it("handles error gracefully", async () => {
-        const consoleSpy = jest.spyOn(console, "log").mockImplementation();
-        mockMaybeSingle.mockResolvedValue({
-            data: null,
-            error: { message: "Fetch error" },
-        });
+        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+        (DataRepository.getLatestBodyWeight as jest.Mock).mockRejectedValue(
+            new Error("Fetch error"),
+        );
 
         const { result } = renderHook(() => useLatestBodyWeight());
 
@@ -63,13 +50,15 @@ describe("useLatestBodyWeight", () => {
         expect(result.current.weight).toBeNull();
         expect(consoleSpy).toHaveBeenCalledWith(
             "Error fetching latest body weight:",
-            expect.anything(),
+            expect.any(Error),
         );
         consoleSpy.mockRestore();
     });
 
     it("handles no data found", async () => {
-        mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+        (DataRepository.getLatestBodyWeight as jest.Mock).mockResolvedValue(
+            null,
+        );
 
         const { result } = renderHook(() => useLatestBodyWeight());
 
@@ -80,13 +69,18 @@ describe("useLatestBodyWeight", () => {
         expect(result.current.weight).toBeNull();
     });
 
-    it("does not fetch if no user", async () => {
+    it("fetches even if no user (guest support)", async () => {
         const { useAuth } = require("@mysuite/auth");
         useAuth.mockReturnValue({ user: null });
+        (DataRepository.getLatestBodyWeight as jest.Mock).mockResolvedValue(80);
 
         const { result } = renderHook(() => useLatestBodyWeight());
 
-        expect(result.current.loading).toBe(false);
-        expect(supabase.from).not.toHaveBeenCalled();
+        await waitFor(() => {
+            expect(result.current.loading).toBe(false);
+        });
+
+        expect(DataRepository.getLatestBodyWeight).toHaveBeenCalledWith(null);
+        expect(result.current.weight).toBe(80);
     });
 });

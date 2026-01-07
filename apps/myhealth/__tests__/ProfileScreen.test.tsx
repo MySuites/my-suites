@@ -20,11 +20,16 @@ jest.mock('@mysuite/auth', () => ({
 }));
 
 jest.mock('@mysuite/ui', () => {
-  const { Text } = jest.requireActual('react-native');
   return {
-    useUITheme: jest.fn(() => ({ primary: 'blue', danger: 'red', placeholder: 'gray' })),
-    RaisedButton: ({ title }: any) => <Text>{title}</Text>,
-    IconSymbol: 'IconSymbol'
+    useUITheme: jest.fn(() => ({ primary: 'blue', danger: 'red', placeholder: 'gray', textMuted: 'gray', bg: 'white' })),
+
+    RaisedCard: (props: any) => { 
+        const { TouchableOpacity } = require('react-native');
+        return <TouchableOpacity {...props} />;
+    },
+    IconSymbol: () => null,
+    ThemeToggle: () => null,
+    useToast: () => ({ showToast: jest.fn() }),
   };
 });
 

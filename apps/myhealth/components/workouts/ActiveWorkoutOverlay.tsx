@@ -5,7 +5,7 @@ import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { ExerciseCard } from '../exercises/ExerciseCard';
-import { HollowedButton, RaisedButton, IconSymbol, useUITheme } from '@mysuite/ui';
+import { HollowedButton, RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
 
 export function ActiveWorkoutOverlay() {
@@ -96,24 +96,20 @@ export function ActiveWorkoutOverlay() {
                         
                         {/* Right: Actions */}
                         <View className="absolute right-5 z-10 flex-row gap-2">
-                            <RaisedButton 
+                            <RaisedCard 
                                 onPress={handleEnd}
-                                className="h-8 px-3 py-0 bg-light dark:bg-dark-lighter"
-                                variant="custom"
-                                borderRadius={16}
-                                showGradient={false}
+                                className="h-8 px-3 py-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                                style={{ borderRadius: 9999 }}
                             >
                                 <Text className="text-danger text-xs font-bold">End</Text>
-                            </RaisedButton>
-                            <RaisedButton 
+                            </RaisedCard>
+                            <RaisedCard 
                                 onPress={handlePress}
-                                className="h-8 w-8 p-0 bg-light dark:bg-dark-lighter"
-                                variant="custom"
-                                borderRadius={16}
-                                showGradient={false}
+                                className="h-8 w-8 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                                style={{ borderRadius: 9999 }}
                             >
                                 <IconSymbol name="arrow.down.right.and.arrow.up.left" size={18} className="text-primary dark:text-primary-dark" />
-                            </RaisedButton>
+                            </RaisedCard>
                         </View>
                     </View>
                 </View>
@@ -160,24 +156,20 @@ export function ActiveWorkoutOverlay() {
                      
                      {/* Right: Actions */}
                      <View className="absolute right-4 z-10 flex-row gap-2">
-                         <RaisedButton 
+                         <RaisedCard 
                             onPress={handleEnd}
-                            className="h-8 px-3 py-0 bg-light dark:bg-dark-lighter"
-                            variant="custom"
-                            borderRadius={16}
-                            showGradient={false}
+                            className="h-8 px-3 py-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                            style={{ borderRadius: 9999 }}
                          >
                              <Text className="text-danger text-xs font-bold">End</Text>
-                         </RaisedButton>
-                         <RaisedButton 
+                         </RaisedCard>
+                         <RaisedCard 
                             onPress={handlePress}
-                            className="h-8 w-8 p-0 bg-light dark:bg-dark-lighter"
-                            variant="custom"
-                            borderRadius={16}
-                            showGradient={false}
+                            className="h-8 w-8 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                            style={{ borderRadius: 9999 }}
                          >
                              <IconSymbol name="arrow.up.left.and.arrow.down.right" size={18} className="text-primary dark:text-primary-dark" />
-                         </RaisedButton>
+                         </RaisedCard>
                      </View>
                 </View>
             </Animated.View>
@@ -228,25 +220,25 @@ export function ActiveWorkoutOverlay() {
                     />
 
                     <View className="mt-4 flex-row gap-4">
-                        <RaisedButton
+                        <RaisedCard
                             onPress={resetWorkout}
-                            className="flex-1 h-12 bg-light dark:bg-dark-lighter"
+                            className="flex-1 h-12 bg-light dark:bg-dark-lighter items-center justify-center"
                         >
                             <View>
                                 <Text className="text-warning font-bold text-center text-lg">Reset</Text>
                             </View>
-                        </RaisedButton>
+                        </RaisedCard>
 
-                        <RaisedButton
+                        <RaisedCard
                             onPress={() => {
                                 cancelWorkout();
                             }}
-                            className="flex-1 h-12 bg-light dark:bg-dark-lighter"
+                            className="flex-1 h-12 bg-light dark:bg-dark-lighter items-center justify-center"
                         >
                             <View>
                                 <Text className="text-danger font-bold text-center text-lg">Discard</Text>
                             </View>
-                        </RaisedButton>
+                        </RaisedCard>
                     </View>
                 </ScrollView>
             </View>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { RaisedButton, useUITheme, IconSymbol } from '@mysuite/ui';
+import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
@@ -218,15 +218,14 @@ export default function EndWorkoutScreen() {
                 title="Workout Summary" 
                 leftAction={<BackButton />} 
                 rightAction={
-                    <RaisedButton 
-                        onPress={handleSave}
-                        variant="default"
-                        className="w-10 h-10 p-0 rounded-full bg-light dark:bg-dark-lighter"
-                        borderRadius={20}
-                        showGradient={false}
-                    >
-                        <IconSymbol name="checkmark" size={24} color={theme.primary} />
-                    </RaisedButton>
+                    <RaisedCard
+              testID="save-workout-btn"
+              onPress={handleSave}
+              className="w-10 h-10 p-0 rounded-full items-center justify-center"
+              style={{ borderRadius: 9999 }}
+            >
+              <IconSymbol name="checkmark" size={20} color={theme.primary} />
+            </RaisedCard>
                 }
             />
             

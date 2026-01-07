@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useUITheme as useTheme, RaisedButton, IconSymbol } from '@mysuite/ui';
+import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { useRoutineDraft } from '../../hooks/routines/useRoutineManager';
@@ -144,19 +144,18 @@ export default function CreateRoutineScreen() {
                 title={editingRoutineId ? 'Edit Routine' : 'Create Routine'}
                 leftAction={<BackButton />}
                 rightAction={
-                    <RaisedButton 
+                    <RaisedCard 
                         onPress={handleSaveRoutine} 
                         disabled={isSaving} 
-                        className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter" 
-                        variant="default"
-                        borderRadius={20}
+                        className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter items-center justify-center" 
+                        style={{ borderRadius: 9999 }}
                     >
                         {isSaving ? (
                             <ActivityIndicator size="small" color={theme.primary} />
                         ) : (
                             <IconSymbol name="checkmark" size={24} color={theme.primary} />
                         )}
-                    </RaisedButton>
+                    </RaisedCard>
                 }
             />
 
@@ -172,13 +171,13 @@ export default function CreateRoutineScreen() {
                     
                     <View className="flex-row justify-between items-center mb-6">
                         <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Schedule</Text>
-                        <RaisedButton 
+                        <RaisedCard 
                             onPress={() => setIsAddingDay(true)}
-                            title="Add Day"
-                            textClassName="text-sm text-primary font-semibold px-3"
-                            borderRadius={20}
-                            className="h-9"
-                        />
+                            style={{ borderRadius: 9999 }}
+                            className="h-9 px-3 items-center justify-center"
+                        >
+                            <Text className="text-sm text-primary font-semibold">Add Day</Text>
+                        </RaisedCard>
                     </View>
                 </View>
                 {routineSequence.length === 0 ? (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useUITheme as useTheme, RaisedButton, IconSymbol } from '@mysuite/ui';
+import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
 import { useWorkoutManager, fetchExercises } from '../../providers/WorkoutManagerProvider';
 import { useFloatingButton } from '../../providers/FloatingButtonContext';
@@ -132,19 +132,18 @@ export default function CreateWorkoutScreen() {
                 title={editingWorkoutId ? 'Edit Workout' : 'Create Workout'}
                 leftAction={<BackButton />}
                 rightAction={
-                    <RaisedButton 
+                    <RaisedCard 
                         onPress={handleSaveWorkoutDraft} 
                         disabled={isSaving} 
-                        className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter" 
-                        variant="default"
-                        borderRadius={20}
+                        className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter items-center justify-center" 
+                        style={{ borderRadius: 9999 }}
                     >
                         {isSaving ? (
                             <ActivityIndicator size="small" color={theme.primary} />
                         ) : (
                             <IconSymbol name="checkmark" size={24} color={theme.primary} />
                         )}
-                    </RaisedButton>
+                    </RaisedCard>
                 }
             />
 
@@ -159,13 +158,13 @@ export default function CreateWorkoutScreen() {
                 
                 <View className="flex-row justify-between items-center mb-2">
                     <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Exercises</Text>
-                    <RaisedButton 
+                    <RaisedCard 
                         onPress={handleOpenAddExercise}
                         className="w-28 h-8 p-0 rounded-full items-center justify-center"
-                        borderRadius={16}
+                        style={{ borderRadius: 9999 }}
                     >
                         <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>
-                    </RaisedButton>
+                    </RaisedCard>
                 </View>
 
                 {workoutDraftExercises.length === 0 ? (

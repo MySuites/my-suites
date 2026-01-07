@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, Alert, ScrollView } from 'react-native';
 import { useAuth, supabase } from '@mysuite/auth';
-import { useUITheme, ThemeToggle, IconSymbol, useToast, RaisedButton } from '@mysuite/ui';
+import { useUITheme, ThemeToggle, IconSymbol, useToast, RaisedCard } from '@mysuite/ui';
 import { DataRepository } from '../../providers/DataRepository';
 import { useThemePreference } from '../../providers/AppThemeProvider';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -270,23 +270,23 @@ export default function SettingsScreen() {
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Legal</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Privacy Policy</Text>
-            <RaisedButton 
+            <RaisedCard 
               onPress={() => Alert.alert('Privacy Policy', 'Link to Privacy Policy')}
               className="w-10 h-10 p-0 rounded-full items-center justify-center"
-              borderRadius={20}
+              style={{ borderRadius: 9999 }}
             >
               <IconSymbol name="chevron.right" size={20} color={theme.primary} />
-            </RaisedButton>
+            </RaisedCard>
           </View>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Terms of Service</Text>
-            <RaisedButton 
+            <RaisedCard 
               onPress={() => Alert.alert('Terms of Service', 'Link to Terms of Service')}
               className="w-10 h-10 p-0 rounded-full items-center justify-center"
-              borderRadius={20}
+              style={{ borderRadius: 9999 }}
             >
               <IconSymbol name="chevron.right" size={20} color={theme.primary} />
-            </RaisedButton>
+            </RaisedCard>
           </View>
         </View>
 
@@ -294,13 +294,14 @@ export default function SettingsScreen() {
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Data</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-danger">Delete Data</Text>
-            <RaisedButton
+            <RaisedCard
+              testID="delete-data-btn"
               onPress={handleDeleteData}
               className="w-10 h-10 p-0 rounded-full items-center justify-center"
-              borderRadius={20}
+              style={{ borderRadius: 9999 }}
             >
               <IconSymbol name="trash.fill" size={20} color={theme.danger} />
-            </RaisedButton>
+            </RaisedCard>
           </View>
         </View>
         

@@ -1,11 +1,13 @@
 import { View, StyleSheet, Text } from 'react-native';
-import { RaisedButton } from '@mysuite/ui';
+import { RaisedCard } from '@mysuite/ui';
 
 export default function HomeScreen() {
   return (
     <View className="bg-light dark:bg-dark" style={styles.container}>
       <Text className="text-3xl font-bold leading-8 text-light dark:text-dark">Tab One</Text>
-      <RaisedButton title="This is a v4 NativeWind button!" />
+      <RaisedCard className="p-4 bg-primary dark:bg-primary-dark rounded-full items-center justify-center">
+        <Text className="text-white font-bold">This is a v4 NativeWind button!</Text>
+      </RaisedCard>
     </View>
   );
 }

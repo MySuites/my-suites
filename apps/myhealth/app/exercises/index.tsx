@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FlatList, TouchableOpacity, View, TextInput, Alert, Text } from 'react-native'; 
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
-import { useUITheme, RaisedButton, HollowedCard, Skeleton, useToast, IconSymbol } from '@mysuite/ui';
+import { useUITheme, RaisedCard, HollowedCard, Skeleton, useToast, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
 import { fetchExercises } from '../../providers/WorkoutManagerProvider';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
@@ -56,9 +56,9 @@ export default function ExercisesScreen() {
         title="Exercises"
         leftAction={<BackButton />}
         rightAction={
-            <RaisedButton 
+            <RaisedCard 
                 onPress={() => router.push('/exercises/create')}
-                borderRadius={20}
+                style={{ borderRadius: 9999 }}
                 className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
             >
                 <IconSymbol 
@@ -66,7 +66,7 @@ export default function ExercisesScreen() {
                     size={20} 
                     color={theme.primary} 
                 />
-            </RaisedButton>
+            </RaisedCard>
         }
       />
       
@@ -121,16 +121,16 @@ export default function ExercisesScreen() {
                 </Text> 
             </View>
             {hasActiveSession && mode === 'add' && (
-              <RaisedButton 
+              <RaisedCard 
                 onPress={(e) => {
                   e.stopPropagation(); // Prevent navigation
                   handleAddExercise(item);
                 }}
-                className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter"
-                borderRadius={20}
+                className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter items-center justify-center"
+                style={{ borderRadius: 9999 }}
               >
                   <IconSymbol name="plus" size={24} color={theme.primary} />
-              </RaisedButton>
+              </RaisedCard>
             )}
           </TouchableOpacity>
         )}

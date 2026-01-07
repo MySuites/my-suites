@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Exercise } from '../../providers/WorkoutManagerProvider';
-import { RaisedCard, HollowedButton, RaisedButton, IconSymbol } from '@mysuite/ui';
+import { RaisedCard, HollowedButton, IconSymbol } from '@mysuite/ui';
 import { SetRow, getExerciseFields } from '../workouts/SetRow';
 
 interface ExerciseCardProps {
@@ -36,14 +36,13 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
                 <View className="flex-row items-center gap-3">
                     {isFinished && <IconSymbol name="checkmark.circle.fill" size={24} color={theme.primary} />}
                     {onRemoveExercise && (
-                        <RaisedButton 
+                        <RaisedCard 
                             onPress={onRemoveExercise}
-                            className="w-9 h-9 bg-light dark:bg-dark-lighter"
-                            variant="custom"
-                            borderRadius={18}
+                            className="w-9 h-9 bg-light dark:bg-dark-lighter items-center justify-center"
+                            style={{ borderRadius: 9999 }}
                         >
                             <IconSymbol name="trash.fill" size={18} color={theme.danger} />
-                        </RaisedButton>
+                        </RaisedCard>
                     )}
                 </View>
             </View>

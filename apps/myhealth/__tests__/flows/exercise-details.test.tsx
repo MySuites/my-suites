@@ -22,8 +22,12 @@ jest.mock('@mysuite/auth', () => ({
 }));
 
 jest.mock('@mysuite/ui', () => ({
-    useUITheme: () => ({ primary: 'blue', bg: 'white', text: 'black' }),
+    useUITheme: () => ({ primary: 'blue', text: 'black' }),
     IconSymbol: () => null,
+    RaisedCard: (props: any) => { 
+        const { TouchableOpacity } = require('react-native');
+        return <TouchableOpacity {...props} />;
+    },
 }));
 
 jest.mock('../../components/exercises/ExerciseChart', () => {

@@ -13,13 +13,15 @@ const mockOnMenuPress = jest.fn();
 
 jest.mock('@mysuite/ui', () => {
     return {
-        RaisedCard: ({ children }: any) => <mockRN.View testID="raised-card">{children}</mockRN.View>,
-        RaisedButton: ({ onPress, children, title, ...props }: any) => (
-            <mockRN.TouchableOpacity onPress={onPress} {...props}>
-                {title ? <mockRN.Text>{title}</mockRN.Text> : children}
-            </mockRN.TouchableOpacity>
-        ),
-        IconSymbol: ({ name }: any) => <mockRN.Text>{name}</mockRN.Text>,
+        RaisedCard: (props: any) => { 
+            const { TouchableOpacity } = require('react-native');
+            return <TouchableOpacity {...props} testID="raised-card" />;
+        },
+
+        IconSymbol: ({ name }: any) => {
+             const { Text } = require('react-native');
+             return <Text>{name}</Text>;
+        },
         useUITheme: () => ({ primary: 'blue' }),
     };
 });

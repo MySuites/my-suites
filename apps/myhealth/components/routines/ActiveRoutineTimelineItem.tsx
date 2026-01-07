@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import { useUITheme, RaisedButton } from '@mysuite/ui';
+import { useUITheme, RaisedCard } from '@mysuite/ui';
 
 interface ActiveRoutineTimelineItemProps {
   item: any;
@@ -142,9 +142,8 @@ export function ActiveRoutineTimelineItem({
 
         {isToday && !isCompletedToday && (
           <View className="flex-row gap-3 mt-2">
-            <RaisedButton
-              className="flex-1 mr-0 my-0 h-10"
-              title={item?.type === 'rest' ? 'Mark Complete' : 'Start Workout'}
+            <RaisedCard
+              className="flex-1 mr-0 my-0 h-10 items-center justify-center"
               onPress={() => {
                 if (item?.type === 'workout' && item.workout) {
                   console.log("ActiveRoutineCard: item.workout ID:", item.workout.id);
@@ -153,7 +152,11 @@ export function ActiveRoutineTimelineItem({
                   Alert.alert('Rest Day', 'Enjoy your rest!');
                 }
               }}
-            />
+            >
+              <Text className="text-center text-primary font-bold text-lg">
+                {item?.type === 'rest' ? 'Mark Complete' : 'Start Workout'}
+              </Text>
+            </RaisedCard>
           </View>
         )}
       </View>

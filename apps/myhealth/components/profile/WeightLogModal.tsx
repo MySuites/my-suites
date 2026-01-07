@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, ScrollView } from 'react-native';
-import { RaisedButton, useUITheme, IconSymbol } from '@mysuite/ui';
+import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface WeightLogModalProps {
@@ -66,22 +66,22 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
                     contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
                 >
                     <View className="flex-row justify-between items-center mb-6">
-                        <RaisedButton 
+                        <RaisedCard 
                             onPress={onClose} 
-                            className="w-10 h-10 p-0 rounded-full"
-                            borderRadius={18}
+                            style={{ borderRadius: 9999 }}
+                            className="w-10 h-10 p-0 rounded-full items-center justify-center"
                         >
                             <IconSymbol name="xmark" size={18} color={theme.primary} />
-                        </RaisedButton>
+                        </RaisedCard>
                         <Text className="text-xl font-bold text-light dark:text-dark">Log Weight</Text>
-                        <RaisedButton 
+                        <RaisedCard 
                             onPress={handleSave} 
                             disabled={!weight}
-                            className={`w-10 h-10 p-0 rounded-full ${!weight ? 'opacity-40' : ''}`}
-                            borderRadius={18}
+                            style={{ borderRadius: 9999 }}
+                            className={`w-10 h-10 p-0 rounded-full items-center justify-center ${!weight ? 'opacity-40' : ''}`}
                         >
                             <IconSymbol name="checkmark" size={20} color={theme.primary} />
-                        </RaisedButton>
+                        </RaisedCard>
                     </View>
 
                     <View className="mb-6">

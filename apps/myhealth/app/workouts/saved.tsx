@@ -1,7 +1,7 @@
 import React from 'react';
 import { FlatList, TouchableOpacity, View, Alert, Text } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useUITheme, RaisedButton, RaisedCard, HollowedCard, Skeleton, IconSymbol } from '@mysuite/ui';
+import { useUITheme, RaisedCard, HollowedCard, Skeleton, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { useFloatingButton } from '../../providers/FloatingButtonContext';
@@ -39,9 +39,9 @@ export default function SavedWorkoutsScreen() {
         title="Saved Workouts"
         leftAction={<BackButton />}
         rightAction={
-            <RaisedButton 
+            <RaisedCard 
                 onPress={() => router.push('/workouts/editor')}
-                borderRadius={20}
+                style={{ borderRadius: 9999 }}
                 className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
             >
                 <IconSymbol 
@@ -49,7 +49,7 @@ export default function SavedWorkoutsScreen() {
                     size={20} 
                     color={theme.primary} 
                 />
-            </RaisedButton>
+            </RaisedCard>
         }
       />
       
@@ -92,12 +92,12 @@ export default function SavedWorkoutsScreen() {
                     </Text> 
                 </View>
                 <View className="flex-row gap-2">
-                    <RaisedButton 
+                    <RaisedCard 
                         onPress={(e) => {
                             e.stopPropagation();
                             handleStart(item.id, item.name, item.exercises);
                         }}
-                        borderRadius={20}
+                        style={{ borderRadius: 9999 }}
                         className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
                     >
                         <IconSymbol 
@@ -105,7 +105,7 @@ export default function SavedWorkoutsScreen() {
                             size={15} 
                             color={theme.primary} 
                         />
-                    </RaisedButton>
+                    </RaisedCard>
 
                 </View>
               </RaisedCard>

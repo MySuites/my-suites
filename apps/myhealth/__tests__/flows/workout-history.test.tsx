@@ -14,6 +14,11 @@ jest.mock('../../providers/WorkoutManagerProvider', () => ({
 jest.mock('@mysuite/ui', () => {
     return {
         useUITheme: () => ({ primary: 'blue' }),
+
+        RaisedCard: (props: any) => { 
+            const { TouchableOpacity } = require('react-native');
+            return <TouchableOpacity {...props} />;
+        },
         ActionCard: ({ children, onPress, onDelete, className }: any) => (
             <mockRN.View className={className}>
                 <mockRN.TouchableOpacity onPress={onPress}>

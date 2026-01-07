@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { ActiveRoutineTimelineItem } from './ActiveRoutineTimelineItem';
-import { RaisedCard, RaisedButton, useUITheme, IconSymbol } from '@mysuite/ui';
+import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 
 interface ActiveRoutineCardProps {
   activeRoutineObj: {
@@ -41,9 +41,9 @@ export function ActiveRoutineCard({
             {activeRoutineObj.name}
           </Text>
           <View className="flex-row items-center gap-2">
-            <RaisedButton
+            <RaisedCard
               onPress={onClearRoutine}
-              borderRadius={20}
+              style={{ borderRadius: 9999 }}
               className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
             >
               <IconSymbol 
@@ -51,10 +51,10 @@ export function ActiveRoutineCard({
                   size={18} 
                   color={theme.primary} 
               />
-            </RaisedButton>
-            <RaisedButton 
+            </RaisedCard>
+            <RaisedCard 
                 onPress={onMenuPress}
-                borderRadius={20}
+                style={{ borderRadius: 9999 }}
                 className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
             >
                 <IconSymbol 
@@ -62,7 +62,7 @@ export function ActiveRoutineCard({
                     size={20} 
                     color={theme.primary} 
                 />
-            </RaisedButton>
+            </RaisedCard>
           </View>
         </View>
         {/* Active Routine Timeline */}
