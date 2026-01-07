@@ -11,7 +11,7 @@ import { BodyWeightCard } from '../../components/profile/BodyWeightCard';
 import { WeightLogModal } from '../../components/profile/WeightLogModal';
 import { BodyWeightService, BodyWeightEntry } from '../../services/BodyWeightService';
 
-type DateRange = 'Week' | 'Month' | '6Month' | 'Year';
+type DateRange = 'W' | 'M' | '6M' | 'Y';
 
 export default function SettingsScreen() {
   const { user } = useAuth();
@@ -24,7 +24,7 @@ export default function SettingsScreen() {
   // Derived state for chart
   const [isWeightModalVisible, setIsWeightModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedRange, setSelectedRange] = useState<DateRange>('Week');
+  const [selectedRange, setSelectedRange] = useState<DateRange>('W');
 
   const fetchLatestWeight = useCallback(async () => {
     // Fetch the most recent weight entry
@@ -56,21 +56,21 @@ export default function SettingsScreen() {
     const todayD = String(now.getDate()).padStart(2, '0');
     const todayStr = `${todayY}-${todayM}-${todayD}`;
 
-    if (selectedRange === 'Week') {
+    if (selectedRange === 'W') {
         const d = new Date(todayStr);
         for (let i = 6; i >= 0; i--) {
             const temp = new Date(d);
             temp.setUTCDate(d.getUTCDate() - i);
             spine.push(temp.toISOString().split('T')[0]);
         }
-    } else if (selectedRange === 'Month') {
+    } else if (selectedRange === 'M') {
         const d = new Date(todayStr);
         for (let i = 29; i >= 0; i--) {
             const temp = new Date(d);
             temp.setUTCDate(d.getUTCDate() - i);
             spine.push(temp.toISOString().split('T')[0]);
         }
-    } else if (selectedRange === '6Month') {
+    } else if (selectedRange === '6M') {
         const lastWeekStart = new Date(todayStr);
         lastWeekStart.setUTCDate(lastWeekStart.getUTCDate() - 6);
         for (let i = 25; i >= 0; i--) {
@@ -78,7 +78,7 @@ export default function SettingsScreen() {
              temp.setUTCDate(lastWeekStart.getUTCDate() - (i * 7));
              spine.push(temp.toISOString().split('T')[0]); 
         }
-    } else if (selectedRange === 'Year') {
+    } else if (selectedRange === 'Y') {
         const currentMonthStartStr = `${todayY}-${todayM}-01`;
         const d = new Date(currentMonthStartStr);
         for (let i = 11; i >= 0; i--) {
@@ -100,9 +100,9 @@ export default function SettingsScreen() {
         if (item.date < spineStartDate) return;
 
         let key = '';
-        if (selectedRange === 'Week' || selectedRange === 'Month') {
+        if (selectedRange === 'W' || selectedRange === 'M') {
             key = item.date;
-        } else if (selectedRange === '6Month') {
+        } else if (selectedRange === '6M') {
             const itemDate = new Date(item.date).getTime();
             for (let i = spine.length - 1; i >= 0; i--) {
                 const spineDate = new Date(spine[i]).getTime();
@@ -111,7 +111,7 @@ export default function SettingsScreen() {
                     break;
                 }
             }
-        } else if (selectedRange === 'Year') {
+        } else if (selectedRange === 'Y') {
             key = item.date.substring(0, 7) + '-01';
         }
 
@@ -129,8 +129,8 @@ export default function SettingsScreen() {
         const d = new Date(dateStr);
         const utcDate = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
         
-        if (selectedRange === 'Week' || selectedRange === 'Month' || selectedRange === '6Month') return utcDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        if (selectedRange === 'Year') return utcDate.toLocaleDateString(undefined, { month: 'short' });
+        if (selectedRange === 'W' || selectedRange === 'M' || selectedRange === '6M') return utcDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        if (selectedRange === 'Y') return utcDate.toLocaleDateString(undefined, { month: 'short' });
         return utcDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     };
 

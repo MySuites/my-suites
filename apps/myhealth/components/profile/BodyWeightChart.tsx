@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Dimensions, Text, TouchableWithoutFeedback } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 
-type DateRange = 'Week' | 'Month' | '6Month' | 'Year';
+type DateRange = 'W' | 'M' | '6M' | 'Y';
 
 interface BodyWeightChartProps {
   data: { value: number; label: string; date: string; spineIndex?: number }[];
@@ -116,10 +116,10 @@ export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af'
   if (maxPoints && selectedRange) {
     const now = new Date();
     const config = {
-      Week: { count: 7, unit: 'date' as const },
-      Month: { count: 31, unit: 'date' as const },
-      '6Month': { count: 26, unit: 'week' as const },
-      Year: { count: 12, unit: 'month' as const },
+      'W': { count: 7, unit: 'date' as const },
+      'M': { count: 31, unit: 'date' as const },
+      '6M': { count: 26, unit: 'week' as const },
+      'Y': { count: 12, unit: 'month' as const },
     };
     
     const { count, unit } = config[selectedRange as keyof typeof config];

@@ -27,14 +27,14 @@ export function SegmentedControl<T extends string>({
           <Pressable
             key={option.value}
             onPress={() => onChange(option.value)}
-            className="px-3 py-1 rounded-md"
+            className="px-4 py-2 rounded-md"
             style={[
               styles.segment,
               isActive && styles.activeSegment,
             ]}
           >
             <Text
-              className="text-xs font-medium"
+              className="text-xs font-medium text-center"
               style={{ color: isActive ? '#111827' : '#6b7280' }}
             >
               {option.label}

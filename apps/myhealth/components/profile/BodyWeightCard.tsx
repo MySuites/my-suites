@@ -5,13 +5,13 @@ import { SegmentedControl, SegmentedControlOption } from '../ui/SegmentedControl
 import { RaisedCard, HollowedCard, useUITheme, Skeleton, IconSymbol } from '@mysuite/ui';
 
 // Defined locally to avoid circular dependencies if any
-type DateRange = 'Week' | 'Month' | '6Month' | 'Year';
+type DateRange = 'W' | 'M' | '6M' | 'Y';
 
 const RANGE_OPTIONS: SegmentedControlOption<DateRange>[] = [
-  { label: 'Week', value: 'Week' },
-  { label: 'Month', value: 'Month' },
-  { label: '6M', value: '6Month' },
-  { label: 'Year', value: 'Year' },
+  { label: 'W', value: 'W' },
+  { label: 'M', value: 'M' },
+  { label: '6M', value: '6M' },
+  { label: 'Y', value: 'Y' },
 ];
 
 interface BodyWeightCardProps {
@@ -52,11 +52,11 @@ export function BodyWeightCard({
     const d = new Date(selectedPoint.date);
     const date = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
     
-    if (selectedRange === 'Week' || selectedRange === 'Month') {
+    if (selectedRange === 'W' || selectedRange === 'M') {
       return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
     }
     
-    if (selectedRange === '6Month') {
+    if (selectedRange === '6M') {
       const end = new Date(date);
       end.setDate(date.getDate() + 6);
       const startStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -64,7 +64,7 @@ export function BodyWeightCard({
       return `Weekly Average: ${startStr} - ${endStr}`;
     }
     
-    if (selectedRange === 'Year') {
+    if (selectedRange === 'Y') {
       const monthStr = date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
       return `Monthly Average: ${monthStr}`;
     }
@@ -94,7 +94,7 @@ export function BodyWeightCard({
         {displayWeight ? (
             <View>
                 <View className="mb-4">
-                    <View className="flex-row justify-between items-center mb-1">
+                    <View className="flex-row justify-between items-center mb-1 w-full">
                         <View className="flex-row items-baseline">
                             <Text className="text-3xl font-bold mr-1 text-light dark:text-dark">{displayWeight}</Text>
                             <Text className="text-light-muted dark:text-dark-muted text-sm">lbs</Text>
@@ -120,9 +120,9 @@ export function BodyWeightCard({
                         color={primaryColor}
                         textColor={textColor}
                         maxPoints={
-                            selectedRange === 'Week' ? 7 : 
-                            selectedRange === 'Month' ? 31 : 
-                            selectedRange === '6Month' ? 26 : 
+                            selectedRange === 'W' ? 7 : 
+                            selectedRange === 'M' ? 31 : 
+                            selectedRange === '6M' ? 26 : 
                             12
                         }
                         selectedRange={selectedRange}
@@ -138,7 +138,7 @@ export function BodyWeightCard({
                 ) : (
                     <View className="py-8 bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
                         <Text className="text-light-muted dark:text-dark-muted text-center italic text-sm">
-                            No data for this {selectedRange === '6Month' ? 'period' : selectedRange.toLowerCase()}.
+                            No data for this {selectedRange === '6M' ? 'period' : selectedRange === 'W' ? 'week' : selectedRange === 'M' ? 'month' : 'year'}.
                         </Text>
                     </View>
                 )}
