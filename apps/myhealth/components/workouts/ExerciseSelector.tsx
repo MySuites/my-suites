@@ -129,7 +129,7 @@ export const ExerciseSelector = ({
                                     onPress={() => toggleCategory("All")}
                                     className={`self-start px-4 py-2 rounded-full mb-4 border ${selectedCategories.size === 0 ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
                                 >
-                                    <Text className={`font-semibold ${selectedCategories.size === 0 ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                                    <Text className={`font-semibold ${selectedCategories.size === 0 ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
                                         All
                                     </Text>
                                 </TouchableOpacity>
@@ -152,7 +152,7 @@ export const ExerciseSelector = ({
 
                                     return (
                                         <View key={group} className="mb-4">
-                                            <Text className="text-light-muted dark:text-dark-muted font-bold mb-2 uppercase text-xs tracking-wider">{group}</Text>
+                                            <Text className="text-light dark:text-dark font-bold mb-2 uppercase text-xs tracking-wider">{group}</Text>
                                             <View className="flex-row flex-wrap gap-2">
                                                 {catsInGroup.map((category) => (
                                                     <TouchableOpacity 
@@ -160,7 +160,7 @@ export const ExerciseSelector = ({
                                                         onPress={() => toggleCategory(category)}
                                                         className={`px-4 py-2 rounded-full border ${selectedCategories.has(category) ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
                                                     >
-                                                        <Text className={`font-semibold ${selectedCategories.has(category) ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                        <Text className={`font-semibold ${selectedCategories.has(category) ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
                                                             {category}
                                                         </Text>
                                                     </TouchableOpacity>
@@ -202,8 +202,8 @@ export const ExerciseSelector = ({
                                         onPress={() => toggleSelection(item.id)}
                                     >
                                         <View className="flex-1">
-                                            <Text className={`text-base leading-6 font-semibold`} style={{ fontSize: 18 }}>{item.name}</Text>
-                                            <Text className="text-gray-500 dark:text-gray-400 text-sm">
+                                            <Text className={`text-base leading-6 font-semibold text-light dark:text-dark`} style={{ fontSize: 18 }}>{item.name}</Text>
+                                            <Text className="text-light-muted dark:text-dark-muted text-sm">
                                                 {item.category} • {item.properties?.join(', ') || item.type || item.rawType}
                                             </Text> 
                                         </View>

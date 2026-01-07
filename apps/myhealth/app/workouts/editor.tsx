@@ -291,10 +291,10 @@ const WorkoutDraftExerciseItem = ({
                 </View>
                 <View className="flex-row items-center">
                     <TouchableOpacity onPress={(e) => { e.stopPropagation(); onMove(-1); }} className="p-2"> 
-                        <IconSymbol name="arrow.up" size={16} color={theme.primary || '#888'} />
+                        <IconSymbol name="arrow.up" size={16} color={theme.icon || '#888'} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={(e) => { e.stopPropagation(); onMove(1); }} className="p-2"> 
-                        <IconSymbol name="arrow.down" size={16} color={theme.primary || '#888'} />
+                        <IconSymbol name="arrow.down" size={16} color={theme.icon || '#888'} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={(e) => { e.stopPropagation(); onRemove(); }} className="p-2 ml-1"> 
                         <IconSymbol name="trash.fill" size={18} color={theme.options?.destructiveColor || '#ff4444'} />

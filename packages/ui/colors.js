@@ -23,7 +23,7 @@ const baseColors = {
     bgDark: 'hsl(0, 0%, 5%)',
     text: 'hsl(0, 0%, 95%)',
     textMuted: 'hsl(0, 0%, 70%)',
-    icon: 'hsl(0, 0%, 5%)',
+    icon: 'hsl(0, 0%, 95%)',
     tabIconDefault: 'hsl(0, 0%, 89%)',
     error: 'hsl(0, 84%, 60%)',
     border: 'hsl(0, 0%, 10%)',
