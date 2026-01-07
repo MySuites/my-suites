@@ -233,7 +233,7 @@ export default function EndWorkoutScreen() {
                 className="flex-1" 
                 contentContainerStyle={{ paddingTop: 124, paddingHorizontal: 16, paddingBottom: 32 }}
             >
-                <View className="bg-light-lighter dark:bg-border-dark rounded-xl p-6 mb-6 items-center">
+                <RaisedCard className="p-6 mb-6 items-center">
                     <Text className="text-2xl font-bold text-light dark:text-dark mb-2">{workoutName}</Text>
                     <Text className="text-4xl font-black text-primary dark:text-primary-dark mb-4">
                         {formatDuration(workoutSeconds)}
@@ -249,9 +249,9 @@ export default function EndWorkoutScreen() {
                             <Text className="text-gray-500 dark:text-gray-400">Exercises</Text>
                         </View>
                     </View>
-                </View>
+                </RaisedCard>
 
-                <View className="bg-light-lighter dark:bg-border-dark rounded-xl p-4 mb-6">
+                <RaisedCard className="p-4 mb-6">
                     <Text className="font-semibold text-light dark:text-dark mb-2 text-lg">Notes</Text>
                     <TextInput 
                         className="text-light dark:text-dark min-h-[80px] p-2 border border-black/10 dark:border-white/10 rounded-lg"
@@ -262,9 +262,9 @@ export default function EndWorkoutScreen() {
                         onChangeText={setNotes}
                         textAlignVertical="top"
                     />
-                </View>
+                </RaisedCard>
 
-                <View className="bg-light-lighter dark:bg-border-dark rounded-xl p-4 mb-6">
+                <RaisedCard className="p-4 mb-6">
                     <Text className="font-semibold text-light dark:text-dark mb-4 text-lg">Detailed Summary</Text>
                     {filteredExercises.map((ex, idx) => (
                         <View key={idx} className="flex-row justify-between mb-2">
@@ -274,7 +274,7 @@ export default function EndWorkoutScreen() {
                              </Text>
                         </View>
                     ))}
-                </View>
+                </RaisedCard>
                 <View className="gap-3 pb-40">
                     <TouchableOpacity 
                         onPress={handleDiscard}
