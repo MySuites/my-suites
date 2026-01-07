@@ -276,13 +276,13 @@ const WorkoutDraftExerciseItem = ({
     const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(item.properties);
 
     return (
-        <View className="bg-light-lighter dark:bg-border-dark rounded-xl mb-3 overflow-hidden border border-black/5 dark:border-white/10">
+        <View className="bg-light-lighter dark:bg-dark-lighter rounded-xl mb-3 overflow-hidden border border-black/5 dark:border-white/10">
             <TouchableOpacity 
                 onPress={onToggleExpand}
                 className="flex-row items-center justify-between p-3"
             >
                 <View className="flex-1 mr-2">
-                    <Text className="text-base leading-6 font-semibold">{item.name}</Text>
+                    <Text className="text-base text-light dark:text-dark leading-6 font-semibold">{item.name}</Text>
                     <Text className="text-gray-500 dark:text-gray-400 text-sm">
                         {item.sets} Sets
                         {showReps && ` • ${item.reps} Reps`}
@@ -291,10 +291,10 @@ const WorkoutDraftExerciseItem = ({
                 </View>
                 <View className="flex-row items-center">
                     <TouchableOpacity onPress={(e) => { e.stopPropagation(); onMove(-1); }} className="p-2"> 
-                        <IconSymbol name="arrow.up" size={16} color={theme.icon || '#888'} />
+                        <IconSymbol name="arrow.up" size={16} color={theme.primary || '#888'} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={(e) => { e.stopPropagation(); onMove(1); }} className="p-2"> 
-                        <IconSymbol name="arrow.down" size={16} color={theme.icon || '#888'} />
+                        <IconSymbol name="arrow.down" size={16} color={theme.primary || '#888'} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={(e) => { e.stopPropagation(); onRemove(); }} className="p-2 ml-1"> 
                         <IconSymbol name="trash.fill" size={18} color={theme.options?.destructiveColor || '#ff4444'} />
