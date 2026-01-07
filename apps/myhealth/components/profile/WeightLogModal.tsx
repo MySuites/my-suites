@@ -50,20 +50,22 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
       visible={visible}
       onRequestClose={onClose}
     >
-      <View className="flex-1 justify-end bg-black/50">
-        <TouchableWithoutFeedback onPress={onClose}>
-            <View className="absolute inset-0" />
-        </TouchableWithoutFeedback>
-        
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            className="w-full"
-        >
-            <View className="bg-light-lighter dark:bg-dark-lighter rounded-t-3xl overflow-hidden max-h-[90vh]">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
+      >
+        <View className="flex-1 justify-end bg-black/50">
+            {/* Closes the modal when user taps outside of the modal */}
+            <TouchableWithoutFeedback onPress={onClose}>
+                <View className="absolute inset-0" />
+            </TouchableWithoutFeedback>
+            
+            {/* Modal content */}
+            <View className="bg-light-lighter dark:bg-dark-lighter rounded-t-3xl overflow-hidden" style={{ maxHeight: '90%' }}>
                 <ScrollView 
                     bounces={false} 
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+                    contentContainerStyle={{ padding: 24, paddingBottom: 36 }}
                 >
                     <View className="flex-row justify-between items-center mb-6">
                         <RaisedCard 
@@ -73,7 +75,7 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
                         >
                             <IconSymbol name="xmark" size={22} color={theme.primary} />
                         </RaisedCard>
-                        <Text className="text-xl font-bold text-light dark:text-dark">Log Weight</Text>
+                        <Text className="text-lg font-bold text-light dark:text-dark">Log Weight</Text>
                         <RaisedCard 
                             onPress={handleSave} 
                             disabled={!weight}
@@ -84,18 +86,19 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
                         </RaisedCard>
                     </View>
 
-                    <View className="mb-6">
+                    <View>
                         <Text className="text-sm text-light-muted dark:text-dark-muted mb-2 font-medium">DATE</Text>
                         <TouchableOpacity 
                             onPress={() => setShowDatePicker(true)}
                             className="flex-row items-center justify-between p-4 bg-light dark:bg-dark rounded-xl"
                         >
-                            <Text className="text-lg text-light dark:text-dark">
+                            <Text className="text-base text-light dark:text-dark">
                                 {formatDate(date)}
                             </Text>
-                            <IconSymbol name="calendar" size={18} color={theme.primary} />
+                            <IconSymbol name="calendar" size={20} color={theme.primary} />
                         </TouchableOpacity>
 
+                        {/* Date wheel picker */}
                         {(showDatePicker || Platform.OS === 'ios') && (
                             <View className={Platform.OS === 'ios' ? 'mt-2' : ''}>
                                 {Platform.OS === 'ios' ? (
@@ -119,10 +122,10 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
                         )}
                     </View>
 
-                    <View className="mb-8">
+                    <View>
                         <Text className="text-sm text-light-muted dark:text-dark-muted mb-2 font-medium">WEIGHT (LBS)</Text>
                         <TextInput
-                            className="text-4xl font-bold text-center py-4 bg-light dark:bg-dark rounded-xl text-light dark:text-dark"
+                            className="text-2xl font-bold text-center py-4 bg-light dark:bg-dark rounded-xl text-light dark:text-dark"
                             value={weight}
                             onChangeText={(text) => {
                                 if (text === '' || /^\d*\.?\d{0,2}$/.test(text)) {
@@ -137,8 +140,8 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
                     </View>
                 </ScrollView>
             </View>
-        </KeyboardAvoidingView>
-      </View>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
