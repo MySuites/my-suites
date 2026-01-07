@@ -14,9 +14,9 @@ jest.mock('@mysuite/ui', () => {
             const { TouchableOpacity } = require('react-native');
             return <TouchableOpacity {...props} />;
         },
-        HollowedButton: ({ title }: any) => {
-            const { TouchableOpacity, Text } = require('react-native');
-            return <TouchableOpacity><Text>{title}</Text></TouchableOpacity>;
+        HollowedCard: (props: any) => {
+            const { TouchableOpacity } = require('react-native');
+            return <TouchableOpacity {...props} />;
         },
 
         IconSymbol: () => null,

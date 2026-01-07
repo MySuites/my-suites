@@ -5,7 +5,7 @@ import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { ExerciseCard } from '../exercises/ExerciseCard';
-import { HollowedButton, RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
+import { HollowedCard, RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
 
 export function ActiveWorkoutOverlay() {
@@ -212,12 +212,14 @@ export function ActiveWorkoutOverlay() {
                         </>
                      )}
 
-                    <HollowedButton
-                        title="+ Add Exercise"
+                    <HollowedCard
                         onPress={() => router.push({ pathname: '/exercises', params: { mode: 'add' } })}
-                        className="mt-5"
-                        textClassName="text-base font-semibold text-primary dark:text-primary-dark"
-                    />
+                        className="mt-5 items-center justify-center p-4"
+                    >
+                        <Text className="text-base font-semibold text-primary dark:text-primary-dark text-center">
+                            + Add Exercise
+                        </Text>
+                    </HollowedCard>
 
                     <View className="mt-4 flex-row gap-4">
                         <RaisedCard

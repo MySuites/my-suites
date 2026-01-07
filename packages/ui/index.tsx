@@ -8,7 +8,7 @@ cssInterop(Pressable, { className: 'style' });
 cssInterop(Text, { className: 'style' });
 
 export * from './RaisedCard';
-export { HollowedButton } from './HollowedButton';
+
 export { RaisedCard } from './RaisedCard';
 export { HollowedCard } from './HollowedCard';
 export { ActionCard } from './ActionCard';

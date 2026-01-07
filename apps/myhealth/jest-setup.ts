@@ -66,7 +66,6 @@ jest.mock("@mysuite/ui", () => ({
         bgLight: "lightgray",
     }),
 
-    HollowedButton: ({ children, title }: any) => title || children || null,
     useToast: () => {
         // Return stable mock to prevent useEffect re-run loops
         const showToast = jest.fn();
