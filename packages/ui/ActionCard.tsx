@@ -20,7 +20,7 @@ import { cssInterop } from 'nativewind';
 cssInterop(Pressable, { className: 'style' });
 
 // Constants
-const BUTTON_HEIGHT = 40; 
+const BUTTON_HEIGHT = 48; 
 const GAP = 10; // Between buttons
 const MARGIN = 0; // Right edge margin (Card has no margin now)
 const CARD_GAP = 10; // Padding from the card
@@ -373,7 +373,7 @@ function CardSwipeAction({
                             }}
                             className="!bg-info dark:!bg-info p-0 items-center justify-center"
                         >
-                            <IconSymbol name="pencil" size={20} color="white" />
+                            <IconSymbol name="pencil" size={24} color="white" />
                         </RaisedCard>
                     </Animated.View>
                  </View>
@@ -399,7 +399,7 @@ function CardSwipeAction({
                            className="!bg-danger dark:!bg-danger p-0 items-center justify-center"
                         >
                             <Animated.View style={deleteIconStyle}>
-                                <IconSymbol name="trash.fill" size={20} color="white" />
+                                <IconSymbol name="trash.fill" size={24} color="white" />
                             </Animated.View>
                         </RaisedCard>
                     </Animated.View>

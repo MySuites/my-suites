@@ -143,7 +143,7 @@ export function ActiveRoutineTimelineItem({
         {isToday && !isCompletedToday && (
           <View className="flex-row gap-3 mt-2">
             <RaisedCard
-              className="flex-1 mr-0 my-0 h-10 items-center justify-center"
+              className="flex-1 mr-0 my-0 h-12 items-center justify-center"
               onPress={() => {
                 if (item?.type === 'workout' && item.workout) {
                   console.log("ActiveRoutineCard: item.workout ID:", item.workout.id);

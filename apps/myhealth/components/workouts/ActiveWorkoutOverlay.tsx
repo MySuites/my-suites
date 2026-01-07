@@ -140,10 +140,10 @@ export function ActiveWorkoutOverlay() {
                             </RaisedCard>
                             <RaisedCard 
                                 onPress={handlePress}
-                                className="h-8 w-8 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                                className="h-10 w-10 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
                                 style={{ borderRadius: 9999 }}
                             >
-                                <IconSymbol name="arrow.down.right.and.arrow.up.left" size={18} className="text-primary dark:text-primary-dark" />
+                                <IconSymbol name="arrow.down.right.and.arrow.up.left" size={22} className="text-primary dark:text-primary-dark" />
                             </RaisedCard>
                         </View>
                     </View>
@@ -200,10 +200,10 @@ export function ActiveWorkoutOverlay() {
                          </RaisedCard>
                          <RaisedCard 
                             onPress={handlePress}
-                            className="h-8 w-8 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                            className="h-10 w-10 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
                             style={{ borderRadius: 9999 }}
                          >
-                             <IconSymbol name="arrow.up.left.and.arrow.down.right" size={18} className="text-primary dark:text-primary-dark" />
+                             <IconSymbol name="arrow.up.left.and.arrow.down.right" size={22} className="text-primary dark:text-primary-dark" />
                          </RaisedCard>
                      </View>
                 </View>

@@ -69,18 +69,18 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
                         <RaisedCard 
                             onPress={onClose} 
                             style={{ borderRadius: 9999 }}
-                            className="w-10 h-10 p-0 rounded-full items-center justify-center"
+                            className="w-12 h-12 p-0 rounded-full items-center justify-center"
                         >
-                            <IconSymbol name="xmark" size={18} color={theme.primary} />
+                            <IconSymbol name="xmark" size={22} color={theme.primary} />
                         </RaisedCard>
                         <Text className="text-xl font-bold text-light dark:text-dark">Log Weight</Text>
                         <RaisedCard 
                             onPress={handleSave} 
                             disabled={!weight}
                             style={{ borderRadius: 9999 }}
-                            className={`w-10 h-10 p-0 rounded-full items-center justify-center ${!weight ? 'opacity-40' : ''}`}
+                            className={`w-12 h-12 p-0 rounded-full items-center justify-center ${!weight ? 'opacity-40' : ''}`}
                         >
-                            <IconSymbol name="checkmark" size={20} color={theme.primary} />
+                            <IconSymbol name="checkmark" size={24} color={theme.primary} />
                         </RaisedCard>
                     </View>
 

@@ -42,12 +42,12 @@ export function BackButton({ onPress }: { onPress?: () => void }) {
     return (
         <RaisedCard
             onPress={onPress || handleBack}
-            className="w-10 h-10 p-0 rounded-full items-center justify-center"
+            className="w-12 h-12 p-0 rounded-full items-center justify-center"
             style={{ borderRadius: 9999 }}
         >
             <IconSymbol
                 name="chevron.left"
-                size={24}
+                size={28}
                 color={theme.primary}
             />
         </RaisedCard>

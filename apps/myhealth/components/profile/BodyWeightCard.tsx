@@ -91,10 +91,10 @@ export function BodyWeightCard({
         </View>
         <RaisedCard 
             onPress={onLogWeight}
-            className="w-8 h-8 p-0 items-center justify-center"
-            style={{ borderRadius: 16 }}
+            className="w-10 h-10 p-0 items-center justify-center"
+            style={{ borderRadius: 20 }}
         >
-          <IconSymbol name="plus" size={20} color={primaryColor || theme.primary} />
+          <IconSymbol name="plus" size={24} color={primaryColor || theme.primary} />
         </RaisedCard>
       </View>
       

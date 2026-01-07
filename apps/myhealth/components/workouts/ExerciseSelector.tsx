@@ -78,11 +78,11 @@ export const ExerciseSelector = ({
                             <RaisedCard 
                                 onPress={handleConfirm}
                                 style={{ borderRadius: 9999 }}
-                                className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center bg-light dark:bg-dark-lighter"
+                                className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center bg-light dark:bg-dark-lighter"
                             >
                                 <IconSymbol 
                                     name="checkmark" 
-                                    size={20} 
+                                    size={24} 
                                     color={theme.primary} 
                                 />
                             </RaisedCard>
@@ -110,12 +110,12 @@ export const ExerciseSelector = ({
                         </RaisedCard>
                         <RaisedCard 
                             onPress={() => setIsFilterVisible(!isFilterVisible)}
-                            style={{ borderRadius: 12 }}
-                            className={`w-12 h-12 p-0 items-center justify-center ${selectedCategories.size > 0 ? 'bg-primary/10' : ''}`}
+                            style={{ borderRadius: 14 }}
+                            className={`w-14 h-14 p-0 items-center justify-center ${selectedCategories.size > 0 ? 'bg-primary/10' : ''}`}
                         >
                             <IconSymbol 
                                 name={"line.3.horizontal.decrease" as any} 
-                                size={20} 
+                                size={24} 
                                 color={selectedCategories.size > 0 ? theme.primary : (theme.icon || '#888')} 
                             />
                         </RaisedCard>

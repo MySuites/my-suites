@@ -42,11 +42,11 @@ export const SavedWorkoutItem = ({
                     <RaisedCard 
                         onPress={onStart}
                         style={{ borderRadius: 9999 }}
-                        className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
+                        className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center"
                     >
                         <IconSymbol 
                             name="play.fill" 
-                            size={18} 
+                            size={22} 
                             color={theme.primary} 
                         />
                     </RaisedCard>

@@ -22,10 +22,10 @@ export function WorkoutPreviewModal({ visible, onClose, workout }: WorkoutPrevie
                         </Text>
                         <RaisedCard 
                             onPress={onClose} 
-                            className="w-10 h-10 p-0 rounded-full items-center justify-center" 
+                            className="w-12 h-12 p-0 rounded-full items-center justify-center" 
                             style={{ borderRadius: 9999 }}
                         >
-                            <IconSymbol name="xmark" size={20} color={theme.primary} />
+                            <IconSymbol name="xmark" size={24} color={theme.primary} />
                         </RaisedCard>
                     </View>
 
