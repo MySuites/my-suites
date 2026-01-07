@@ -123,15 +123,26 @@ export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af'
     };
     
     const { count, unit } = config[selectedRange as keyof typeof config];
-    [0, 0.25, 0.5, 0.75, 1].forEach(percent => {
-      const d = new Date(now);
-      const unitsAgo = Math.round((count - 1) * (1 - percent));
-      if (unit === 'date') d.setDate(d.getDate() - unitsAgo);
-      else if (unit === 'week') d.setDate(d.getDate() - unitsAgo * 7);
-      else if (unit === 'month') d.setMonth(d.getMonth() - unitsAgo);
-      
-      fixedLabels.push(d.toLocaleDateString(undefined, unit === 'month' ? { month: 'short' } : { month: 'short', day: 'numeric' }));
-    });
+    
+    if (selectedRange === 'W') {
+        // 7 specific days for Week view
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - i);
+            fixedLabels.push(d.toLocaleDateString(undefined, { weekday: 'short' }));
+        }
+    } else {
+        // Standard distribution for others
+        [0, 0.25, 0.5, 0.75, 1].forEach(percent => {
+            const d = new Date(now);
+            const unitsAgo = Math.round((count - 1) * (1 - percent));
+            if (unit === 'date') d.setDate(d.getDate() - unitsAgo);
+            else if (unit === 'week') d.setDate(d.getDate() - unitsAgo * 7);
+            else if (unit === 'month') d.setMonth(d.getMonth() - unitsAgo);
+            
+            fixedLabels.push(d.toLocaleDateString(undefined, unit === 'month' ? { month: 'short' } : { month: 'short', day: 'numeric' }));
+        });
+    }
   }
 
   // Calculate Y-Axis bounds centered on average (Use REAL values only)
@@ -194,12 +205,24 @@ export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af'
                     }}
                 >
                     {/* Cross-hair Style Grid */}
-                    {[0.25, 0.5, 0.75].map(p => (
+                    {(selectedRange === 'W' 
+                        ? [0, 1/6, 2/6, 3/6, 4/6, 5/6, 1] // 7 Vertical Lines for Week
+                        : [0.25, 0.5, 0.75] // Default 4 sections for others
+                    ).map(p => (
                     <React.Fragment key={p}>
                         <View style={{ position: 'absolute', left: `${p * 100}%`, top: 0, bottom: 0, width: 1, backgroundColor: textColor }} />
-                        <View style={{ position: 'absolute', top: `${p * 100}%`, left: 0, right: 0, height: 1, backgroundColor: textColor }} />
+                        {/* Only default horizontal lines? Or keep them same? Keep default horizontal grid */}
+                        {selectedRange !== 'W' && (
+                             <View style={{ position: 'absolute', top: `${p * 100}%`, left: 0, right: 0, height: 1, backgroundColor: textColor }} />
+                        )}
                     </React.Fragment>
                     ))}
+                    {selectedRange === 'W' && (
+                        // Draw standard horizontal grid for Week separately to avoid dupes/mess if we want 4 horizontal lines
+                        [0.25, 0.5, 0.75].map(p => (
+                             <View key={`h-${p}`} style={{ position: 'absolute', top: `${p * 100}%`, left: 0, right: 0, height: 1, backgroundColor: textColor }} />
+                        ))
+                    )}
                 </View>
             )}
 
@@ -302,11 +325,20 @@ export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af'
             }} 
             className="flex-row justify-between mt-2"
           >
-              {fixedLabels.map((label, idx) => (
-                  <View key={idx} style={{ width: 40, alignItems: idx === 0 ? 'flex-start' : idx === 4 ? 'flex-end' : 'center' }}>
-                    <Text className="text-[10px]" style={{ color: textColor }}>{label}</Text>
-                  </View>
-              ))}
+              {fixedLabels.map((label, idx) => {
+                  // align strategy: first left, last right, others center?
+                  // with 7 items justify-between handles spacing, but alignment needs care
+                  const isFirst = idx === 0;
+                  const isLast = idx === fixedLabels.length - 1;
+                  return (
+                    <View key={idx} style={{ 
+                        width: 40, 
+                        alignItems: isFirst ? 'flex-start' : isLast ? 'flex-end' : 'center' 
+                    }}>
+                        <Text className="text-[10px]" style={{ color: textColor }}>{label}</Text>
+                    </View>
+                  );
+              })}
           </View>
       )}
     </View>
