@@ -40,7 +40,16 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "react-native-health",
+        {
+          "ios": {
+            "NSHealthShareUsageDescription": "Read and understand health data.",
+            "NSHealthUpdateUsageDescription": "Share workout data with other apps."
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

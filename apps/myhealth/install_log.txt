@@ -1,0 +1,20 @@
+env: load .env
+env: export EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_SITE_URL EXPO_PUBLIC_POWERSYNC_URL
+› Installing 1 other package using npm
+> npm install --save react-native-health
+npm error code EUNSUPPORTEDPROTOCOL
+npm error Unsupported URL Type "workspace:": workspace:*
+npm error A complete log of this run can be found in: /Users/zbanks/.npm/_logs/2026-01-22T15_59_14_134Z-debug-0.log
+Error: npm install --save react-native-health exited with non-zero code: 1
+Error: npm install --save react-native-health exited with non-zero code: 1
+    at ChildProcess.completionListener (/Users/zbanks/Documents/MySuite/node_modules/@expo/spawn-async/build/spawnAsync.js:42:23)
+    at Object.onceWrapper (node:events:623:26)
+    at ChildProcess.emit (node:events:508:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:305:5)
+    ...
+    at spawnAsync (/Users/zbanks/Documents/MySuite/node_modules/@expo/spawn-async/build/spawnAsync.js:7:23)
+    at NpmPackageManager.runAsync (/Users/zbanks/Documents/MySuite/node_modules/@expo/package-manager/build/node/BasePackageManager.js:41:42)
+    at /Users/zbanks/Documents/MySuite/node_modules/@expo/package-manager/build/node/NpmPackageManager.js:37:20
+    at /Users/zbanks/Documents/MySuite/node_modules/@expo/package-manager/build/utils/spawn.js:14:34
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
