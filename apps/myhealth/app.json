@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "myhealth",
+    "name": "MyHealth",
     "slug": "myhealth",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,9 +10,15 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.myhealth"
+      "bundleIdentifier": "com.mysuite.myhealth",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.mysuite.myhealth",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -45,8 +51,8 @@
         "react-native-health",
         {
           "ios": {
-            "NSHealthShareUsageDescription": "Read and understand health data.",
-            "NSHealthUpdateUsageDescription": "Share workout data with other apps."
+            "NSHealthShareUsageDescription": "MyHealth uses your health data to track your workouts and body metrics history.",
+            "NSHealthUpdateUsageDescription": "MyHealth saves your completed workouts and body weight data to the Health app."
           }
         }
       ]
