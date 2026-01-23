@@ -14,6 +14,9 @@
       "buildNumber": "1",
       "config": {
         "usesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true
       }
     },
     "android": {
@@ -51,8 +54,8 @@
         "react-native-health",
         {
           "ios": {
-            "NSHealthShareUsageDescription": "MyHealth uses your health data to track your workouts and body metrics history.",
-            "NSHealthUpdateUsageDescription": "MyHealth saves your completed workouts and body weight data to the Health app."
+            "NSHealthShareUsageDescription": "Read your workout and body weight data to sync with MyHealth.",
+            "NSHealthUpdateUsageDescription": "Save your workouts and body weight data to Apple Health."
           }
         }
       ]
