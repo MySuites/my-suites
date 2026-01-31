@@ -84,7 +84,7 @@ export const DataRepository = {
     getPendingHistoryLogs: async (): Promise<LocalWorkoutLog[]> => {
         const db = await getDb();
         // Fetch ALL pending logs (including deleted ones)
-        const logs = await db.getAllAsync<any>('SELECT * FROM workout_logs WHERE sync_status = "pending" ORDER BY workout_time DESC');
+        const logs = await db.getAllAsync<any>('SELECT * FROM workout_logs WHERE sync_status = "pending" ORDER BY workout_date DESC');
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
         
         // Helper to map DB row to object (duplicate of getHistory logic essentially, 
@@ -123,8 +123,8 @@ export const DataRepository = {
              return {
                  id: log.id,
                  userId: log.user_id,
-                 date: log.workout_time,
-                 workoutTime: log.workout_time,
+                 date: log.workout_date,
+                 workoutDate: log.workout_date,
                  name: log.workout_name,
                  duration: log.duration,
                  note: log.note,
@@ -155,7 +155,7 @@ export const DataRepository = {
 
     getHistory: async (): Promise<LocalWorkoutLog[]> => {
         const db = await getDb();
-        const logs = await db.getAllAsync<any>('SELECT * FROM workout_logs WHERE deleted_at IS NULL ORDER BY workout_time DESC');
+        const logs = await db.getAllAsync<any>('SELECT * FROM workout_logs WHERE deleted_at IS NULL ORDER BY workout_date DESC');
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
         
         return logs.map(log => {
@@ -195,8 +195,8 @@ export const DataRepository = {
                 id: log.id,
                 workoutId: undefined, // Template link not preserved in flat log table usually, but could add column if needed. schema has it? Schema in database.ts didn't have workout_id.
                 userId: log.user_id,
-                date: log.workout_time,
-                workoutTime: log.workout_time,
+                date: log.workout_date,
+                workoutDate: log.workout_date,
                 name: log.workout_name,
                 duration: log.duration,
                 note: log.note,
@@ -215,12 +215,12 @@ export const DataRepository = {
              for (const l of logs) {
                  // 1. Save Log Header
                  await db.runAsync(`
-                    INSERT OR REPLACE INTO workout_logs (id, user_id, workout_time, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status)
+                    INSERT OR REPLACE INTO workout_logs (id, user_id, workout_date, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                  `, [
                      l.id,
                      l.userId || null,
-                     l.date || l.workoutTime || null,
+                     l.date || l.workoutDate || null,
                      l.name || null,
                      l.duration || null,
                      l.note || null,
@@ -277,7 +277,7 @@ export const DataRepository = {
         await db.withTransactionAsync(async () => {
             // 1. Save Header
             await db.runAsync(`
-                INSERT OR REPLACE INTO workout_logs (id, user_id, workout_time, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status)
+                INSERT OR REPLACE INTO workout_logs (id, user_id, workout_date, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 'pending')
             `, [
                 id,

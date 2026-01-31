@@ -56,8 +56,8 @@ describe('Workout History Integration', () => {
     const mockFetchWorkoutLogDetails = jest.fn();
     
     const mockHistory = [
-        { id: 'log1', workoutName: 'Leg Day', workoutTime: new Date().toISOString(), notes: 'Hard session' },
-        { id: 'log2', workoutName: 'Push Day', workoutTime: new Date().toISOString() }
+        { id: 'log1', workoutName: 'Leg Day', workoutDate: new Date().toISOString(), notes: 'Hard session' },
+        { id: 'log2', workoutName: 'Push Day', workoutDate: new Date().toISOString() }
     ];
 
     const mockDetails = [

@@ -28,7 +28,7 @@ export type WorkoutLog = {
     id: string; // workout_log_id
     workoutId?: string;
     userId: string;
-    workoutTime: string;
+    workoutDate: string;
     notes?: string;
     workoutName?: string; // joined from workouts table
     createdAt: string;
@@ -51,7 +51,7 @@ export interface LocalWorkoutLog extends Syncable {
     // Added for Schema Parity
     userId: string;
     createdAt: string;
-    workoutTime?: string;
+    workoutDate?: string;
     workoutId?: string;
 }
 

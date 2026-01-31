@@ -185,7 +185,7 @@ export function useSyncService() {
                         log.duration,
                         log.workoutId,
                         log.note,
-                        log.date || log.workoutTime,
+                        log.date || log.workoutDate,
                     );
                     if (!error) {
                         log.syncStatus = "synced";

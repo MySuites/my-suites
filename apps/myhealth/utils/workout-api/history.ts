@@ -32,7 +32,7 @@ export async function persistCompletedWorkoutToSupabase(
     duration: number,
     workoutId?: string,
     note?: string,
-    workoutTime?: string, // Added param
+    workoutDate?: string, // Added param
 ) {
     if (!user) return { error: "User not logged in" };
 
@@ -65,7 +65,7 @@ export async function persistCompletedWorkoutToSupabase(
         .insert([{
             user_id: user.id,
             // workout_id is removed
-            workout_time: workoutTime || new Date().toISOString(),
+            workout_time: workoutDate || new Date().toISOString(),
             exercises: JSON.stringify(notesObj),
             workout_name: name,
             duration: duration,

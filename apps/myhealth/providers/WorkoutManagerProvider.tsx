@@ -87,13 +87,13 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                 const mappedHistory: WorkoutLog[] = storedHistory.map(h => ({
                     id: h.id,
                     userId: user?.id || 'guest',
-                    workoutTime: h.date, // LocalWorkoutLog uses 'date', API 'workoutTime'
+                    workoutDate: h.date, // LocalWorkoutLog uses 'date', API 'workoutDate'
                     workoutName: h.name,
                     createdAt: h.date, // Approximate
                     notes: h.note
                 }));
                 // Sort by date desc
-                mappedHistory.sort((a, b) => new Date(b.workoutTime).getTime() - new Date(a.workoutTime).getTime());
+                mappedHistory.sort((a, b) => new Date(b.workoutDate).getTime() - new Date(a.workoutDate).getTime());
                 setWorkoutHistory(mappedHistory);
 
                 // Load Routines
@@ -204,12 +204,12 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
              const mappedHistory = storedHistory.map(h => ({
                     id: h.id,
                     userId: user?.id || 'guest',
-                    workoutTime: h.date, // LocalWorkoutLog uses 'date', API 'workoutTime'
+                    workoutDate: h.date, // LocalWorkoutLog uses 'date', API 'workoutDate'
                     workoutName: h.name,
                     createdAt: h.date, // Approximate
                     notes: h.note
              }));
-             mappedHistory.sort((a: any, b: any) => new Date(b.workoutTime).getTime() - new Date(a.workoutTime).getTime());
+             mappedHistory.sort((a: any, b: any) => new Date(b.workoutDate).getTime() - new Date(a.workoutDate).getTime());
              setWorkoutHistory(mappedHistory);
 
              if (routineId && activeRoutine?.id === routineId) {

@@ -30,7 +30,7 @@ export const initDatabase = async () => {
         CREATE TABLE IF NOT EXISTS workout_logs (
             id TEXT PRIMARY KEY,
             user_id TEXT,
-            workout_time TEXT, -- date alias
+            workout_date TEXT, -- date alias
             workout_name TEXT,
             duration INTEGER,
             note TEXT,
@@ -111,7 +111,24 @@ export const initDatabase = async () => {
         }
     };
 
+    const safeRenameColumn = async (
+        table: string,
+        oldName: string,
+        newName: string,
+    ) => {
+        try {
+            // Check if old column exists and new one doesn't (SQLite doesn't support IF EXISTS in ALTER RENAME directly usually, but standard execAsync fail is fine)
+            // Simpler: Just try rename. If it fails, it's likely already renamed or old doesn't exist.
+            await database.execAsync(
+                `ALTER TABLE ${table} RENAME COLUMN ${oldName} TO ${newName}`,
+            );
+        } catch (e) {
+            // Ignore
+        }
+    };
+
     await safeAddColumn("workout_logs", "deleted_at", "INTEGER");
+    await safeRenameColumn("workout_logs", "workout_time", "workout_date");
 
     console.log("Database initialized successfully");
 };
