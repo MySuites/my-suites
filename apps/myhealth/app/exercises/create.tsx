@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, View, Text, ActivityIndicator } from 'react-native';
+import { TextInput, Alert, KeyboardAvoidingView, Platform, View, Text, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { SelectionModal } from '../../components/ui/SelectionModal';
@@ -98,7 +98,7 @@ export default function CreateExerciseScreen() {
             <RaisedCard 
                 onPress={handleCreate} 
                 disabled={isSubmitting} 
-                className="w-10 h-10 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter items-center justify-center" 
+                className="w-12 h-12 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter items-center justify-center" 
                 style={{ borderRadius: 9999 }}
             >
                 {isSubmitting ? (
@@ -127,43 +127,49 @@ export default function CreateExerciseScreen() {
 
         <View className="mb-6">
             <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Properties</Text>
-            <TouchableOpacity 
+            <RaisedCard 
                 onPress={() => setShowTypeModal(true)}
-                className="bg-light-lighter dark:bg-dark-lighter p-4 rounded-xl border border-transparent dark:border-highlight-dark flex-row justify-between items-center"
+                className="p-4 rounded-xl bg-light-lighter dark:bg-dark-lighter"
             >
-                <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark">
-                    {properties.length > 0 
-                        ? properties.map(p => p.label).join(', ') 
-                        : 'Select Properties'}
-                </Text>
-                <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
-            </TouchableOpacity>
+                <View className="flex-row items-center justify-between">
+                    <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">
+                        {properties.length > 0 
+                            ? properties.map(p => p.label).join(', ') 
+                            : 'Select Properties'}
+                    </Text>
+                    <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
+                </View>
+            </RaisedCard>
         </View>
 
         <View className="mb-6">
             <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Primary Muscle Group</Text>
-            <TouchableOpacity 
+            <RaisedCard 
                 onPress={() => setShowPrimaryModal(true)}
-                className="bg-light-lighter dark:bg-dark-lighter p-4 rounded-xl border border-transparent dark:border-highlight-dark flex-row justify-between items-center"
+                className="p-4 rounded-xl bg-light-lighter dark:bg-dark-lighter"
             >
-                <Text className="text-base leading-6 text-light dark:text-dark">{primaryMuscle ? primaryMuscle.name : 'Select Primary Muscle'}</Text>
-                <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
-            </TouchableOpacity>
+                <View className="flex-row items-center justify-between">
+                    <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">{primaryMuscle ? primaryMuscle.name : 'Select Primary Muscle'}</Text>
+                    <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
+                </View>
+            </RaisedCard>
         </View>
 
         <View className="mb-6">
             <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Secondary Muscle Groups</Text>
-            <TouchableOpacity 
+            <RaisedCard 
                 onPress={() => setShowSecondaryModal(true)}
-                className="bg-light-lighter dark:bg-dark-lighter p-4 rounded-xl border border-transparent dark:border-highlight-dark flex-row justify-between items-center"
+                className="p-4 rounded-xl bg-light-lighter dark:bg-dark-lighter"
             >
-                <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark">
-                    {secondaryMuscles.length > 0 
-                        ? secondaryMuscles.map(m => m.name).join(', ') 
-                        : 'Select Secondary Muscles (Optional)'}
-                </Text>
-                <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
-            </TouchableOpacity>
+                <View className="flex-row items-center justify-between">
+                    <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">
+                        {secondaryMuscles.length > 0 
+                            ? secondaryMuscles.map(m => m.name).join(', ') 
+                            : 'Select Secondary Muscles (Optional)'}
+                    </Text>
+                    <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
+                </View>
+            </RaisedCard>
         </View>
 
       </KeyboardAvoidingView>
