@@ -25,6 +25,25 @@ export const HealthKitService = {
         }
     },
     /**
+     * Check if HealthKit is authorized for body mass.
+     */
+    isAuthorized: async (): Promise<boolean> => {
+        try {
+            const status = await HealthKit.authorizationStatusFor(
+                "HKQuantityTypeIdentifierBodyMass",
+            );
+            // 2 is sharingAuthorized
+            return status === 2;
+        } catch (error) {
+            console.error(
+                "[HealthKitService] Error checking authorization:",
+                error,
+            );
+            return false;
+        }
+    },
+
+    /**
      * Fetch body mass samples from HealthKit.
      * @param startDate The start date for the query (default: 1 year ago)
      * @returns Array of { date: string, value: number } in lbs

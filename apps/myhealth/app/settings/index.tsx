@@ -236,12 +236,24 @@ export default function SettingsScreen() {
     );
   };
 
+  const [isHealthConnected, setIsHealthConnected] = useState(false);
+
+  useEffect(() => {
+    checkHealthStatus();
+  }, []);
+
+  const checkHealthStatus = async () => {
+    const isAuth = await HealthKitService.isAuthorized();
+    setIsHealthConnected(isAuth);
+  };
+
   const handleConnectHealth = async () => {
     try {
       setIsLoading(true);
       await HealthKitService.initHealthKit();
       await BodyWeightService.syncWithHealthKit(user?.id || null);
       showToast({ message: "HealthKit synced successfully", type: 'success' });
+      await checkHealthStatus();
       await fetchLatestWeight();
       await fetchAllWeightHistory();
     } catch (error) {
@@ -251,7 +263,6 @@ export default function SettingsScreen() {
       setIsLoading(false);
     }
   };
-
 
 
   return (
@@ -312,11 +323,16 @@ export default function SettingsScreen() {
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Apple Health</Text>
             <RaisedCard 
-              onPress={handleConnectHealth}
-              className="px-4 h-10 rounded-full items-center justify-center bg-gray-200 dark:bg-gray-800"
+              onPress={isHealthConnected ? () => handleConnectHealth() : handleConnectHealth}
+              disabled={isLoading}
+              className={`px-4 h-10 rounded-full items-center justify-center ${
+                  isHealthConnected ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-200 dark:bg-gray-800'
+              }`}
               style={{ borderRadius: 9999 }}
             >
-              <Text className="text-sm font-medium text-primary">Connect</Text>
+              <Text className={`text-sm font-medium ${isHealthConnected ? 'text-green-600 dark:text-green-400' : 'text-primary'}`}>
+                {isHealthConnected ? "Connected" : "Connect"}
+              </Text>
             </RaisedCard>
           </View>
         </View>
