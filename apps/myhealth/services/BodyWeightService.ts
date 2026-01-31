@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DataRepository } from "../providers/DataRepository";
+import { HealthKitService } from "./HealthKitService";
 
 const LEGACY_LOCAL_STORAGE_KEY = "myhealth_guest_body_weight";
 
@@ -89,5 +90,25 @@ export const BodyWeightService = {
             weight: weight,
             date: dateStr,
         });
+    },
+
+    /**
+     * Syncs body weight data from HealthKit to the app.
+     */
+    async syncWithHealthKit(userId: string | null): Promise<void> {
+        console.log("Syncing with HealthKit...");
+        const samples = await HealthKitService.fetchBodyMass();
+        if (samples.length === 0) {
+            console.log("No HealthKit samples found.");
+            return;
+        }
+
+        console.log(`Found ${samples.length} HealthKit samples. Saving...`);
+        for (const sample of samples) {
+            // Check if we already have this date? DataRepository might handle duplicates or updates.
+            // For now, naive save.
+            await this.saveWeight(userId, sample.value, new Date(sample.date));
+        }
+        console.log("HealthKit sync complete.");
     },
 };

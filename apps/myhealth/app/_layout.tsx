@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { AuthProvider } from '@mysuite/auth';
+import { AuthProvider, useAuth } from '@mysuite/auth';
 import { AppThemeProvider } from '../providers/AppThemeProvider';
 import { NavigationSettingsProvider } from '../providers/NavigationSettingsProvider';
 import { useColorScheme } from '../hooks/ui/use-color-scheme';
@@ -15,6 +15,7 @@ import { ActiveWorkoutProvider } from '../providers/ActiveWorkoutProvider'; // F
 import { WorkoutManagerProvider } from '../providers/WorkoutManagerProvider';
 import { FloatingButtonProvider } from '../providers/FloatingButtonContext';
 import { ToastProvider } from '@mysuite/ui';
+import { BodyWeightService } from '../services/BodyWeightService';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -53,6 +54,16 @@ function RootLayoutNav() {
 // Separate component to consume the theme context
 function RootLayoutContent() {
   const colorScheme = useColorScheme(); // correct hook usage inside provider
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      // Auto-sync HealthKit data when app opens and user is logged in
+      BodyWeightService.syncWithHealthKit(user.id).catch(err => 
+        console.error("Auto-sync failed:", err)
+      );
+    }
+  }, [user]);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
