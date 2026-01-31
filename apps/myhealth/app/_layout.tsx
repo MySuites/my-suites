@@ -15,6 +15,7 @@ import { ActiveWorkoutProvider } from '../providers/ActiveWorkoutProvider'; // F
 import { WorkoutManagerProvider } from '../providers/WorkoutManagerProvider';
 import { FloatingButtonProvider } from '../providers/FloatingButtonContext';
 import { ToastProvider } from '@mysuite/ui';
+import { DataRepository } from '../providers/DataRepository';
 import { BodyWeightService } from '../services/BodyWeightService';
 
 SplashScreen.preventAutoHideAsync();
@@ -85,7 +86,12 @@ export default function RootLayout() {
   const loaded = true;
   useEffect(() => {
     if (loaded) {
-      initDatabase().then(() => {
+      initDatabase().then(async () => {
+        try {
+           await DataRepository.seedDefaultExercises();
+        } catch (err) {
+           console.error("Seeding failed", err);
+        }
         SplashScreen.hideAsync();
       }).catch(e => {
         console.error("DB Init Failed", e);

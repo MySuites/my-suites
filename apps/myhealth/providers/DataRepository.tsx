@@ -362,6 +362,28 @@ export const DataRepository = {
         return ExerciseDefaultData;
     },
 
+    seedDefaultExercises: async (): Promise<void> => {
+        const db = await getDb();
+        console.log(`Seeding ${ExerciseDefaultData.length} default exercises (overwrite mode)...`);
+        
+        await db.withTransactionAsync(async () => {
+            for (const ex of ExerciseDefaultData) {
+                 await db.runAsync(`
+                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, created_at, updated_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, 'synced')
+                 `, [
+                    ex.id, 
+                    ex.name,
+                    JSON.stringify([ex.muscle_group]), 
+                    ex.type,
+                    new Date().toISOString(),
+                    Date.now()
+                 ]);
+            }
+        });
+        console.log("Seeding complete.");
+    },
+
     // --- Body Measurements ---
     getLatestBodyWeight: async (userId: string | null): Promise<number | null> => {
         const db = await getDb();
