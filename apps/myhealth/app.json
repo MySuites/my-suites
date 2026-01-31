@@ -51,12 +51,10 @@
       ],
       "expo-secure-store",
       [
-        "react-native-health",
+        "@kingstinct/react-native-healthkit",
         {
-          "ios": {
-            "NSHealthShareUsageDescription": "Read your workout and body weight data to sync with MyHealth.",
-            "NSHealthUpdateUsageDescription": "Save your workouts and body weight data to Apple Health."
-          }
+          "NSHealthShareUsageDescription": "Read your body weight data to sync with MyHealth.",
+          "NSHealthUpdateUsageDescription": "Save your body weight data to Apple Health."
         }
       ]
     ],

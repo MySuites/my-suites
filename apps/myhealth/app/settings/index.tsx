@@ -10,6 +10,7 @@ import { ProfileButton } from '../../components/ui/ProfileButton';
 import { BodyWeightCard } from '../../components/profile/BodyWeightCard';
 import { WeightLogModal } from '../../components/profile/WeightLogModal';
 import { BodyWeightService, BodyWeightEntry } from '../../services/BodyWeightService';
+import { HealthKitService } from '../../services/HealthKitService';
 
 type DateRange = 'W' | 'M' | '6M' | 'Y';
 
@@ -235,6 +236,22 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleConnectHealth = async () => {
+    try {
+      setIsLoading(true);
+      await HealthKitService.initHealthKit();
+      await BodyWeightService.syncWithHealthKit(user?.id || null);
+      showToast({ message: "HealthKit synced successfully", type: 'success' });
+      await fetchLatestWeight();
+      await fetchAllWeightHistory();
+    } catch (error) {
+      console.error("HealthKit init error:", error);
+      showToast({ message: "Failed to sync HealthKit", type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
 
   return (
@@ -286,6 +303,20 @@ export default function SettingsScreen() {
               style={{ borderRadius: 9999 }}
             >
               <IconSymbol name="chevron.right" size={20} color={theme.primary} />
+            </RaisedCard>
+          </View>
+        </View>
+
+        <View className="mb-6">
+          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Integrations</Text>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+            <Text className="text-base text-light dark:text-dark">Apple Health</Text>
+            <RaisedCard 
+              onPress={handleConnectHealth}
+              className="px-4 h-10 rounded-full items-center justify-center bg-gray-200 dark:bg-gray-800"
+              style={{ borderRadius: 9999 }}
+            >
+              <Text className="text-sm font-medium text-primary">Connect</Text>
             </RaisedCard>
           </View>
         </View>
