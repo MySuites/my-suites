@@ -38,6 +38,7 @@ interface WorkoutManagerContextType {
     updateRoutine: (id: string, name: string, sequence: any[], onSuccess: () => void, suppressAlert?: boolean) => Promise<void>;
     deleteRoutine: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => void;
     createCustomExercise: (name: string, type: string, primary?: string, secondary?: string[]) => Promise<{ data?: any, error?: any }>;
+    deleteCustomExercise: (id: string) => Promise<void>;
     workoutHistory: WorkoutLog[];
     fetchWorkoutLogDetails: (logId: string) => Promise<{ data: any[], error: any }>;
     saveCompletedWorkout: (name: string, exercises: Exercise[], duration: number, onSuccess?: () => void, note?: string, routineId?: string) => Promise<void>;
@@ -335,7 +336,65 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                 ]);
             }
         },
-        createCustomExercise: async (name: string, type: string) => ({}),
+        createCustomExercise: async (name: string, type: string, primary?: string, secondary?: string[]) => {
+             const id = uuid.v4() as string;
+             const newExercise = {
+                 id,
+                 name,
+                 properties: type,
+                 muscle_groups: JSON.stringify([
+                     primary ? { id: primary, name: 'Primary' } : null,
+                     ...(secondary || []).map(s => ({ id: s, name: 'Secondary' }))
+                 ].filter(Boolean)), // Simplified muscle group structure matching what DB expects roughly?
+                 // Actually DB expects JSON string. 
+                 // The app usually expects `muscle_groups` to be an array of objects.
+                 // let's match the structure in `default-exercises.json` roughly or what `getExercises` expects.
+                 // `getExercises` parses it.
+             };
+             
+             // We need to match the "flat" object expected by saveExercises loop or pass prepared object
+             // DataRepository.saveExercises takes an array of objects and maps them.
+             // It expects: id, name, muscle_groups (array or string?), properties.
+             // And it stringifies muscle_groups. So we should pass the ARRAY.
+             
+             const exerciseForRepo = {
+                 id,
+                 name,
+                 properties: type,
+                 muscle_groups: [primary, ...(secondary || [])].filter(Boolean), // Just IDs or objects?
+                 // The default data has `muscle_group` (singular string).
+                 // My `startDefaultExercises` mapped it to `[ex.muscle_group]`.
+                 // So repo expects array of strings or objects?
+                 // `DataRepository` L544: `JSON.stringify(ex.muscle_groups || ...)`
+                 // So we pass the array.
+             };
+
+             try {
+                await DataRepository.saveExercises([exerciseForRepo]);
+                // Refresh?
+                // `fetchExercises` is a standalone function re-exported.
+                // We might need to manually trigger a re-fetch in the screen or expose a "refresh" method.
+                // But `exercises/index.tsx` fetches on mount.
+                // If we go back, it re-mounts? Yes router.back() usually preserves state?
+                // Stack navigator... might not unmount.
+                // But `exercises/index.tsx` has `useEffect` on `user`.
+                // Ideally we update a local cache or trigger context update.
+                // For now, let's just save.
+                return { data: id };
+             } catch (e) {
+                 return { error: e };
+             }
+        },
+        deleteCustomExercise: async (id: string) => {
+             // Basic implementation, update signature/impl above if needed
+             try {
+                 await DataRepository.deleteExercise(id);
+                 showToast({ message: "Exercise deleted", type: 'success' });
+             } catch (e) {
+                 console.error(e);
+                 Alert.alert("Error", "Failed to delete exercise");
+             }
+        },
         lastSyncedAt,
         sync,
         isSyncing,

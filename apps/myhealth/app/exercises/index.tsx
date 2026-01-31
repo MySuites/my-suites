@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { FlatList, TouchableOpacity, View, TextInput, Text } from 'react-native'; 
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, useToast, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
@@ -21,25 +21,25 @@ export default function ExercisesScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const { showToast } = useToast();
 
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+      async function load() {
+          const { data, error } = await fetchExercises(user);
+          if (error) {
+            showToast({ message: "Failed to load exercises", type: 'error' });
+          } else if (data && isMounted) {
+            setExercises(data);
+          }
+          setIsLoading(false);
+      }
+      load();
 
-  useEffect(() => {
-    let isMounted = true; // For cleanup to prevent state updates on unmounted component
-    async function load() {
-        // if (!user) { ... } <- Removed to allow guest loading
-        const { data, error } = await fetchExercises(user);
-        if (error) {
-          showToast({ message: "Failed to load exercises", type: 'error' });
-        } else if (data && isMounted) {
-          setExercises(data);
-        }
-        setIsLoading(false);
-    }
-    load();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [user, showToast]);
+      return () => {
+        isMounted = false;
+      };
+    }, [user, showToast])
+  );
 
   return (
     <View className="flex-1 bg-light dark:bg-dark">

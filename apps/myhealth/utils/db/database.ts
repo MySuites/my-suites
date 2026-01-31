@@ -128,6 +128,7 @@ export const initDatabase = async () => {
     };
 
     await safeAddColumn("workout_logs", "deleted_at", "INTEGER");
+    await safeAddColumn("exercises", "deleted_at", "INTEGER");
     await safeRenameColumn("workout_logs", "workout_time", "workout_date");
 
     console.log("Database initialized successfully");

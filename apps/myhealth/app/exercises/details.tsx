@@ -1,19 +1,22 @@
 import React, { useMemo } from 'react';
-import { View, ScrollView, Pressable, Text } from 'react-native';
+import { View, ScrollView, Pressable, Text, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useUITheme } from '@mysuite/ui';
+import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
 import { useExerciseStats } from '../../hooks/workouts/useExerciseStats';
 import { ExerciseChart } from '../../components/exercises/ExerciseChart';
 import { ExerciseProperties } from '../../components/exercises/ExerciseProperties';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
+import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
+import DefaultExercises from '../../assets/data/default-exercises.json';
 
 export default function ExerciseDetailsScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
     const theme = useUITheme();
     const { user } = useAuth();
+    const { deleteCustomExercise } = useWorkoutManager();
     
     const exercise = useMemo(() => {
         try {
@@ -25,6 +28,29 @@ export default function ExerciseDetailsScreen() {
             return null;
         }
     }, [params.exercise]);
+
+    const isDefault = useMemo(() => {
+        if (!exercise) return true;
+        return DefaultExercises.some(d => d.id === exercise.id);
+    }, [exercise]);
+
+    const handleDelete = () => {
+        Alert.alert(
+            "Delete Exercise",
+            "Are you sure you want to delete this custom exercise?",
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "Delete", 
+                    style: "destructive", 
+                    onPress: async () => {
+                        await deleteCustomExercise(exercise.id);
+                        router.back();
+                    }
+                }
+            ]
+        );
+    };
 
     const {
         chartData,
@@ -62,7 +88,23 @@ export default function ExerciseDetailsScreen() {
     return (
         <View style={{ flex: 1, backgroundColor: currentColors.background }}>
              {/* Header */}
-             <ScreenHeader title={exercise.name || 'Details'} leftAction={<BackButton />} />
+             <ScreenHeader 
+                title={exercise.name || 'Details'} 
+                leftAction={<BackButton />} 
+                rightAction={!isDefault ? (
+                    <RaisedCard 
+                        onPress={handleDelete}
+                        style={{ borderRadius: 9999 }}
+                        className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center bg-light dark:bg-dark-lighter"
+                    >
+                        <IconSymbol 
+                            name="trash.fill" 
+                            size={24} 
+                            color={theme.destructive || '#FF3B30'} 
+                        />
+                    </RaisedCard>
+                ) : undefined}
+             />
 
             <ScrollView style={{ flex: 1, padding: 16, paddingTop: 124 }}>
                 <View style={{ marginBottom: 24 }}>

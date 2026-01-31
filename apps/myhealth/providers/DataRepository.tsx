@@ -510,12 +510,21 @@ export const DataRepository = {
     // --- Exercises (Library) ---
     getExercises: async (): Promise<any[]> => {
         const db = await getDb();
-        const result = await db.getAllAsync<any>('SELECT * FROM exercises ORDER BY name ASC');
+        const result = await db.getAllAsync<any>('SELECT * FROM exercises WHERE deleted_at IS NULL ORDER BY name ASC');
         return result.map(e => ({
             ...e,
             muscle_groups: e.muscle_groups ? JSON.parse(e.muscle_groups) : [],
-            properties: e.properties ? e.properties.split(',') : [] // Store as comma-sep string in DB for simplicity or JSON? Let's assume text for properties based on schema, but split on read.
+            properties: e.properties ? e.properties.split(',') : []
         }));
+    },
+
+    deleteExercise: async (id: string): Promise<void> => {
+        const db = await getDb();
+        await db.runAsync(`
+            UPDATE exercises
+            SET deleted_at = ?, sync_status = 'pending', updated_at = ?
+            WHERE id = ?
+        `, [Date.now(), Date.now(), id]);
     },
 
     saveExercises: async (exercises: any[]): Promise<void> => {
