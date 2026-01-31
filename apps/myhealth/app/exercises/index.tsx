@@ -1,18 +1,17 @@
 import React, { useState, useCallback } from 'react';
-import { FlatList, TouchableOpacity, View, TextInput, Text } from 'react-native'; 
+import { SectionList, TouchableOpacity, View, TextInput, Text } from 'react-native'; 
 import { useRouter, useFocusEffect } from 'expo-router';
 
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, useToast, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
 import { fetchExercises } from '../../providers/WorkoutManagerProvider';
-
+import DefaultExercises from '../../assets/data/default-exercises.json';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 
 export default function ExercisesScreen() {
   const router = useRouter();
-  // const { mode } = useLocalSearchParams();
   const theme = useUITheme();
 
   const { user } = useAuth();
@@ -41,6 +40,25 @@ export default function ExercisesScreen() {
     }, [user, showToast])
   );
 
+  const sections = React.useMemo(() => {
+    const filtered = exercises.filter(ex => ex.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const custom = filtered.filter(ex => !DefaultExercises.some(d => d.id === ex.id));
+    const defaults = filtered.filter(ex => DefaultExercises.some(d => d.id === ex.id));
+    
+    const result = [];
+    if (custom.length > 0) {
+        result.push({ title: 'Custom Exercises', data: custom });
+    }
+    if (defaults.length > 0) {
+        result.push({ title: 'Default Exercises', data: defaults });
+    }
+    
+    // If searching and everything matches one, show it. 
+    // If no custom but searching, maybe show empty custom? No, standard behavior is hide section.
+    return result;
+  }, [exercises, searchQuery]);
+
   return (
     <View className="flex-1 bg-light dark:bg-dark">
       <ScreenHeader
@@ -50,7 +68,7 @@ export default function ExercisesScreen() {
             <RaisedCard 
                 onPress={() => router.push('/exercises/create')}
                 style={{ borderRadius: 9999 }}
-                className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center"
+                className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center bg-light dark:bg-dark-lighter"
             >
                 <IconSymbol 
                     name="square.and.pencil" 
@@ -62,7 +80,7 @@ export default function ExercisesScreen() {
       />
       
       <View className="mt-28 px-4 py-3">
-        <View className="flex-row items-center bg-light dark:bg-dark rounded-full px-4 h-10 border border-light-darker dark:border-highlight-dark">
+        <View className="flex-row items-center bg-light dark:bg-dark-lighter rounded-full px-4 h-10 border border-light-darker dark:border-highlight-dark">
             <IconSymbol name="magnifyingglass" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
              <TextInput
                 className="flex-1 ml-2 text-base h-full text-light dark:text-dark"
@@ -82,7 +100,7 @@ export default function ExercisesScreen() {
       
       {isLoading ? (
         <View className="flex-1 px-4 mt-4">
-             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+             {[1, 2, 3, 4, 5, 6].map((i) => (
                 <View key={i} className="flex-row items-center justify-between py-4 border-b border-light-darker/10 dark:border-highlight-dark/10">
                     <View className="flex-1">
                         <Skeleton height={20} width="60%" className="mb-2" />
@@ -92,12 +110,17 @@ export default function ExercisesScreen() {
              ))}
         </View>
       ) : (
-      <FlatList
-        data={exercises.filter(ex => ex.name.toLowerCase().includes(searchQuery.toLowerCase()))}
+      <SectionList
+        sections={sections}
         keyExtractor={(item) => item.id}
+        renderSectionHeader={({ section: { title } }) => (
+            <View className="px-4 py-2 bg-light dark:bg-dark">
+                <Text className="text-sm font-bold text-gray-500 uppercase tracking-widest">{title}</Text>
+            </View>
+        )}
         renderItem={({ item }) => (
           <TouchableOpacity 
-            className="flex-row items-center justify-between p-4"
+            className="flex-row items-center justify-between p-4 bg-light dark:bg-dark"
             onPress={() => {
                 router.push({
                     pathname: '/exercises/details',
@@ -111,11 +134,11 @@ export default function ExercisesScreen() {
                     {item.category} • {item.properties?.join(', ') || item.rawType}
                 </Text> 
             </View>
-
           </TouchableOpacity>
         )}
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 120 }}
+        stickySectionHeadersEnabled={false}
         ListEmptyComponent={
             <View className="px-4 py-8">
                 <HollowedCard className="p-8">
