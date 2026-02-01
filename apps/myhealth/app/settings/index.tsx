@@ -270,7 +270,6 @@ export default function SettingsScreen() {
       <ScreenHeader 
         title="Settings" 
         leftAction={<BackButton />} 
-        rightAction={<ProfileButton />}
       />
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 140 }}>
