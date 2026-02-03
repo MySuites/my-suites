@@ -89,6 +89,7 @@ export default function Workout() {
     }
 
     function handleEditSavedWorkout(workout: SavedWorkout) {
+        console.log("handleEditSavedWorkout called with:", workout);
         router.push({ pathname: '/workouts/editor', params: { id: workout.id } });
     }
 

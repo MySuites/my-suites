@@ -77,6 +77,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
             try {
                 // Load Workouts
                 const storedWorkouts = await DataRepository.getWorkouts();
+                console.log("Loaded Workouts:", JSON.stringify(storedWorkouts, null, 2));
                 setSavedWorkouts(storedWorkouts);
 
                 // Load History (Mapped to old WorkoutLog type for UI compatibility if needed, but UI likely needs refactor or flexible type)
@@ -129,7 +130,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         }
 
         const newWorkout = {
-            id: undefined, // Let repo generate ID for new
+            id: uuid.v4() as string, // Generate ID explicitly
             name: workoutName.trim(),
             exercises,
             createdAt: new Date().toISOString()

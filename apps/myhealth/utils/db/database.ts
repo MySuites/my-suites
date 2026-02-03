@@ -131,5 +131,21 @@ export const initDatabase = async () => {
     await safeAddColumn("exercises", "deleted_at", "INTEGER");
     await safeRenameColumn("workout_logs", "workout_time", "workout_date");
 
+    await safeRenameColumn("workout_logs", "workout_time", "workout_date");
+
+    // Cleanup ghost data (null IDs) caused by previous bug
+    try {
+        await database.execAsync(`
+            DELETE FROM workouts WHERE id IS NULL OR id = 'null';
+            DELETE FROM workout_logs WHERE id IS NULL OR id = 'null';
+            DELETE FROM set_logs WHERE id IS NULL OR id = 'null';
+            DELETE FROM body_measurements WHERE id IS NULL OR id = 'null';
+            DELETE FROM routines WHERE id IS NULL OR id = 'null';
+        `);
+        console.log("Cleanup of ghost data complete");
+    } catch (e) {
+        console.error("Failed to cleanup ghost data", e);
+    }
+
     console.log("Database initialized successfully");
 };

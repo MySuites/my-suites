@@ -32,6 +32,7 @@ export default function CreateWorkoutScreen() {
     } = useWorkoutManager();
 
     const editingWorkoutId = typeof id === 'string' ? id : null;
+    console.log("CreateWorkoutScreen params:", { id, editingWorkoutId });
     const [workoutDraftName, setWorkoutDraftName] = useState("");
     
     const {
