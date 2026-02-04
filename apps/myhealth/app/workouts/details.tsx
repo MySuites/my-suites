@@ -8,6 +8,7 @@ import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { useWorkoutDraft } from '../../hooks/workouts/useWorkoutDraft';
 import { ExerciseSelector } from '../../components/workouts/ExerciseSelector';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
+
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 
@@ -32,6 +33,7 @@ export default function CreateWorkoutScreen() {
     } = useWorkoutManager();
 
     const editingWorkoutId = typeof id === 'string' ? id : null;
+    const [isEditing, setIsEditing] = useState(!editingWorkoutId);
     console.log("CreateWorkoutScreen params:", { id, editingWorkoutId });
     const [workoutDraftName, setWorkoutDraftName] = useState("");
     
@@ -64,6 +66,7 @@ export default function CreateWorkoutScreen() {
                 setWorkoutDraftExercises(workout.exercises ? JSON.parse(JSON.stringify(workout.exercises)) : []);
                 setHasInitialized(true);
                 setIsLoading(false);
+                setIsEditing(false);
             } else if (savedWorkouts.length > 0 && !hasInitialized) {
                 // If we've loaded workouts but ours isn't there and we haven't initialized yet,
                 // then it's actually missing. If we HAVE initialized, it was probably just deleted.
@@ -73,6 +76,7 @@ export default function CreateWorkoutScreen() {
             }
         } else {
             setIsLoading(false);
+            setIsEditing(true);
         }
     }, [editingWorkoutId, savedWorkouts, router, setWorkoutDraftExercises, hasInitialized]);
 
@@ -85,7 +89,11 @@ export default function CreateWorkoutScreen() {
         setIsSaving(true);
         const onSuccess = () => {
              setIsSaving(false);
-             router.back();
+             if (editingWorkoutId) {
+                 setIsEditing(false);
+             } else {
+                 router.back();
+             }
         };
 
         if (editingWorkoutId) {
@@ -131,42 +139,60 @@ export default function CreateWorkoutScreen() {
         <View className="flex-1 bg-light dark:bg-dark">
             <Stack.Screen options={{ headerShown: false }} />
             <ScreenHeader
-                title={editingWorkoutId ? 'Edit Workout' : 'Create Workout'}
+                title={editingWorkoutId ? (isEditing ? 'Edit Workout' : 'Workout Details') : 'Create Workout'}
                 leftAction={<BackButton />}
                 rightAction={
-                    <RaisedCard 
-                        onPress={handleSaveWorkoutDraft} 
-                        disabled={isSaving} 
-                        className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
-                        style={{ borderRadius: 9999 }}
-                    >
-                        {isSaving ? (
-                            <ActivityIndicator size="small" color={theme.primary} />
-                        ) : (
-                            <IconSymbol name="checkmark" size={24} color={theme.primary} />
-                        )}
-                    </RaisedCard>
+                    isEditing ? (
+                        <RaisedCard 
+                            onPress={handleSaveWorkoutDraft} 
+                            disabled={isSaving} 
+                            className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
+                            style={{ borderRadius: 9999 }}
+                        >
+                            {isSaving ? (
+                                <ActivityIndicator size="small" color={theme.primary} />
+                            ) : (
+                                <IconSymbol name="checkmark" size={24} color={theme.primary} />
+                            )}
+                        </RaisedCard>
+                    ) : (
+                        <RaisedCard 
+                            onPress={() => setIsEditing(true)} 
+                            className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
+                            style={{ borderRadius: 9999 }}
+                        >
+                            <IconSymbol name="pencil" size={20} color={theme.icon || '#888'} />
+                        </RaisedCard>
+                    )
                 }
             />
 
             <View className="mt-28 flex-1 p-4">
-                <TextInput 
-                    placeholder="Workout Name" 
-                    value={workoutDraftName} 
-                    onChangeText={setWorkoutDraftName} 
-                    className="bg-light-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-base border border-transparent dark:border-highlight-dark mb-6"
-                    placeholderTextColor={theme.textMuted || '#888'}
-                />
+                {isEditing ? (
+                    <TextInput 
+                        placeholder="Workout Name" 
+                        value={workoutDraftName} 
+                        onChangeText={setWorkoutDraftName} 
+                        className="bg-light-lighter dark:bg-dark-lighter text-light dark:text-dark h-16 p-4 rounded-xl text-base border border-transparent dark:border-highlight-dark mb-6"
+                        placeholderTextColor={theme.textMuted || '#888'}
+                    />
+                ) : (
+                    <Text className="text-2xl font-bold text-light dark:text-dark mb-6 px-1">
+                        {workoutDraftName}
+                    </Text>
+                )}
                 
                 <View className="flex-row justify-between items-center mb-2">
                     <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Exercises</Text>
-                    <RaisedCard 
-                        onPress={handleOpenAddExercise}
-                        className="h-10 px-4 rounded-full items-center justify-center"
-                        style={{ borderRadius: 9999 }}
-                    >
-                        <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>
-                    </RaisedCard>
+                    {isEditing && (
+                        <RaisedCard 
+                            onPress={handleOpenAddExercise}
+                            className="h-10 px-4 rounded-full items-center justify-center"
+                            style={{ borderRadius: 9999 }}
+                        >
+                            <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>
+                        </RaisedCard>
+                    )}
                 </View>
 
                 {workoutDraftExercises.length === 0 ? (
@@ -191,12 +217,13 @@ export default function CreateWorkoutScreen() {
                                 onAddSet={() => addSet(index)}
                                 onRemoveSet={(setIndex) => removeSet(index, setIndex)}
                                 latestBodyWeight={latestBodyWeight}
+                                isEditing={isEditing}
                             />
                         )}
                     />
                 )}
                 
-                {editingWorkoutId && (
+                {isEditing && editingWorkoutId && (
                     <TouchableOpacity 
                         onPress={() => {
                             Alert.alert('Delete Workout', 'Are you sure?', [
@@ -245,6 +272,7 @@ interface WorkoutDraftExerciseItemProps {
     onAddSet: () => void;
     onRemoveSet: (setIndex: number) => void;
     latestBodyWeight?: number | null;
+    isEditing: boolean;
 }
 
 const WorkoutDraftExerciseItem = ({
@@ -257,7 +285,8 @@ const WorkoutDraftExerciseItem = ({
     onUpdateSet,
     onAddSet,
     onRemoveSet,
-    latestBodyWeight
+    latestBodyWeight,
+    isEditing
 }: WorkoutDraftExerciseItemProps) => {
     const theme = useTheme();
     const currentTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || 0, weight: 0 }));
@@ -292,15 +321,19 @@ const WorkoutDraftExerciseItem = ({
                     </Text>
                 </View>
                 <View className="flex-row items-center">
-                    <TouchableOpacity onPress={(e) => { e.stopPropagation(); onMove(-1); }} className="p-2"> 
-                        <IconSymbol name="arrow.up" size={16} color={theme.icon || '#888'} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={(e) => { e.stopPropagation(); onMove(1); }} className="p-2"> 
-                        <IconSymbol name="arrow.down" size={16} color={theme.icon || '#888'} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={(e) => { e.stopPropagation(); onRemove(); }} className="p-2 ml-1"> 
-                        <IconSymbol name="trash.fill" size={18} color={theme.options?.destructiveColor || '#ff4444'} />
-                    </TouchableOpacity>
+                    {isEditing && (
+                        <>
+                            <TouchableOpacity onPress={(e) => { e.stopPropagation(); onMove(-1); }} className="p-2"> 
+                                <IconSymbol name="arrow.up" size={16} color={theme.icon || '#888'} />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={(e) => { e.stopPropagation(); onMove(1); }} className="p-2"> 
+                                <IconSymbol name="arrow.down" size={16} color={theme.icon || '#888'} />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={(e) => { e.stopPropagation(); onRemove(); }} className="p-2 ml-1"> 
+                                <IconSymbol name="trash.fill" size={18} color={theme.options?.destructiveColor || '#ff4444'} />
+                            </TouchableOpacity>
+                        </>
+                    )}
                 </View>
             </TouchableOpacity>
             
@@ -329,67 +362,91 @@ const WorkoutDraftExerciseItem = ({
 
                             {showWeight && (
                                 <View className="flex-1 flex-row justify-center">
-                                    <TextInput 
-                                        value={String(set.weight || 0)} 
-                                        keyboardType="numeric"
-                                        onChangeText={(v) => onUpdateSet(setIdx, 'weight', v)}
-                                        className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
-                                        selectTextOnFocus
-                                    />
+                                    {isEditing ? (
+                                        <TextInput 
+                                            value={String(set.weight || 0)} 
+                                            keyboardType="numeric"
+                                            onChangeText={(v) => onUpdateSet(setIdx, 'weight', v)}
+                                            className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
+                                            selectTextOnFocus
+                                            editable={isEditing}
+                                        />
+                                    ) : (
+                                        <Text className="text-light dark:text-dark font-medium">{set.weight || 0}</Text>
+                                    )}
                                 </View>
                             )}
 
                             {showReps && (
                                 <View className="flex-1 flex-row justify-center">
-                                    <TextInput 
-                                        value={String(set.reps || 0)} 
-                                        keyboardType="numeric"
-                                        onChangeText={(v) => onUpdateSet(setIdx, 'reps', v)}
-                                        className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
-                                        selectTextOnFocus
-                                    />
+                                    {isEditing ? (
+                                        <TextInput 
+                                            value={String(set.reps || 0)} 
+                                            keyboardType="numeric"
+                                            onChangeText={(v) => onUpdateSet(setIdx, 'reps', v)}
+                                            className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
+                                            selectTextOnFocus
+                                            editable={isEditing}
+                                        />
+                                    ) : (
+                                        <Text className="text-light dark:text-dark font-medium">{set.reps || 0}</Text>
+                                    )}
                                 </View>
                             )}
 
                             {showDuration && (
                                 <View className="flex-1 flex-row justify-center">
-                                    <TextInput 
-                                        value={String(set.duration || 0)} 
-                                        keyboardType="numeric"
-                                        onChangeText={(v) => onUpdateSet(setIdx, 'duration', v)}
-                                        className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
-                                        selectTextOnFocus
-                                    />
+                                    {isEditing ? (
+                                        <TextInput 
+                                            value={String(set.duration || 0)} 
+                                            keyboardType="numeric"
+                                            onChangeText={(v) => onUpdateSet(setIdx, 'duration', v)}
+                                            className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
+                                            selectTextOnFocus
+                                            editable={isEditing}
+                                        />
+                                    ) : (
+                                        <Text className="text-light dark:text-dark font-medium">{set.duration || 0}</Text>
+                                    )}
                                 </View>
                             )}
 
                             {showDistance && (
                                 <View className="flex-1 flex-row justify-center">
-                                    <TextInput 
-                                        value={String(set.distance || 0)} 
-                                        keyboardType="numeric"
-                                        onChangeText={(v) => onUpdateSet(setIdx, 'distance', v)}
-                                        className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
-                                        selectTextOnFocus
-                                    />
+                                    {isEditing ? (
+                                        <TextInput 
+                                            value={String(set.distance || 0)} 
+                                            keyboardType="numeric"
+                                            onChangeText={(v) => onUpdateSet(setIdx, 'distance', v)}
+                                            className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
+                                            selectTextOnFocus
+                                            editable={isEditing}
+                                        />
+                                    ) : (
+                                        <Text className="text-light dark:text-dark font-medium">{set.distance || 0}</Text>
+                                    )}
                                 </View>
                             )}
 
-                            <TouchableOpacity 
-                                onPress={() => onRemoveSet(setIdx)}
-                                className="w-8 items-center justify-center rounded h-8 ml-2"
-                            >
-                                <IconSymbol name="minus.circle.fill" size={20} color="#ff4444" />
-                            </TouchableOpacity>
+                            {isEditing && (
+                                <TouchableOpacity 
+                                    onPress={() => onRemoveSet(setIdx)}
+                                    className="w-8 items-center justify-center rounded h-8 ml-2"
+                                >
+                                    <IconSymbol name="minus.circle.fill" size={20} color="#ff4444" />
+                                </TouchableOpacity>
+                            )}
                         </View>
                     ))}
-                    <TouchableOpacity 
-                        onPress={onAddSet}
-                        className="flex-row items-center justify-center p-2 mt-1 rounded-lg border border-dashed border-black/10 dark:border-white/10"
-                    >
-                        <IconSymbol name="plus" size={14} color={theme.primary} />
-                        <Text className="ml-2 text-sm text-primary dark:text-primary-dark font-medium">Add Set</Text>
-                    </TouchableOpacity>
+                    {isEditing && (
+                        <TouchableOpacity 
+                            onPress={onAddSet}
+                            className="flex-row items-center justify-center p-2 mt-1 rounded-lg border border-dashed border-black/10 dark:border-white/10"
+                        >
+                            <IconSymbol name="plus" size={14} color={theme.primary} />
+                            <Text className="ml-2 text-sm text-primary dark:text-primary-dark font-medium">Add Set</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
             )}
         </View>
