@@ -85,12 +85,12 @@ export default function Workout() {
         new Date(activeRoutine.lastCompletedDate).toDateString() === new Date().toDateString());
 
     function handleCreateSavedWorkout() {
-        router.push('/workouts/editor');
+        router.push('/workouts/details');
     }
 
     function handleEditSavedWorkout(workout: SavedWorkout) {
         console.log("handleEditSavedWorkout called with:", workout);
-        router.push({ pathname: '/workouts/editor', params: { id: workout.id } });
+        router.push({ pathname: '/workouts/details', params: { id: workout.id } });
     }
 
     function handleStartSavedWorkout(workout: SavedWorkout) {

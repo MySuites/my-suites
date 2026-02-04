@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import SavedWorkoutsScreen from '../../app/workouts/saved';
-import CreateWorkoutScreen from '../../app/workouts/editor';
+import CreateWorkoutScreen from '../../app/workouts/details';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { useRouter, useLocalSearchParams } from 'expo-router';

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
 import { useWorkoutManager, fetchExercises } from '../../providers/WorkoutManagerProvider';
@@ -129,6 +129,7 @@ export default function CreateWorkoutScreen() {
 
     return (
         <View className="flex-1 bg-light dark:bg-dark">
+            <Stack.Screen options={{ headerShown: false }} />
             <ScreenHeader
                 title={editingWorkoutId ? 'Edit Workout' : 'Create Workout'}
                 leftAction={<BackButton />}
