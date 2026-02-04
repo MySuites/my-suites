@@ -27,6 +27,7 @@ export const SavedWorkoutItem = ({
         <ActionCard 
             activeOpacity={1}
             className="p-0 mb-0"
+            onPress={onEdit}
             onDelete={onDelete}
             onEdit={onEdit}
             swipeGroupId={swipeGroupId}
