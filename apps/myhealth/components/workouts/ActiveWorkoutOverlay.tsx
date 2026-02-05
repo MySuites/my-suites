@@ -115,35 +115,39 @@ export function ActiveWorkoutOverlay() {
                         pointerEvents="box-none"
                     >
                         {/* Left: Timer + Status */}
-                        <View className="absolute left-5 z-10 flex-row items-center gap-2" pointerEvents="none">
-                            <View className={`w-2 h-2 rounded-full ${isRunning ? 'bg-primary dark:bg-primary-dark' : 'bg-gray-400'}`} />
-                            <Text className="text-sm font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
+                        <View className="absolute left-5 z-10 flex-row items-center gap-2">
+                            <RaisedCard 
+                                onPress={handlePress}
+                                className="h-12 w-12 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                                style={{ borderRadius: 9999 }}
+                            >
+                                <IconSymbol name="arrow.down.right.and.arrow.up.left" size={22} className="text-primary dark:text-primary-dark" />
+                            </RaisedCard>
                         </View>
                         
                         {/* Center: Title */}
-                        <Text 
-                            className="text-lg font-bold text-light dark:text-dark text-center flex-1 mx-20" 
-                            numberOfLines={1}
-                            pointerEvents="none"
-                        >
-                            {title}
-                        </Text>
+                        <View className="absolute left-1/5 z-10 flex-col items-center">
+                            <Text 
+                                className="text-lg font-bold text-light dark:text-dark text-center flex-1 mt-4" 
+                                numberOfLines={1}
+                                pointerEvents="none"
+                            >
+                                {title}
+                            </Text>
+                            <View className="flex-row items-center gap-2">
+                                <View className={`w-2 h-2 rounded-full ${isRunning ? 'bg-primary dark:bg-primary-dark' : 'bg-gray-400'}`} />
+                                <Text className="text-sm font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
+                            </View>
+                        </View>
                         
                         {/* Right: Actions */}
                         <View className="absolute right-5 z-10 flex-row gap-2">
                             <RaisedCard 
                                 onPress={handleEnd}
-                                className="h-10 px-2 py-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                                className="h-12 w-12 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
                                 style={{ borderRadius: 9999 }}
                             >
-                                <Text className="text-danger text-xs font-bold">End</Text>
-                            </RaisedCard>
-                            <RaisedCard 
-                                onPress={handlePress}
-                                className="h-10 w-10 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
-                                style={{ borderRadius: 9999 }}
-                            >
-                                <IconSymbol name="arrow.down.right.and.arrow.up.left" size={20} className="text-primary dark:text-primary-dark" />
+                                <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
                             </RaisedCard>
                         </View>
                     </View>
@@ -171,39 +175,35 @@ export function ActiveWorkoutOverlay() {
             >
                 {/* Content Container (Minimized) */}
                 <View 
-                    className="flex-row justify-center items-center relative z-10 min-h-[40px]"
+                    className="flex-row justify-center items-center relative z-10 min-h-[50px]"
                     pointerEvents="box-none"
                 >
-                     {/* Left: Timer + Status */}
-                     <View className="absolute left-4 z-10 flex-row items-center gap-2" pointerEvents="none">
-                         <View className={`w-2 h-2 rounded-full ${isRunning ? 'bg-primary dark:bg-primary-dark' : 'bg-gray-400'}`} />
-                         <Text className="text-xs font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
-                     </View>
-                     
-                     {/* Center: Title */}
-                     <Text 
-                        className="text-lg font-bold text-light dark:text-dark text-center flex-1 mx-20" 
-                        numberOfLines={1}
-                        pointerEvents="none"
-                     >
-                        {title}
-                     </Text>
-                     
-                     {/* Right: Actions */}
-                     <View className="absolute right-4 z-10 flex-row gap-2">
-                         <RaisedCard 
-                            onPress={handleEnd}
-                            className="h-10 px-2 py-0 bg-light dark:bg-dark-lighter items-center justify-center"
-                            style={{ borderRadius: 9999 }}
-                         >
-                             <Text className="text-danger text-xs font-bold">End</Text>
-                         </RaisedCard>
-                         <RaisedCard 
+                     {/* Left: Expand */}
+                     <View className="absolute left-4 z-10 flex-row items-center gap-2">
+                        <RaisedCard 
                             onPress={handlePress}
-                            className="h-10 w-10 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                            className="h-12 w-12 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
                             style={{ borderRadius: 9999 }}
                          >
                              <IconSymbol name="arrow.up.left.and.arrow.down.right" size={22} className="text-primary dark:text-primary-dark" />
+                         </RaisedCard>
+                     </View>
+                     
+                     {/* Center: Timer + Status */}
+                     <View className="flex-row items-center gap-2 mx-20" pointerEvents="none">
+                        
+                         <View className={`w-3 h-3 rounded-full ${isRunning ? 'bg-primary dark:bg-primary-dark' : 'bg-gray-400'}`} />
+                         <Text className="text-md font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
+                     </View>
+                     
+                     {/* Right: End */}
+                     <View className="absolute right-4 z-10 flex-row gap-2">
+                         <RaisedCard 
+                            onPress={handleEnd}
+                            className="h-12 w-12 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                            style={{ borderRadius: 9999 }}
+                         >
+                             <IconSymbol name="stop.fill" size={24} className="text-danger" />
                          </RaisedCard>
                      </View>
                 </View>
