@@ -38,13 +38,19 @@ export async function fetchExercises(user: any) {
 
         let firstMuscle = null;
         if (e.muscle_groups && e.muscle_groups.length > 0) {
-            const primary = e.muscle_groups.find((m: any) =>
-                m.role === "primary"
-            );
-            if (primary && primary.muscle_groups) {
-                firstMuscle = primary.muscle_groups.name;
-            } else if (e.muscle_groups[0].muscle_groups) {
-                firstMuscle = e.muscle_groups[0].muscle_groups.name;
+            // Handle simple string array (Local DB format: ["Chest"])
+            if (typeof e.muscle_groups[0] === "string") {
+                firstMuscle = e.muscle_groups[0];
+            } else {
+                // Handle complex object (Supabase format: [{ role: 'primary', muscle_groups: { name: 'Chest' } }])
+                const primary = e.muscle_groups.find((m: any) =>
+                    m.role === "primary"
+                );
+                if (primary && primary.muscle_groups) {
+                    firstMuscle = primary.muscle_groups.name;
+                } else if (e.muscle_groups[0].muscle_groups) {
+                    firstMuscle = e.muscle_groups[0].muscle_groups.name;
+                }
             }
         }
 
