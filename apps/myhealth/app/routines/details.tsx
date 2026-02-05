@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { useFloatingButton } from '../../providers/FloatingButtonContext';
@@ -32,6 +32,7 @@ export default function CreateRoutineScreen() {
 
     const editingRoutineId = typeof id === 'string' ? id : null;
     const [routineDraftName, setRoutineDraftName] = useState("");
+    const [isEditing, setIsEditing] = useState(!editingRoutineId);
     
     const {
         routineSequence,
@@ -103,7 +104,7 @@ export default function CreateRoutineScreen() {
         return (
             <ScaleDecorator activeScale={1.05}>
                 <TouchableOpacity
-                    onLongPress={drag}
+                    onLongPress={isEditing ? drag : undefined}
                     disabled={isActive}
                     activeOpacity={1}
                     className={`bg-light-lighter dark:bg-dark-lighter rounded-xl mb-3 overflow-hidden border p-3 flex-row items-center justify-between ${isActive ? 'border-primary dark:border-primary-dark' : 'border-bg-dark dark:border-bg-dark-dark'}`}
@@ -117,14 +118,16 @@ export default function CreateRoutineScreen() {
                         </View>
                     </View>
                     
-                    <View className="flex-row items-center">
-                        <TouchableOpacity onPressIn={drag} className="p-2 mr-2"> 
-                                <IconSymbol name="line.3.horizontal" size={20} color={theme.icon as string} />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={(e) => { e.stopPropagation(); removeDay(item.id); }} className="p-2"> 
-                            <IconSymbol name="trash.fill" size={18} color={theme.error as string} />
-                        </TouchableOpacity>
-                    </View>
+                    {isEditing && (
+                        <View className="flex-row items-center">
+                            <TouchableOpacity onPressIn={drag} className="p-2 mr-2"> 
+                                    <IconSymbol name="line.3.horizontal" size={20} color={theme.icon as string} />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={(e) => { e.stopPropagation(); removeDay(item.id); }} className="p-2"> 
+                                <IconSymbol name="trash.fill" size={18} color={theme.error as string} />
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </TouchableOpacity>
             </ScaleDecorator>
         );
@@ -140,44 +143,63 @@ export default function CreateRoutineScreen() {
 
     return (
         <View className="flex-1 bg-light dark:bg-dark">
+            <Stack.Screen options={{ headerShown: false }} />
              <ScreenHeader
-                title={editingRoutineId ? 'Edit Routine' : 'Create Routine'}
+                title={!isEditing ? 'Routine Details' : (editingRoutineId ? 'Edit Routine' : 'Create Routine')}
                 leftAction={<BackButton />}
                 rightAction={
-                    <RaisedCard 
-                        onPress={handleSaveRoutine} 
-                        disabled={isSaving} 
-                        className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
-                        style={{ borderRadius: 9999 }}
-                    >
-                        {isSaving ? (
-                            <ActivityIndicator size="small" color={theme.primary} />
-                        ) : (
-                            <IconSymbol name="checkmark" size={24} color={theme.primary} />
-                        )}
-                    </RaisedCard>
+                    isEditing ? (
+                        <RaisedCard 
+                            onPress={handleSaveRoutine} 
+                            disabled={isSaving} 
+                            className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
+                            style={{ borderRadius: 9999 }}
+                        >
+                            {isSaving ? (
+                                <ActivityIndicator size="small" color={theme.primary} />
+                            ) : (
+                                <IconSymbol name="checkmark" size={24} color={theme.primary} />
+                            )}
+                        </RaisedCard>
+                    ) : (
+                        <RaisedCard 
+                            onPress={() => setIsEditing(true)} 
+                            className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
+                            style={{ borderRadius: 9999 }}
+                        >
+                            <IconSymbol name="pencil" size={22} color={theme.primary} />
+                        </RaisedCard>
+                    )
                 }
             />
 
             <View className="flex-1">
                 <View className="mt-28 px-4 pt-4">
-                    <TextInput 
-                        placeholder="Routine Name" 
-                        value={routineDraftName} 
-                        onChangeText={setRoutineDraftName} 
-                        className="bg-light-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-base border border-transparent dark:border-highlight-dark mb-6"
-                        placeholderTextColor={theme.textMuted || '#888'}
-                    />
+                    {isEditing ? (
+                        <TextInput 
+                            placeholder="Routine Name" 
+                            value={routineDraftName} 
+                            onChangeText={setRoutineDraftName} 
+                            className="bg-light-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-base border border-transparent dark:border-highlight-dark mb-6"
+                            placeholderTextColor={theme.textMuted || '#888'}
+                        />
+                    ) : (
+                        <View className="mb-6 px-1">
+                            <Text className="text-3xl font-bold text-light dark:text-dark">{routineDraftName}</Text>
+                        </View>
+                    )}
                     
                     <View className="flex-row justify-between items-center mb-6">
                         <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Schedule</Text>
-                        <RaisedCard 
-                            onPress={() => setIsAddingDay(true)}
-                            style={{ borderRadius: 9999 }}
-                            className="h-10 px-4 items-center justify-center"
-                        >
-                            <Text className="text-sm text-primary font-semibold">Add Day</Text>
-                        </RaisedCard>
+                        {isEditing && (
+                            <RaisedCard 
+                                onPress={() => setIsAddingDay(true)}
+                                style={{ borderRadius: 9999 }}
+                                className="h-10 px-4 items-center justify-center"
+                            >
+                                <Text className="text-sm text-primary font-semibold">Add Day</Text>
+                            </RaisedCard>
+                        )}
                     </View>
                 </View>
                 {routineSequence.length === 0 ? (
@@ -196,7 +218,7 @@ export default function CreateRoutineScreen() {
                     />
                 )}
                 
-                {editingRoutineId && (
+                {editingRoutineId && isEditing && (
                     <TouchableOpacity 
                         onPress={() => {
                             Alert.alert('Delete Routine', 'Are you sure?', [

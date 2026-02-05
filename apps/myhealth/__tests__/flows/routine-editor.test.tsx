@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
-import CreateRoutineScreen from '../../app/routines/editor';
+import CreateRoutineScreen from '../../app/routines/details';
 import * as RN from 'react-native';
 
 const mockRN = RN;
@@ -119,9 +119,6 @@ describe('Routine Editor', () => {
         });
         
         // Check if Rest Day text exists in general (button or list item)
-        // Since we want to ensure it's added, checking length >= 1 is safe, 
-        // effectively confirming the state update occurred.
-        // But to be precise, let's look for element with "Rest Day" text.
         expect(getAllByText('Rest Day').length).toBeGreaterThan(0);
 
         // Add Workout
@@ -156,15 +153,24 @@ describe('Routine Editor', () => {
         }];
         mockUpdateRoutine.mockImplementation((id, name, seq, cb) => cb());
 
-        const { getByPlaceholderText, getAllByText, getAllByTestId } = render(<CreateRoutineScreen />);
+        const { getByPlaceholderText, getByText, getAllByText, getAllByTestId } = render(<CreateRoutineScreen />);
         
-        // Wait for load
-        await waitFor(() => expect(getByPlaceholderText('Routine Name').props.value).toBe('Existing Routine'));
+        // Wait for load - initially in View Mode
+        await waitFor(() => expect(getByText('Existing Routine')).toBeTruthy());
         expect(getAllByText('Rest Day').length).toBeGreaterThan(0);
 
-        // Save
+        // Click Edit Button
         const icons = getAllByTestId('icon-symbol');
-        const checkmarkIcon = icons.find(i => i.props.name === 'checkmark');
+        const pencilIcon = icons.find(i => i.props.name === 'pencil');
+        expect(pencilIcon).toBeTruthy();
+        fireEvent.press(pencilIcon.parent);
+
+        // Now in Edit Mode
+        expect(getByPlaceholderText('Routine Name').props.value).toBe('Existing Routine');
+
+        // Save
+        const updatedIcons = getAllByTestId('icon-symbol');
+        const checkmarkIcon = updatedIcons.find(i => i.props.name === 'checkmark');
         fireEvent.press(checkmarkIcon.parent);
 
         await waitFor(() => {
@@ -178,8 +184,17 @@ describe('Routine Editor', () => {
         mockRoutines = [{ id: 'r1', name: 'To Delete', sequence: [] }];
         mockDeleteRoutine.mockImplementation((id, opts) => opts.onSuccess());
 
-        const { getByText, findByText } = render(<CreateRoutineScreen />);
+        const { getByText, findByText, getAllByTestId } = render(<CreateRoutineScreen />);
         
+        // Wait for load
+        await findByText('To Delete');
+
+        // Enter Edit Mode
+        const icons = getAllByTestId('icon-symbol');
+        const pencilIcon = icons.find(i => i.props.name === 'pencil');
+        fireEvent.press(pencilIcon.parent);
+
+        // Now Delete Button should be visible
         await findByText('Delete Routine');
         fireEvent.press(getByText('Delete Routine'));
 
