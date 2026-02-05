@@ -127,6 +127,21 @@ export default function CreateWorkoutScreen() {
         setIsAddingExercise(false);
     }
 
+    function handleCancel() {
+        if (editingWorkoutId) {
+            // Revert changes
+            const workout = savedWorkouts.find(w => w.id === editingWorkoutId);
+            if (workout) {
+                setWorkoutDraftName(workout.name);
+                setWorkoutDraftExercises(workout.exercises ? JSON.parse(JSON.stringify(workout.exercises)) : []);
+            }
+            setIsEditing(false);
+        } else {
+            // If creating new, just go back
+            router.back();
+        }
+    }
+
     if (isLoading) {
         return (
             <View className="flex-1 justify-center items-center bg-light dark:bg-dark">
@@ -140,7 +155,19 @@ export default function CreateWorkoutScreen() {
             <Stack.Screen options={{ headerShown: false }} />
             <ScreenHeader
                 title={editingWorkoutId ? (isEditing ? 'Edit Workout' : 'Workout Details') : 'Create Workout'}
-                leftAction={<BackButton />}
+                leftAction={
+                    isEditing ? (
+                        <RaisedCard 
+                            onPress={handleCancel} 
+                            className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
+                            style={{ borderRadius: 9999 }}
+                        >
+                             <IconSymbol name="xmark" size={24} color={theme.primary as string} />
+                        </RaisedCard>
+                    ) : (
+                        <BackButton />
+                    )
+                }
                 rightAction={
                     isEditing ? (
                         <RaisedCard 
@@ -161,7 +188,7 @@ export default function CreateWorkoutScreen() {
                             className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
                             style={{ borderRadius: 9999 }}
                         >
-                            <IconSymbol name="pencil" size={20} color={theme.icon || '#888'} />
+                            <IconSymbol name="pencil" size={20} color={theme.primary as string} />
                         </RaisedCard>
                     )
                 }
