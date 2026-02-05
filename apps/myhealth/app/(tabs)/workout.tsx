@@ -169,7 +169,7 @@ export default function Workout() {
                                     className="w-12 h-12 p-0 my-0 items-center justify-center"
                                 >
                                     <IconSymbol 
-                                        name="square.and.pencil" 
+                                        name="plus" 
                                         size={24} 
                                         color={theme.primary} 
                                     />
