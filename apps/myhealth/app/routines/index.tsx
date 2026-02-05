@@ -51,7 +51,7 @@ export default function RoutinesScreen() {
         leftAction={<BackButton />}
         rightAction={
             <RaisedCard 
-                onPress={() => router.push('/routines/editor')}
+                onPress={() => router.push('/routines/details')}
                 style={{ borderRadius: 9999 }}
                 className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center"
             >
@@ -92,7 +92,7 @@ export default function RoutinesScreen() {
 
               <TouchableOpacity onPress={() => {
                   router.push({
-                      pathname: '/routines/editor',
+                      pathname: '/routines/details',
                       params: { id: item.id }
                   });
               }} activeOpacity={0.7}>
