@@ -203,7 +203,7 @@ export function ActiveWorkoutOverlay() {
                             className="h-12 w-12 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
                             style={{ borderRadius: 9999 }}
                          >
-                             <IconSymbol name="stop.fill" size={24} className="text-danger" />
+                             <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
                          </RaisedCard>
                      </View>
                 </View>
