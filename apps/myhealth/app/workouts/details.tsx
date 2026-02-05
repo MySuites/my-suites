@@ -169,13 +169,16 @@ export default function CreateWorkoutScreen() {
 
             <View className="mt-28 flex-1 p-4">
                 {isEditing ? (
-                    <TextInput 
-                        placeholder="Workout Name" 
-                        value={workoutDraftName} 
-                        onChangeText={setWorkoutDraftName} 
-                        className="bg-light-lighter dark:bg-dark-lighter text-light dark:text-dark h-16 p-4 rounded-xl text-base border border-transparent dark:border-highlight-dark mb-6"
-                        placeholderTextColor={theme.textMuted || '#888'}
-                    />
+                    <View className="bg-light-lighter dark:bg-dark-lighter h-16 px-4 rounded-xl border border-transparent dark:border-highlight-dark mb-6 justify-center">
+                        <TextInput 
+                            placeholder="Workout Name" 
+                            value={workoutDraftName} 
+                            onChangeText={setWorkoutDraftName} 
+                            className="text-light dark:text-dark"
+                            style={{ fontSize: 16, paddingVertical: 0, flex: 1 }}
+                            placeholderTextColor={theme.textMuted || '#888'}
+                        />
+                    </View>
                 ) : (
                     <Text className="text-2xl font-bold text-light dark:text-dark mb-6 px-1">
                         {workoutDraftName}
