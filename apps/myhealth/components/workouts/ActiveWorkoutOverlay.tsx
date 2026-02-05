@@ -167,7 +167,7 @@ export function ActiveWorkoutOverlay() {
                     shadowRadius: 10,
                     elevation: 5,
                 }}
-                className="absolute bg-light/80 dark:bg-dark/80 rounded-full"
+                className="absolute bg-light dark:bg-dark-lighter rounded-full"
             >
                 {/* Content Container (Minimized) */}
                 <View 
