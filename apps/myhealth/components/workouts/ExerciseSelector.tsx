@@ -90,88 +90,90 @@ export const ExerciseSelector = ({
                     }
                 />
                 <View className="flex-1 px-4 pt-32">
-                    <View className="flex-row items-center gap-2 z-20">
-                        <RaisedCard className="flex-1 flex-row items-center px-2.5 h-12 rounded-xl">
-                            <IconSymbol name="magnifyingglass" size={20} color={theme.icon} />
-                            <TextInput
-                                className="flex-1 ml-2 text-base text-light dark:text-dark"
-                                style={{ paddingTop: 0, paddingBottom: 0, height: '100%' }}
-                                placeholder="Search exercises..."
-                                placeholderTextColor={theme.placeholder}
-                                value={exerciseSearchQuery}
-                                onChangeText={setExerciseSearchQuery}
-                                autoCorrect={false}
-                            />
-                            {exerciseSearchQuery.length > 0 && (
-                                <TouchableOpacity onPress={() => setExerciseSearchQuery('')}>
-                                        <IconSymbol name="xmark.circle.fill" size={20} color={theme.primary} />
-                                </TouchableOpacity>
-                            )}
-                        </RaisedCard>
-                        <RaisedCard 
-                            onPress={() => setIsFilterVisible(!isFilterVisible)}
-                            style={{ borderRadius: 14 }}
-                            className={`w-12 h-12 p-0 items-center justify-center ${selectedCategories.size > 0 ? 'bg-primary/10' : ''}`}
-                        >
-                            <IconSymbol 
-                                name={"line.3.horizontal.decrease" as any} 
-                                size={24} 
-                                color={selectedCategories.size > 0 ? theme.primary : (theme.icon || '#888')} 
-                            />
-                        </RaisedCard>
-                    </View>
+                    <View className="z-20 mb-3">
+                        <View className="flex-row items-center gap-2">
+                            <RaisedCard className="flex-1 flex-row items-center px-2.5 h-12 rounded-xl">
+                                <IconSymbol name="magnifyingglass" size={20} color={theme.icon} />
+                                <TextInput
+                                    className="flex-1 ml-2 text-base text-light dark:text-dark"
+                                    style={{ paddingTop: 0, paddingBottom: 0, height: '100%' }}
+                                    placeholder="Search exercises..."
+                                    placeholderTextColor={theme.placeholder}
+                                    value={exerciseSearchQuery}
+                                    onChangeText={setExerciseSearchQuery}
+                                    autoCorrect={false}
+                                />
+                                {exerciseSearchQuery.length > 0 && (
+                                    <TouchableOpacity onPress={() => setExerciseSearchQuery('')}>
+                                            <IconSymbol name="xmark.circle.fill" size={20} color={theme.primary} />
+                                    </TouchableOpacity>
+                                )}
+                            </RaisedCard>
+                            <RaisedCard 
+                                onPress={() => setIsFilterVisible(!isFilterVisible)}
+                                style={{ borderRadius: 14 }}
+                                className={`w-12 h-12 p-0 items-center justify-center ${isFilterVisible ? 'bg-primary/10' : ''}`}
+                            >
+                                <IconSymbol 
+                                    name={"line.3.horizontal.decrease" as any} 
+                                    size={24} 
+                                    color={isFilterVisible ? theme.primary : (theme.icon || '#888')} 
+                                    />
+                            </RaisedCard>
+                        </View>
 
-                    {/* Filter Menu */}
-                    {isFilterVisible && (
-                        <RaisedCard className="rounded-xl p-4 mb-4 z-10 -mt-14 pt-16">
-                            <ScrollView showsVerticalScrollIndicator={false} className="max-h-96">
-                                <TouchableOpacity 
-                                    onPress={() => toggleCategory("All")}
-                                    className={`self-start px-4 py-2 rounded-full mb-4 border ${selectedCategories.size === 0 ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
-                                >
-                                    <Text className={`font-semibold ${selectedCategories.size === 0 ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
-                                        All
-                                    </Text>
-                                </TouchableOpacity>
+                        {/* Filter Menu */}
+                        {isFilterVisible && (
+                            <RaisedCard className="rounded-xl p-4 mt-2 absolute top-12 left-0 right-0 z-50 shadow-xl bg-light dark:bg-dark-lighter border border-light-darker/50 dark:border-highlight-dark">
+                                <ScrollView showsVerticalScrollIndicator={false} className="max-h-96" keyboardShouldPersistTaps="handled">
+                                    <TouchableOpacity 
+                                        onPress={() => toggleCategory("All")}
+                                        className={`self-start px-4 py-2 rounded-full mb-4 border ${selectedCategories.size === 0 ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
+                                    >
+                                        <Text className={`font-semibold ${selectedCategories.size === 0 ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
+                                            All
+                                        </Text>
+                                    </TouchableOpacity>
 
-                                {["Chest & Arms", "Back & Core", "Lower Body", "Other"].map(group => {
-                                    // Filter uniqueCategories that belong to this group
-                                    const catsInGroup = uniqueCategories.filter(cat => {
-                                        if (cat === "All") return false;
-                                        const NOTE_GROUPS: any = {
-                                            "Chest & Arms": ["Chest", "Shoulders", "Biceps", "Triceps", "Forearms"],
-                                            "Back & Core": ["Back", "Neck", "Traps", "Lats","Abdominals", "Abs", "Core", "Lower Back", "Upper Back"],
-                                            "Lower Body": ["Quadriceps", "Hamstrings", "Calves", "Glutes", "Adductors", "Abductors", "Legs"],
-                                            "General": ["Cardio", "Olympic", "Full Body", "Other", "Plyometrics", "Strongman", "Powerlifting", "Stretching"]
-                                        };
-                                        const foundGroup = Object.keys(NOTE_GROUPS).find(g => NOTE_GROUPS[g].includes(cat)) || "Other";
-                                        return foundGroup === group;
-                                    });
+                                    {["Chest & Arms", "Back & Core", "Lower Body", "Other"].map(group => {
+                                        // Filter uniqueCategories that belong to this group
+                                        const catsInGroup = uniqueCategories.filter(cat => {
+                                            if (cat === "All") return false;
+                                            const NOTE_GROUPS: any = {
+                                                "Chest & Arms": ["Chest", "Shoulders", "Biceps", "Triceps", "Forearms"],
+                                                "Back & Core": ["Back", "Neck", "Traps", "Lats","Abdominals", "Abs", "Core", "Lower Back", "Upper Back"],
+                                                "Lower Body": ["Quadriceps", "Hamstrings", "Calves", "Glutes", "Adductors", "Abductors", "Legs"],
+                                                "General": ["Cardio", "Olympic", "Full Body", "Other", "Plyometrics", "Strongman", "Powerlifting", "Stretching"]
+                                            };
+                                            const foundGroup = Object.keys(NOTE_GROUPS).find(g => NOTE_GROUPS[g].includes(cat)) || "Other";
+                                            return foundGroup === group;
+                                        });
 
-                                    if (catsInGroup.length === 0) return null;
+                                        if (catsInGroup.length === 0) return null;
 
-                                    return (
-                                        <View key={group} className="mb-4">
-                                            <Text className="text-light dark:text-dark font-bold mb-2 uppercase text-xs tracking-wider">{group}</Text>
-                                            <View className="flex-row flex-wrap gap-2">
-                                                {catsInGroup.map((category) => (
-                                                    <TouchableOpacity 
-                                                        key={category} 
-                                                        onPress={() => toggleCategory(category)}
-                                                        className={`px-4 py-2 rounded-full border ${selectedCategories.has(category) ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
-                                                    >
-                                                        <Text className={`font-semibold ${selectedCategories.has(category) ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
-                                                            {category}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                ))}
+                                        return (
+                                            <View key={group} className="mb-4">
+                                                <Text className="text-light dark:text-dark font-bold mb-2 uppercase text-xs tracking-wider">{group}</Text>
+                                                <View className="flex-row flex-wrap gap-2">
+                                                    {catsInGroup.map((category) => (
+                                                        <TouchableOpacity 
+                                                            key={category} 
+                                                            onPress={() => toggleCategory(category)}
+                                                            className={`px-4 py-2 rounded-full border ${selectedCategories.has(category) ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
+                                                        >
+                                                            <Text className={`font-semibold ${selectedCategories.has(category) ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
+                                                                {category}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    ))}
+                                                </View>
                                             </View>
-                                        </View>
-                                    );
-                                })}
-                            </ScrollView>
-                        </RaisedCard>
-                    )}
+                                        );
+                                    })}
+                                </ScrollView>
+                            </RaisedCard>
+                        )}
+                    </View>
 
                     {isLoading ? (
                         <View className="mt-4">
@@ -194,6 +196,22 @@ export const ExerciseSelector = ({
                             })}
                             keyExtractor={(item) => item.id}
                             className="flex-1"
+                            ListHeaderComponent={
+                                selectedCategories.size > 0 ? (
+                                    <View className="pb-2 flex-row flex-wrap gap-2 mt-2">
+                                        {Array.from(selectedCategories).sort().map(category => (
+                                            <TouchableOpacity 
+                                                key={category} 
+                                                onPress={() => toggleCategory(category)}
+                                                className="flex-row items-center bg-primary dark:bg-primary-dark px-3 py-1.5 rounded-full"
+                                            >
+                                                <Text className="text-white font-semibold text-xs mr-1">{category}</Text>
+                                                <IconSymbol name="xmark" size={12} color="#fff" />
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                ) : null
+                            }
                             renderItem={({ item }) => {
                                 const isSelected = selectedIds.has(item.id);
                                 return (
