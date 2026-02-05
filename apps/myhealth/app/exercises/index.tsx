@@ -124,12 +124,12 @@ export default function ExercisesScreen() {
             <RaisedCard 
                 onPress={() => setIsFilterVisible(!isFilterVisible)}
                 style={{ borderRadius: 14 }}
-                className={`w-10 h-10 p-0 items-center justify-center ${selectedCategories.size > 0 ? 'bg-primary/10' : ''}`}
+                className={`w-10 h-10 p-0 items-center justify-center ${isFilterVisible ? 'bg-primary/10' : ''}`}
             >
                 <IconSymbol 
                     name={"line.3.horizontal.decrease" as any} 
                     size={20} 
-                    color={selectedCategories.size > 0 ? theme.primary : (theme.icon || '#888')} 
+                    color={isFilterVisible ? theme.primary : (theme.icon || '#888')} 
                 />
             </RaisedCard>
         </View>
@@ -202,6 +202,22 @@ export default function ExercisesScreen() {
       <SectionList
         sections={sections}
         keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+            selectedCategories.size > 0 ? (
+                <View className="px-4 pb-2 flex-row flex-wrap gap-2 mt-2">
+                    {Array.from(selectedCategories).sort().map(category => (
+                        <TouchableOpacity 
+                            key={category} 
+                            onPress={() => toggleCategory(category)}
+                            className="flex-row items-center bg-primary dark:bg-primary-dark px-3 py-1.5 rounded-full"
+                        >
+                            <Text className="text-white font-semibold text-xs mr-1">{category}</Text>
+                            <IconSymbol name="xmark" size={12} color="#fff" />
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            ) : null
+        }
         renderSectionHeader={({ section: { title } }) => (
             <View className="px-4 py-2 bg-light dark:bg-dark">
                 <Text className="text-sm font-bold text-gray-500 uppercase tracking-widest">{title}</Text>
