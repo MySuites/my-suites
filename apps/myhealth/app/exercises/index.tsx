@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { SectionList, TouchableOpacity, View, TextInput, Text } from 'react-native'; 
+import { SectionList, TouchableOpacity, View, TextInput, Text, ScrollView } from 'react-native'; 
 import { useRouter, useFocusEffect } from 'expo-router';
 
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, useToast, IconSymbol } from '@mysuite/ui';
@@ -40,8 +40,34 @@ export default function ExercisesScreen() {
     }, [user, showToast])
   );
 
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
+
+  const uniqueCategories = React.useMemo(() => {
+      return ["All", ...Array.from(new Set(exercises.map(e => e.category))).filter(Boolean).sort()];
+  }, [exercises]);
+
+  const toggleCategory = (category: string) => {
+      if (category === "All") {
+          setSelectedCategories(new Set());
+          return;
+      }
+      
+      const newSet = new Set(selectedCategories);
+      if (newSet.has(category)) {
+          newSet.delete(category);
+      } else {
+          newSet.add(category);
+      }
+      setSelectedCategories(newSet);
+  };
+
   const sections = React.useMemo(() => {
-    const filtered = exercises.filter(ex => ex.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    let filtered = exercises.filter(ex => ex.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    if (selectedCategories.size > 0) {
+        filtered = filtered.filter(ex => selectedCategories.has(ex.category));
+    }
     
     const custom = filtered.filter(ex => !DefaultExercises.some(d => d.id === ex.id));
     const defaults = filtered.filter(ex => DefaultExercises.some(d => d.id === ex.id));
@@ -54,10 +80,8 @@ export default function ExercisesScreen() {
         result.push({ title: 'Default Exercises', data: defaults });
     }
     
-    // If searching and everything matches one, show it. 
-    // If no custom but searching, maybe show empty custom? No, standard behavior is hide section.
     return result;
-  }, [exercises, searchQuery]);
+  }, [exercises, searchQuery, selectedCategories]);
 
   return (
     <View className="flex-1 bg-light dark:bg-dark">
@@ -79,23 +103,88 @@ export default function ExercisesScreen() {
         }
       />
       
-      <View className="mt-28 px-4 py-3">
-        <View className="flex-row items-center bg-light dark:bg-dark-lighter rounded-full px-4 h-10 border border-light-darker dark:border-highlight-dark">
-            <IconSymbol name="magnifyingglass" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
-             <TextInput
-                className="flex-1 ml-2 text-base h-full text-light dark:text-dark"
-                placeholder="Search exercises..."
-                placeholderTextColor={theme.textMuted}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                autoCorrect={false}
-            />
-            {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchQuery('')}>
-                     <IconSymbol name="xmark.circle.fill" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
-                </TouchableOpacity>
-            )}
+      <View className="mt-28 px-4 py-3 z-20">
+        <View className="flex-row items-center gap-2">
+            <View className="flex-1 flex-row items-center bg-light dark:bg-dark-lighter rounded-full px-4 h-10 border border-light-darker dark:border-highlight-dark">
+                <IconSymbol name="magnifyingglass" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
+                <TextInput
+                    className="flex-1 ml-2 text-base h-full text-light dark:text-dark"
+                    placeholder="Search exercises..."
+                    placeholderTextColor={theme.textMuted}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    autoCorrect={false}
+                />
+                {searchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchQuery('')}>
+                        <IconSymbol name="xmark.circle.fill" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
+                    </TouchableOpacity>
+                )}
+            </View>
+            <RaisedCard 
+                onPress={() => setIsFilterVisible(!isFilterVisible)}
+                style={{ borderRadius: 14 }}
+                className={`w-10 h-10 p-0 items-center justify-center ${selectedCategories.size > 0 ? 'bg-primary/10' : ''}`}
+            >
+                <IconSymbol 
+                    name={"line.3.horizontal.decrease" as any} 
+                    size={20} 
+                    color={selectedCategories.size > 0 ? theme.primary : (theme.icon || '#888')} 
+                />
+            </RaisedCard>
         </View>
+        
+        {/* Filter Menu */}
+        {isFilterVisible && (
+            <RaisedCard className="rounded-xl p-4 mt-4 absolute top-12 left-4 right-4 z-50 shadow-xl bg-light dark:bg-dark-lighter border border-light-darker/50 dark:border-highlight-dark">
+                <ScrollView showsVerticalScrollIndicator={false} className="max-h-96" keyboardShouldPersistTaps="handled">
+                    <TouchableOpacity 
+                        onPress={() => toggleCategory("All")}
+                        className={`self-start px-4 py-2 rounded-full mb-4 border ${selectedCategories.size === 0 ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
+                    >
+                        <Text className={`font-semibold ${selectedCategories.size === 0 ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
+                            All
+                        </Text>
+                    </TouchableOpacity>
+
+                    {["Chest & Arms", "Back & Core", "Lower Body", "Other"].map(group => {
+                        // Filter uniqueCategories that belong to this group
+                        const catsInGroup = uniqueCategories.filter(cat => {
+                            if (cat === "All") return false;
+                            const NOTE_GROUPS: any = {
+                                "Chest & Arms": ["Chest", "Shoulders", "Biceps", "Triceps", "Forearms"],
+                                "Back & Core": ["Back", "Neck", "Traps", "Lats","Abdominals", "Abs", "Core", "Lower Back", "Upper Back"],
+                                "Lower Body": ["Quadriceps", "Hamstrings", "Calves", "Glutes", "Adductors", "Abductors", "Legs"],
+                                "General": ["Cardio", "Olympic", "Full Body", "Other", "Plyometrics", "Strongman", "Powerlifting", "Stretching"]
+                            };
+                            const foundGroup = Object.keys(NOTE_GROUPS).find(g => NOTE_GROUPS[g].includes(cat)) || "Other";
+                            return foundGroup === group;
+                        });
+
+                        if (catsInGroup.length === 0) return null;
+
+                        return (
+                            <View key={group} className="mb-4">
+                                <Text className="text-light dark:text-dark font-bold mb-2 uppercase text-xs tracking-wider">{group}</Text>
+                                <View className="flex-row flex-wrap gap-2">
+                                    {catsInGroup.map((category) => (
+                                        <TouchableOpacity 
+                                            key={category} 
+                                            onPress={() => toggleCategory(category)}
+                                            className={`px-4 py-2 rounded-full border ${selectedCategories.has(category) ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
+                                        >
+                                            <Text className={`font-semibold ${selectedCategories.has(category) ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
+                                                {category}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+                        );
+                    })}
+                </ScrollView>
+            </RaisedCard>
+        )}
       </View>
       
       {isLoading ? (
