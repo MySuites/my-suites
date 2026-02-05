@@ -133,6 +133,21 @@ export default function CreateRoutineScreen() {
         );
     };
 
+    function handleCancel() {
+        if (editingRoutineId) {
+            // Revert changes
+            const routine = routines.find((r: any) => r.id === editingRoutineId);
+            if (routine) {
+                setRoutineDraftName(routine.name);
+                setRoutineSequence(routine.sequence ? JSON.parse(JSON.stringify(routine.sequence)) : []);
+            }
+            setIsEditing(false);
+        } else {
+            // If creating new, just go back
+            router.back();
+        }
+    }
+
     if (isLoading) {
         return (
             <View className="flex-1 justify-center items-center bg-light dark:bg-dark">
@@ -146,7 +161,19 @@ export default function CreateRoutineScreen() {
             <Stack.Screen options={{ headerShown: false }} />
              <ScreenHeader
                 title={!isEditing ? 'Routine Details' : (editingRoutineId ? 'Edit Routine' : 'Create Routine')}
-                leftAction={<BackButton />}
+                leftAction={
+                    isEditing ? (
+                        <RaisedCard 
+                            onPress={handleCancel} 
+                            className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
+                            style={{ borderRadius: 9999 }}
+                        >
+                             <IconSymbol name="xmark" size={24} color={theme.primary as string} />
+                        </RaisedCard>
+                    ) : (
+                        <BackButton />
+                    )
+                }
                 rightAction={
                     isEditing ? (
                         <RaisedCard 

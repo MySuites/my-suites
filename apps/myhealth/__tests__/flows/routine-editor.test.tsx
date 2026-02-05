@@ -19,6 +19,7 @@ const mockSavedWorkouts = [{ id: 'w1', name: 'Leg Workout' }];
 jest.mock('expo-router', () => ({
     useLocalSearchParams: () => mockUseLocalSearchParams,
     useRouter: () => ({ back: mockRouterBack }),
+    Stack: { Screen: () => null },
 }));
 
 jest.mock('../../components/ui/BackButton', () => ({
@@ -72,8 +73,7 @@ jest.mock('@mysuite/ui', () => {
     return {
 
         RaisedCard: (props: any) => { 
-            const { TouchableOpacity } = require('react-native');
-            return <TouchableOpacity {...props} />;
+            return <mockRN.TouchableOpacity {...props} />;
         },
         IconSymbol: (props: any) => <mockRN.View {...props} testID="icon-symbol" />,
         useUITheme: () => ({ primary: 'blue', textMuted: 'gray', danger: 'red', bg: 'white' }),
@@ -210,5 +210,39 @@ describe('Routine Editor', () => {
 
         expect(mockDeleteRoutine).toHaveBeenCalledWith('r1', expect.objectContaining({ onSuccess: expect.any(Function) }));
         expect(mockRouterBack).toHaveBeenCalled();
+    });
+
+    it('cancels edit mode and reverts changes', async () => {
+        mockUseLocalSearchParams = { id: 'r1' };
+        mockRoutines = [{ 
+            id: 'r1', 
+            name: 'Original Name', 
+            sequence: [] 
+        }];
+
+        const { getByPlaceholderText, getByText, getAllByTestId } = render(<CreateRoutineScreen />);
+        
+        // Wait for load
+        await waitFor(() => expect(getByText('Original Name')).toBeTruthy());
+
+        // Enter Edit Mode
+        let icons = getAllByTestId('icon-symbol');
+        const pencilIcon = icons.find(i => i.props.name === 'pencil');
+        fireEvent.press(pencilIcon.parent);
+
+        // Change Name
+        const input = getByPlaceholderText('Routine Name');
+        fireEvent.changeText(input, 'Changed Name');
+        expect(input.props.value).toBe('Changed Name');
+
+        // Click Cancel (XMark)
+        icons = getAllByTestId('icon-symbol');
+        const cancelIcon = icons.find(i => i.props.name === 'xmark');
+        expect(cancelIcon).toBeTruthy();
+        fireEvent.press(cancelIcon.parent);
+
+        // Verify reverted to View Mode and Original Name
+        await waitFor(() => expect(getByText('Original Name')).toBeTruthy());
+        // Should not see input anymore (or at least check that view mode text is back)
     });
 });
