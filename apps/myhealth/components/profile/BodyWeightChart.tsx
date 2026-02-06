@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { TimeSeriesChart, DateRange } from '../common/TimeSeriesChart';
+import { TimeSeriesChart, DateRange } from '../ui/TimeSeriesChart';
 
 interface BodyWeightChartProps {
   data: { value: number; label: string; date: string; spineIndex?: number }[];
