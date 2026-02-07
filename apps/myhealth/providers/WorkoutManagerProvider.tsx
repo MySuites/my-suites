@@ -92,7 +92,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                     workoutDate: h.date, // LocalWorkoutLog uses 'date', API 'workoutDate'
                     workoutName: h.name,
                     createdAt: h.date, // Approximate
-                    notes: h.note
+                    notes: h.note,
+                    exercises: h.exercises
                 }));
                 // Sort by date desc
                 mappedHistory.sort((a, b) => new Date(b.workoutDate).getTime() - new Date(a.workoutDate).getTime());
@@ -209,7 +210,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                     workoutDate: h.date, // LocalWorkoutLog uses 'date', API 'workoutDate'
                     workoutName: h.name,
                     createdAt: h.date, // Approximate
-                    notes: h.note
+                    notes: h.note,
+                    exercises: h.exercises
              }));
              mappedHistory.sort((a: any, b: any) => new Date(b.workoutDate).getTime() - new Date(a.workoutDate).getTime());
              setWorkoutHistory(mappedHistory);
@@ -339,19 +341,15 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         },
         createCustomExercise: async (name: string, type: string, primary?: string, secondary?: string[]) => {
              const id = uuid.v4() as string;
-             const newExercise = {
-                 id,
-                 name,
-                 properties: type,
-                 muscle_groups: JSON.stringify([
-                     primary ? { id: primary, name: 'Primary' } : null,
-                     ...(secondary || []).map(s => ({ id: s, name: 'Secondary' }))
-                 ].filter(Boolean)), // Simplified muscle group structure matching what DB expects roughly?
-                 // Actually DB expects JSON string. 
-                 // The app usually expects `muscle_groups` to be an array of objects.
-                 // let's match the structure in `default-exercises.json` roughly or what `getExercises` expects.
-                 // `getExercises` parses it.
-             };
+             // const newExercise = {
+             //     id,
+             //     name,
+             //     properties: type,
+             //     muscle_groups: JSON.stringify([
+             //         primary ? { id: primary, name: 'Primary' } : null,
+             //         ...(secondary || []).map(s => ({ id: s, name: 'Secondary' }))
+             //     ].filter(Boolean)), 
+             // };
              
              // We need to match the "flat" object expected by saveExercises loop or pass prepared object
              // DataRepository.saveExercises takes an array of objects and maps them.

@@ -32,6 +32,7 @@ export type WorkoutLog = {
     notes?: string;
     workoutName?: string; // joined from workouts table
     createdAt: string;
+    exercises?: Exercise[];
 };
 
 export interface Syncable {

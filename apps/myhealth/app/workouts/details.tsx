@@ -11,6 +11,7 @@ import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
+import { WorkoutOverviewChart } from '../../components/workouts/WorkoutOverviewChart';
 
 export default function CreateWorkoutScreen() {
     const theme = useTheme();
@@ -212,6 +213,8 @@ export default function CreateWorkoutScreen() {
                     </Text>
                 )}
                 
+                {workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
+
                 <View className="flex-row justify-between items-center mb-2">
                     <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Exercises</Text>
                     {isEditing && (
