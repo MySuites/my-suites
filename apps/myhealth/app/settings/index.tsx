@@ -12,7 +12,7 @@ import { WeightLogModal } from '../../components/profile/WeightLogModal';
 import { BodyWeightService, BodyWeightEntry } from '../../services/BodyWeightService';
 import { HealthKitService } from '../../services/HealthKitService';
 
-type DateRange = 'W' | 'M' | '6M' | 'Y';
+import { DateRange } from '../../components/ui/TimeSeriesChart';
 
 export default function SettingsScreen() {
   const { user } = useAuth();
@@ -25,7 +25,7 @@ export default function SettingsScreen() {
   // Derived state for chart
   const [isWeightModalVisible, setIsWeightModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedRange, setSelectedRange] = useState<DateRange>('W');
+  const [selectedRange, setSelectedRange] = useState<DateRange>('Week');
 
   const fetchLatestWeight = useCallback(async () => {
     // Fetch the most recent weight entry
@@ -57,21 +57,30 @@ export default function SettingsScreen() {
     const todayD = String(now.getDate()).padStart(2, '0');
     const todayStr = `${todayY}-${todayM}-${todayD}`;
 
-    if (selectedRange === 'W') {
+    if (selectedRange === 'Day') {
+        // Today's hourly spine
+        const d = new Date(todayStr);
+        // We want every hour? or every few hours?
+        // Let's do every hour for granularity, chart handles display
+        for (let i = 0; i < 24; i++) {
+             const h = i < 10 ? `0${i}` : `${i}`;
+             spine.push(`${todayStr}T${h}:00:00`);
+        }
+    } else if (selectedRange === 'Week') {
         const d = new Date(todayStr);
         for (let i = 6; i >= 0; i--) {
             const temp = new Date(d);
             temp.setUTCDate(d.getUTCDate() - i);
             spine.push(temp.toISOString().split('T')[0]);
         }
-    } else if (selectedRange === 'M') {
+    } else if (selectedRange === 'Month') {
         const d = new Date(todayStr);
         for (let i = 29; i >= 0; i--) {
             const temp = new Date(d);
             temp.setUTCDate(d.getUTCDate() - i);
             spine.push(temp.toISOString().split('T')[0]);
         }
-    } else if (selectedRange === '6M') {
+    } else if (selectedRange === '6Month') {
         const lastWeekStart = new Date(todayStr);
         lastWeekStart.setUTCDate(lastWeekStart.getUTCDate() - 6);
         for (let i = 25; i >= 0; i--) {
@@ -79,7 +88,7 @@ export default function SettingsScreen() {
              temp.setUTCDate(lastWeekStart.getUTCDate() - (i * 7));
              spine.push(temp.toISOString().split('T')[0]); 
         }
-    } else if (selectedRange === 'Y') {
+    } else if (selectedRange === 'Year') {
         const currentMonthStartStr = `${todayY}-${todayM}-01`;
         const d = new Date(currentMonthStartStr);
         for (let i = 11; i >= 0; i--) {
@@ -94,25 +103,51 @@ export default function SettingsScreen() {
     }
 
     // 2. Filter & Aggregate
-    const spineStartDate = spine[0];
+    const spineStartDate = spine[0].split('T')[0]; // Safe for Day too
     const groups: Record<string, { total: number, count: number }> = {};
     
     allWeightHistory.forEach(item => {
+        // Simple string comparison works for YYYY-MM-DD but for Day we need check
         if (item.date < spineStartDate) return;
 
         let key = '';
-        if (selectedRange === 'W' || selectedRange === 'M') {
+        if (selectedRange === 'Day') {
+             // Precise match on Date, and bucket by hour if we had time.
+             // But item.date is ONLY YYYY-MM-DD string according to interface.
+             // If item.date is YYYY-MM-DD, then we cannot show intraday changes unless we use created_at.
+             // Interface: date: string; // YYYY-MM-DD
+             // created_at?: string;
+             
+             if (item.date === todayStr) {
+                 // If we have created_at, use it. Else put at 12:00?
+                 // Or if user enters multiple weights for "today", they likely differ by time?
+                 // If no time info, this chart view is useless.
+                 // Let's assume created_at exists or fallback to 12:00
+                 if (item.created_at) {
+                     const t = new Date(item.created_at);
+                     // Round to nearest hour
+                     const h = t.getHours();
+                     const hStr = h < 10 ? `0${h}` : `${h}`;
+                     key = `${todayStr}T${hStr}:00:00`;
+                 } else {
+                     // Fallback: Just put it at noon or ignore?
+                     // Or maybe duplicate entries for same day?
+                     // Taking the entries as they come.
+                 }
+             }
+        } else if (selectedRange === 'Week' || selectedRange === 'Month') {
             key = item.date;
-        } else if (selectedRange === '6M') {
+        } else if (selectedRange === '6Month') {
             const itemDate = new Date(item.date).getTime();
             for (let i = spine.length - 1; i >= 0; i--) {
                 const spineDate = new Date(spine[i]).getTime();
                 if (itemDate >= spineDate) {
                     key = spine[i];
                     break;
+                    
                 }
             }
-        } else if (selectedRange === 'Y') {
+        } else if (selectedRange === 'Year') {
             key = item.date.substring(0, 7) + '-01';
         }
 
@@ -130,8 +165,9 @@ export default function SettingsScreen() {
         const d = new Date(dateStr);
         const utcDate = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
         
-        if (selectedRange === 'W' || selectedRange === 'M' || selectedRange === '6M') return utcDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        if (selectedRange === 'Y') return utcDate.toLocaleDateString(undefined, { month: 'short' });
+        if (selectedRange === 'Day') return utcDate.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+        if (selectedRange === 'Week' || selectedRange === 'Month' || selectedRange === '6Month') return utcDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        if (selectedRange === 'Year') return utcDate.toLocaleDateString(undefined, { month: 'short' });
         return utcDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     };
 

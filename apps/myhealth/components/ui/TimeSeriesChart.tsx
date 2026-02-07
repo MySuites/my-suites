@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Dimensions, Text, TouchableWithoutFeedback } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 
-export type DateRange = 'W' | 'M' | '6M' | 'Y';
+export type DateRange = 'Day' | 'Week' | 'Month' | '3Month' | '6Month' | 'Year' | 'All';
 
 interface TimeSeriesChartProps {
   data: { value: number; label: string; date: string; spineIndex?: number }[];
@@ -125,21 +125,38 @@ export function TimeSeriesChart({
   if (maxPoints && selectedRange) {
     const now = new Date();
     const config = {
-      'W': { count: 7, unit: 'date' as const },
-      'M': { count: 31, unit: 'date' as const },
-      '6M': { count: 26, unit: 'week' as const },
-      'Y': { count: 12, unit: 'month' as const },
+      'Day': { count: 8, unit: 'hour' as const }, // Every 3h approx? 24h / 8 = 3h
+      'Week': { count: 7, unit: 'date' as const },
+      'Month': { count: 31, unit: 'date' as const },
+      '3Month': { count: 13, unit: 'week' as const }, // 13 weeks ~ 3 months
+      '6Month': { count: 26, unit: 'week' as const },
+      'Year': { count: 12, unit: 'month' as const },
+      'All': { count: maxPoints, unit: 'month' as const }, // Fallback
     };
     
-    const { count, unit } = config[selectedRange as keyof typeof config] || { count: maxPoints, unit: 'date' };
+    const { count, unit } = config[selectedRange] || { count: maxPoints, unit: 'date' };
     
-    if (selectedRange === 'W') {
+    if (selectedRange === 'Week') {
         // 7 specific days for Week view
         for (let i = 6; i >= 0; i--) {
             const d = new Date(now);
             d.setDate(d.getDate() - i);
             fixedLabels.push(d.toLocaleDateString(undefined, { weekday: 'short' }));
         }
+    } else if (selectedRange === 'Day') {
+        // 8 points for 24 hours -> every 3 hours
+        // 0h, 3h, 6h ... 21h, 24h(now)
+        // Or relative to now? Usually linear.
+        // Let's assume standard 00:00, 04:00, 08:00... or relative to "Now" - 24h?
+        // User said "Day" range. "Day" usually means Today 00:00 - 23:59.
+        // If it means "Last 24 Hours", then relative.
+        // Let's go with "Today" 00-24h for simplicity/common UX, or rely on passed data.
+        // If distinct points, let's just use 4-hour intervals for labels: 0, 4, 8, 12, 16, 20
+        [0, 4, 8, 12, 16, 20].forEach(h => {
+             const d = new Date();
+             d.setHours(h, 0, 0, 0);
+             fixedLabels.push(d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }));
+        });
     } else {
         // Standard distribution for others
         [0, 0.25, 0.5, 0.75, 1].forEach(percent => {
@@ -148,10 +165,16 @@ export function TimeSeriesChart({
             if (unit === 'date') d.setDate(d.getDate() - unitsAgo);
             else if (unit === 'week') d.setDate(d.getDate() - unitsAgo * 7);
             else if (unit === 'month') d.setMonth(d.getMonth() - unitsAgo);
+            else if (unit === 'hour') d.setHours(d.getHours() - unitsAgo * 3); // 3h steps roughly
             
-            fixedLabels.push(d.toLocaleDateString(undefined, unit === 'month' ? { month: 'short' } : { month: 'short', day: 'numeric' }));
+            if (unit === 'hour') {
+                fixedLabels.push(d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }));
+            } else {
+                fixedLabels.push(d.toLocaleDateString(undefined, unit === 'month' ? { month: 'short' } : { month: 'short', day: 'numeric' }));
+            }
         });
     }
+
   }
 
   // Calculate Y-Axis bounds centered on average (Use REAL values only)
@@ -214,19 +237,19 @@ export function TimeSeriesChart({
                     }}
                 >
                     {/* Cross-hair Style Grid */}
-                    {(selectedRange === 'W' 
+                    {(selectedRange === 'Week' 
                         ? [0, 1/6, 2/6, 3/6, 4/6, 5/6, 1] // 7 Vertical Lines for Week
                         : [0.25, 0.5, 0.75] // Default 4 sections for others
                     ).map(p => (
                     <React.Fragment key={p}>
                         <View style={{ position: 'absolute', left: `${p * 100}%`, top: 0, bottom: 0, width: 1, backgroundColor: textColor }} />
                         {/* Only default horizontal lines? Or keep them same? Keep default horizontal grid */}
-                        {selectedRange !== 'W' && (
+                        {selectedRange !== 'Week' && (
                              <View style={{ position: 'absolute', top: `${p * 100}%`, left: 0, right: 0, height: 1, backgroundColor: textColor }} />
                         )}
                     </React.Fragment>
                     ))}
-                    {selectedRange === 'W' && (
+                    {selectedRange === 'Week' && (
                         // Draw standard horizontal grid for Week separately to avoid dupes/mess if we want 4 horizontal lines
                         [0.25, 0.5, 0.75].map(p => (
                              <View key={`h-${p}`} style={{ position: 'absolute', top: `${p * 100}%`, left: 0, right: 0, height: 1, backgroundColor: textColor }} />

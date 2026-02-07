@@ -5,13 +5,15 @@ import { SegmentedControl, SegmentedControlOption } from '../ui/SegmentedControl
 import { RaisedCard, HollowedCard, useUITheme, Skeleton, IconSymbol } from '@mysuite/ui';
 
 // Defined locally to avoid circular dependencies if any
-type DateRange = 'W' | 'M' | '6M' | 'Y';
+// Update: Importing from TimeSeriesChart to ensure consistency
+import { DateRange } from '../ui/TimeSeriesChart';
 
 const RANGE_OPTIONS: SegmentedControlOption<DateRange>[] = [
-  { label: 'W', value: 'W' },
-  { label: 'M', value: 'M' },
-  { label: '6M', value: '6M' },
-  { label: 'Y', value: 'Y' },
+  { label: 'D', value: 'Day' },
+  { label: 'W', value: 'Week' },
+  { label: 'M', value: 'Month' },
+  { label: '6M', value: '6Month' },
+  { label: 'Y', value: 'Year' },
 ];
 
 interface BodyWeightCardProps {
@@ -48,23 +50,29 @@ export function BodyWeightCard({
 
   const getSelectionLabel = () => {
     if (!selectedPoint) {
-      const labels: Record<DateRange, string> = {
-        W: 'Week',
-        M: 'Month',
-        '6M': '6 Month',
-        Y: 'Year',
+      const labels: Record<string, string> = {
+        Day: 'Today',
+        Week: 'Week',
+        Month: 'Month',
+        '6Month': '6 Month',
+        Year: 'Year',
       };
-      return `${labels[selectedRange]} Average`;
+      return `${labels[selectedRange] || selectedRange} Average`;
     }
     
     const d = new Date(selectedPoint.date);
     const date = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
     
-    if (selectedRange === 'W' || selectedRange === 'M') {
+    if (selectedRange === 'Day') {
+      const timeStr = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+      return `Today at ${timeStr}`;
+    }
+
+    if (selectedRange === 'Week' || selectedRange === 'Month') {
       return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
     }
     
-    if (selectedRange === '6M') {
+    if (selectedRange === '6Month') {
       const end = new Date(date);
       end.setDate(date.getDate() + 6);
       const startStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -72,7 +80,7 @@ export function BodyWeightCard({
       return `Weekly Average: ${startStr} - ${endStr}`;
     }
     
-    if (selectedRange === 'Y') {
+    if (selectedRange === 'Year') {
       const monthStr = date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
       return `Monthly Average: ${monthStr}`;
     }
@@ -128,9 +136,10 @@ export function BodyWeightCard({
                         color={primaryColor}
                         textColor={textColor}
                         maxPoints={
-                            selectedRange === 'W' ? 7 : 
-                            selectedRange === 'M' ? 31 : 
-                            selectedRange === '6M' ? 26 : 
+                            selectedRange === 'Day' ? 8 :
+                            selectedRange === 'Week' ? 7 : 
+                            selectedRange === 'Month' ? 31 : 
+                            selectedRange === '6Month' ? 26 : 
                             12
                         }
                         selectedRange={selectedRange}
@@ -146,7 +155,7 @@ export function BodyWeightCard({
                 ) : (
                     <View className="py-8 bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
                         <Text className="text-light-muted dark:text-dark-muted text-center italic text-sm">
-                            No data for this {selectedRange === '6M' ? 'period' : selectedRange === 'W' ? 'week' : selectedRange === 'M' ? 'month' : 'year'}.
+                            No data for {selectedRange === 'Day' ? 'today' : selectedRange === '6Month' ? 'this period' : selectedRange === 'Week' ? 'this week' : selectedRange === 'Month' ? 'this month' : 'this year'}.
                         </Text>
                     </View>
                 )}

@@ -10,16 +10,16 @@ interface WorkoutOverviewChartProps {
 }
 
 const RANGE_OPTIONS: SegmentedControlOption<DateRange>[] = [
-  { label: 'W', value: 'W' },
-  { label: 'M', value: 'M' },
-  { label: '6M', value: '6M' },
-  { label: 'Y', value: 'Y' },
+  { label: 'M', value: 'Month' },
+  { label: '3M', value: '3Month' },
+  { label: '6M', value: '6Month' },
+  { label: 'Y', value: 'Year' },
 ];
 
 export function WorkoutOverviewChart({ workoutName }: WorkoutOverviewChartProps) {
     const { workoutHistory } = useWorkoutManager();
     const theme = useUITheme();
-    const [selectedRange, setSelectedRange] = React.useState<DateRange>('6M');
+    const [selectedRange, setSelectedRange] = React.useState<DateRange>('6Month');
     const [selectedPoint, setSelectedPoint] = React.useState<{ value: number; date: string } | null>(null);
 
     React.useEffect(() => {
@@ -60,49 +60,7 @@ export function WorkoutOverviewChart({ workoutName }: WorkoutOverviewChartProps)
         // let maxPoints = 0; // Unused variable
         let startDate = new Date();
 
-        if (selectedRange === 'W') {
-            // maxPoints = 7;
-            startDate.setDate(now.getDate() - 6);
-            startDate.setHours(0, 0, 0, 0);
-
-            // Create buckets for last 7 days from 0 to 6
-            // We want spineIndex 0 to be 6 days ago, 6 to be today?
-            // Usually spineIndex 0 is left, 6 is right (latest).
-            
-            // Map logs to buckets
-            filtered.forEach(log => {
-                const d = new Date(log.date);
-                if (d >= startDate) {
-                    // Calculate day difference
-                    // diff in days from start date
-                    const diffTime = d.getTime() - startDate.getTime();
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
-                    
-                    if (diffDays >= 0 && diffDays < 7) {
-                        // If multiple workouts in same day, maybe take max volume or sum?
-                        // For Overview, maybe sum for that day? Or Max?
-                        // "Total Weight Lifted" usually implies volume per session.
-                        // Let's replace if newer/higher? Or just push.
-                        // TimeSeriesChart handles duplicates by "find" usually taking first.
-                        // But best to have unique spineIndex.
-                        // Let's take the one with highest volume if multiple, or just last one.
-                        const existing = buckets.find(b => b.spineIndex === diffDays);
-                        if (existing) {
-                             existing.value += log.value;
-                             if (new Date(log.date) > new Date(existing.date)) existing.date = log.date;
-                        } else {
-                                buckets.push({
-                                    value: log.value,
-                                    label: new Date(log.date).toLocaleDateString(),
-                                    date: log.date,
-                                    spineIndex: diffDays
-                                });
-                        }
-                    }
-                }
-            });
-
-        } else if (selectedRange === 'M') {
+        if (selectedRange === 'Month') {
             // maxPoints = 31;
             startDate.setDate(now.getDate() - 30);
             startDate.setHours(0, 0, 0, 0);
@@ -129,7 +87,36 @@ export function WorkoutOverviewChart({ workoutName }: WorkoutOverviewChartProps)
                 }
             });
 
-        } else if (selectedRange === '6M') {
+        } else if (selectedRange === '3Month') {
+            startDate.setDate(now.getDate() - (12 * 7)); // 13 weeks ideally, but let's stick to simple math or 90 days? Data in config is 13 weeks.
+            // 3 months ~ 90 days ~ 13 weeks.
+            startDate.setHours(0, 0, 0, 0);
+
+            filtered.forEach(log => {
+                const d = new Date(log.date);
+                if (d >= startDate) {
+                    const diffTime = d.getTime() - startDate.getTime();
+                    // Bucket by Week for 3M? Config says unit: 'week'
+                    const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+                    
+                    if (diffWeeks >= 0 && diffWeeks < 13) {
+                         const existing = buckets.find(b => b.spineIndex === diffWeeks);
+                         if (existing) {
+                              existing.value += log.value;
+                              if (new Date(log.date) > new Date(existing.date)) existing.date = log.date;
+                         } else {
+                                  buckets.push({
+                                      value: log.value,
+                                      label: new Date(log.date).toLocaleDateString(),
+                                      date: log.date,
+                                      spineIndex: diffWeeks
+                                  });
+                         }
+                    }
+                }
+            });
+
+        } else if (selectedRange === '6Month') {
             startDate.setDate(now.getDate() - (25 * 7));
             startDate.setHours(0, 0, 0, 0);
 
@@ -156,7 +143,7 @@ export function WorkoutOverviewChart({ workoutName }: WorkoutOverviewChartProps)
                 }
             });
 
-        } else if (selectedRange === 'Y') {
+        } else if (selectedRange === 'Year') {
              // maxPoints = 12; // Months
              startDate.setMonth(now.getMonth() - 11);
              startDate.setDate(1); // Start of that month
@@ -198,13 +185,13 @@ export function WorkoutOverviewChart({ workoutName }: WorkoutOverviewChartProps)
              return new Date(selectedPoint.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
         }
         // Default text
-        const labels: Record<DateRange, string> = {
-            W: 'Week',
-            M: 'Month',
-            '6M': '6 Month',
-            Y: 'Year',
+        const labels: Record<string, string> = {
+            Week: 'Week',
+            Month: 'Month',
+            '6Month': '6 Month',
+            Year: 'Year',
         };
-        return `${labels[selectedRange]} History`;
+        return `${labels[selectedRange] || selectedRange} History`;
     };
 
     return (
@@ -243,9 +230,9 @@ export function WorkoutOverviewChart({ workoutName }: WorkoutOverviewChartProps)
                     textColor={theme.textMuted}
                     selectedRange={selectedRange}
                     maxPoints={
-                        selectedRange === 'W' ? 7 : 
-                        selectedRange === 'M' ? 31 : 
-                        selectedRange === '6M' ? 26 : 
+                        selectedRange === 'Month' ? 31 :
+                        selectedRange === '3Month' ? 13 : 
+                        selectedRange === '6Month' ? 26 : 
                         12
                     }
                     height={150}
