@@ -324,8 +324,7 @@ const WorkoutDraftExerciseItem = ({
     isEditing
 }: WorkoutDraftExerciseItemProps) => {
     const theme = useTheme();
-    const currentTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || 0, weight: 0 }));
-    
+
     // Helper to determine which columns to show
     const getExerciseFields = (properties?: string[], exerciseId?: string) => {
         let props = properties || [];
@@ -349,7 +348,14 @@ const WorkoutDraftExerciseItem = ({
     };
 
     const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(item.properties, item.id);
-
+    
+    // Ensure duration falls back to reps if needed (legacy data fix for display)
+    const rawTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || 0, weight: 0 }));
+    const currentTargets = rawTargets.map((t: any) => ({
+        ...t,
+        duration: t.duration || (showDuration ? (item.duration || item.reps) : 0),
+        distance: t.distance || 0
+    }));
 
     return (
         <View className="bg-light-lighter dark:bg-dark-lighter rounded-xl mb-3 overflow-hidden border border-black/5 dark:border-white/10">
@@ -361,8 +367,6 @@ const WorkoutDraftExerciseItem = ({
                     <Text className="text-base text-light dark:text-dark leading-6 font-semibold">{item.name}</Text>
                     <Text className="text-gray-500 dark:text-gray-400 text-sm">
                         {item.sets} Sets
-                        {showReps && ` • ${item.reps} Reps`}
-                        {showDuration && ` • ${item.reps}s`} 
                     </Text>
                 </View>
                 <View className="flex-row items-center">
