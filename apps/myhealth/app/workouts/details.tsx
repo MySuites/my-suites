@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, A
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
-import { useWorkoutManager, fetchExercises } from '../../providers/WorkoutManagerProvider';
+import { useWorkoutManager, fetchExercises, getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
 import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { useWorkoutDraft } from '../../hooks/workouts/useWorkoutDraft';
 import { ExerciseSelector } from '../../components/workouts/ExerciseSelector';
@@ -195,92 +195,94 @@ export default function CreateWorkoutScreen() {
                 }
             />
 
-            <View className="mt-28 flex-1 p-4">
-                {isEditing ? (
-                    <View className="bg-light-lighter dark:bg-dark-lighter h-16 px-4 rounded-xl border border-transparent dark:border-highlight-dark mb-6 justify-center">
-                        <TextInput 
-                            placeholder="Workout Name" 
-                            value={workoutDraftName} 
-                            onChangeText={setWorkoutDraftName} 
-                            className="text-light dark:text-dark"
-                            style={{ fontSize: 16, paddingVertical: 0, flex: 1 }}
-                            placeholderTextColor={theme.textMuted || '#888'}
-                        />
+            <FlatList
+                data={workoutDraftExercises}
+                keyExtractor={(item, index) => `${index}-${item.name}`} 
+                className="flex-1 mt-28"
+                contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+                showsVerticalScrollIndicator={false}
+                ListHeaderComponent={
+                    <View>
+                        {isEditing ? (
+                            <View className="bg-light-lighter dark:bg-dark-lighter h-16 px-4 rounded-xl border border-transparent dark:border-highlight-dark mb-6 justify-center">
+                                <TextInput 
+                                    placeholder="Workout Name" 
+                                    value={workoutDraftName} 
+                                    onChangeText={setWorkoutDraftName} 
+                                    className="text-light dark:text-dark"
+                                    style={{ fontSize: 16, paddingVertical: 0, flex: 1 }}
+                                    placeholderTextColor={theme.textMuted || '#888'}
+                                />
+                            </View>
+                        ) : (
+                            <Text className="text-2xl font-bold text-light dark:text-dark mb-6 px-1">
+                                {workoutDraftName}
+                            </Text>
+                        )}
+                        
+                        {workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
+
+                        <View className="flex-row justify-between items-center mb-2 mt-2">
+                            <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Exercises</Text>
+                            {isEditing && (
+                                <RaisedCard 
+                                    onPress={handleOpenAddExercise}
+                                    className="h-10 px-4 rounded-full items-center justify-center"
+                                    style={{ borderRadius: 9999 }}
+                                >
+                                    <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>
+                                </RaisedCard>
+                            )}
+                        </View>
                     </View>
-                ) : (
-                    <Text className="text-2xl font-bold text-light dark:text-dark mb-6 px-1">
-                        {workoutDraftName}
-                    </Text>
-                )}
-                
-                {workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
-
-                <View className="flex-row justify-between items-center mb-2">
-                    <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Exercises</Text>
-                    {isEditing && (
-                        <RaisedCard 
-                            onPress={handleOpenAddExercise}
-                            className="h-10 px-4 rounded-full items-center justify-center"
-                            style={{ borderRadius: 9999 }}
-                        >
-                            <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>
-                        </RaisedCard>
-                    )}
-                </View>
-
-                {workoutDraftExercises.length === 0 ? (
-                    <View className="flex-1 justify-center items-center opacity-50">
+                }
+                ListEmptyComponent={
+                    <View className="py-10 justify-center items-center opacity-50">
                         <Text className="leading-6 mb-2 text-lg text-light-muted dark:text-dark-muted">No exercises added yet</Text>
                     </View>
-                ) : (
-                    <FlatList
-                        data={workoutDraftExercises}
-                        keyExtractor={(item, index) => `${index}-${item.name}`} 
-                        className="flex-1 mb-4"
-                        showsVerticalScrollIndicator={false}
-                        renderItem={({item, index}) => (
-                            <WorkoutDraftExerciseItem
-                                item={item}
-                                index={index}
-                                isExpanded={expandedDraftExerciseIndex === index}
-                                onToggleExpand={() => setExpandedDraftExerciseIndex(expandedDraftExerciseIndex === index ? null : index)}
-                                onMove={(dir) => moveExercise(index, dir)}
-                                onRemove={() => removeExercise(index)}
-                                onUpdateSet={(setIndex, field, value) => updateSetTarget(index, setIndex, field, value)}
-                                onAddSet={() => addSet(index)}
-                                onRemoveSet={(setIndex) => removeSet(index, setIndex)}
-                                latestBodyWeight={latestBodyWeight}
-                                isEditing={isEditing}
-                            />
-                        )}
+                }
+                ListFooterComponent={
+                    isEditing && editingWorkoutId ? (
+                        <TouchableOpacity 
+                            onPress={() => {
+                                Alert.alert('Delete Workout', 'Are you sure?', [
+                                    { text: 'Cancel', style: 'cancel' },
+                                    { 
+                                        text: 'Delete', 
+                                        style: 'destructive', 
+                                        onPress: () => {
+                                            deleteSavedWorkout(editingWorkoutId, {
+                                                skipConfirmation: true,
+                                                onSuccess: () => {
+                                                    router.back();
+                                                }
+                                            });
+                                        }
+                                    }
+                                ])
+                            }} 
+                            className="py-3 items-center mt-6 mb-6"
+                        >
+                            <Text className="text-danger font-semibold text-base">Delete Workout</Text>
+                        </TouchableOpacity>
+                    ) : null
+                }
+                renderItem={({item, index}) => (
+                    <WorkoutDraftExerciseItem
+                        item={item}
+                        index={index}
+                        isExpanded={expandedDraftExerciseIndex === index}
+                        onToggleExpand={() => setExpandedDraftExerciseIndex(expandedDraftExerciseIndex === index ? null : index)}
+                        onMove={(dir) => moveExercise(index, dir)}
+                        onRemove={() => removeExercise(index)}
+                        onUpdateSet={(setIndex, field, value) => updateSetTarget(index, setIndex, field, value)}
+                        onAddSet={() => addSet(index)}
+                        onRemoveSet={(setIndex) => removeSet(index, setIndex)}
+                        latestBodyWeight={latestBodyWeight}
+                        isEditing={isEditing}
                     />
                 )}
-                
-                {isEditing && editingWorkoutId && (
-                    <TouchableOpacity 
-                        onPress={() => {
-                            Alert.alert('Delete Workout', 'Are you sure?', [
-                                { text: 'Cancel', style: 'cancel' },
-                                { 
-                                    text: 'Delete', 
-                                    style: 'destructive', 
-                                    onPress: () => {
-                                        deleteSavedWorkout(editingWorkoutId, {
-                                            skipConfirmation: true,
-                                            onSuccess: () => {
-                                                router.back();
-                                            }
-                                        });
-                                    }
-                                }
-                            ])
-                        }} 
-                        className="py-3 items-center mt-2 mb-6"
-                    >
-                        <Text className="text-danger font-semibold text-base">Delete Workout</Text>
-                    </TouchableOpacity>
-                )}
-            </View>
+            />
 
             {/* Add Exercise Modal */}
             <ExerciseSelector
@@ -325,8 +327,17 @@ const WorkoutDraftExerciseItem = ({
     const currentTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || 0, weight: 0 }));
     
     // Helper to determine which columns to show
-    const getExerciseFields = (properties?: string[]) => {
-        const props = properties || [];
+    const getExerciseFields = (properties?: string[], exerciseId?: string) => {
+        let props = properties || [];
+        
+        // Fallback to default properties if available (handles stale data)
+        if (exerciseId) {
+            const defaults = getExerciseDefaultProperties(exerciseId);
+            // Merge unique properties
+            const unique = new Set([...props, ...defaults]);
+            props = Array.from(unique);
+        }
+
         const lowerProps = props.map(p => p.toLowerCase());
         return { 
             showBodyweight: lowerProps.includes('bodyweight'),
@@ -337,7 +348,8 @@ const WorkoutDraftExerciseItem = ({
         };
     };
 
-    const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(item.properties);
+    const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(item.properties, item.id);
+
 
     return (
         <View className="bg-light-lighter dark:bg-dark-lighter rounded-xl mb-3 overflow-hidden border border-black/5 dark:border-white/10">

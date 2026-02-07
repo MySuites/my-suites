@@ -24,7 +24,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
     const completedSets = exercise.completedSets || 0;
     const isFinished = completedSets >= exercise.sets;
 
-    const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(exercise.properties);
+    const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(exercise.properties, exercise.id);
 
     return (
         <RaisedCard>

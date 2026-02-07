@@ -279,3 +279,11 @@ export async function fetchLastExercisePerformance(
         return { data: null, error: e };
     }
 }
+// Helper to get default properties for an exercise ID (to handle stale data)
+export function getExerciseDefaultProperties(id: string): string[] {
+    const def = ExerciseDefaultData.find((e: any) => e.id === id);
+    if (def && def.type) {
+        return def.type.split(",").map((s: string) => s.trim());
+    }
+    return [];
+}

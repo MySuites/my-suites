@@ -15,8 +15,19 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { IconSymbol } from "@mysuite/ui";
 
-export const getExerciseFields = (properties?: string[]) => {
-    const props = properties || [];
+import { getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
+
+export const getExerciseFields = (properties?: string[], exerciseId?: string) => {
+    let props = properties || [];
+    
+    // Fallback to default properties if available (handles stale data)
+    if (exerciseId) {
+        const defaults = getExerciseDefaultProperties(exerciseId);
+        // Merge unique properties
+        const unique = new Set([...props, ...defaults]);
+        props = Array.from(unique);
+    }
+
     const lowerProps = props.map(p => p.toLowerCase());
     return { 
         showBodyweight: lowerProps.includes('bodyweight'),
@@ -46,7 +57,7 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
     const isCompleted = !!log;
     const isEvenSet = (index + 1) % 2 === 0;
 
-    const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(exercise.properties);
+    const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(exercise.properties, exercise.id);
 
     const getValue = (field: 'weight' | 'reps' | 'duration' | 'distance') => {
         const target = exercise.setTargets?.[index]?.[field];
