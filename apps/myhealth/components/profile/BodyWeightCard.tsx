@@ -92,9 +92,6 @@ export function BodyWeightCard({
     <RaisedCard className="p-4 mb-4">
       <View className="flex-row justify-between items-center mb-2">
         <View className="flex-row items-center">
-            <View className="w-8 h-8 rounded-full bg-primary/10 items-center justify-center mr-3">
-                 <IconSymbol name="scalemass.fill" size={18} color={primaryColor || '#3b82f6'} />
-            </View>
             <Text className="font-semibold text-base text-light dark:text-dark">Body Weight</Text>
         </View>
         <RaisedCard 
@@ -108,23 +105,22 @@ export function BodyWeightCard({
       
       <View className="mt-2">
         {displayWeight ? (
-            <View>
+            <View className="w-full">
                 <View className="mb-4">
-                    <View className="flex-row justify-between items-center mb-1 w-full">
-                        <View className="flex-row items-baseline">
-                            <Text className="text-3xl font-bold mr-1 text-light dark:text-dark">{displayWeight}</Text>
-                            <Text className="text-light-muted dark:text-dark-muted text-sm">lbs</Text>
-                        </View>
-                        
+                    <View className="flex-row justify-between items-center mb-1">
                         <SegmentedControl
                             options={RANGE_OPTIONS}
                             value={selectedRange}
                             onChange={onRangeChange}
                         />
                     </View>
-                    <Text className="text-[11px] font-medium text-light-muted dark:text-dark-muted">
-                        {getSelectionLabel()}
-                    </Text>
+                    <View className="flex-row items-baseline">
+                        <Text className="text-3xl font-bold mr-1 text-light dark:text-dark">{displayWeight}</Text>
+                        <Text className="text-light-muted dark:text-dark-muted text-base">lbs</Text>
+                        <Text className="ml-2 text-[11px] font-medium text-light-muted dark:text-dark-muted">
+                            {getSelectionLabel()}
+                        </Text>
+                    </View>
                 </View>
                 {isLoading ? (
                     <View className="h-40 items-center justify-center bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
@@ -143,6 +139,7 @@ export function BodyWeightCard({
                             12
                         }
                         selectedRange={selectedRange}
+                        aggregation="avg"
                         onPointSelect={(point) => {
                             // If the same point is clicked again, reset to average
                             if (point && selectedPoint && point.date === selectedPoint.date) {

@@ -20,14 +20,14 @@ export function SegmentedControl<T extends string>({
   containerClassName = '',
 }: SegmentedControlProps<T>) {
   return (
-    <View className={`flex-row bg-gray-100 dark:bg-zinc-800 rounded-lg p-0.5 ${containerClassName}`}>
+    <View className={`flex-row bg-light-muted dark:bg-dark-muted rounded-lg p-0.5 ${containerClassName}`}>
       {options.map((option) => {
         const isActive = value === option.value;
         return (
           <Pressable
             key={option.value}
             onPress={() => onChange(option.value)}
-            className="px-4 py-2 rounded-md"
+            className="flex-1 py-1.5 rounded-md items-center justify-center" // Changed px-4 to flex-1, reduced py slightly for better fit if needed
             style={[
               styles.segment,
               isActive && styles.activeSegment,

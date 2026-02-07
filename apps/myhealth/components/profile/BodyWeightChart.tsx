@@ -8,10 +8,11 @@ interface BodyWeightChartProps {
   textColor?: string;
   maxPoints?: number;
   selectedRange?: DateRange;
+  aggregation?: 'sum' | 'avg' | 'min' | 'max' | 'first' | 'last';
   onPointSelect?: (item: { value: number; date: string } | null) => void;
 }
 
-export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af', maxPoints, selectedRange, onPointSelect }: BodyWeightChartProps) {
+export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af', maxPoints, selectedRange, aggregation, onPointSelect }: BodyWeightChartProps) {
     if (!data || data.length === 0) {
         return (
           <View style={{ height: 150, justifyContent: 'center', alignItems: 'center' }}>
@@ -27,6 +28,7 @@ export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af'
         textColor={textColor}
         maxPoints={maxPoints}
         selectedRange={selectedRange}
+        aggregation={aggregation}
         onPointSelect={onPointSelect}
         height={150}
     />

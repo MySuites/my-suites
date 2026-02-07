@@ -48,9 +48,17 @@ export function TimeSeriesChart({
       if (selectedRange === 'Day') {
           startDate = new Date(todayY, todayM, todayD); // Today 00:00
           bucketUnit = 'hour';
-          bucketCount = 24; // Implicit 24h spine? Or user passed maxPoints=8? 
-          // If maxPoints is set, we might stick to that, but for aggregation we need to know what "bucket" means.
-          // Let's assume strict time-based bucketing if aggregation is on.
+          bucketCount = 24; 
+          // If maxPoints is set (e.g. 8), we can respect it if we implement sub-sampling or larger buckets.
+          // For now, let's stick to hourly buckets and let maxPoints handle display sampling if needed?
+          // Actually, if we aggregate, we want *aggregated* points to match visual points usually.
+          // But strict hourly aggregation (24 points) then sampled down to 8 visual points by `maxPoints` logic?
+          // The current chart logic handles `maxPoints` by interpolating/skipping.
+          // If we want 8 aggregation buckets (every 3h), we should aggregate into 3h buckets.
+          // Let's implement dynamic bucketing based on maxPoints if possible.
+          if (maxPoints && maxPoints < 24) {
+               // We will handle this in bucket mapping
+          }
       } else if (selectedRange === 'Week') {
           startDate = new Date(todayY, todayM, todayD - 6);
           startDate.setHours(0,0,0,0);
@@ -77,21 +85,11 @@ export function TimeSeriesChart({
           bucketUnit = 'month';
           bucketCount = 12;
       } else if (selectedRange === 'All') {
-          // All time? fallback
           return data;
       }
 
       // 2. Create Buckets
       const buckets: { values: { val: number, date: string }[], spineIndex: number, date: string }[] = [];
-      // Initialize if we want empty buckets? 
-      // TimeSeriesChart core logic handles sparse data via interpolation if maxPoints is set.
-      // But for aggregation, we typically want to output properly indexed points.
-      
-      // We can just iterate data and assign to buckets? Or iterate 0..bucketCount?
-      // Iterating data is faster if sparse.
-      // Iterating buckets ensures full spine if we want 0s. 
-      // Let's iterate data and map to spineIndex.
-      
       const startProps = { y: startDate.getFullYear(), m: startDate.getMonth(), d: startDate.getDate(), time: startDate.getTime() };
       
       data.forEach(item => {
@@ -100,14 +98,16 @@ export function TimeSeriesChart({
 
           let index = -1;
           if (bucketUnit === 'hour') {
-              // Only if same day
+              // Only if same day (or subsequent days if range > 1 day but unit is hour? Day range is strictly today)
              if (d.getDate() === startProps.d && d.getMonth() === startProps.m && d.getFullYear() === startProps.y) {
-                 index = d.getHours(); // 0-23. If maxPoints is 8 (every 3h), we might need to map 0-23 -> 0-7? 
-                 // If we strictly follow spineIndex being 0..maxPoints-1
+                 // 0-23
+                 const hour = d.getHours(); 
+                 // If maxPoints (e.g. 8), map 24h to 8 buckets -> 3h per bucket
                  if (maxPoints && maxPoints < 24) {
-                     // e.g. 8 points -> 24/8 = 3h window
-                     const window = 24 / maxPoints;
-                     index = Math.floor(d.getHours() / window);
+                     const bucketSize = 24 / maxPoints; 
+                     index = Math.floor(hour / bucketSize);
+                 } else {
+                     index = hour;
                  }
              }
           } else if (bucketUnit === 'day') {
@@ -120,8 +120,10 @@ export function TimeSeriesChart({
               index = (d.getFullYear() - startProps.y) * 12 + (d.getMonth() - startProps.m);
           }
 
-          if (index >= 0 && (maxPoints ? index < maxPoints : true)) { // Allow open ended if no maxPoints?
-             // Find or create bucket
+          if (index >= 0 && (maxPoints ? index < (selectedRange === 'Day' ? maxPoints : bucketCount + 5) : true)) { 
+             // Note: bucketCount is rough estimate, index might exceed slightly (e.g. 31 days).
+             // Allow flexible upper bound unless strict.
+             
              let b = buckets.find(b => b.spineIndex === index);
              if (!b) {
                  b = { values: [], spineIndex: index, date: item.date }; // Initial date
@@ -147,8 +149,6 @@ export function TimeSeriesChart({
           } else if (aggregation === 'max') {
               resultValue = Math.max(...values);
           } else if (aggregation === 'first') {
-              // Sort by date inside bucket logic if needed, but assuming data order usually, 
-              // or find earliest date in b.values
               const sorted = b.values.sort((x, y) => new Date(x.date).getTime() - new Date(y.date).getTime());
               resultValue = sorted[0].val;
           } else if (aggregation === 'last') {
@@ -156,14 +156,11 @@ export function TimeSeriesChart({
               resultValue = sorted[sorted.length - 1].val;
           }
 
-          // Generate Label?
-          // We can leave label empty and let fixedLabels handle it? 
-          // Or generate simple label.
           return {
               value: resultValue,
               date: b.date,
               spineIndex: b.spineIndex,
-              label: '', // Let chart handle X-axis if fixedLabels used, else empty
+              label: '', 
           };
       }).sort((a, b) => (a.spineIndex || 0) - (b.spineIndex || 0));
 
@@ -172,9 +169,7 @@ export function TimeSeriesChart({
   if (!processedData || processedData.length === 0) {
     return (
       <View style={{ height, justifyContent: 'center', alignItems: 'center' }}>
-         <Text style={{ color: textColor, fontSize: 12, fontStyle: 'italic' }}>
-            No data for {selectedRange === 'Day' ? 'today' : selectedRange === '6Month' ? 'this period' : selectedRange === 'Week' ? 'this week' : selectedRange === 'Month' ? 'this month' : 'this year'}
-         </Text>
+         <Text style={{ color: textColor, fontSize: 12, fontStyle: 'italic' }}>No data for this range</Text>
       </View>
     );
   }

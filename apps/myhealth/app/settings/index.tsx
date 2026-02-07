@@ -6,7 +6,6 @@ import { DataRepository } from '../../providers/DataRepository';
 import { useThemePreference } from '../../providers/AppThemeProvider';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
-import { ProfileButton } from '../../components/ui/ProfileButton';
 import { BodyWeightCard } from '../../components/profile/BodyWeightCard';
 import { WeightLogModal } from '../../components/profile/WeightLogModal';
 import { BodyWeightService, BodyWeightEntry } from '../../services/BodyWeightService';
@@ -59,7 +58,6 @@ export default function SettingsScreen() {
 
     if (selectedRange === 'Day') {
         // Today's hourly spine
-        const d = new Date(todayStr);
         // We want every hour? or every few hours?
         // Let's do every hour for granularity, chart handles display
         for (let i = 0; i < 24; i++) {
