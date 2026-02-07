@@ -115,9 +115,20 @@ export function BodyWeightCard({
                         />
                     </View>
                     <View className="flex-row items-baseline">
-                        <Text className="text-3xl font-bold mr-1 text-light dark:text-dark">{displayWeight}</Text>
+                        <Text 
+                            className="text-3xl font-bold mr-1 text-light dark:text-dark shrink"
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.5}
+                        >
+                            {displayWeight.toLocaleString()}
+                        </Text>
                         <Text className="text-light-muted dark:text-dark-muted text-base">lbs</Text>
-                        <Text className="ml-2 text-[11px] font-medium text-light-muted dark:text-dark-muted">
+                        <Text 
+                            className="ml-2 text-[11px] font-medium text-light-muted dark:text-dark-muted"
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                        >
                             {getSelectionLabel()}
                         </Text>
                     </View>

@@ -7,3 +7,18 @@ export function formatSeconds(s: number) {
         .padStart(2, "0");
     return `${mm}:${ss}`;
 }
+
+export function formatCompactNumber(num: number): string {
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+    }
+    if (num >= 100000) {
+        // >= 100k: Round to nearest k, no decimals
+        return Math.round(num / 1000) + "k";
+    }
+    if (num >= 10000) {
+        // 10k - 99k: One decimal place
+        return (num / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+    }
+    return num.toLocaleString();
+}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Dimensions, Text, TouchableWithoutFeedback } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
+import { formatCompactNumber } from '../../utils/formatting';
 
 export type DateRange = 'Day' | 'Week' | 'Month' | '3Month' | '6Month' | 'Year' | 'All';
 export type AggregationType = 'sum' | 'avg' | 'min' | 'max' | 'first' | 'last';
@@ -329,20 +330,44 @@ export function TimeSeriesChart({
   let stepValue = 10;
   let minAxis = 0;
 
-  // Search for the smallest stepValue (10, 20, 30...) that fits the data centered on avg
   if (realValues.length > 0) {
-      for (let s = 10; s <= 1000; s += 10) {
-        const range = s * targetSections;
-        const start = Math.max(0, Math.floor((avg - range / 2) / 10) * 10);
-        if (minData >= start && maxData <= start + range) {
-          stepValue = s;
-          minAxis = start;
-          break;
-        }
+      // Determine minimum step size to ensure distinct labels based on magnitude
+      let minStep = 10;
+      if (avg >= 100000) minStep = 1000;
+      else if (avg >= 10000) minStep = 100;
+
+      // Calculate required step to cover the range
+      const dataRange = maxData - minData;
+      let step = Math.max(minStep, Math.ceil(dataRange / targetSections));
+      
+      // Round step to a multiple of minStep
+      step = Math.ceil(step / minStep) * minStep;
+
+      // Center the data
+      const totalChartRange = step * targetSections;
+      const midData = (minData + maxData) / 2;
+      let start = Math.floor((midData - totalChartRange / 2) / minStep) * minStep;
+      if (start < 0) start = 0;
+
+      // Ensure fit
+      while (start + step * targetSections < maxData) {
+          step += minStep;
+          start = Math.floor((midData - (step * targetSections) / 2) / minStep) * minStep;
+          if (start < 0) start = 0;
+          // Safety break to prevent infinite loops if something goes wrong, though unlikely
+          if (step > maxData && step > 1000000) break; 
       }
+      // Final adjust if clamped at 0
+      if (start + step * targetSections < maxData) {
+          step = Math.ceil(maxData / targetSections / minStep) * minStep;
+          start = 0;
+      }
+
+      minAxis = start;
+      stepValue = step;
   }
 
-  const yAxisLabelTexts = Array.from({ length: targetSections + 1 }, (_, i) => (minAxis + i * stepValue).toString());
+  const yAxisLabelTexts = Array.from({ length: targetSections + 1 }, (_, i) => formatCompactNumber(minAxis + i * stepValue));
 
   // Format for gifted-charts - SUBTRACT minAxis to ensure perfect alignment
   const chartData = normalizedData.map(item => ({
