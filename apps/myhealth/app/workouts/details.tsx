@@ -220,7 +220,7 @@ export default function CreateWorkoutScreen() {
                             </Text>
                         )}
                         
-                        {workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
+                        {!isEditing && workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
 
                         <View className="flex-row justify-between items-center mb-2 mt-2">
                             <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Exercises</Text>
