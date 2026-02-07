@@ -3,13 +3,15 @@ import { View, Dimensions, Text, TouchableWithoutFeedback } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 
 export type DateRange = 'Day' | 'Week' | 'Month' | '3Month' | '6Month' | 'Year' | 'All';
+export type AggregationType = 'sum' | 'avg' | 'min' | 'max' | 'first' | 'last';
 
 interface TimeSeriesChartProps {
-  data: { value: number; label: string; date: string; spineIndex?: number }[];
+  data: { value: number; label?: string; date: string; spineIndex?: number }[];
   color?: string;
   textColor?: string;
   maxPoints?: number;
   selectedRange?: DateRange;
+  aggregation?: AggregationType;
   onPointSelect?: (item: { value: number; date: string } | null) => void;
   height?: number;
 }
@@ -20,20 +22,165 @@ export function TimeSeriesChart({
   textColor = '#9ca3af', 
   maxPoints, 
   selectedRange, 
+  aggregation,
   onPointSelect,
   height = 150
 }: TimeSeriesChartProps) {
   
-  if (!data || data.length === 0) {
+  // Pre-process data if aggregation is requested
+  const processedData = React.useMemo(() => {
+      if (!aggregation || !selectedRange || !data || data.length === 0) {
+          return data;
+      }
+
+      // 1. Define Spine / Buckets based on Range
+      const now = new Date();
+      let startDate = new Date();
+      let bucketUnit: 'hour' | 'day' | 'week' | 'month' = 'day';
+      let bucketCount = maxPoints || 12;
+
+      // Reset start date logic (mirroring previous logic from consumers)
+      const todayY = now.getFullYear();
+      const todayM = now.getMonth();
+      const todayD = now.getDate();
+      
+      // Calculate Start Date & Unit
+      if (selectedRange === 'Day') {
+          startDate = new Date(todayY, todayM, todayD); // Today 00:00
+          bucketUnit = 'hour';
+          bucketCount = 24; // Implicit 24h spine? Or user passed maxPoints=8? 
+          // If maxPoints is set, we might stick to that, but for aggregation we need to know what "bucket" means.
+          // Let's assume strict time-based bucketing if aggregation is on.
+      } else if (selectedRange === 'Week') {
+          startDate = new Date(todayY, todayM, todayD - 6);
+          startDate.setHours(0,0,0,0);
+          bucketUnit = 'day';
+          bucketCount = 7;
+      } else if (selectedRange === 'Month') {
+          startDate = new Date(todayY, todayM, todayD - 30);
+          startDate.setHours(0,0,0,0);
+          bucketUnit = 'day';
+          bucketCount = 31;
+      } else if (selectedRange === '3Month') {
+          startDate = new Date(todayY, todayM, todayD - (12 * 7)); // Approx
+          startDate.setHours(0,0,0,0);
+          bucketUnit = 'week';
+          bucketCount = 13;
+      } else if (selectedRange === '6Month') {
+          startDate = new Date(todayY, todayM, todayD - (25 * 7));
+          startDate.setHours(0,0,0,0);
+          bucketUnit = 'week';
+          bucketCount = 26;
+      } else if (selectedRange === 'Year') {
+          startDate = new Date(todayY, todayM - 11, 1);
+          startDate.setHours(0,0,0,0);
+          bucketUnit = 'month';
+          bucketCount = 12;
+      } else if (selectedRange === 'All') {
+          // All time? fallback
+          return data;
+      }
+
+      // 2. Create Buckets
+      const buckets: { values: { val: number, date: string }[], spineIndex: number, date: string }[] = [];
+      // Initialize if we want empty buckets? 
+      // TimeSeriesChart core logic handles sparse data via interpolation if maxPoints is set.
+      // But for aggregation, we typically want to output properly indexed points.
+      
+      // We can just iterate data and assign to buckets? Or iterate 0..bucketCount?
+      // Iterating data is faster if sparse.
+      // Iterating buckets ensures full spine if we want 0s. 
+      // Let's iterate data and map to spineIndex.
+      
+      const startProps = { y: startDate.getFullYear(), m: startDate.getMonth(), d: startDate.getDate(), time: startDate.getTime() };
+      
+      data.forEach(item => {
+          const d = new Date(item.date);
+          if (d < startDate) return;
+
+          let index = -1;
+          if (bucketUnit === 'hour') {
+              // Only if same day
+             if (d.getDate() === startProps.d && d.getMonth() === startProps.m && d.getFullYear() === startProps.y) {
+                 index = d.getHours(); // 0-23. If maxPoints is 8 (every 3h), we might need to map 0-23 -> 0-7? 
+                 // If we strictly follow spineIndex being 0..maxPoints-1
+                 if (maxPoints && maxPoints < 24) {
+                     // e.g. 8 points -> 24/8 = 3h window
+                     const window = 24 / maxPoints;
+                     index = Math.floor(d.getHours() / window);
+                 }
+             }
+          } else if (bucketUnit === 'day') {
+              const diffTime = d.getTime() - startDate.getTime();
+              index = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+          } else if (bucketUnit === 'week') {
+              const diffTime = d.getTime() - startDate.getTime();
+              index = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+          } else if (bucketUnit === 'month') {
+              index = (d.getFullYear() - startProps.y) * 12 + (d.getMonth() - startProps.m);
+          }
+
+          if (index >= 0 && (maxPoints ? index < maxPoints : true)) { // Allow open ended if no maxPoints?
+             // Find or create bucket
+             let b = buckets.find(b => b.spineIndex === index);
+             if (!b) {
+                 b = { values: [], spineIndex: index, date: item.date }; // Initial date
+                 buckets.push(b);
+             }
+             b.values.push({ val: item.value, date: item.date });
+             // Update date to latest in bucket?
+             if (new Date(item.date) > new Date(b.date)) b.date = item.date;
+          }
+      });
+
+      // 3. Aggregate
+      return buckets.map(b => {
+          const values = b.values.map(v => v.val);
+          let resultValue = 0;
+          
+          if (aggregation === 'sum') {
+              resultValue = values.reduce((a, c) => a + c, 0);
+          } else if (aggregation === 'avg') {
+              resultValue = values.reduce((a, c) => a + c, 0) / values.length;
+          } else if (aggregation === 'min') {
+              resultValue = Math.min(...values);
+          } else if (aggregation === 'max') {
+              resultValue = Math.max(...values);
+          } else if (aggregation === 'first') {
+              // Sort by date inside bucket logic if needed, but assuming data order usually, 
+              // or find earliest date in b.values
+              const sorted = b.values.sort((x, y) => new Date(x.date).getTime() - new Date(y.date).getTime());
+              resultValue = sorted[0].val;
+          } else if (aggregation === 'last') {
+              const sorted = b.values.sort((x, y) => new Date(x.date).getTime() - new Date(y.date).getTime());
+              resultValue = sorted[sorted.length - 1].val;
+          }
+
+          // Generate Label?
+          // We can leave label empty and let fixedLabels handle it? 
+          // Or generate simple label.
+          return {
+              value: resultValue,
+              date: b.date,
+              spineIndex: b.spineIndex,
+              label: '', // Let chart handle X-axis if fixedLabels used, else empty
+          };
+      }).sort((a, b) => (a.spineIndex || 0) - (b.spineIndex || 0));
+
+  }, [data, aggregation, selectedRange, maxPoints]);
+
+  if (!processedData || processedData.length === 0) {
     return (
       <View style={{ height, justifyContent: 'center', alignItems: 'center' }}>
-         <Text style={{ color: textColor, fontSize: 12, fontStyle: 'italic' }}>No data for this range</Text>
+         <Text style={{ color: textColor, fontSize: 12, fontStyle: 'italic' }}>
+            No data for {selectedRange === 'Day' ? 'today' : selectedRange === '6Month' ? 'this period' : selectedRange === 'Week' ? 'this week' : selectedRange === 'Month' ? 'this month' : 'this year'}
+         </Text>
       </View>
     );
   }
 
   // Ensure chronological order
-  const sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const sortedData = [...processedData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const screenWidth = Dimensions.get('window').width;
   const paddingHorizontal = 70; // Card mx-4 (32) + p-4 (32)

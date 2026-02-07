@@ -229,6 +229,7 @@ export function WorkoutOverviewChart({ workoutName }: WorkoutOverviewChartProps)
                     color={theme.primary}
                     textColor={theme.textMuted}
                     selectedRange={selectedRange}
+                    aggregation="sum"
                     maxPoints={
                         selectedRange === 'Month' ? 31 :
                         selectedRange === '3Month' ? 13 : 
