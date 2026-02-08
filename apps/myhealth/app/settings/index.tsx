@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, Alert, ScrollView } from 'react-native';
+import { View, Text, Alert, ScrollView, Switch } from 'react-native';
 import { useAuth, supabase } from '@mysuite/auth';
 import { useUITheme, ThemeToggle, IconSymbol, useToast, RaisedCard } from '@mysuite/ui';
 import { DataRepository } from '../../providers/DataRepository';
@@ -355,18 +355,22 @@ export default function SettingsScreen() {
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Integrations</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Apple Health</Text>
-            <RaisedCard 
-              onPress={isHealthConnected ? () => handleConnectHealth() : handleConnectHealth}
-              disabled={isLoading}
-              className={`px-4 h-10 rounded-full items-center justify-center ${
-                  isHealthConnected ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-200 dark:bg-gray-800'
-              }`}
-              style={{ borderRadius: 9999 }}
-            >
-              <Text className={`text-sm font-medium ${isHealthConnected ? 'text-green-600 dark:text-green-400' : 'text-primary'}`}>
-                {isHealthConnected ? "Connected" : "Connect"}
-              </Text>
-            </RaisedCard>
+            <Switch
+              value={isHealthConnected}
+              onValueChange={(value) => {
+                if (value) {
+                  handleConnectHealth();
+                } else {
+                  Alert.alert(
+                    "Disconnect Apple Health",
+                    "To disconnect Apple Health, please go to your device Settings > Health > Data Access & Devices > MyHealth and turn off all categories.",
+                    [{ text: "OK" }]
+                  );
+                }
+              }}
+              trackColor={{ false: theme.card, true: theme.primary }}
+              thumbColor={isHealthConnected ? "#ffffff" : "#f4f3f4"}
+            />
           </View>
         </View>
 
