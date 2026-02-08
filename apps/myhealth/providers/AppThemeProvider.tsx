@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { useColorScheme as rnUseColorScheme } from 'react-native';
+import { useColorScheme as rnUseColorScheme, Animated, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '../constants/theme';
 import { UIThemeProvider } from '@mysuite/ui';
@@ -63,11 +63,66 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
     }
   };
 
+  /* Animation Logic */
+  const [transitioning, setTransitioning] = useState(false);
+  const [prevScheme, setPrevScheme] = useState<'light' | 'dark'>(effectiveScheme);
+  // Use useRef for Animated.Value to persist across renders without re-creation
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    if (effectiveScheme !== prevScheme) {
+      // 1. Theme changed. 
+      // We are now rendering with NEW theme. 
+      // Show overlay with PREV theme color immediately, then fade it out.
+      setTransitioning(true);
+      fadeAnim.setValue(1); // Opaque (showing prev theme)
+
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300, // 0.2s
+        useNativeDriver: true,
+      }).start(() => {
+        if (isMounted) {
+            setTransitioning(false);
+            setPrevScheme(effectiveScheme);
+        }
+      });
+    } else {
+        // Initial mount or no change, ensure sync
+        if (isMounted) {
+            setPrevScheme(effectiveScheme);
+        }
+    }
+    
+    return () => {
+        isMounted = false;
+    };
+  }, [effectiveScheme, fadeAnim, prevScheme]);
+
   const theme = effectiveScheme === 'dark' ? Colors.dark : Colors.light;
+  // Determine color of previous theme for overlay
+  const prevThemeColor = prevScheme === 'dark' ? Colors.dark.bg : Colors.light.bg;
 
   return (
     <ThemePreferenceContext.Provider value={{ preference, setPreference, effectiveScheme }}>
-      <UIThemeProvider value={theme}>{children}</UIThemeProvider>
+      <UIThemeProvider value={theme}>
+        {children}
+        {transitioning && (
+          <Animated.View 
+            pointerEvents="none"
+            style={[
+              StyleSheet.absoluteFill, 
+              { 
+                backgroundColor: prevThemeColor, 
+                opacity: fadeAnim,
+                zIndex: 9999 
+              }
+            ]} 
+          />
+        )}
+      </UIThemeProvider>
     </ThemePreferenceContext.Provider>
   );
 };
