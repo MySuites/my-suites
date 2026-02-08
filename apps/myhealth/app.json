@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mysuite.myhealth",
+      "appleTeamId": "7Y22TWVLZ2",
       "buildNumber": "1",
       "config": {
         "usesNonExemptEncryption": false
