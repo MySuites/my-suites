@@ -1,6 +1,6 @@
 import { supabase } from "@mysuite/auth";
 
-import ExerciseDefaultData from "../../assets/data/default-exercises.json";
+import ExerciseDefaultData from "../../assets/data/default-exercises";
 import { DataRepository } from "../../providers/DataRepository";
 
 export async function fetchExercises(user: any) {

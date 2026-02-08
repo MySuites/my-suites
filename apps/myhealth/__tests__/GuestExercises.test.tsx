@@ -1,6 +1,6 @@
 
 import { fetchExercises } from '../utils/workout-api/exercises';
-import ExerciseDefaultData from '../assets/data/default-exercises.json';
+import ExerciseDefaultData from '../assets/data/default-exercises';
 
 // Mock Supabase 
 jest.mock('@mysuite/auth', () => ({

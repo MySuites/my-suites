@@ -9,7 +9,7 @@ import { ExerciseProperties } from '../../components/exercises/ExercisePropertie
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
-import DefaultExercises from '../../assets/data/default-exercises.json';
+import DefaultExercises from '../../assets/data/default-exercises';
 
 export default function ExerciseDetailsScreen() {
     const router = useRouter();

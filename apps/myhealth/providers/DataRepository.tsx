@@ -1,7 +1,7 @@
 import { getDb } from "../utils/db/database";
 import type { LocalWorkoutLog, Exercise } from "../utils/workout-api/types";
 import uuid from 'react-native-uuid';
-import ExerciseDefaultData from '../assets/data/default-exercises.json';
+import ExerciseDefaultData from '../assets/data/default-exercises';
 
 // --- Generic Helpers ---
 // We keep these for now if other sections need them during transition, 
