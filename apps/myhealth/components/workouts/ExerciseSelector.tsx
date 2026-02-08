@@ -26,7 +26,8 @@ export const ExerciseSelector = ({
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isFilterVisible, setIsFilterVisible] = useState(false);
 
-    const uniqueCategories = ["All", ...Array.from(new Set(exercises.map(e => e.category))).filter(Boolean).sort()];
+    const uniqueMuscleGroups = ["All", ...Array.from(new Set(exercises.map(e => e.category))).filter(Boolean).sort()];
+    const uniqueExerciseGroups = Array.from(new Set(exercises.map(e => e.group))).filter(g => g && g !== "Other").sort();
 
     const toggleCategory = (category: string) => {
         if (category === "All") {
@@ -135,41 +136,41 @@ export const ExerciseSelector = ({
                                         </Text>
                                     </TouchableOpacity>
 
-                                    {["Chest & Arms", "Back & Core", "Lower Body", "Other"].map(group => {
-                                        // Filter uniqueCategories that belong to this group
-                                        const catsInGroup = uniqueCategories.filter(cat => {
-                                            if (cat === "All") return false;
-                                            const NOTE_GROUPS: any = {
-                                                "Chest & Arms": ["Chest", "Shoulders", "Biceps", "Triceps", "Forearms"],
-                                                "Back & Core": ["Back", "Neck", "Traps", "Lats","Abdominals", "Abs", "Core", "Lower Back", "Upper Back"],
-                                                "Lower Body": ["Quadriceps", "Hamstrings", "Calves", "Glutes", "Adductors", "Abductors", "Legs"],
-                                                "General": ["Cardio", "Olympic", "Full Body", "Other", "Plyometrics", "Strongman", "Powerlifting", "Stretching"]
-                                            };
-                                            const foundGroup = Object.keys(NOTE_GROUPS).find(g => NOTE_GROUPS[g].includes(cat)) || "Other";
-                                            return foundGroup === group;
-                                        });
+                                    <View className="mb-4">
+                                        <Text className="text-light dark:text-dark font-bold mb-2 uppercase text-xs tracking-wider">Muscle Group</Text>
+                                        <View className="flex-row flex-wrap gap-2">
+                                            {uniqueMuscleGroups.map((category: any) => {
+                                                if (category === "All") return null;
+                                                return (
+                                                <TouchableOpacity 
+                                                    key={category} 
+                                                    onPress={() => toggleCategory(category)}
+                                                    className={`px-4 py-2 rounded-full border ${selectedCategories.has(category) ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
+                                                >
+                                                    <Text className={`font-semibold ${selectedCategories.has(category) ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
+                                                        {category}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            )})}
+                                        </View>
+                                    </View>
 
-                                        if (catsInGroup.length === 0) return null;
-
-                                        return (
-                                            <View key={group} className="mb-4">
-                                                <Text className="text-light dark:text-dark font-bold mb-2 uppercase text-xs tracking-wider">{group}</Text>
-                                                <View className="flex-row flex-wrap gap-2">
-                                                    {catsInGroup.map((category) => (
-                                                        <TouchableOpacity 
-                                                            key={category} 
-                                                            onPress={() => toggleCategory(category)}
-                                                            className={`px-4 py-2 rounded-full border ${selectedCategories.has(category) ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
-                                                        >
-                                                            <Text className={`font-semibold ${selectedCategories.has(category) ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
-                                                                {category}
-                                                            </Text>
-                                                        </TouchableOpacity>
-                                                    ))}
-                                                </View>
-                                            </View>
-                                        );
-                                    })}
+                                    <View className="mb-4">
+                                        <Text className="text-light dark:text-dark font-bold mb-2 uppercase text-xs tracking-wider">Exercise Group</Text>
+                                        <View className="flex-row flex-wrap gap-2">
+                                            {uniqueExerciseGroups.map((group: any) => (
+                                                <TouchableOpacity 
+                                                    key={group} 
+                                                    onPress={() => toggleCategory(group)}
+                                                    className={`px-4 py-2 rounded-full border ${selectedCategories.has(group) ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
+                                                >
+                                                    <Text className={`font-semibold ${selectedCategories.has(group) ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
+                                                        {group}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    </View>
                                 </ScrollView>
                             </RaisedCard>
                         )}
@@ -191,7 +192,7 @@ export const ExerciseSelector = ({
                         <FlatList
                             data={exercises.filter(ex => {
                                 const matchesSearch = ex.name.toLowerCase().includes(exerciseSearchQuery.toLowerCase());
-                                const matchesCategory = selectedCategories.size === 0 || selectedCategories.has(ex.category);
+                                const matchesCategory = selectedCategories.size === 0 || selectedCategories.has(ex.category) || selectedCategories.has(ex.group);
                                 return matchesSearch && matchesCategory;
                             })}
                             keyExtractor={(item) => item.id}

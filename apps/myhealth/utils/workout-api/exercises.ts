@@ -1,6 +1,8 @@
 import { supabase } from "@mysuite/auth";
 
-import ExerciseDefaultData from "../../assets/data/default-exercises";
+import ExerciseDefaultData, {
+    Groups,
+} from "../../assets/data/default-exercises";
 import { DataRepository } from "../../providers/DataRepository";
 
 export async function fetchExercises(user: any) {
@@ -31,6 +33,17 @@ export async function fetchExercises(user: any) {
             }],
         }));
     }
+
+    // Build a reverse lookup for groups once
+    // Map<ExerciseID, GroupName>
+    const groupLookup = new Map<string, string>();
+    Object.entries(Groups || {}).forEach(
+        ([groupName, groupExercises]: [string, any[]]) => {
+            groupExercises.forEach((e) => {
+                groupLookup.set(e.id, groupName);
+            });
+        },
+    );
 
     const mapped = data.map((e: any) => {
         // Local DB has 'muscle_groups' which is array of { role, muscle_groups: { name } }
@@ -63,11 +76,13 @@ export async function fetchExercises(user: any) {
         let props = e.properties;
         // If it's the raw string from DB before mapping (wait, DataRepo maps it to array)
         // If it comes from DefaultData, it is string "Strength" etc.
+        const id = e.id || e.exercise_id; // Local uses id, Supabase raw uses exercise_id
 
         return {
-            id: e.id || e.exercise_id, // Local uses id, Supabase raw uses exercise_id
+            id,
             name: e.name || e.exercise_name,
             category: firstMuscle || "General",
+            group: groupLookup.get(id) || "Other",
             properties: Array.isArray(props)
                 ? props
                 : (typeof props === "string"
