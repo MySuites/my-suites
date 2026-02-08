@@ -1,27 +1,3 @@
-// Default exercises for the app:
-// Bench Press
-// Chest Flys
-// Lat Pulldowns
-// Cable Rows
-// Face Pulls
-// Lateral Raises
-// Front Raises
-// Arnold Press
-// Deadlifts
-// Squats
-// Calves
-// Leg Extensions
-// Leg Curls
-// Leg Press
-// Dumbbell Curls
-// Cable Curls
-// Barbell Curls
-// Tricep Extensions
-// Tricep Pushdowns
-// Tricep Kickbacks
-// Tricep Extensions
-// Tricep Pushdowns
-// Tricep Kickbacks
 export default [
     // Bench Press
     {
