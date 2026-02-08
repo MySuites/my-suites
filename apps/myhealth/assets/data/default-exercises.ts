@@ -1,5 +1,4 @@
-export default [
-    // Bench Press
+export const BenchPress = [
     {
         "id": "incline_barbell_bench_press",
         "name": "Incline Barbell Bench Press",
@@ -54,20 +53,24 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Chest",
     },
-    // Chest Flys
+];
+
+export const ChestFlys = [
     {
-        "id": "dumbbell_flys",
-        "name": "Dumbbell Flys",
+        "id": "dumbbell_fly",
+        "name": "Dumbbell Fly",
         "type": "Weighted, Reps",
         "muscle_group": "Chest",
     },
     {
-        "id": "cable_flys",
-        "name": "Cable Flys",
+        "id": "cable_fly",
+        "name": "Cable Fly",
         "type": "Weighted, Reps",
         "muscle_group": "Chest",
     },
-    // Lat Pulldowns
+];
+
+export const LatPulldowns = [
     {
         "id": "lat_pulldown",
         "name": "Lat Pulldown",
@@ -92,7 +95,9 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Lats",
     },
-    // Seated Rows
+];
+
+export const SeatedRows = [
     {
         "id": "seated_cable_row",
         "name": "Seated Cable Row",
@@ -117,14 +122,18 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Lats",
     },
-    // Face Pulls
+];
+
+export const FacePulls = [
     {
         "id": "face_pull",
         "name": "Face Pull",
         "type": "Weighted, Reps",
         "muscle_group": "Shoulders",
     },
-    // Lateral Raises
+];
+
+export const LateralRaises = [
     {
         "id": "lateral_raise",
         "name": "Lateral Raise",
@@ -149,14 +158,18 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Shoulders",
     },
-    // Front Raises
+];
+
+export const FrontRaises = [
     {
         "id": "front_raise",
         "name": "Front Raise",
         "type": "Weighted, Reps",
         "muscle_group": "Shoulders",
     },
-    // Shoulder Press
+];
+
+export const ShoulderPress = [
     {
         "id": "shoulder_press",
         "name": "Shoulder Press",
@@ -181,7 +194,9 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Shoulders",
     },
-    // Deadlifts
+];
+
+export const Deadlifts = [
     {
         "id": "deadlift",
         "name": "Deadlift",
@@ -194,17 +209,31 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Hamstrings",
     },
-    // Squats
+];
+
+export const Squats = [
     {
-        "id": "squat",
-        "name": "Squat",
+        "id": "bodyweight_squat",
+        "name": "Bodyweight Squat",
         "type": "Bodyweight, Reps",
+        "muscle_group": "Quadriceps",
+    },
+    {
+        "id": "weighted_squat",
+        "name": "Weighted Squat",
+        "type": "Weighted, Bodyweight, Reps",
         "muscle_group": "Quadriceps",
     },
     {
         "id": "lunges",
         "name": "Lunges",
         "type": "Bodyweight, Reps",
+        "muscle_group": "Quadriceps",
+    },
+    {
+        "id": "weighted_lunges",
+        "name": "Weighted Lunges",
+        "type": "Weighted, Bodyweight, Reps",
         "muscle_group": "Quadriceps",
     },
     {
@@ -273,7 +302,9 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Quadriceps",
     },
-    // Calf Raises
+];
+
+export const CalfRaises = [
     {
         "id": "calf_raise",
         "name": "Calf Raise",
@@ -292,14 +323,18 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Calves",
     },
-    // Leg Extensions
+];
+
+export const LegExtensions = [
     {
         "id": "leg_extension",
         "name": "Leg Extension",
         "type": "Weighted, Reps",
         "muscle_group": "Quadriceps",
     },
-    // Leg Curls
+];
+
+export const LegCurls = [
     {
         "id": "seated_leg_curl",
         "name": "Seated Leg Curl",
@@ -312,7 +347,9 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Hamstrings",
     },
-    // Leg Press
+];
+
+export const LegPress = [
     {
         "id": "leg_press",
         "name": "Leg Press",
@@ -325,35 +362,45 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Quadriceps",
     },
-    // Glute Bridges
+];
+
+export const GluteBridges = [
     {
         "id": "glute_bridge",
         "name": "Glute Bridge",
         "type": "Weighted, Reps",
         "muscle_group": "Glutes",
     },
-    // Hip Thrusts
+];
+
+export const HipThrusts = [
     {
         "id": "hip_thrust",
         "name": "Hip Thrust",
         "type": "Weighted, Reps",
         "muscle_group": "Glutes",
     },
-    // Hip Adductors
+];
+
+export const HipAdductors = [
     {
         "id": "hip_adductor",
         "name": "Hip Adductor",
         "type": "Weighted, Reps",
         "muscle_group": "Adductors",
     },
-    // Hip Abductors
+];
+
+export const HipAbductors = [
     {
         "id": "hip_abductor",
         "name": "Hip Abductor",
         "type": "Weighted, Reps",
         "muscle_group": "Abductors",
     },
-    // Dumbbell Curls
+];
+
+export const DumbbellCurls = [
     {
         "id": "dumbbell_curl",
         "name": "Dumbbell Curl",
@@ -378,7 +425,9 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Biceps",
     },
-    // Cable Curls
+];
+
+export const CableCurls = [
     {
         "id": "cable_curl",
         "name": "Cable Curl",
@@ -391,7 +440,9 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Biceps",
     },
-    // Barbell Curls
+];
+
+export const BarbellCurls = [
     {
         "id": "barbell_curl",
         "name": "Barbell Curl",
@@ -416,7 +467,9 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Biceps",
     },
-    // Tricep Extensions
+];
+
+export const TricepExtensions = [
     {
         "id": "barbell_skullcrusher",
         "name": "Barbell Skullcrusher",
@@ -441,7 +494,9 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Triceps",
     },
-    // Tricep Pushdowns
+];
+
+export const TricepPushdowns = [
     {
         "id": "cable_tricep_pushdown",
         "name": "Cable Tricep Pushdown",
@@ -454,14 +509,18 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Triceps",
     },
-    // Tricep Kickbacks
+];
+
+export const TricepKickbacks = [
     {
         "id": "tricep_kickback",
         "name": "Tricep Kickback",
         "type": "Weighted, Reps",
         "muscle_group": "Triceps",
     },
-    // Leg Raises
+];
+
+export const LegRaises = [
     {
         "id": "leg_raise",
         "name": "Leg Raise",
@@ -480,7 +539,27 @@ export default [
         "type": "Bodyweight, Duration",
         "muscle_group": "Abdominals",
     },
-    // Crunches
+    {
+        "id": "v-sit_hold",
+        "name": "V-Sit Hold",
+        "type": "Bodyweight, Duration",
+        "muscle_group": "Abdominals",
+    },
+    {
+        "id": "i-sit_hold",
+        "name": "I-Sit Hold",
+        "type": "Bodyweight, Duration",
+        "muscle_group": "Abdominals",
+    },
+    {
+        "id": "manna_hold",
+        "name": "Manna Hold",
+        "type": "Bodyweight, Duration",
+        "muscle_group": "Abdominals",
+    },
+];
+
+export const Crunches = [
     {
         "id": "crunch",
         "name": "Crunch",
@@ -493,7 +572,9 @@ export default [
         "type": "Weighted, Reps",
         "muscle_group": "Abdominals",
     },
-    // Push Ups
+];
+
+export const PushUps = [
     {
         "id": "push_up",
         "name": "Push-up",
@@ -542,7 +623,15 @@ export default [
         "type": "Bodyweight, Reps",
         "muscle_group": "Other",
     },
-    // Pull Ups
+    {
+        "id": "weighted_push_up",
+        "name": "Weighted Push-up",
+        "type": "Weighted, Bodyweight, Reps",
+        "muscle_group": "Chest",
+    },
+];
+
+export const PullUps = [
     {
         "id": "pull_up",
         "name": "Pull-up",
@@ -554,40 +643,6 @@ export default [
         "name": "Chin-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Biceps",
-    },
-    // Rows
-    {
-        "id": "bodyweight_rows",
-        "name": "Bodyweight Rows",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Lats",
-    },
-    // Planks
-    {
-        "id": "plank",
-        "name": "Plank",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Abdominals",
-    },
-    {
-        "id": "side_plank",
-        "name": "Side Plank",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Abdominals",
-    },
-    // Russian Twists
-    {
-        "id": "russian_twist",
-        "name": "Russian Twist",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Abdominals",
-    },
-    // Weighted Bodyweight Exercises
-    {
-        "id": "weighted_push_up",
-        "name": "Weighted Push-up",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Chest",
     },
     {
         "id": "weighted_pull_up",
@@ -601,23 +656,29 @@ export default [
         "type": "Weighted, Bodyweight, Reps",
         "muscle_group": "Biceps",
     },
+];
+
+export const Rows = [
     {
-        "id": "weighted_rows",
-        "name": "Weighted Rows",
-        "type": "Weighted, Bodyweight, Reps",
+        "id": "bodyweight_row",
+        "name": "Bodyweight Row",
+        "type": "Bodyweight, Reps",
         "muscle_group": "Lats",
     },
     {
-        "id": "weighted_dips",
-        "name": "Weighted Dips",
+        "id": "weighted_row",
+        "name": "Weighted Row",
         "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Triceps",
+        "muscle_group": "Lats",
     },
+];
+
+export const Planks = [
     {
-        "id": "weighted_lunges",
-        "name": "Weighted Lunges",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Quadriceps",
+        "id": "plank",
+        "name": "Plank",
+        "type": "Bodyweight, Duration",
+        "muscle_group": "Abdominals",
     },
     {
         "id": "weighted_plank",
@@ -626,12 +687,38 @@ export default [
         "muscle_group": "Abdominals",
     },
     {
-        "id": "weighted_squat",
-        "name": "Weighted Squat",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Quadriceps",
+        "id": "side_plank",
+        "name": "Side Plank",
+        "type": "Bodyweight, Duration",
+        "muscle_group": "Abdominals",
     },
-    // Handstand Exercises
+];
+
+export const RussianTwists = [
+    {
+        "id": "russian_twist",
+        "name": "Russian Twist",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Abdominals",
+    },
+];
+
+export const Dips = [
+    {
+        "id": "bodyweight_dip",
+        "name": "Bodyweight Dip",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Triceps",
+    },
+    {
+        "id": "weighted_dip",
+        "name": "Weighted Dip",
+        "type": "Weighted, Bodyweight, Reps",
+        "muscle_group": "Triceps",
+    },
+];
+
+export const HandstandExercises = [
     {
         "id": "frog_stand",
         "name": "Frog Stand",
@@ -639,8 +726,8 @@ export default [
         "muscle_group": "Shoulders",
     },
     {
-        "id": "crow_stand",
-        "name": "Crow Stand",
+        "id": "crow_pose",
+        "name": "Crow Pose",
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
     },
@@ -680,7 +767,9 @@ export default [
         "type": "Bodyweight, Duration",
         "muscle_group": "Other",
     },
-    // Handstand Press Exercises
+];
+
+export const HandstandPressExercises = [
     {
         "id": "pike_handstand_press",
         "name": "Pike Handstand Press",
@@ -699,48 +788,56 @@ export default [
         "type": "Bodyweight, Reps",
         "muscle_group": "Shoulders",
     },
-    // Planche Exercises
+];
+
+export const PlancheExercises = [
     {
         "id": "elbow_lever",
         "name": "Elbow Lever",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Abdominals",
+        "muscle_group": "Shoulders",
     },
     {
         "id": "bent_arm_planche",
         "name": "Bent-Arm Planche",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Shoulders",
     },
     {
         "id": "90_degree_push_up",
         "name": "90-Degree Push-up",
         "type": "Bodyweight, Reps",
-        "muscle_group": "Other",
+        "muscle_group": "Shoulders",
+    },
+    {
+        "id": "pseudo_planche_hold",
+        "name": "Pseudo Planche Hold",
+        "type": "Bodyweight, Duration",
+        "muscle_group": "Shoulders",
     },
     {
         "id": "tuck_planche",
         "name": "Tuck Planche",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Shoulders",
     },
     {
         "id": "advanced_tuck_planche",
         "name": "Advanced Tuck Planche",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Shoulders",
     },
     {
         "id": "half_lay_planche",
         "name": "Half-Lay Planche",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Shoulders",
     },
     {
         "id": "straddle_planche",
         "name": "Straddle Planche",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Shoulders",
     },
     {
         "id": "planche",
@@ -764,81 +861,96 @@ export default [
         "id": "dragon_maltese",
         "name": "Dragon Maltese",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Shoulders",
     },
-    // Front Lever Exercises
+];
+
+export const FrontLeverExercises = [
     {
         "id": "tuck_front_lever",
         "name": "Tuck Front Lever",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Lats",
     },
     {
         "id": "advanced_tuck_front_lever",
         "name": "Advanced Tuck Front Lever",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Lats",
     },
     {
         "id": "half_lay_front_lever",
         "name": "Half-Lay Front Lever",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Lats",
     },
     {
         "id": "straddle_front_lever",
         "name": "Straddle Front Lever",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Lats",
     },
     {
         "id": "front_lever",
         "name": "Front Lever",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Abdominals",
+        "muscle_group": "Lats",
     },
     {
         "id": "front_lever_pull_up",
         "name": "Front Lever Pull-up",
         "type": "Bodyweight, Reps",
-        "muscle_group": "Other",
+        "muscle_group": "Lats",
     },
     {
         "id": "front_lever_touch",
         "name": "Front Lever Touch",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Lats",
     },
     {
         "id": "one_arm_front_lever",
         "name": "One-Arm Front Lever",
         "type": "Bodyweight, Duration",
+        "muscle_group": "Lats",
+    },
+];
+export const BackLeverExercises = [
+    {
+        "id": "skin_the_cat",
+        "name": "Skin the Cat",
+        "type": "Bodyweight, Duration",
         "muscle_group": "Other",
     },
-    // Back Lever Exercises
+    {
+        "id": "german_hang",
+        "name": "German Hang",
+        "type": "Bodyweight, Duration",
+        "muscle_group": "Other",
+    },
     {
         "id": "tuck_back_lever",
         "name": "Tuck Back Lever",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Abdominals",
     },
     {
         "id": "advanced_tuck_back_lever",
         "name": "Advanced Tuck Back Lever",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Abdominals",
     },
     {
         "id": "half_lay_back_lever",
         "name": "Half-Lay Back Lever",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Abdominals",
     },
     {
         "id": "straddle_back_lever",
         "name": "Straddle Back Lever",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Abdominals",
     },
     {
         "id": "back_lever",
@@ -862,9 +974,11 @@ export default [
         "id": "one_arm_back_lever",
         "name": "One-Arm Back Lever",
         "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
+        "muscle_group": "Abdominals",
     },
     // Cardio Exercises
+];
+export const CardioExercises = [
     {
         "id": "treadmill",
         "name": "Treadmill",
@@ -878,21 +992,27 @@ export default [
         "muscle_group": "Cardio",
     },
     {
+        "id": "stair_climber",
+        "name": "Stair Climber",
+        "type": "Distance, Duration",
+        "muscle_group": "Cardio",
+    },
+    {
         "id": "rowing_machine",
         "name": "Rowing Machine",
         "type": "Distance, Duration",
         "muscle_group": "Cardio",
     },
     {
-        "id": "stationary_bike",
-        "name": "Stationary Bike",
+        "id": "bike",
+        "name": "Bike",
         "type": "Distance, Duration",
         "muscle_group": "Cardio",
     },
     {
-        "id": "jump_rope",
-        "name": "Jump Rope",
-        "type": "Reps, Duration",
+        "id": "running",
+        "name": "Running",
+        "type": "Distance, Duration",
         "muscle_group": "Cardio",
     },
     {
@@ -908,15 +1028,97 @@ export default [
         "muscle_group": "Cardio",
     },
     {
-        "id": "rowing",
-        "name": "Rowing",
-        "type": "Distance, Duration",
+        "id": "jump_rope",
+        "name": "Jump Rope",
+        "type": "Duration",
         "muscle_group": "Cardio",
     },
     {
-        "id": "farmers_walk",
-        "name": "Farmers Walk",
-        "type": "Weighted, Distance",
-        "muscle_group": "Other",
+        "id": "jumping_jacks",
+        "name": "Jumping Jacks",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Cardio",
     },
 ];
+
+export default [
+    ...BenchPress,
+    ...ChestFlys,
+    ...LatPulldowns,
+    ...SeatedRows,
+    ...FacePulls,
+    ...LateralRaises,
+    ...FrontRaises,
+    ...ShoulderPress,
+    ...Deadlifts,
+    ...Squats,
+    ...CalfRaises,
+    ...LegExtensions,
+    ...LegCurls,
+    ...LegPress,
+    ...GluteBridges,
+    ...HipThrusts,
+    ...HipAdductors,
+    ...HipAbductors,
+    ...DumbbellCurls,
+    ...CableCurls,
+    ...BarbellCurls,
+    ...TricepExtensions,
+    ...TricepPushdowns,
+    ...TricepKickbacks,
+    ...LegRaises,
+    ...Crunches,
+    ...PushUps,
+    ...PullUps,
+    ...Rows,
+    ...Planks,
+    ...RussianTwists,
+    ...Dips,
+    ...HandstandExercises,
+    ...HandstandPressExercises,
+    ...PlancheExercises,
+    ...FrontLeverExercises,
+    ...BackLeverExercises,
+    ...CardioExercises,
+];
+
+export const Groups = {
+    "Bench Press": BenchPress,
+    "Chest Flys": ChestFlys,
+    "Lat Pulldowns": LatPulldowns,
+    "Seated Rows": SeatedRows,
+    "Face Pulls": FacePulls,
+    "Lateral Raises": LateralRaises,
+    "Front Raises": FrontRaises,
+    "Shoulder Press": ShoulderPress,
+    "Deadlifts": Deadlifts,
+    "Squats": Squats,
+    "Calf Raises": CalfRaises,
+    "Leg Extensions": LegExtensions,
+    "Leg Curls": LegCurls,
+    "Leg Press": LegPress,
+    "Glute Bridges": GluteBridges,
+    "Hip Thrusts": HipThrusts,
+    "Hip Adductors": HipAdductors,
+    "Hip Abductors": HipAbductors,
+    "Dumbbell Curls": DumbbellCurls,
+    "Cable Curls": CableCurls,
+    "Barbell Curls": BarbellCurls,
+    "Tricep Extensions": TricepExtensions,
+    "Tricep Pushdowns": TricepPushdowns,
+    "Tricep Kickbacks": TricepKickbacks,
+    "Leg Raises": LegRaises,
+    "Crunches": Crunches,
+    "Push Ups": PushUps,
+    "Pull Ups": PullUps,
+    "Rows": Rows,
+    "Planks": Planks,
+    "Russian Twists": RussianTwists,
+    "Dips": Dips,
+    "Handstand Exercises": HandstandExercises,
+    "Handstand Press Exercises": HandstandPressExercises,
+    "Planche Exercises": PlancheExercises,
+    "Front Lever Exercises": FrontLeverExercises,
+    "Back Lever Exercises": BackLeverExercises,
+    "Cardio Exercises": CardioExercises,
+};

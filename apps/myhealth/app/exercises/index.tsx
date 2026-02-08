@@ -5,7 +5,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, useToast, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
 import { fetchExercises } from '../../providers/WorkoutManagerProvider';
-import DefaultExercises from '../../assets/data/default-exercises';
+import DefaultExercises, { Groups } from '../../assets/data/default-exercises';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
@@ -69,16 +69,29 @@ export default function ExercisesScreen() {
         filtered = filtered.filter(ex => selectedCategories.has(ex.category));
     }
     
-    const custom = filtered.filter(ex => !DefaultExercises.some(d => d.id === ex.id));
-    const defaults = filtered.filter(ex => DefaultExercises.some(d => d.id === ex.id));
+    const result: { title: string, data: any[] }[] = [];
     
-    const result = [];
+    // 1. Custom Exercises
+    const custom = filtered.filter(ex => !DefaultExercises.some(d => d.id === ex.id));
     if (custom.length > 0) {
         result.push({ title: 'Custom Exercises', data: custom });
     }
-    if (defaults.length > 0) {
-        result.push({ title: 'Default Exercises', data: defaults });
-    }
+
+    // 2. Grouped Default Exercises
+    // Iterate over Groups to preserve order
+    Object.entries(Groups).forEach(([groupName, groupExercises]) => {
+        const groupIds = new Set(groupExercises.map(e => e.id));
+        const exercisesInGroup = filtered.filter(ex => groupIds.has(ex.id));
+        
+        if (exercisesInGroup.length > 0) {
+            result.push({ title: groupName, data: exercisesInGroup });
+        }
+    });
+
+    // Optional: catch-all for defaults that didn't match a group (shouldn't happen with correct data)
+    // const caughtIds = new Set(result.flatMap(s => s.data.map(e => e.id)));
+    // const uncaughtDefaults = filtered.filter(ex => DefaultExercises.some(d => d.id === ex.id) && !caughtIds.has(ex.id));
+    // if (uncaughtDefaults.length > 0) { ... }
     
     return result;
   }, [exercises, searchQuery, selectedCategories]);
