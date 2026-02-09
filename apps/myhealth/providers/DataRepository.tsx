@@ -86,6 +86,14 @@ export const DataRepository = {
         // Fetch ALL pending logs (including deleted ones)
         const logs = await db.getAllAsync<any>('SELECT * FROM workout_logs WHERE sync_status = "pending" ORDER BY workout_date DESC');
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
+        const exercisesDef = await db.getAllAsync<any>('SELECT * FROM exercises');
+        
+        const exercisePropsMap = new Map<string, string[]>();
+        exercisesDef.forEach(e => {
+            if (e.id) {
+                 exercisePropsMap.set(e.id, e.properties ? e.properties.split(',') : []);
+            }
+        });
         
         // Helper to map DB row to object (duplicate of getHistory logic essentially, 
         // could refactor to private helper but duplication is safer for now to avoid breaking existing)
@@ -105,6 +113,7 @@ export const DataRepository = {
                          reps: 0,
                          completedSets: 0,
                          logs: [],
+                         properties: exercisePropsMap.get(exId) || [],
                      });
                  }
  
@@ -157,6 +166,14 @@ export const DataRepository = {
         const db = await getDb();
         const logs = await db.getAllAsync<any>('SELECT * FROM workout_logs WHERE deleted_at IS NULL ORDER BY workout_date DESC');
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
+        const exercisesDef = await db.getAllAsync<any>('SELECT * FROM exercises');
+        
+        const exercisePropsMap = new Map<string, string[]>();
+        exercisesDef.forEach(e => {
+            if (e.id) {
+                 exercisePropsMap.set(e.id, e.properties ? e.properties.split(',') : []);
+            }
+        });
         
         return logs.map(log => {
             const sets = setLogs.filter(s => s.workout_log_id === log.id);
@@ -176,6 +193,7 @@ export const DataRepository = {
                         reps: 0,
                         completedSets: 0,
                         logs: [],
+                        properties: exercisePropsMap.get(exId) || [],
                     });
                 }
 

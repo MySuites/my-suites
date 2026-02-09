@@ -4,6 +4,7 @@ import { useAuth } from "@mysuite/auth";
 import {
     Exercise,
     WorkoutLog,
+    fetchWorkoutLogDetails
 } from "../utils/workout-api";
 import { useRoutineManager } from "../hooks/routines/useRoutineManager";
 import { useToast } from "@mysuite/ui";
@@ -15,7 +16,7 @@ import uuid from 'react-native-uuid';
 
 // Re-export types for compatibility
 export type { Exercise, SetLog, WorkoutLog } from "../utils/workout-api";
-export { fetchExercises, fetchMuscleGroups, fetchExerciseStats, fetchLastExercisePerformance, getExerciseDefaultProperties } from "../utils/workout-api";
+export { fetchExercises, fetchMuscleGroups, fetchExerciseStats, fetchLastExercisePerformance, getExerciseDefaultProperties, fetchWorkoutLogDetails } from "../utils/workout-api";
 
 interface WorkoutManagerContextType {
     savedWorkouts: any[];
@@ -315,7 +316,9 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         updateRoutine,
         deleteRoutine,
         workoutHistory,
-        fetchWorkoutLogDetails: async (id: string) => ({ data: [], error: null }), // Stub for now or impl
+        fetchWorkoutLogDetails: async (id: string) => {
+            return await fetchWorkoutLogDetails(user, id);
+        },
         saveCompletedWorkout,
         deleteWorkoutLog: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => {
             const performDelete = async () => {
