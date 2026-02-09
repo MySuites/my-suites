@@ -97,11 +97,25 @@ export async function fetchExercises(user: any) {
 
 // Fetch all available muscle groups
 export async function fetchMuscleGroups() {
-    const { data, error } = await supabase
+    const { data: remoteData, error } = await supabase
         .from("muscle_groups")
         .select("*")
         .order("name", { ascending: true });
-    return { data, error };
+
+    if (!error && remoteData && remoteData.length > 0) {
+        return { data: remoteData, error: null };
+    }
+
+    // Fallback to local default data if remote fails or is empty
+    const uniqueGroups = Array.from(
+        new Set(ExerciseDefaultData.map((e: any) => e.muscle_group)),
+    ).filter(Boolean);
+    const localData = uniqueGroups.sort().map((name) => ({
+        id: name,
+        name: name,
+    }));
+
+    return { data: localData, error: null };
 }
 
 // Fetch stats for chart
