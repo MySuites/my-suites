@@ -91,7 +91,7 @@ export const DataRepository = {
         const exercisePropsMap = new Map<string, string[]>();
         exercisesDef.forEach(e => {
             if (e.id) {
-                 exercisePropsMap.set(e.id, e.properties ? e.properties.split(',') : []);
+                 exercisePropsMap.set(e.id, e.properties ? e.properties.split(',').map((s: string) => s.trim()) : []);
             }
         });
         
@@ -171,7 +171,7 @@ export const DataRepository = {
         const exercisePropsMap = new Map<string, string[]>();
         exercisesDef.forEach(e => {
             if (e.id) {
-                 exercisePropsMap.set(e.id, e.properties ? e.properties.split(',') : []);
+                 exercisePropsMap.set(e.id, e.properties ? e.properties.split(',').map((s: string) => s.trim()) : []);
             }
         });
         
@@ -532,7 +532,7 @@ export const DataRepository = {
         return result.map(e => ({
             ...e,
             muscle_groups: e.muscle_groups ? JSON.parse(e.muscle_groups) : [],
-            properties: e.properties ? e.properties.split(',') : []
+            properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : []
         }));
     },
 
