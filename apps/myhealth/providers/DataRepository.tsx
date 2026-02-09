@@ -579,7 +579,18 @@ export const DataRepository = {
             await db.runAsync('DELETE FROM set_logs');
             await db.runAsync('DELETE FROM body_measurements');
             await db.runAsync('DELETE FROM routines');
-            // We purposely do NOT delete 'exercises' as that contains the base library
+            
+            // Delete custom exercises (those not in default data)
+            // We use NOT IN clause.
+            // Be careful with too many parameters if default data grows huge, but <900 is fine.
+            const defaultIds = ExerciseDefaultData.map(e => e.id);
+            if (defaultIds.length > 0) {
+                const placeholders = defaultIds.map(() => '?').join(',');
+                await db.runAsync(
+                    `DELETE FROM exercises WHERE id NOT IN (${placeholders})`,
+                    defaultIds
+                );
+            }
         });
     }
 };
