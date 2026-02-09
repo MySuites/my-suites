@@ -70,7 +70,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
     const { weight: latestBodyWeight } = useLatestBodyWeight();
 
-    const { clearPersistence } = useActiveWorkoutPersistence({
+    const { clearPersistence, isLoaded } = useActiveWorkoutPersistence({
         exercises,
         workoutSeconds,
         workoutName,
@@ -310,6 +310,10 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         sourceWorkoutId,
         latestBodyWeight,
     };
+
+    if (!isLoaded) {
+        return null;
+    }
 
     return (
         <ActiveWorkoutContext.Provider value={value}>

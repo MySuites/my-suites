@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
-import { Exercise } from "./useWorkoutManager";
+import { useEffect, useRef, useState } from "react";
+import { Exercise } from "../../providers/WorkoutManagerProvider";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface UseActiveWorkoutPersistenceProps {
     exercises: Exercise[];
@@ -33,6 +34,95 @@ export function useActiveWorkoutPersistence({
     setHasActiveSession,
 }: UseActiveWorkoutPersistenceProps) {
     const isMounted = useRef(false);
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    // Load from local storage on mount
+    useEffect(() => {
+        const loadState = async () => {
+            try {
+                const keys = [
+                    "myhealth_workout_exercises",
+                    "myhealth_workout_seconds",
+                    "myhealth_workout_name",
+                    "myhealth_workout_routine_id",
+                    "myhealth_workout_source_id",
+                    "myhealth_workout_running",
+                    "myhealth_workout_last_tick",
+                ];
+
+                const stores = await AsyncStorage.multiGet(keys);
+                const data: Record<string, string | null> = {};
+                stores.forEach(([key, value]) => {
+                    data[key] = value;
+                });
+
+                if (data["myhealth_workout_seconds"]) {
+                    let seconds = parseInt(
+                        data["myhealth_workout_seconds"],
+                        10,
+                    );
+
+                    // If it was running, catch up time
+                    if (
+                        data["myhealth_workout_running"] &&
+                        JSON.parse(data["myhealth_workout_running"])
+                    ) {
+                        const lastTick = data["myhealth_workout_last_tick"]
+                            ? parseInt(data["myhealth_workout_last_tick"], 10)
+                            : null;
+                        if (lastTick) {
+                            const now = Date.now();
+                            const diff = Math.floor((now - lastTick) / 1000);
+                            if (diff > 0) {
+                                seconds += diff;
+                            }
+                        }
+                        setRunning(true);
+                        setHasActiveSession(true);
+                    } else if (data["myhealth_workout_running"]) {
+                        // Was paused
+                        setRunning(false);
+                        // If we have saved state, strictly speaking we have an active session,
+                        // but maybe we differ if it was empty?
+                        // For now let's assume if data exists calling hook means we might want it.
+                        // But verifying "hasActiveSession" usually means "is expanded/visible".
+                        if (data["myhealth_workout_exercises"]) {
+                            setHasActiveSession(true);
+                        }
+                    }
+
+                    setWorkoutSeconds(seconds);
+                }
+
+                if (data["myhealth_workout_exercises"]) {
+                    setExercises(
+                        JSON.parse(data["myhealth_workout_exercises"]),
+                    );
+                }
+
+                if (data["myhealth_workout_name"]) {
+                    setWorkoutName(data["myhealth_workout_name"]);
+                }
+
+                if (data["myhealth_workout_routine_id"]) {
+                    setRoutineId(data["myhealth_workout_routine_id"]);
+                }
+
+                if (data["myhealth_workout_source_id"]) {
+                    setSourceWorkoutId(data["myhealth_workout_source_id"]);
+                }
+
+                setIsLoaded(true);
+            } catch (e) {
+                console.error("Failed to load workout state", e);
+            }
+        };
+
+        if (!isLoaded) {
+            loadState();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Run once on mount
 
     // Persist to local storage
     useEffect(() => {
@@ -41,48 +131,42 @@ export function useActiveWorkoutPersistence({
             return;
         }
 
-        try {
-            if (typeof window !== "undefined" && window.localStorage) {
-                window.localStorage.setItem(
-                    "myhealth_workout_exercises",
-                    JSON.stringify(exercises),
-                );
-                window.localStorage.setItem(
-                    "myhealth_workout_seconds",
-                    workoutSeconds.toString(),
-                );
-                window.localStorage.setItem(
-                    "myhealth_workout_name",
-                    workoutName,
-                );
-                if (routineId) {
-                    window.localStorage.setItem(
-                        "myhealth_workout_routine_id",
-                        routineId,
-                    );
-                } else {
-                    window.localStorage.removeItem(
-                        "myhealth_workout_routine_id",
-                    );
-                }
-                if (sourceWorkoutId) {
-                    window.localStorage.setItem(
-                        "myhealth_workout_source_id",
-                        sourceWorkoutId,
-                    );
-                } else {
-                    window.localStorage.removeItem(
-                        "myhealth_workout_source_id",
-                    );
-                }
-                window.localStorage.setItem(
-                    "myhealth_workout_running",
-                    JSON.stringify(isRunning),
-                );
-            }
-        } catch {
-            // ignore
+        // Only save if we have loaded first, to avoid overwriting with empty state
+        if (!isLoaded) {
+            return;
         }
+
+        const saveState = async () => {
+            try {
+                const pairs: [string, string][] = [
+                    ["myhealth_workout_exercises", JSON.stringify(exercises)],
+                    ["myhealth_workout_seconds", workoutSeconds.toString()],
+                    ["myhealth_workout_name", workoutName],
+                    ["myhealth_workout_running", JSON.stringify(isRunning)],
+                    ["myhealth_workout_last_tick", Date.now().toString()],
+                ];
+
+                if (routineId) {
+                    pairs.push(["myhealth_workout_routine_id", routineId]);
+                } else {
+                    await AsyncStorage.removeItem(
+                        "myhealth_workout_routine_id",
+                    );
+                }
+
+                if (sourceWorkoutId) {
+                    pairs.push(["myhealth_workout_source_id", sourceWorkoutId]);
+                } else {
+                    await AsyncStorage.removeItem("myhealth_workout_source_id");
+                }
+
+                await AsyncStorage.multiSet(pairs);
+            } catch (e) {
+                console.error("Failed to save workout state", e);
+            }
+        };
+
+        saveState();
     }, [
         exercises,
         workoutSeconds,
@@ -92,61 +176,22 @@ export function useActiveWorkoutPersistence({
         sourceWorkoutId,
     ]);
 
-    // Load from local storage
-    useEffect(() => {
+    const clearPersistence = async () => {
         try {
-            if (typeof window !== "undefined" && window.localStorage) {
-                const sec = window.localStorage.getItem(
-                    "myhealth_workout_seconds",
-                );
-                if (sec) setWorkoutSeconds(parseInt(sec, 10));
-
-                const name = window.localStorage.getItem(
-                    "myhealth_workout_name",
-                );
-                if (name) setWorkoutName(name);
-
-                const rId = window.localStorage.getItem(
-                    "myhealth_workout_routine_id",
-                );
-                if (rId) setRoutineId(rId);
-
-                const sId = window.localStorage.getItem(
-                    "myhealth_workout_source_id",
-                );
-                if (sId) setSourceWorkoutId(sId);
-
-                const running = window.localStorage.getItem(
-                    "myhealth_workout_running",
-                );
-                if (running) {
-                    setRunning(JSON.parse(running));
-                    if (JSON.parse(running)) setHasActiveSession(true);
-                }
-            }
-        } catch {
-            // ignore
+            const keys = [
+                "myhealth_workout_exercises",
+                "myhealth_workout_seconds",
+                "myhealth_workout_name",
+                "myhealth_workout_routine_id",
+                "myhealth_workout_source_id",
+                "myhealth_workout_running",
+                "myhealth_workout_last_tick",
+            ];
+            await AsyncStorage.multiRemove(keys);
+        } catch (e) {
+            console.error("Failed to clear workout state", e);
         }
-    }, [
-        setWorkoutSeconds,
-        setWorkoutName,
-        setRoutineId,
-        setSourceWorkoutId,
-        setRunning,
-        setHasActiveSession,
-    ]);
-
-    const clearPersistence = () => {
-        try {
-            if (typeof window !== "undefined" && window.localStorage) {
-                window.localStorage.removeItem("myhealth_workout_exercises");
-                window.localStorage.removeItem("myhealth_workout_seconds");
-                window.localStorage.removeItem("myhealth_workout_name");
-                window.localStorage.removeItem("myhealth_workout_routine_id");
-                window.localStorage.removeItem("myhealth_workout_running");
-            }
-        } catch {}
     };
 
-    return { clearPersistence };
+    return { clearPersistence, isLoaded };
 }

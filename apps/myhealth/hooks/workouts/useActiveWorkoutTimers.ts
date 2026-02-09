@@ -4,76 +4,132 @@ export function useActiveWorkoutTimers() {
     const [isRunning, setRunning] = useState(false);
     const [workoutSeconds, setWorkoutSeconds] = useState(0);
     const [restSeconds, setRestSeconds] = useState(0);
-    const workoutTimerRef = useRef<number | null>(null as any);
-    const restTimerRef = useRef<number | null>(null as any);
 
+    // Timer refs
+    const workoutTimerRef = useRef<any>(null);
+    const restTimerRef = useRef<any>(null);
+
+    // Timestamp refs for background handling
+    const lastWorkoutTickRef = useRef<number | null>(null);
+    const lastRestTickRef = useRef<number | null>(null);
+
+    // Workout Timer Logic
     useEffect(() => {
         if (isRunning) {
+            // Start or resume
+            if (!lastWorkoutTickRef.current) {
+                lastWorkoutTickRef.current = Date.now();
+            }
+
             workoutTimerRef.current = setInterval(() => {
-                setWorkoutSeconds((s) => s + 1);
-            }, 1000) as any;
-        } else if (workoutTimerRef.current) {
-            clearInterval(workoutTimerRef.current as any);
-            workoutTimerRef.current = null;
+                const now = Date.now();
+                const delta = now - (lastWorkoutTickRef.current || now);
+
+                // Only update if at least 1 second has passed (avoid micro-updates)
+                // But simplified: just add the seconds elapsed since last tick
+                if (delta >= 1000) {
+                    const secondsPassed = Math.floor(delta / 1000);
+                    if (secondsPassed > 0) {
+                        setWorkoutSeconds((prev) => prev + secondsPassed);
+                        // Adjust last tick to account for the seconds we just added
+                        // We keep the remainder in the "buffer" implicitly by only advancing by full seconds
+                        lastWorkoutTickRef.current = now - (delta % 1000);
+                    }
+                }
+            }, 1000);
+        } else {
+            // Pause
+            if (workoutTimerRef.current) {
+                clearInterval(workoutTimerRef.current);
+                workoutTimerRef.current = null;
+            }
+            // We don't clear lastWorkoutTickRef here because we might want to resume?
+            // Actually, if we pause, we stop accumulating.
+            lastWorkoutTickRef.current = null;
         }
 
         return () => {
             if (workoutTimerRef.current) {
-                clearInterval(workoutTimerRef.current as any);
+                clearInterval(workoutTimerRef.current);
             }
         };
     }, [isRunning]);
 
+    // Rest Timer Logic
     useEffect(() => {
-        if (restSeconds > 0 && !restTimerRef.current) {
-            restTimerRef.current = setInterval(() => {
-                setRestSeconds((s) => {
-                    if (s <= 1) {
-                        if (restTimerRef.current) {
-                            clearInterval(restTimerRef.current as any);
+        if (restSeconds > 0) {
+            if (!lastRestTickRef.current) {
+                lastRestTickRef.current = Date.now();
+            }
+
+            if (!restTimerRef.current) {
+                restTimerRef.current = setInterval(() => {
+                    const now = Date.now();
+                    const delta = now - (lastRestTickRef.current || now);
+
+                    if (delta >= 1000) {
+                        const secondsPassed = Math.floor(delta / 1000);
+                        if (secondsPassed > 0) {
+                            setRestSeconds((prev) => {
+                                const newValue = Math.max(
+                                    0,
+                                    prev - secondsPassed,
+                                );
+                                if (newValue === 0) {
+                                    // Timer finished
+                                    if (restTimerRef.current) {
+                                        clearInterval(restTimerRef.current);
+                                        restTimerRef.current = null;
+                                    }
+                                    lastRestTickRef.current = null;
+                                }
+                                return newValue;
+                            });
+                            // Adjust last tick
+                            lastRestTickRef.current = now - (delta % 1000);
                         }
-                        restTimerRef.current = null;
-                        return 0;
                     }
-                    return s - 1;
-                });
-            }, 1000) as any;
+                }, 1000);
+            }
+        } else {
+            // Cleanup if it hit 0 or was reset
+            if (restTimerRef.current) {
+                clearInterval(restTimerRef.current);
+                restTimerRef.current = null;
+            }
+            lastRestTickRef.current = null;
         }
 
         return () => {
-            // Cleanup on unmount or if we want to stop
-            if (restTimerRef.current && restSeconds === 0) {
-                clearInterval(restTimerRef.current as any);
-                restTimerRef.current = null;
+            if (restTimerRef.current) {
+                clearInterval(restTimerRef.current);
             }
         };
     }, [restSeconds]);
 
-    // Ensure cleanup of rest timer on unmount
-    useEffect(() => {
-        return () => {
-            if (restTimerRef.current) {
-                clearInterval(restTimerRef.current as any);
-            }
-        };
-    }, []);
-
     const startRestTimer = useCallback((seconds: number) => {
         // Clear existing if any
         if (restTimerRef.current) {
-            clearInterval(restTimerRef.current as any);
+            clearInterval(restTimerRef.current);
             restTimerRef.current = null;
         }
         setRestSeconds(seconds);
+        lastRestTickRef.current = Date.now();
     }, []);
 
     const resetTimers = useCallback(() => {
         setWorkoutSeconds(0);
         setRestSeconds(0);
         if (restTimerRef.current) {
-            clearInterval(restTimerRef.current as any);
+            clearInterval(restTimerRef.current);
             restTimerRef.current = null;
         }
+        if (workoutTimerRef.current) {
+            clearInterval(workoutTimerRef.current);
+            workoutTimerRef.current = null;
+        }
+        lastWorkoutTickRef.current = null;
+        lastRestTickRef.current = null;
     }, []);
 
     return {
