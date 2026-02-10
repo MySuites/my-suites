@@ -32,14 +32,6 @@ export default function SettingsScreen() {
     setLatestWeight(weight);
   }, [user]);
 
-  // Helper to format date label
-  // Moved logic inside useMemo or keep separate if used elsewhere (it's redundant now but harmless)
-  // Warning: The useMemo logic above uses its own formatLabel.
-  // I will leave this here if other parts use it, but they don't seem to.
-  // Actually, I can remove it if I defined formatLabel inside useMemo.
-  /* const formatDateLabel = ... */ 
-  // Wait, I will just remove it to suppress lint warnings about unused function.
-
   const fetchAllWeightHistory = useCallback(async () => {
     setIsLoading(true);
     const history = await BodyWeightService.getWeightHistory(user?.id || null);
@@ -58,8 +50,6 @@ export default function SettingsScreen() {
 
     if (selectedRange === 'Day') {
         // Today's hourly spine
-        // We want every hour? or every few hours?
-        // Let's do every hour for granularity, chart handles display
         for (let i = 0; i < 24; i++) {
              const h = i < 10 ? `0${i}` : `${i}`;
              spine.push(`${todayStr}T${h}:00:00`);
@@ -105,32 +95,17 @@ export default function SettingsScreen() {
     const groups: Record<string, { total: number, count: number }> = {};
     
     allWeightHistory.forEach(item => {
-        // Simple string comparison works for YYYY-MM-DD but for Day we need check
         if (item.date < spineStartDate) return;
 
         let key = '';
         if (selectedRange === 'Day') {
-             // Precise match on Date, and bucket by hour if we had time.
-             // But item.date is ONLY YYYY-MM-DD string according to interface.
-             // If item.date is YYYY-MM-DD, then we cannot show intraday changes unless we use created_at.
-             // Interface: date: string; // YYYY-MM-DD
-             // created_at?: string;
-             
              if (item.date === todayStr) {
-                 // If we have created_at, use it. Else put at 12:00?
-                 // Or if user enters multiple weights for "today", they likely differ by time?
-                 // If no time info, this chart view is useless.
-                 // Let's assume created_at exists or fallback to 12:00
                  if (item.created_at) {
                      const t = new Date(item.created_at);
                      // Round to nearest hour
                      const h = t.getHours();
                      const hStr = h < 10 ? `0${h}` : `${h}`;
                      key = `${todayStr}T${hStr}:00:00`;
-                 } else {
-                     // Fallback: Just put it at noon or ignore?
-                     // Or maybe duplicate entries for same day?
-                     // Taking the entries as they come.
                  }
              }
         } else if (selectedRange === 'Week' || selectedRange === 'Month') {
@@ -241,19 +216,19 @@ export default function SettingsScreen() {
                         
                         // 2. Delete Cloud Data (If signed in)
                         if (user) {
-                            // Delete each table's data for this user
-                            // Note: RLS usually prevents 'delete all', but eq('user_id', ...) is standard.
                             await supabase.from('workouts').delete().eq('user_id', user.id);
                             await supabase.from('workout_logs').delete().eq('user_id', user.id);
                             await supabase.from('set_logs').delete().eq('user_id', user.id).then(async ({error}) => {
-                                // sets usually cascade from workouts/logs, but strict cleanup if needed
-                                // If cascade is on DB, this might be redundant but safe.
                             });
                              await supabase.from('body_measurements').delete().eq('user_id', user.id);
                              await supabase.from('routines').delete().eq('user_id', user.id);
                         }
 
-                        // 3. Refresh State
+                        // 3. Disable HealthKit Sync
+                        await HealthKitService.disableSync();
+
+                        // 4. Refresh State
+                        await checkHealthStatus();
                         await fetchLatestWeight();
                         await fetchAllWeightHistory();
                         
@@ -274,6 +249,12 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     checkHealthStatus();
+    // Auto-sync when visiting settings
+    BodyWeightService.syncWithHealthKit(user?.id || null).then(() => {
+        // Refresh local data after sync
+        fetchLatestWeight();
+        fetchAllWeightHistory();
+    });
   }, []);
 
   const checkHealthStatus = async () => {
@@ -285,6 +266,7 @@ export default function SettingsScreen() {
     try {
       setIsLoading(true);
       await HealthKitService.initHealthKit();
+      await HealthKitService.enableSync();
       await BodyWeightService.syncWithHealthKit(user?.id || null);
       showToast({ message: "HealthKit synced successfully", type: 'success' });
       await checkHealthStatus();
@@ -357,15 +339,13 @@ export default function SettingsScreen() {
             <Text className="text-base text-light dark:text-dark">Apple Health</Text>
             <Switch
               value={isHealthConnected}
-              onValueChange={(value) => {
+              onValueChange={async (value) => {
                 if (value) {
-                  handleConnectHealth();
+                    await handleConnectHealth();
                 } else {
-                  Alert.alert(
-                    "Disconnect Apple Health",
-                    "To disconnect Apple Health, please go to your device Settings > Health > Data Access & Devices > MyHealth and turn off all categories.",
-                    [{ text: "OK" }]
-                  );
+                    await HealthKitService.disableSync();
+                    await checkHealthStatus();
+                    showToast({ message: "HealthKit sync stopped", type: 'success' });
                 }
               }}
               trackColor={{ false: theme.card, true: theme.primary }}
@@ -400,4 +380,3 @@ export default function SettingsScreen() {
     </View>
   );
 }
-

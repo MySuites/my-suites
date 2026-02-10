@@ -1,4 +1,7 @@
 import HealthKit from "@kingstinct/react-native-healthkit";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const HEALTH_KIT_SYNC_ENABLED_KEY = "myhealth_hk_sync_enabled";
 
 export const HealthKitService = {
     isAvailable: async (): Promise<boolean> => {
@@ -26,14 +29,34 @@ export const HealthKitService = {
     },
     /**
      * Check if HealthKit is authorized for body mass.
+     * Checks both system permission AND local "sync enabled" preference.
      */
     isAuthorized: async (): Promise<boolean> => {
         try {
+            // 1. Check System Permission
             const status = await HealthKit.authorizationStatusFor(
                 "HKQuantityTypeIdentifierBodyMass",
             );
             // 2 is sharingAuthorized
-            return status === 2;
+            const isSystemAuthorized = status === 2;
+
+            if (!isSystemAuthorized) return false;
+
+            // 2. Check Local Preference
+            // If they are system authorized but we haven't set a preference, assume TRUE (backwards compatibility)
+            // If they explicitly disconnected, it will be 'false'.
+            const localPref = await AsyncStorage.getItem(
+                HEALTH_KIT_SYNC_ENABLED_KEY,
+            );
+
+            if (localPref === null) {
+                // First run or legacy: If system says yes, we say yes.
+                // And let's persist it to be explicit moving forward.
+                await AsyncStorage.setItem(HEALTH_KIT_SYNC_ENABLED_KEY, "true");
+                return true;
+            }
+
+            return localPref === "true";
         } catch (error) {
             console.error(
                 "[HealthKitService] Error checking authorization:",
@@ -41,6 +64,14 @@ export const HealthKitService = {
             );
             return false;
         }
+    },
+
+    enableSync: async (): Promise<void> => {
+        await AsyncStorage.setItem(HEALTH_KIT_SYNC_ENABLED_KEY, "true");
+    },
+
+    disableSync: async (): Promise<void> => {
+        await AsyncStorage.setItem(HEALTH_KIT_SYNC_ENABLED_KEY, "false");
     },
 
     /**

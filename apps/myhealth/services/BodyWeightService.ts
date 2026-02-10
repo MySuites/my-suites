@@ -96,6 +96,14 @@ export const BodyWeightService = {
      * Syncs body weight data from HealthKit to the app.
      */
     async syncWithHealthKit(userId: string | null): Promise<void> {
+        const isAuth = await HealthKitService.isAuthorized();
+        if (!isAuth) {
+            console.log(
+                "HealthKit sync skipped: Not authorized or sync disabled.",
+            );
+            return;
+        }
+
         console.log("Syncing with HealthKit...");
         const samples = await HealthKitService.fetchBodyMass();
         if (samples.length === 0) {
