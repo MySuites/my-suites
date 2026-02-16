@@ -1,52 +1,68 @@
 const baseColors = {
   light: {
-    bgLight: 'hsl(0, 0%, 100%)',
-    bg: 'hsl(0, 0%, 95%)',
-    bgDark: 'hsl(0, 0%, 90%)',
-    text: 'hsl(0, 0%, 5%)',
-    textMuted: 'hsl(0, 0%, 30%)',
-    icon: 'hsl(0, 0%, 5%)',
-    tabIconDefault: 'hsl(0, 0%, 89%)',
+    bgLight: 'hsl(0, 0%, 100%)', // Pure White
+    bg: 'hsl(210, 40%, 98%)', // Cloud White
+    bgDark: 'hsl(210, 40%, 96%)', // Vapor Grey
+    text: 'hsl(222, 47%, 11%)', // Ink Black
+    textMuted: 'hsl(215, 16%, 47%)', // Cool Grey
+    icon: 'hsl(222, 47%, 11%)',
+    tabIconDefault: 'hsl(215, 20%, 65%)',
     error: 'hsl(0, 84%, 60%)',
-    border: 'hsl(0, 0%, 95%)',
+    border: 'hsl(214, 32%, 91%)', // Mist Grey
     highlight: 'hsla(0, 0%, 100%, 0.5)',
     info: 'hsl(217, 91%, 60%)',
     danger: 'hsl(0, 84%, 60%)',
-    warning: 'hsl(45, 93%, 40%)',
-    success: 'hsl(142, 76%, 36%)',
-    placeholder: 'hsl(0, 0%, 60%)',
+    warning: 'hsl(42, 87%, 47%)', // Alert Amber
+    success: 'hsl(160, 84%, 39%)', // Level Up Mint
+    placeholder: 'hsl(215, 20%, 65%)',
   },
   dark: {
-    bgLightest: 'hsl(0, 0%, 20%)',
-    bgLight: 'hsl(0, 0%, 15%)',
-    bg: 'hsl(0, 0%, 10%)',
-    bgDark: 'hsl(0, 0%, 5%)',
-    text: 'hsl(0, 0%, 95%)',
-    textMuted: 'hsl(0, 0%, 70%)',
-    icon: 'hsl(0, 0%, 95%)',
-    tabIconDefault: 'hsl(0, 0%, 89%)',
+    bgLightest: 'hsl(215, 25%, 27%)', // Soft Steel
+    bgLight: 'hsl(217, 33%, 17%)', // Lighter Slate (Card)
+    bg: 'hsl(222, 47%, 11%)', // Deep Space
+    bgDark: 'hsl(222, 47%, 5%)', // Extra Dark
+    text: 'hsl(210, 40%, 98%)', // Bright White
+    textMuted: 'hsl(215, 20%, 65%)', // Muted Grey
+    icon: 'hsl(210, 40%, 98%)',
+    tabIconDefault: 'hsl(215, 20%, 65%)',
     error: 'hsl(0, 84%, 60%)',
-    border: 'hsl(0, 0%, 10%)',
+    border: 'hsl(215, 25%, 27%)', // Subtle Grey
     highlight: 'hsla(0, 0%, 100%, 0.15)',
     info: 'hsl(217, 91%, 60%)',
     danger: 'hsl(0, 84%, 60%)',
-    warning: 'hsl(45, 93%, 47%)',
-    success: 'hsl(142, 76%, 36%)',
-    placeholder: 'hsl(0, 0%, 50%)',
+    warning: 'hsl(42, 87%, 47%)', // Alert Amber
+    success: 'hsl(160, 84%, 39%)', // Level Up Mint
+    placeholder: 'hsl(215, 20%, 65%)',
   }
 };
 
 const appThemes = {
   myhealth: {
     light: {
-      primary: 'hsl(8, 100%, 67%)',
-      primaryMuted: 'hsl(8, 40%, 94%)',
-      accent: 'hsl(117, 20%, 61%)',
+      primary: 'hsl(26, 100%, 50%)',
+      primaryMuted: 'hsl(33, 100%, 96%)',
+      accent: 'hsl(350, 89%, 60%)',
+      solar: 'hsl(26, 100%, 50%)',
+      neon: 'hsl(350, 89%, 60%)',
+      electric: 'hsl(239, 84%, 67%)',
+      mystic: 'hsl(271, 91%, 65%)',
+      'level-up': 'hsl(160, 84%, 39%)',
+      alert: 'hsl(42, 87%, 47%)',
+      mental: 'hsl(239, 84%, 67%)',
+      'mental-accent': 'hsl(271, 91%, 65%)',
     },
     dark: {
-      primary: 'hsl(5, 100%, 75%)',
-      primaryMuted: 'hsl(5, 40%, 15%)',
-      accent: 'hsl(122, 37%, 74%)',
+      primary: 'hsl(26, 100%, 50%)',
+      primaryMuted: 'hsl(12, 80%, 15%)',
+      accent: 'hsl(350, 89%, 60%)',
+      solar: 'hsl(26, 100%, 50%)',
+      neon: 'hsl(350, 89%, 60%)',
+      electric: 'hsl(239, 84%, 67%)',
+      mystic: 'hsl(271, 91%, 65%)',
+      'level-up': 'hsl(160, 84%, 39%)',
+      alert: 'hsl(42, 87%, 47%)',
+      mental: 'hsl(239, 84%, 67%)',
+      'mental-accent': 'hsl(271, 91%, 65%)',
     }
   },
   myfinancials: {
@@ -62,5 +78,7 @@ const appThemes = {
     }
   }
 };
+
+
 
 module.exports = { baseColors, appThemes };
