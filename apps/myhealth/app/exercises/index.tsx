@@ -43,8 +43,37 @@ export default function ExercisesScreen() {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [isFilterVisible, setIsFilterVisible] = useState(false);
 
-  const uniqueMuscleGroups = React.useMemo(() => ["All", ...Array.from(new Set(exercises.map(e => e.category))).filter(Boolean).sort()], [exercises]);
-  const uniqueExerciseGroups = React.useMemo(() => Array.from(new Set(exercises.map(e => e.group))).filter(g => g && g !== "Other").sort(), [exercises]);
+  // Filter out non-active progression exercises
+  const processedExercises = React.useMemo(() => {
+      const progressionMap = new Map<string, any[]>();
+      const singles: any[] = [];
+
+      exercises.forEach(e => {
+        if (e.progressionId) {
+          if (!progressionMap.has(e.progressionId)) progressionMap.set(e.progressionId, []);
+          progressionMap.get(e.progressionId)?.push(e);
+        } else {
+          singles.push(e);
+        }
+      });
+
+      const progressionRepresentatives: any[] = [];
+      progressionMap.forEach((group) => {
+        const active = group.find(e => e.isActiveProgression);
+        if (active) {
+          progressionRepresentatives.push(active);
+        } else {
+          // Fallback to lowest level
+          const sorted = group.sort((a, b) => (a.difficulty || 0) - (b.difficulty || 0));
+          if (sorted.length > 0) progressionRepresentatives.push(sorted[0]);
+        }
+      });
+
+      return [...singles, ...progressionRepresentatives];
+  }, [exercises]);
+
+  const uniqueMuscleGroups = React.useMemo(() => ["All", ...Array.from(new Set(processedExercises.map(e => e.category))).filter(Boolean).sort()], [processedExercises]);
+  const uniqueExerciseGroups = React.useMemo(() => Array.from(new Set(processedExercises.map(e => e.group))).filter(g => g && g !== "Other").sort(), [processedExercises]);
 
   const toggleCategory = (category: string) => {
       if (category === "All") {
@@ -62,7 +91,7 @@ export default function ExercisesScreen() {
   };
 
   const sections = React.useMemo(() => {
-    let filtered = exercises.filter(ex => ex.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    let filtered = processedExercises.filter(ex => ex.name.toLowerCase().includes(searchQuery.toLowerCase()));
     
     if (selectedCategories.size > 0) {
         filtered = filtered.filter(ex => selectedCategories.has(ex.category) || selectedCategories.has(ex.group));
@@ -93,7 +122,7 @@ export default function ExercisesScreen() {
     // if (uncaughtDefaults.length > 0) { ... }
     
     return result;
-  }, [exercises, searchQuery, selectedCategories]);
+  }, [processedExercises, searchQuery, selectedCategories]);
 
   return (
     <View className="flex-1 bg-light dark:bg-dark">

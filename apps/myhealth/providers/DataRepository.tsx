@@ -385,18 +385,22 @@ export const DataRepository = {
         console.log(`Seeding ${ExerciseDefaultData.length} default exercises (overwrite mode)...`);
         
         await db.withTransactionAsync(async () => {
-            for (const ex of ExerciseDefaultData) {
+            for (const exData of ExerciseDefaultData) {
+                 const ex = exData as any;
                  await db.runAsync(`
-                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, created_at, updated_at, sync_status)
-                    VALUES (?, ?, ?, ?, ?, ?, 'synced')
-                 `, [
+                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, progression_id, difficulty, is_active_progression, created_at, updated_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
+                `, [
                     ex.id, 
                     ex.name,
                     JSON.stringify([ex.muscle_group]), 
                     ex.type,
+                    ex.progressionId || null,
+                    ex.difficulty !== undefined ? ex.difficulty : (ex.progressionLevel || null),
+                    ex.isActiveProgression ? 1 : 0,
                     new Date().toISOString(),
                     Date.now()
-                 ]);
+                ]);
             }
         });
         console.log("Seeding complete.");
@@ -532,7 +536,10 @@ export const DataRepository = {
         return result.map(e => ({
             ...e,
             muscle_groups: e.muscle_groups ? JSON.parse(e.muscle_groups) : [],
-            properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : []
+            properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : [],
+            progressionId: e.progression_id,
+            difficulty: e.difficulty || e.progression_level, // Fallback for migration
+            isActiveProgression: e.is_active_progression === 1
         }));
     },
 
@@ -554,16 +561,16 @@ export const DataRepository = {
         await db.withTransactionAsync(async () => {
             for (const ex of exercises) {
                 await db.runAsync(`
-                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, created_at, updated_at, sync_status)
-                    VALUES (?, ?, ?, ?, ?, ?, 'synced')
+                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, progression_id, difficulty, is_active_progression, created_at, updated_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
                 `, [
                     ex.id || ex.exercise_id, 
                     ex.name || ex.exercise_name,
                     JSON.stringify(ex.muscle_groups || ex.exercise_muscle_groups || []),
-                    ex.properties || "", // Assume string or convert? 
-                    // Verify upstream properties format: "strength, reps"...
-                    // If ex.properties is array, join it.
-                    // If it is string cleanup?
+                    ex.properties || "", 
+                    ex.progressionId || null,
+                    ex.difficulty || null,
+                    ex.isActiveProgression ? 1 : 0,
                     new Date().toISOString(),
                     now
                 ]);
@@ -592,5 +599,9 @@ export const DataRepository = {
                 );
             }
         });
-    }
+    },
+
+
+
+
 };

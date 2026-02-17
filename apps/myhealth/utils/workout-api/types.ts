@@ -22,6 +22,9 @@ export type Exercise = {
         duration?: number;
         distance?: number;
     }[];
+    progressionId?: string;
+    difficulty?: number;
+    isActiveProgression?: boolean;
 };
 
 export type WorkoutLog = {

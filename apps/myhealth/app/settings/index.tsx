@@ -214,7 +214,10 @@ export default function SettingsScreen() {
                         // 1. Delete Local Data (Always)
                         await DataRepository.clearAllLocalData();
                         
-                        // 2. Delete Cloud Data (If signed in)
+                        // 2. Reseed Default Data (to fix any schema/data changes)
+                        await DataRepository.seedDefaultExercises();
+                        
+                        // 3. Delete Cloud Data (If signed in)
                         if (user) {
                             await supabase.from('workouts').delete().eq('user_id', user.id);
                             await supabase.from('workout_logs').delete().eq('user_id', user.id);
@@ -224,15 +227,15 @@ export default function SettingsScreen() {
                              await supabase.from('routines').delete().eq('user_id', user.id);
                         }
 
-                        // 3. Disable HealthKit Sync
+                        // 4. Disable HealthKit Sync
                         await HealthKitService.disableSync();
 
-                        // 4. Refresh State
+                        // 5. Refresh State
                         await checkHealthStatus();
                         await fetchLatestWeight();
                         await fetchAllWeightHistory();
                         
-                        showToast({ message: "All data deleted", type: 'success' });
+                        showToast({ message: "All data reset and reseeded", type: 'success' });
                     } catch (error) {
                         console.error("Delete data error:", error);
                         Alert.alert("Error", "Failed to delete data.");
@@ -247,6 +250,11 @@ export default function SettingsScreen() {
 
   const [isHealthConnected, setIsHealthConnected] = useState(false);
 
+  const checkHealthStatus = useCallback(async () => {
+    const isAuth = await HealthKitService.isAuthorized();
+    setIsHealthConnected(isAuth);
+  }, []);
+
   useEffect(() => {
     checkHealthStatus();
     // Auto-sync when visiting settings
@@ -255,12 +263,7 @@ export default function SettingsScreen() {
         fetchLatestWeight();
         fetchAllWeightHistory();
     });
-  }, []);
-
-  const checkHealthStatus = async () => {
-    const isAuth = await HealthKitService.isAuthorized();
-    setIsHealthConnected(isAuth);
-  };
+  }, [user?.id, checkHealthStatus, fetchLatestWeight, fetchAllWeightHistory]);
 
   const handleConnectHealth = async () => {
     try {

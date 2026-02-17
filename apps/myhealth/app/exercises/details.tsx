@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, ScrollView, Pressable, Text, Alert } from 'react-native';
+import React, { useMemo, useEffect, useState } from 'react';
+import { View, ScrollView, Pressable, Text, Alert, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
@@ -10,6 +10,9 @@ import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import DefaultExercises from '../../assets/data/default-exercises';
+import { ProgressionSelect } from '../../components/exercises/ProgressionSelect';
+import { DataRepository } from '../../providers/DataRepository';
+import { Exercise } from '../../utils/workout-api/types';
 
 export default function ExerciseDetailsScreen() {
     const router = useRouter();
@@ -18,7 +21,10 @@ export default function ExerciseDetailsScreen() {
     const { user } = useAuth();
     const { deleteCustomExercise } = useWorkoutManager();
     
-    const exercise = useMemo(() => {
+    const [freshExercise, setFreshExercise] = useState<Exercise | null>(null);
+
+    // Initial load from params, but act as fallback/skeleton
+    const initialExercise = useMemo(() => {
         try {
             if (typeof params.exercise === 'string') {
                 return JSON.parse(params.exercise);
@@ -28,6 +34,41 @@ export default function ExerciseDetailsScreen() {
             return null;
         }
     }, [params.exercise]);
+
+    // effective exercise is fresh, or initial
+    const exercise = freshExercise || initialExercise;
+
+    const [progressionExercises, setProgressionExercises] = useState<Exercise[]>([]);
+    const [loadingProgression, setLoadingProgression] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+        
+        async function loadData() {
+            if (!initialExercise?.id) return;
+            
+            // 1. Fetch all exercises (or specific if we had optimized method) to get fresh data for CURRENT exercise
+            // This ensures we have the latest `progressionId` and `difficulty` even if params are stale
+            const allExercises = await DataRepository.getExercises();
+            if (!isMounted) return;
+
+            const currentFresh = allExercises.find(e => e.id === initialExercise.id);
+            if (currentFresh) {
+                setFreshExercise(currentFresh); // Update with DB truth
+                
+                // 2. If the fresh exercise has a progression, load siblings
+                if (currentFresh.progressionId) {
+                    setLoadingProgression(true);
+                    const siblings = allExercises.filter(e => e.progressionId === currentFresh.progressionId);
+                    setProgressionExercises(siblings);
+                    setLoadingProgression(false);
+                }
+            }
+        }
+        
+        loadData();
+        return () => { isMounted = false; };
+    }, [initialExercise?.id]);
 
     const isDefault = useMemo(() => {
         if (!exercise) return true;
@@ -50,6 +91,23 @@ export default function ExerciseDetailsScreen() {
                 }
             ]
         );
+    };
+
+    const handleSetActiveProgression = async (target: Exercise) => {
+        // Optimistic update
+        const updated = progressionExercises.map(e => ({
+            ...e,
+            isActiveProgression: e.id === target.id
+        }));
+        setProgressionExercises(updated);
+
+        // Persist
+        try {
+            await DataRepository.saveExercises(updated);
+        } catch (e) {
+            console.error("Failed to save progression", e);
+            Alert.alert("Error", "Failed to update progression");
+        }
     };
 
     const {
@@ -112,6 +170,23 @@ export default function ExerciseDetailsScreen() {
                         {exercise.category || 'Category'}
                     </Text>
                 </View>
+
+                {/* Progression Selector */}
+                {loadingProgression ? (
+                    <ActivityIndicator size="small" color={currentColors.primary} style={{ marginBottom: 24 }} />
+                ) : exercise.progressionId ? (
+                    <ProgressionSelect 
+                        currentExercise={exercise}
+                        progressionExercises={progressionExercises}
+                        onSelect={(ex) => {
+                            router.replace({
+                                pathname: '/exercises/details',
+                                params: { exercise: JSON.stringify(ex) }
+                            });
+                        }}
+                        onSetActive={handleSetActiveProgression}
+                    />
+                ) : null}
 
                 {/* Performance Chart */}
                 <ExerciseChart

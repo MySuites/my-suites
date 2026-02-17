@@ -122,13 +122,23 @@ export const initDatabase = async () => {
             await database.execAsync(
                 `ALTER TABLE ${table} RENAME COLUMN ${oldName} TO ${newName}`,
             );
-        } catch (e) {
+        } catch {
             // Ignore
         }
     };
 
     await safeAddColumn("workout_logs", "deleted_at", "INTEGER");
     await safeAddColumn("exercises", "deleted_at", "INTEGER");
+
+    // Exercise Progressions
+    // Exercise Progressions
+    await safeAddColumn("exercises", "progression_id", "TEXT");
+    await safeAddColumn("exercises", "difficulty", "REAL"); // Support 1.5, 2.5 etc
+    await safeAddColumn("exercises", "is_active_progression", "INTEGER"); // Boolean 0/1
+
+    // Rename old column if exists (migration)
+    await safeRenameColumn("exercises", "progression_level", "difficulty");
+
     await safeRenameColumn("workout_logs", "workout_time", "workout_date");
 
     await safeRenameColumn("workout_logs", "workout_time", "workout_date");
