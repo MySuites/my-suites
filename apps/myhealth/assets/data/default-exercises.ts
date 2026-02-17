@@ -211,98 +211,128 @@ export const Deadlifts = [
     },
 ];
 
-export const Squats = [
-    {
-        "id": "bodyweight_squat",
-        "name": "Bodyweight Squat",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "weighted_squat",
-        "name": "Weighted Squat",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "lunges",
-        "name": "Lunges",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "weighted_lunges",
-        "name": "Weighted Lunges",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "split_squat",
-        "name": "Split Squat",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "shrimp_squat",
-        "name": "Shrimp Squat",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "pistol_squat",
-        "name": "Pistol Squat",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "sissy_squat",
-        "name": "Sissy Squat",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "dragon_squat",
-        "name": "Dragon Squat",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "barbell_squat",
-        "name": "Barbell Squat",
-        "type": "Weighted, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "smith_machine_squat",
-        "name": "Smith Machine Squat",
-        "type": "Weighted, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "bulgarian_split_squat",
-        "name": "Bulgarian Split Squat",
-        "type": "Weighted, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "goblet_squat",
-        "name": "Goblet Squat",
-        "type": "Weighted, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "hack_squat",
-        "name": "Hack Squat",
-        "type": "Weighted, Reps",
-        "muscle_group": "Quadriceps",
-    },
-    {
-        "id": "pendulum_squat",
-        "name": "Pendulum Squat",
-        "type": "Weighted, Reps",
-        "muscle_group": "Quadriceps",
-    },
-];
+const SquatProgression = {
+    id: "bodyweight_squat",
+    name: "Bodyweight Squat",
+    type: "Bodyweight, Reps",
+    muscle_group: "Quadriceps",
+    progressionId: "squat_progression",
+    difficulty: 1.0,
+    isActiveProgression: true,
+    variations: [
+        {
+            id: "bodyweight_squat",
+            name: "Bodyweight Squat",
+            type: "Bodyweight, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 1.0,
+        },
+        {
+            id: "lunges",
+            name: "Lunges",
+            type: "Bodyweight, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 1.2,
+        },
+        {
+            id: "split_squat",
+            name: "Split Squat",
+            type: "Bodyweight, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 1.5,
+        },
+        {
+            id: "sissy_squat",
+            name: "Sissy Squat",
+            type: "Bodyweight, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 2.0,
+        },
+        {
+            id: "goblet_squat",
+            name: "Goblet Squat",
+            type: "Weighted, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 2.0,
+        },
+        {
+            id: "weighted_squat",
+            name: "Weighted Squat",
+            type: "Weighted, Bodyweight, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 2.0,
+        },
+        {
+            id: "weighted_lunges",
+            name: "Weighted Lunges",
+            type: "Weighted, Bodyweight, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 2.2,
+        },
+        {
+            id: "bulgarian_split_squat",
+            name: "Bulgarian Split Squat",
+            type: "Weighted, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 2.5,
+        },
+        {
+            id: "shrimp_squat",
+            name: "Shrimp Squat",
+            type: "Bodyweight, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 3.0,
+        },
+        {
+            id: "barbell_squat",
+            name: "Barbell Squat",
+            type: "Weighted, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 3.0,
+        },
+        {
+            id: "smith_machine_squat",
+            name: "Smith Machine Squat",
+            type: "Weighted, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 3.0,
+        },
+        {
+            id: "hack_squat",
+            name: "Hack Squat",
+            type: "Weighted, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 3.0,
+        },
+        {
+            id: "pendulum_squat",
+            name: "Pendulum Squat",
+            type: "Weighted, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 3.0,
+        },
+        {
+            id: "pistol_squat",
+            name: "Pistol Squat",
+            type: "Bodyweight, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 4.0,
+        },
+        {
+            id: "dragon_squat",
+            name: "Dragon Squat",
+            type: "Bodyweight, Reps",
+            muscle_group: "Quadriceps",
+            difficulty: 4.5,
+        },
+    ],
+};
+
+export const Squats = SquatProgression.variations.map((v) => ({
+    ...v,
+    progressionId: SquatProgression.progressionId,
+    isActiveProgression: v.id === "bodyweight_squat" ? true : undefined,
+}));
 
 export const CalfRaises = [
     {
@@ -574,124 +604,157 @@ export const Crunches = [
     },
 ];
 
-export const PushUps = [
-    {
-        "id": "wall_push_up",
-        "name": "Wall Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Chest",
-        "progressionId": "push_up_progression",
-        "difficulty": 1.0,
-        "isActiveProgression": true, // Default active
-    },
-    {
-        "id": "incline_push_up",
-        "name": "Incline Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Chest",
-        "progressionId": "push_up_progression",
-        "difficulty": 1.5, // Float example
-    },
-    {
-        "id": "knee_push_up",
-        "name": "Knee Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Chest",
-        "progressionId": "push_up_progression",
-        "difficulty": 1.5,
-    },
-    {
-        "id": "push_up",
-        "name": "Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Triceps",
-        "progressionId": "push_up_progression",
-        "difficulty": 2.0,
-    },
-    {
-        "id": "decline_push_up",
-        "name": "Decline Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Chest",
-        "progressionId": "push_up_progression",
-        "difficulty": 3.0,
-    },
-    {
-        "id": "diamond_push_up",
-        "name": "Diamond Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Triceps",
-        "progressionId": "push_up_progression",
-        "difficulty": 3.0,
-    },
-    {
-        "id": "close_push_up",
-        "name": "Close Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Chest",
-        "progressionId": "push_up_progression",
-        "difficulty": 3.0,
-    },
-    {
-        "id": "wide_push_up",
-        "name": "Wide Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Chest",
-        "progressionId": "push_up_progression",
-        "difficulty": 3.0,
-    },
-    {
-        "id": "pike_push_up",
-        "name": "Pike Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Chest",
-        "progressionId": "push_up_progression",
-        "difficulty": 3.0,
-    },
-    {
-        "id": "pseudo_planche_push_up",
-        "name": "Pseudo Planche Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Other",
-        "progressionId": "push_up_progression",
-        "difficulty": 4.0,
-    },
-    {
-        "id": "weighted_push_up",
-        "name": "Weighted Push-up",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Chest",
-        "progressionId": "push_up_progression",
-        "difficulty": 3.0,
-    },
-];
+const PushUpProgression = {
+    id: "push_up",
+    name: "Push-up",
+    type: "Bodyweight, Reps",
+    muscle_group: "Triceps",
+    progressionId: "push_up_progression",
+    difficulty: 2.0,
+    isActiveProgression: true, // Default active
+    variations: [
+        {
+            id: "wall_push_up",
+            name: "Wall Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Chest",
+            difficulty: 1.0,
+        },
+        {
+            id: "incline_push_up",
+            name: "Incline Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Chest",
+            difficulty: 1.5,
+        },
+        {
+            id: "knee_push_up",
+            name: "Knee Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Chest",
+            difficulty: 1.5,
+        },
+        // Root is implicitly here or separate?
+        // Let's include it in variations for completeness of the "Progression List",
+        // OR handle it in the flattening.
+        // The prompt said "individual exercises as an objects... but also adding a progression field... include a list of individual exercises that is the variation of the root".
+        // So Root has `progression: [Variation1, Variation2...]`.
+        // And Root itself is part of it.
+        {
+            id: "push_up", // The root itself
+            name: "Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Triceps",
+            difficulty: 2.0,
+        },
+        {
+            id: "decline_push_up",
+            name: "Decline Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Chest",
+            difficulty: 3.0,
+        },
+        {
+            id: "diamond_push_up",
+            name: "Diamond Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Triceps",
+            difficulty: 3.0,
+        },
+        {
+            id: "close_push_up",
+            name: "Close Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Chest",
+            difficulty: 3.0,
+        },
+        {
+            id: "wide_push_up",
+            name: "Wide Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Chest",
+            difficulty: 3.0,
+        },
+        {
+            id: "pike_push_up",
+            name: "Pike Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Chest",
+            difficulty: 3.0,
+        },
+        {
+            id: "pseudo_planche_push_up",
+            name: "Pseudo Planche Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Other",
+            difficulty: 4.0,
+        },
+        {
+            id: "weighted_push_up",
+            name: "Weighted Push-up",
+            type: "Weighted, Bodyweight, Reps",
+            muscle_group: "Chest",
+            difficulty: 3.0,
+        },
+    ],
+};
 
-export const PullUps = [
-    {
-        "id": "pull_up",
-        "name": "Pull-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "chin_up",
-        "name": "Chin-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Biceps",
-    },
-    {
-        "id": "weighted_pull_up",
-        "name": "Weighted Pull-up",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "weighted_chin_up",
-        "name": "Weighted Chin-up",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Biceps",
-    },
-];
+// Helper to flatten
+export const PushUps = PushUpProgression.variations.map((v) => ({
+    ...v,
+    progressionId: PushUpProgression.progressionId,
+    // Ensure root properties like isActiveProgression form the 'state'
+    // but here we are defining static data.
+    // The previous implementation had `isActiveProgression` on the object.
+    // We should probably keep it on the root-equivalent entry or just rely on DB default.
+    isActiveProgression: v.id === "wall_push_up" ? true : undefined, // Default start at level 1?
+}));
+
+const PullUpProgression = {
+    id: "pull_up",
+    name: "Pull-up",
+    type: "Bodyweight, Reps",
+    muscle_group: "Lats",
+    progressionId: "pull_up_progression",
+    difficulty: 2.0,
+    isActiveProgression: true,
+    variations: [
+        {
+            id: "chin_up",
+            name: "Chin-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Biceps",
+            difficulty: 1.5,
+        },
+        {
+            id: "pull_up",
+            name: "Pull-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+        {
+            id: "weighted_chin_up",
+            name: "Weighted Chin-up",
+            type: "Weighted, Bodyweight, Reps",
+            muscle_group: "Biceps",
+            difficulty: 3.0,
+        },
+        {
+            id: "weighted_pull_up",
+            name: "Weighted Pull-up",
+            type: "Weighted, Bodyweight, Reps",
+            muscle_group: "Lats",
+            difficulty: 3.0,
+        },
+    ],
+};
+
+export const PullUps = PullUpProgression.variations.map((v) => ({
+    ...v,
+    progressionId: PullUpProgression.progressionId,
+    isActiveProgression: v.id === "pull_up" ? true : undefined,
+}));
 
 export const Rows = [
     {

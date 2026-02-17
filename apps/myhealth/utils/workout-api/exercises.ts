@@ -89,6 +89,9 @@ export async function fetchExercises(user: any) {
                     ? props.split(",").map((s) => s.trim())
                     : []),
             rawType: e.properties, // Keep raw if needed
+            progressionId: e.progressionId,
+            difficulty: e.difficulty,
+            isActiveProgression: e.isActiveProgression,
         };
     });
 

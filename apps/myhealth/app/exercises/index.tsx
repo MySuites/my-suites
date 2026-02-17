@@ -56,16 +56,38 @@ export default function ExercisesScreen() {
           singles.push(e);
         }
       });
-
+      
+      
       const progressionRepresentatives: any[] = [];
-      progressionMap.forEach((group) => {
-        const active = group.find(e => e.isActiveProgression);
-        if (active) {
-          progressionRepresentatives.push(active);
-        } else {
-          // Fallback to lowest level
+      progressionMap.forEach((group, progressionId) => {
+        // 1. Try to find "Canonical" exercise
+        // Heuristic: ID matches the progressionId (active assumption for now for 'push_up' vs 'push_up_progression'?)
+        // Or specific map.
+        // For 'push_up_progression', we want 'push_up'.
+        
+        let representative = group.find(e => e.id === 'push_up'); // Explicit for now as requested
+        if (!representative) representative = group.find(e => e.id === 'bodyweight_squat');
+        if (!representative) representative = group.find(e => e.id === 'pull_up');
+        
+        // General heuristic: if progressionId is "X_progression", look for id "X"
+        if (!representative && progressionId.endsWith('_progression')) {
+            const baseId = progressionId.replace('_progression', '');
+            representative = group.find(e => e.id === baseId);
+        }
+
+        // 2. Fallback to active
+        if (!representative) {
+             representative = group.find(e => e.isActiveProgression);
+        }
+
+        // 3. Fallback to lowest level
+        if (!representative) {
           const sorted = group.sort((a, b) => (a.difficulty || 0) - (b.difficulty || 0));
-          if (sorted.length > 0) progressionRepresentatives.push(sorted[0]);
+          if (sorted.length > 0) representative = sorted[0];
+        }
+
+        if (representative) {
+            progressionRepresentatives.push(representative);
         }
       });
 
