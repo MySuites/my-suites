@@ -15,7 +15,7 @@ export function ScreenHeader({ title, rightAction, leftAction, className }: Scre
     >
       <View className="flex-row justify-center items-center relative min-h-[44px]">
         {leftAction && (
-            <View className="absolute left-5 z-10 flex-row gap-2">
+            <View className="absolute left-5 z-10 flex-row gap-2 h-12">
                 {leftAction}
             </View>
         )}

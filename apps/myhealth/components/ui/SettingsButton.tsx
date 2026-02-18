@@ -10,7 +10,7 @@ export function SettingsButton() {
         <RaisedCard 
             onPress={() => router.push('/settings')}
             style={{ borderRadius: 9999 }}
-            className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center"
+            className="w-12 p-0 my-0 rounded-full items-center justify-center"
         >
             <IconSymbol 
                 name="gearshape.fill" 

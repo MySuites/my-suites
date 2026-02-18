@@ -23,9 +23,9 @@ export function HollowedCard({ children, style, className, onPress, ...props }: 
 
   const baseClassName = `
     w-full mb-1 p-3 rounded-xl
-    bg-gray-100 dark:bg-black/20
+    bg-light dark:bg-black/20
     border-t-[3px] border-l-[3px] border-b-[1px] border-r-[1px]
-    border-t-gray-300 border-l-gray-300 border-b-white border-r-white
+    border-t-black/10 border-l-black/10 border-b-white border-r-white
     dark:border-t-black/60 dark:border-l-black/60 dark:border-b-white/10 dark:border-r-white/10
     ${className || ''}
   `.replace(/\s+/g, ' ').trim();

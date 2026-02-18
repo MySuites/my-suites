@@ -161,12 +161,12 @@ export default function Workout() {
                 <View className="px-4 mb-2">
                     {/* Saved Workouts Header */}
                     <View className="flex-row justify-between items-center mb-3">
-                            <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">Saved Workouts</Text>
-                            <View className="flex-row items-center gap-4">
+                        <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">Saved Workouts</Text>
+                        <View className="flex-row gap-4 h-12">
                             <RaisedCard 
                                 onPress={handleCreateSavedWorkout}
                                 style={{ borderRadius: 9999 }}
-                                className="w-12 h-12 p-0 my-0 items-center justify-center"
+                                className="w-12 p-0 my-0 items-center justify-center"
                             >
                                 <IconSymbol 
                                     name="plus" 
@@ -177,7 +177,7 @@ export default function Workout() {
                             <RaisedCard 
                                 onPress={() => router.push('/workouts/saved')}
                                 style={{ borderRadius: 9999 }}
-                                className="w-12 h-12 p-0 my-0 items-center justify-center"
+                                className="w-12 p-0 my-0 items-center justify-center"
                             >
                                 <IconSymbol 
                                     name="line.3.horizontal" 
@@ -185,7 +185,7 @@ export default function Workout() {
                                     color={theme.primary} 
                                 />
                             </RaisedCard>
-                            </View>
+                        </View>
                     </View>
 
                     {savedWorkouts.length === 0 ? (
@@ -260,28 +260,25 @@ export default function Workout() {
                             <View className="mb-6 px-4">
                                 <RaisedCard className="p-4">
                                     <View className="flex-row justify-between items-center mb-3">
-                                        <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">No Active Routine</Text>
-                                        <RaisedCard 
-                                            onPress={() => router.push('/routines')}
-                                            style={{ borderRadius: 9999 }}
-                                            className="w-12 h-12 p-0 my-0 items-center justify-center"
-                                        >
-                                            <IconSymbol 
-                                                name="line.3.horizontal" 
-                                                size={24} 
-                                                color={theme.primary} 
-                                            />
-                                        </RaisedCard>
-                                    </View>
-                                    <HollowedCard className="p-4">
-                                        <View className="p-5 items-center">
-                                            <Text className="text-light-muted dark:text-dark-muted text-center mb-4">
-                                                Select a routine below to start tracking your progress.
-                                            </Text>
-                                            <TouchableOpacity onPress={() => router.push('/routines' as any)} className="p-2.5 rounded-lg bg-primary dark:bg-primary-dark">
-                                                <Text className="text-white font-semibold">Choose Routine</Text>
-                                            </TouchableOpacity>
+                                        <Text className="text-lg font-semibold text-light dark:text-dark">No Active Routine</Text>
+                                        <View className="flex-row h-12">
+                                            <RaisedCard 
+                                                onPress={() => router.push('/routines')}
+                                                style={{ borderRadius: 9999 }}
+                                                className="w-12 p-0 my-0 items-center justify-center"
+                                            >
+                                                <IconSymbol 
+                                                    name="line.3.horizontal" 
+                                                    size={24} 
+                                                    color={theme.primary} 
+                                                />
+                                            </RaisedCard>
                                         </View>
+                                    </View>
+                                    <HollowedCard className="p-8">
+                                        <Text className="text-light-muted dark:text-dark-muted text-center">
+                                            Select a routine below to start tracking your progress.
+                                        </Text>
                                     </HollowedCard>
                                 </RaisedCard>
                             </View>
