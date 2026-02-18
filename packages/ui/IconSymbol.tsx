@@ -57,6 +57,7 @@ const MAPPING = {
   'stop.fill': 'stop',
   'arrow.down.right.and.arrow.up.left': 'unfold-less',
   'arrow.up.left.and.arrow.down.right': 'unfold-more',
+  'clock.fill': 'history',
 } as const;
 
 

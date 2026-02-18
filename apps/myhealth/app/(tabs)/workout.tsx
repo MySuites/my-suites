@@ -64,6 +64,7 @@ export default function Workout() {
             startWorkout([], "Empty Workout");
         }
     };
+    const [menuVisible, setMenuVisible] = useState(false);
     const [activeSwipedCardId, setActiveSwipedCardId] = useState<string | null>(null);
 
     const { 
@@ -125,40 +126,29 @@ export default function Workout() {
 
 	return (
 		<View className="flex-1 bg-light dark:bg-dark">
-			<ScreenHeader title="Workout" leftAction={<SettingsButton />} />
+			<ScreenHeader 
+                title="Workout" 
+                leftAction={<SettingsButton />} 
+                rightAction={
+                    <RaisedCard 
+                        onPress={() => setMenuVisible(!menuVisible)}
+                        style={{ borderRadius: 9999 }}
+                        className="w-12 p-0 items-center justify-center"
+                    >
+                        <IconSymbol 
+                            name="line.3.horizontal" 
+                            size={24} 
+                            color={theme.primary} 
+                    />
+                </RaisedCard>} />
 
 			{/* Dashboard: Routines & Saved Workouts */}
 			<ScrollView 
 				className="flex-1"
 				contentContainerStyle={{paddingBottom: 20, flexGrow: 1, paddingTop: 100}}
 				showsVerticalScrollIndicator={false}
-			>
-				{/* Controls Row */}
-				<View className="flex-row gap-2 my-6 px-4">
-                    <RaisedCard 
-                        onPress={() => router.push('/exercises' as any)} 
-                        accessibilityLabel="Exercises"
-                        className="flex-1 mr-0 p-2.5 my-0 items-center justify-center"
-                    >
-                        <Text className="text-light dark:text-dark text-center font-semibold">Exercises</Text>
-                    </RaisedCard>
-					<RaisedCard 
-                        onPress={handleStartEmpty} 
-                        accessibilityLabel="Start empty workout"
-                        className="flex-1 mr-0 p-2.5 my-0 items-center justify-center"
-                    >
-                        <Text className="text-light dark:text-dark text-center font-semibold">Start Empty</Text>
-                    </RaisedCard>
-					<RaisedCard 
-                        onPress={() => router.push('/workouts/history' as any)} 
-                        accessibilityLabel="History"
-                        className="flex-1 mr-0 p-2.5 my-0 items-center justify-center"
-                    >
-                        <Text className="text-light dark:text-dark text-center font-semibold">History</Text>
-                    </RaisedCard>
-				</View>
-					
-                <View className="px-4 mb-2">
+			>		
+                <View className="px-4 my-6">
                     {/* Saved Workouts Header */}
                     <View className="flex-row justify-between items-center mb-3">
                         <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">Saved Workouts</Text>
@@ -286,6 +276,53 @@ export default function Workout() {
                     </View>     
 			</ScrollView>
                 
+                {/* Menu Overlay */}
+                {menuVisible && (
+                    <>
+                        <TouchableOpacity 
+                            activeOpacity={1} 
+                            onPress={() => setMenuVisible(false)}
+                            className="absolute top-0 bottom-0 left-0 right-0 z-50 bg-black/20"
+                        />
+                        <RaisedCard 
+                            className="absolute top-28 right-4 z-[60] w-48 p-2 bg-light dark:bg-dark-lighter origin-top-right rounded-xl"
+                            style={{ 
+                                shadowColor: '#000', 
+                                shadowOffset: { width: 0, height: 4 }, 
+                                shadowOpacity: 0.15, 
+                                shadowRadius: 12, 
+                                elevation: 5 
+                            }}
+                        >
+                            <TouchableOpacity 
+                                onPress={() => { setMenuVisible(false); router.push('/exercises' as any); }}
+                                className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                            >
+                                <IconSymbol name="dumbbell.fill" size={20} color={theme.text} style={{ marginRight: 12 }} />
+                                <Text className="text-light dark:text-dark font-medium">Exercises</Text>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity 
+                                onPress={() => { setMenuVisible(false); router.push('/workouts/history' as any); }}
+                                className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                            >
+                                <IconSymbol name="clock.fill" size={20} color={theme.text} style={{ marginRight: 12 }} />
+                                <Text className="text-light dark:text-dark font-medium">History</Text>
+                            </TouchableOpacity>
+
+                            <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
+                            
+                            <TouchableOpacity 
+                                onPress={() => { setMenuVisible(false); handleStartEmpty(); }}
+                                className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                            >
+                                <IconSymbol name="plus" size={20} color={theme.primary} style={{ marginRight: 12 }} />
+                                <Text className="text-primary font-medium">Start Empty</Text>
+                            </TouchableOpacity>
+                        </RaisedCard>
+                    </>
+                )}
+
                 {/* Quick Start Floating Button */}
                 {!hasActiveSession && (
                      <View 
