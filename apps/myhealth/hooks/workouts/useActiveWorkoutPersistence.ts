@@ -179,7 +179,6 @@ export function useActiveWorkoutPersistence({
         workoutSeconds,
         workoutName,
         isRunning,
-        isRunning,
         routineId,
         sourceWorkoutId,
         hasActiveSession,

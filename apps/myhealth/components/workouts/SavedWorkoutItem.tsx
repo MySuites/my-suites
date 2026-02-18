@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { ActionCard, RaisedCard, IconSymbol } from "@mysuite/ui";
+import { RaisedCard, IconSymbol } from "@mysuite/ui";
 import { SavedWorkout } from '../../types';
 
 interface SavedWorkoutItemProps {
@@ -23,16 +23,7 @@ export const SavedWorkoutItem = ({
     onSwipeStart
 }: SavedWorkoutItemProps) => {
     return (
-        <ActionCard 
-            activeOpacity={1}
-            className="mb-3"
-            onPress={onEdit}
-            onDelete={onDelete}
-            onEdit={onEdit}
-            swipeGroupId={swipeGroupId}
-            activeSwipeId={activeSwipeId}
-            onSwipeStart={onSwipeStart}
-        >
+        <View className="mb-3 px-4">
             <View className="flex-row gap-1 h-20">
                 {/* Workout Info Card */}
                 <RaisedCard 
@@ -50,6 +41,6 @@ export const SavedWorkoutItem = ({
                     <IconSymbol name="play.fill" size={24} color="#FFF" />
                 </RaisedCard>
             </View>
-        </ActionCard>
+        </View>
     );
 };
