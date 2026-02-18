@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { View, Pressable, ViewProps, PressableProps, useWindowDimensions, GestureResponderEvent } from 'react-native';
 import { cssInterop, useColorScheme } from 'nativewind';
-import { LinearGradient } from 'expo-linear-gradient';
+
 
 cssInterop(Pressable, { className: 'style' });
 
@@ -14,81 +14,31 @@ interface CardProps extends ViewProps {
 export function RaisedCard({ children, style, className, onPress, activeOpacity = 0.9, ...props }: CardProps) {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === 'dark';
-  // Refined Neumorphic RaisedCard: matches background, uses highlight top-border and soft bottom shadow
-  const baseClassName = `bg-light dark:bg-dark-lighter rounded-xl border border-light dark:border-dark border-t-highlight dark:border-t-highlight-dark border-l-highlight dark:border-l-highlight-dark ${className || ''}`;
-  const shadowStyle = { 
-      shadowColor: '#000',
-      shadowOffset: { width: 2, height: 4 }, 
-      shadowOpacity: 0.15, 
-      shadowRadius: 5, 
-      elevation: 6,
-      overflow: 'visible' as const
-  };
-
-  const HoverGradient = (
-    <LinearGradient
-        colors={isDark 
-          ? ['hsla(0, 0%, 15%, 0.3)', 'hsla(0, 0%, 0%, 0.4)'] 
-          : ['hsla(0, 0%, 98%, 0.85)', 'hsla(0, 0%, 90%, 0.15)']}
-        locations={[0, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0.2, y: 3 }}
-        style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            borderRadius: 12, // matches rounded-xl
-            zIndex: -1,
-        }}
-        pointerEvents="none"
-    />
-  );
-
-  const PressedGradient = (
-    <LinearGradient
-        colors={isDark 
-            ? ['hsla(0, 0%, 0%, 0.3)', 'hsla(0, 0%, 0%, 0.4)'] 
-            : ['hsla(0, 0%, 80%, 0.1)', 'hsla(0, 0%, 60%, 0.05)']}
-        locations={[0, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            borderRadius: 12,
-            zIndex: -1,
-        }}
-        pointerEvents="none"
-    />
-  );
-
+  // Flat Design: No shadows, no gradients, thick bottom border
+  // Determine border color based on theme context or default manually if needed, 
+  // but utility classes handle it best.
+  // Using a darker shade for the bottom border to simulate "thickness" depth or just opacity.
+  const baseClassName = `bg-light dark:bg-dark-lighter rounded-xl border-x border-t border-black/5 dark:border-white/5 border-b-[4px] border-b-black/10 dark:border-b-black/50 active:border-b-[0px] active:translate-y-[4px] ${className || ''}`;
+  
+  // Note: active:translate-y-[4px] and active:border-b-[0px] creates a "button press" effect 
+  // where the border disappears and the card moves down.
+  // If not desired, just keep border static. User asked for "flat design... thick bottom border". 
+  // Usually this implies the retro/neobrutalist click effect, but let's stick to valid border first.
+  
   return onPress ? (
     <Pressable 
-        style={[style, shadowStyle]} 
+        style={({ pressed }) => [
+            typeof style === 'function' ? (style as any)(pressed) : style,
+            pressed && { opacity: activeOpacity }
+        ]} 
         className={baseClassName} 
         onPress={onPress} 
         {...(props as PressableProps)}
     >
-        {({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => {
-            return (
-        <>
-            {hovered && !pressed && HoverGradient}
-            {pressed && PressedGradient}
-            <View style={{ zIndex: 1 }}>
-                {children}
-            </View>
-        </>
-        );
-        }}
+        {children}
     </Pressable>
   ) : (
-    <View style={[style, shadowStyle]} className={baseClassName} {...props}>
-        {/* Non-interactive card does not show gradient on hover currently */}
+    <View style={style} className={baseClassName} {...props}>
         {children}
     </View>
   );
