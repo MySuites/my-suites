@@ -159,65 +159,63 @@ export default function Workout() {
 				</View>
 					
                 <View className="px-4 mb-2">
-                    <RaisedCard className="p-4">
-                        {/* Saved Workouts Header */}
-                        <View className="flex-row justify-between items-center mb-3">
-                             <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">Saved Workouts</Text>
-                             <View className="flex-row items-center gap-4">
-                                <RaisedCard 
-                                    onPress={handleCreateSavedWorkout}
-                                    style={{ borderRadius: 9999 }}
-                                    className="w-12 h-12 p-0 my-0 items-center justify-center"
-                                >
-                                    <IconSymbol 
-                                        name="plus" 
-                                        size={24} 
-                                        color={theme.primary} 
-                                    />
-                                </RaisedCard>
-                                <RaisedCard 
-                                    onPress={() => router.push('/workouts/saved')}
-                                    style={{ borderRadius: 9999 }}
-                                    className="w-12 h-12 p-0 my-0 items-center justify-center"
-                                >
-                                    <IconSymbol 
-                                        name="line.3.horizontal" 
-                                        size={24} 
-                                        color={theme.primary} 
-                                    />
-                                </RaisedCard>
-                             </View>
-                        </View>
+                    {/* Saved Workouts Header */}
+                    <View className="flex-row justify-between items-center mb-3">
+                            <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">Saved Workouts</Text>
+                            <View className="flex-row items-center gap-4">
+                            <RaisedCard 
+                                onPress={handleCreateSavedWorkout}
+                                style={{ borderRadius: 9999 }}
+                                className="w-12 h-12 p-0 my-0 items-center justify-center"
+                            >
+                                <IconSymbol 
+                                    name="plus" 
+                                    size={24} 
+                                    color={theme.primary} 
+                                />
+                            </RaisedCard>
+                            <RaisedCard 
+                                onPress={() => router.push('/workouts/saved')}
+                                style={{ borderRadius: 9999 }}
+                                className="w-12 h-12 p-0 my-0 items-center justify-center"
+                            >
+                                <IconSymbol 
+                                    name="line.3.horizontal" 
+                                    size={24} 
+                                    color={theme.primary} 
+                                />
+                            </RaisedCard>
+                            </View>
+                    </View>
 
-                        {savedWorkouts.length === 0 ? (
-                            <HollowedCard className="p-2">
-                                <View>
-                                    <Text className="text-light-muted dark:text-dark-muted text-center">
-                                        Create a workout to save your favorite exercises and sets.
-                                    </Text>
-                                </View>
-                            </HollowedCard>
-                        ) : (
-                            <FlatList
-                                data={savedWorkouts}
-                                scrollEnabled={false}
-                                keyExtractor={(i) => i.id}
-                                style={{ overflow: 'visible' }}
-                                ItemSeparatorComponent={() => <View />}
-                                renderItem={({item}) => (
-                                    <SavedWorkoutItem
-                                        item={item}
-                                        onEdit={() => handleEditSavedWorkout(item)}
-                                        onStart={() => handleStartSavedWorkout(item)}
-                                        onDelete={() => deleteSavedWorkout(item.id, { skipConfirmation: true })}
-                                        swipeGroupId={item.id}
-                                        activeSwipeId={activeSwipedCardId}
-                                        onSwipeStart={setActiveSwipedCardId}
-                                    />
-                                )}
-                            />
-                        )}
-                    </RaisedCard>
+                    {savedWorkouts.length === 0 ? (
+                        <HollowedCard className="p-2">
+                            <View>
+                                <Text className="text-light-muted dark:text-dark-muted text-center">
+                                    Create a workout to save your favorite exercises and sets.
+                                </Text>
+                            </View>
+                        </HollowedCard>
+                    ) : (
+                        <FlatList
+                            data={savedWorkouts}
+                            scrollEnabled={false}
+                            keyExtractor={(i) => i.id}
+                            style={{ overflow: 'visible' }}
+                            ItemSeparatorComponent={() => <View />}
+                            renderItem={({item}) => (
+                                <SavedWorkoutItem
+                                    item={item}
+                                    onEdit={() => handleEditSavedWorkout(item)}
+                                    onStart={() => handleStartSavedWorkout(item)}
+                                    onDelete={() => deleteSavedWorkout(item.id, { skipConfirmation: true })}
+                                    swipeGroupId={item.id}
+                                    activeSwipeId={activeSwipedCardId}
+                                    onSwipeStart={setActiveSwipedCardId}
+                                />
+                            )}
+                        />
+                    )}
                 </View>
 
                     <View className="h-6" />
