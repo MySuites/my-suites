@@ -124,7 +124,7 @@ export default function Workout() {
     }
 
 	return (
-		<View className="flex-1 bg-light-darker dark:bg-dark">
+		<View className="flex-1 bg-light dark:bg-dark">
 			<ScreenHeader title="Workout" leftAction={<SettingsButton />} />
 
 			{/* Dashboard: Routines & Saved Workouts */}
@@ -310,15 +310,24 @@ export default function Workout() {
                                      // The `useRoutineTimeline` returns days.
                                      
                                      // For now, let's look at `timelineDays`
-                                     const todayDay = timelineDays.find(d => d.isToday);
-                                     if (todayDay && todayDay.dayData && todayDay.dayData.workoutId) {
-                                         // We have a workout ID for today!
-                                          // Find it in savedWorkouts
-                                          const workout = savedWorkouts.find(w => w.id === todayDay.dayData.workoutId);
-                                          if (workout) {
-                                              handleStartSavedWorkout(workout);
-                                              return;
-                                          }
+                                     // The timelineDays[0] represents the current day's active item
+                                     const todayItem = timelineDays[0];
+                                     
+                                     if (todayItem && todayItem.type === 'workout') {
+                                         // If the routine object is hydrated with workout data
+                                         if (todayItem.workout) {
+                                             handleStartSavedWorkout(todayItem.workout);
+                                             return;
+                                         }
+                                         
+                                         // Fallback to ID lookup
+                                         if (todayItem.workoutId) {
+                                              const workout = savedWorkouts.find(w => w.id === todayItem.workoutId);
+                                              if (workout) {
+                                                  handleStartSavedWorkout(workout);
+                                                  return;
+                                              }
+                                         }
                                      }
                                 }
                                 
