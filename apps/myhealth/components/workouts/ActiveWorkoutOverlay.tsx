@@ -160,53 +160,31 @@ export function ActiveWorkoutOverlay() {
             <Animated.View 
                 style={{ 
                     zIndex: 1001,
-                    bottom: insets.bottom + 60, // Adjust for tab bar height roughly or ensure it sits above
-                    left: 16,
-                    right: 16,
-                    paddingTop: 10,
-                    paddingBottom: 10,
+                    bottom: insets.bottom + 20, // Floating above tabs
+                    alignSelf: 'center',
+                    width: '60%', // Pill width
+                    maxWidth: 300,
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 10,
-                    elevation: 5,
+                    shadowOpacity: 0.25,
+                    shadowRadius: 8,
+                    elevation: 8,
                 }}
-                className="absolute bg-light dark:bg-dark-lighter rounded-full"
+                className="absolute"
             >
-                {/* Content Container (Minimized) */}
-                <View 
-                    className="flex-row justify-center items-center relative z-10 min-h-[50px]"
-                    pointerEvents="box-none"
+                <RaisedCard
+                    onPress={handlePress} // Tapping anywhere expands
+                    className="flex-row items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
+                    style={{ borderRadius: 9999 }}
                 >
-                     {/* Left: Expand */}
-                     <View className="absolute left-4 z-10 flex-row items-center gap-2">
-                        <RaisedCard 
-                            onPress={handlePress}
-                            className="h-12 w-12 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
-                            style={{ borderRadius: 9999 }}
-                         >
-                             <IconSymbol name="arrow.up.left.and.arrow.down.right" size={22} className="text-primary dark:text-primary-dark" />
-                         </RaisedCard>
+                     {/* Timer + Status */}
+                     <View className="flex-row items-center gap-2">
+                         <View className={`w-2.5 h-2.5 rounded-full ${isRunning ? 'bg-white animate-pulse' : 'bg-white/50'}`} />
+                         <Text className="text-lg font-bold tabular-nums text-white">
+                            {formatSeconds(workoutSeconds)}
+                         </Text>
                      </View>
-                     
-                     {/* Center: Timer + Status */}
-                     <View className="flex-row items-center gap-2 mx-20" pointerEvents="none">
-                        
-                         <View className={`w-3 h-3 rounded-full ${isRunning ? 'bg-primary dark:bg-primary-dark' : 'bg-gray-400'}`} />
-                         <Text className="text-md font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
-                     </View>
-                     
-                     {/* Right: End */}
-                     <View className="absolute right-4 z-10 flex-row gap-2">
-                         <RaisedCard 
-                            onPress={handleEnd}
-                            className="h-12 w-12 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
-                            style={{ borderRadius: 9999 }}
-                         >
-                             <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
-                         </RaisedCard>
-                     </View>
-                </View>
+                </RaisedCard>
             </Animated.View>
         );
     };

@@ -8,7 +8,7 @@ import {
     ScrollView,
 } from "react-native";
 
-
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 
@@ -25,6 +25,7 @@ import { SettingsButton } from '../../components/ui/SettingsButton';
 export default function Workout() {
 	const router = useRouter();
     const theme = useUITheme();
+    const insets = useSafeAreaInsets();
     
 	// consume shared state
     const {
@@ -289,6 +290,53 @@ export default function Workout() {
                         )}
                     </View>     
 			</ScrollView>
+                
+                {/* Quick Start Floating Button */}
+                {!hasActiveSession && (
+                     <View 
+                        className="absolute self-center"
+                        style={{ bottom: insets.bottom + 20, width: 'auto', minWidth: 200, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8 }}
+                     >
+                        <RaisedCard
+                            onPress={() => {
+                                // Logic: If routine & today has workout -> Start that. Else -> Empty.
+                                if (activeRoutineObj) {
+                                     // Check if day has workouts?
+                                     // activeRoutineObj doesn't list workouts directly here, we might need to check timelineDays
+                                     // But usually user knows what "Start" means in context of routine.
+                                     // Let's check if the current day has a programmed workout? 
+                                     // The timelineDays hook gives us info.
+                                     // Let's simplify: If active routine, jump to Routine Details to start?
+                                     // User said: "start the workout that is set for today".
+                                     // We need to know what workout is set for today.
+                                     // The `useRoutineTimeline` returns days.
+                                     
+                                     // For now, let's look at `timelineDays`
+                                     const todayDay = timelineDays.find(d => d.isToday);
+                                     if (todayDay && todayDay.dayData && todayDay.dayData.workoutId) {
+                                         // We have a workout ID for today!
+                                          // Find it in savedWorkouts
+                                          const workout = savedWorkouts.find(w => w.id === todayDay.dayData.workoutId);
+                                          if (workout) {
+                                              handleStartSavedWorkout(workout);
+                                              return;
+                                          }
+                                     }
+                                }
+                                
+                                // Fallback: Start Empty
+                                handleStartEmpty();
+                            }}
+                            className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
+                            style={{ borderRadius: 9999 }}
+                        >
+                            <View className="flex-row items-center justify-center">
+                                <IconSymbol name="play.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
+                                <Text className="text-lg font-bold text-white">Start Workout</Text>
+                            </View>
+                        </RaisedCard>
+                     </View>
+                )}
 		</View>
 	);
 }
