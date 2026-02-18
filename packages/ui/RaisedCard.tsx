@@ -20,10 +20,14 @@ export function RaisedCard({ children, style, className, onPress, activeOpacity 
   // Using a darker shade for the bottom border to simulate "thickness" depth or just opacity.
   
   const bottomBorderClass = onPress 
-    ? "border-b-[4px] border-b-black/15 dark:border-b-black/50 active:border-b-[0px] active:translate-y-[4px]" 
+    ? "border-b-[4px] border-b-black/15 dark:border-b-black/50 active:border-b-[0px] active:mt-1" 
     : "border-b-[3px] border-b-black/15 dark:border-b-white/5";
 
-  const baseClassName = `bg-light dark:bg-dark-lighter rounded-xl border-x border-t border-black/5 dark:border-white/5 ${bottomBorderClass} ${className || ''}`;
+  // allow background override
+  const hasBg = className && (className.includes('bg-') && !className.includes('bg-opacity'));
+  const defaultBg = hasBg ? '' : 'bg-lighter dark:bg-dark-lighter';
+  
+  const baseClassName = `${defaultBg} rounded-xl border-x border-t border-black/5 dark:border-white/5 ${bottomBorderClass} ${className || ''}`;
   
   // Note: active:translate-y-[4px] and active:border-b-[0px] creates a "button press" effect 
   // where the border disappears and the card moves down.

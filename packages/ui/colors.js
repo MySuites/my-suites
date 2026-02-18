@@ -1,8 +1,7 @@
 const baseColors = {
   light: {
-    bgLight: 'hsl(137, 37%, 95%)',
-    bg: 'hsl(137, 37%, 87%)',
-    bgDark: 'hsl(137, 37%, 80%)',
+    bgLight: 'hsl(137, 37%, 87%)',
+    bg: 'hsl(137, 37%, 80%)',
     text: 'hsl(222, 47%, 11%)', // Ink Black
     textMuted: 'hsl(215, 16%, 47%)', // Cool Grey
     icon: 'hsl(222, 47%, 11%)',

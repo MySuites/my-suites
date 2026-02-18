@@ -13,9 +13,8 @@ module.exports = {
   theme: {
     extend: {
       backgroundColor: {
-        'light-lighter': baseColors.light.bgLight,
+        'lighter': baseColors.light.bgLight,
         'light': baseColors.light.bg,
-        'light-darker': baseColors.light.bgDark,
         
         'dark-lightest': baseColors.dark.bgLightest,
         'dark-lighter': baseColors.dark.bgLight,
