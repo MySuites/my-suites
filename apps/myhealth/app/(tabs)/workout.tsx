@@ -124,7 +124,7 @@ export default function Workout() {
     }
 
 	return (
-		<View className="flex-1 bg-light dark:bg-dark">
+		<View className="flex-1 bg-light-darker dark:bg-dark">
 			<ScreenHeader title="Workout" leftAction={<SettingsButton />} />
 
 			{/* Dashboard: Routines & Saved Workouts */}

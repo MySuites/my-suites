@@ -28,9 +28,9 @@ export const SavedWorkoutItem = ({
                 {/* Workout Info Card */}
                 <RaisedCard 
                     onPress={onEdit}
-                    className="flex-1 justify-center px-4 bg-light dark:bg-dark-lighter"
+                    className="flex-1 justify-center px-4 bg-primary dark:bg-dark-lighter"
                 >
-                    <Text className="font-semibold text-light dark:text-dark text-lg" numberOfLines={2}>{item.name}</Text>
+                    <Text className="font-semibold text-white dark:text-dark text-lg" numberOfLines={2}>{item.name}</Text>
                 </RaisedCard>
                 
                 {/* Start Button Card */}

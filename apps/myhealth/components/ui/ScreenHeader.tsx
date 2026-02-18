@@ -10,7 +10,7 @@ interface ScreenHeaderProps {
 export function ScreenHeader({ title, rightAction, leftAction, className }: ScreenHeaderProps) {
   return (
     <View 
-      className={`absolute top-0 left-0 right-0 py-4 pt-16 rounded-b-3xl bg-light/70 dark:bg-dark/70 ${className || ''}`}
+      className={`absolute top-0 left-0 right-0 py-4 pt-16 rounded-b-3xl bg-light-darker/70 dark:bg-dark/70 ${className || ''}`}
       style={{ zIndex: 50 }}
     >
       <View className="flex-row justify-center items-center relative min-h-[44px]">
