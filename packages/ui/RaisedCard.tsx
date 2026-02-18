@@ -18,7 +18,12 @@ export function RaisedCard({ children, style, className, onPress, activeOpacity 
   // Determine border color based on theme context or default manually if needed, 
   // but utility classes handle it best.
   // Using a darker shade for the bottom border to simulate "thickness" depth or just opacity.
-  const baseClassName = `bg-light dark:bg-dark-lighter rounded-xl border-x border-t border-black/5 dark:border-white/5 border-b-[4px] border-b-black/10 dark:border-b-black/50 active:border-b-[0px] active:translate-y-[4px] ${className || ''}`;
+  
+  const bottomBorderClass = onPress 
+    ? "border-b-[4px] border-b-black/10 dark:border-b-black/50 active:border-b-[0px] active:translate-y-[4px]" 
+    : "border-b-2 border-b-black/5 dark:border-b-white/5";
+
+  const baseClassName = `bg-light dark:bg-dark-lighter rounded-xl border-x border-t border-black/5 dark:border-white/5 ${bottomBorderClass} ${className || ''}`;
   
   // Note: active:translate-y-[4px] and active:border-b-[0px] creates a "button press" effect 
   // where the border disappears and the card moves down.
