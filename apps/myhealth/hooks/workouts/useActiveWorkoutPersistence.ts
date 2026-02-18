@@ -16,6 +16,7 @@ interface UseActiveWorkoutPersistenceProps {
     setSourceWorkoutId: (id: string | null) => void;
     setRunning: (running: boolean) => void;
     setHasActiveSession: (hasSession: boolean) => void;
+    hasActiveSession: boolean;
 }
 
 export function useActiveWorkoutPersistence({
@@ -32,6 +33,7 @@ export function useActiveWorkoutPersistence({
     setSourceWorkoutId,
     setRunning,
     setHasActiveSession,
+    hasActiveSession,
 }: UseActiveWorkoutPersistenceProps) {
     const isMounted = useRef(false);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -136,6 +138,11 @@ export function useActiveWorkoutPersistence({
             return;
         }
 
+        // Only save if we strictly have an active session
+        if (!hasActiveSession) {
+            return;
+        }
+
         const saveState = async () => {
             try {
                 const pairs: [string, string][] = [
@@ -172,8 +179,11 @@ export function useActiveWorkoutPersistence({
         workoutSeconds,
         workoutName,
         isRunning,
+        isRunning,
         routineId,
         sourceWorkoutId,
+        hasActiveSession,
+        isLoaded,
     ]);
 
     const clearPersistence = async () => {

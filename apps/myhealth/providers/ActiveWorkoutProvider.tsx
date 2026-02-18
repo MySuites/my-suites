@@ -41,11 +41,7 @@ const ActiveWorkoutContext = createContext<ActiveWorkoutContextType | undefined>
 
 export function ActiveWorkoutProvider({ children }: { children: React.ReactNode }) {
     // State
-    const [exercises, setExercises] = useState<Exercise[]>(() => [
-		{id: "1", name: "Push Ups", sets: 3, reps: 12, completedSets: 0},
-		{id: "2", name: "Squats", sets: 3, reps: 10, completedSets: 0},
-		{id: "3", name: "Plank (sec)", sets: 3, reps: 45, completedSets: 0},
-	]);
+    const [exercises, setExercises] = useState<Exercise[]>([]);
     const { user } = useAuth();
     const [workoutName, setWorkoutName] = useState("Current Workout");
     const [routineId, setRoutineId] = useState<string | null>(null);
@@ -84,6 +80,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         setSourceWorkoutId,
         setRunning,
         setHasActiveSession,
+        hasActiveSession,
     });
     
     // Fetch previous performance logs for exercises
