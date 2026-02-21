@@ -304,6 +304,7 @@ export default function ExercisesScreen() {
             </View>
           </TouchableOpacity>
         )}
+        ItemSeparatorComponent={() => <View className="h-[1px] bg-black/10 dark:bg-white/10 mx-4" />}
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 120 }}
         stickySectionHeadersEnabled={false}
