@@ -140,7 +140,7 @@ export default function ExerciseDetailsScreen() {
     // Derived UI colors
     const cardBackground = currentColors.card;
     const toggleBackground = (theme.bg || theme.bgDark) as string;
-    const activeToggleBg = theme.bgLight as string;
+    const activeToggleBg = theme.bgLight as string; 
     const activeToggleText = theme.text as string;
 
     return (
@@ -207,7 +207,7 @@ export default function ExerciseDetailsScreen() {
                     rawType={exercise.rawType}
                     themeColors={currentColors}
                     cardBackground={cardBackground}
-                    toggleBackground={toggleBackground}
+                    toggleBackground={activeToggleBg}
                 />
 
                  <View style={{ 
