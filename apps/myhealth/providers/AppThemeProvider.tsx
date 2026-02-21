@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { useColorScheme as rnUseColorScheme, Animated, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Colors } from '../constants/theme';
-import { UIThemeProvider } from '@mysuite/ui';
+import { UIThemeProvider, getAppTheme } from '@mysuite/ui';
 import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
 
 const THEME_PREF_KEY = 'theme-preference';
@@ -101,9 +100,9 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
     };
   }, [effectiveScheme, fadeAnim, prevScheme]);
 
-  const theme = effectiveScheme === 'dark' ? Colors.dark : Colors.light;
+  const theme = getAppTheme('myhealth', effectiveScheme);
   // Determine color of previous theme for overlay
-  const prevThemeColor = prevScheme === 'dark' ? Colors.dark.bg : Colors.light.bg;
+  const prevThemeColor = getAppTheme('myhealth', prevScheme).bg;
 
   return (
     <ThemePreferenceContext.Provider value={{ preference, setPreference, effectiveScheme }}>

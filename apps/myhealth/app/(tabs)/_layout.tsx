@@ -1,22 +1,21 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
-import { BottomTabBar, BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { PlatformPressable } from '@react-navigation/elements';
 import * as Haptics from 'expo-haptics';
 
-import { useNavigationSettings } from '../../providers/NavigationSettingsProvider';
-import { IconSymbol } from "@mysuite/ui";
-import { Colors } from '../../constants/theme';
+import { IconSymbol, hslToHex } from "@mysuite/ui";
 import { useColorScheme } from '../../hooks/ui/use-color-scheme';
-
-// import { ActiveWorkoutHeader } from '../../components/workouts/ActiveWorkoutHeader';
 import { ActiveWorkoutOverlay } from '../../components/workouts/ActiveWorkoutOverlay';
+
+import colors from '../../../../packages/ui/colors';
+const { baseColors, appThemes } = colors;
+
 // import { GlobalOverlay } from '../../components/ui/GlobalOverlay';
 // import { QuickNavigationButton } from '../../components/ui/QuickNavigationMenu';
 // import { QuickUtilityButton } from '../../components/ui/QuickUtilityMenu';
 
-function HapticTab(props: BottomTabBarButtonProps) {
+function HapticTab(props: any) {
   return (
     <PlatformPressable
       {...props}
@@ -33,31 +32,45 @@ function HapticTab(props: BottomTabBarButtonProps) {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { isFabEnabled } = useNavigationSettings();
 
   return (
     <View style={{ flex: 1 }}>
       <Tabs
         backBehavior="history"
-        tabBar={(props) => {
-            if (isFabEnabled) {
-                return null;
-            }
-            return <BottomTabBar {...props} />;
-        }}
         screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].primary,
+          tabBarActiveTintColor: hslToHex(appThemes['myhealth'][colorScheme ?? 'light'].primary),
           headerShown: false,
           tabBarButton: HapticTab,
+          tabBarStyle: {
+            backgroundColor: hslToHex(baseColors[colorScheme ?? 'light'].bgLight),
+            borderTopColor: hslToHex(baseColors[colorScheme ?? 'light'].border),
+          }
         }}
       >
-        {/* <Tabs.Screen
-          name="index"
+        <Tabs.Screen 
+          name="sleep"
           options={{
+            title: 'Sleep',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="moon.zzz.fill" color={color} />,
+          }}
+        />
+
+        <Tabs.Screen 
+        name="mind"
+        options={{
+          title: 'Mind',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="brain.head.profile" color={color} />,
+        }}
+        />
+
+        <Tabs.Screen 
+          name="index" 
+          options={{ 
             title: 'Home',
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-          }}
-        /> */}
+          }} 
+        />
+          
         <Tabs.Screen
           name='workout'
           options={{
@@ -66,12 +79,15 @@ export default function TabLayout() {
           }}
         />
 
+        <Tabs.Screen
+          name='nutrition'
+          options={{
+            title: 'Nutrition',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="fork.knife" color={color} />,
+          }}
+        />
       </Tabs>
       <ActiveWorkoutOverlay />
-      {/* <GlobalOverlay>
-        <QuickNavigationButton />
-        <QuickUtilityButton />
-      </GlobalOverlay> */}
     </View>
   );
 }

@@ -1,20 +1,21 @@
 import React, {useState} from "react";
 import {
-    View,
-    Text,
+ 	View,
+ 	Text,
 } from "react-native";
 
 import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
+
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { SettingsButton } from '../../components/ui/SettingsButton';
 
-export default function HomeScreen() {
-  const theme = useUITheme();
-  const [menuVisible, setMenuVisible] = useState(false);
-  return (
-    <View className="flex-1 bg-light dark:bg-dark">
+export default function NutritionScreen() {
+    const theme = useUITheme();
+    const [menuVisible, setMenuVisible] = useState(false);
+    return (
+        <View className="flex-1 bg-light dark:bg-dark">
             <ScreenHeader 
-                            title="Home" 
+                            title="Nutrition" 
                             leftAction={<SettingsButton />} 
                             rightAction={
                                 <RaisedCard 
@@ -30,5 +31,5 @@ export default function HomeScreen() {
                             </RaisedCard>} />
             <Text className="text-center text-lg font-semibold mt-36 mb-2 text-light dark:text-dark">To be implemented</Text>
         </View>
-  );
+    );
 }

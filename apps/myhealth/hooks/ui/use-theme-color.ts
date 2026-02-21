@@ -3,13 +3,12 @@
  * https://docs.expo.dev/guides/color-schemes/
  */
 
-import { Colors } from "../../constants/theme";
 import { useColorScheme } from "./use-color-scheme";
 import { useUITheme } from "@mysuite/ui";
 
 export function useThemeColor(
   props: { light?: string; dark?: string },
-  colorName: keyof typeof Colors.light & keyof typeof Colors.dark,
+  colorName: string,
 ) {
   const uiTheme = useUITheme();
   const scheme = useColorScheme() ?? "light";
@@ -17,7 +16,8 @@ export function useThemeColor(
   const colorFromProps = props[scheme];
   if (colorFromProps) return colorFromProps;
 
+  // @ts-ignore
   if (uiTheme && uiTheme[colorName]) return uiTheme[colorName];
 
-  return Colors[scheme][colorName];
+  return null;
 }

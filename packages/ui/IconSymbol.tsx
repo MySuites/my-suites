@@ -58,6 +58,8 @@ const MAPPING = {
   'arrow.down.right.and.arrow.up.left': 'unfold-less',
   'arrow.up.left.and.arrow.down.right': 'unfold-more',
   'clock.fill': 'history',
+  'fork.knife': 'restaurant',
+  'brain.head.profile': 'person',
 } as const;
 
 

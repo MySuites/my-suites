@@ -2,14 +2,11 @@ import { PropsWithChildren, useState } from 'react';
 import { TouchableOpacity, View, Text } from 'react-native';
 
 
-import { IconSymbol } from "/ui";
-import { Colors } from '../../constants/theme';
-import { useColorScheme } from '../../hooks/ui/use-color-scheme';
+import { IconSymbol, useUITheme } from "@mysuite/ui";
 
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);
-  const theme = useColorScheme() ?? 'light';
-  const iconColor = theme === 'light' ? Colors.light.icon : Colors.dark.icon;
+  const theme = useUITheme();
 
   return (
     <View>
@@ -20,7 +17,7 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
         <IconSymbol
           name="chevron.right"
           size={18}
-          color={iconColor || '#000'}
+          color={theme.icon || '#000'}
           style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }}
         />
 
