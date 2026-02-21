@@ -242,43 +242,14 @@ export default function ExercisesScreen() {
 
       {/* Floating Bottom Search Bar */}
       <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="absolute bottom-10 left-0 right-0 z-50 px-4 pb-8 pt-4 bg-transparent shadow-lg"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+        className="absolute bottom-10 left-0 right-0 z-50 px-4 pb-8 pt-4 bg-transparent shadow-lg justify-end"
         pointerEvents="box-none"
       >
-        <View className="flex-row items-center gap-2">
-            <View className="flex-1 flex-row items-center rounded-full px-4 h-12 border border-light-darker dark:border-highlight-dark shadow-xl bg-lighter dark:bg-dark-lighter">
-                <IconSymbol name="magnifyingglass" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
-                <TextInput
-                    className="flex-1 ml-2 text-base h-full text-light dark:text-dark"
-                    placeholder="Search exercises..."
-                    placeholderTextColor={theme.textMuted}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    autoCorrect={false}
-                />
-                {searchQuery.length > 0 && (
-                    <TouchableOpacity onPress={() => setSearchQuery('')}>
-                        <IconSymbol name="xmark.circle.fill" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
-                    </TouchableOpacity>
-                )}
-            </View>
-            <TouchableOpacity 
-                activeOpacity={0.7}
-                onPress={() => setIsFilterVisible(!isFilterVisible)}
-                className={`w-12 h-12 rounded-full items-center justify-center border border-light-darker dark:border-highlight-dark shadow-xl bg-lighter dark:bg-dark-lighter ${isFilterVisible ? 'border-primary/50' : ''}`}
-            >
-                <IconSymbol 
-                    name={"line.3.horizontal.decrease" as any} 
-                    size={20} 
-                    color={isFilterVisible ? theme.primary : (theme.icon || '#888')} 
-                />
-            </TouchableOpacity>
-        </View>
-        
         {/* Filter Menu (opens upwards when search is at bottom) */}
         {isFilterVisible && (
-            <View className="rounded-xl p-4 absolute bottom-20 left-4 right-4 z-50 shadow-[0_-8px_30px_-15px_rgba(0,0,0,0.3)] bg-lighter dark:bg-dark-lighter border border-light-darker dark:border-highlight-dark">
+            <View className="rounded-xl p-4 mb-2 z-50 shadow-[0_-8px_30px_-15px_rgba(0,0,0,0.3)] bg-lighter dark:bg-dark-lighter border border-white/10 dark:border-highlight-dark">
                 <ScrollView showsVerticalScrollIndicator={false} className="max-h-80" keyboardShouldPersistTaps="handled">
                     <TouchableOpacity 
                         onPress={() => toggleCategory("All")}
@@ -327,6 +298,37 @@ export default function ExercisesScreen() {
                 </ScrollView>
             </View>
         )}
+
+        <View className="flex-row items-center gap-2">
+            <View className="flex-1 flex-row items-center rounded-full px-4 h-12 border border-white/10 dark:border-highlight-dark shadow-xl bg-lighter dark:bg-dark-lighter">
+                <IconSymbol name="magnifyingglass" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
+                <TextInput
+                    className="flex-1 ml-2 text-base h-full text-light dark:text-dark"
+                    placeholder="Search exercises..."
+                    placeholderTextColor={theme.textMuted}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    autoCorrect={false}
+                />
+                {searchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchQuery('')}>
+                        <IconSymbol name="xmark.circle.fill" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
+                    </TouchableOpacity>
+                )}
+            </View>
+            <TouchableOpacity 
+                activeOpacity={0.7}
+                onPress={() => setIsFilterVisible(!isFilterVisible)}
+                className={`w-12 h-12 rounded-full items-center justify-center border border-white/10 dark:border-highlight-dark shadow-xl bg-lighter dark:bg-dark-lighter ${isFilterVisible ? 'border-primary/50' : ''}`}
+            >
+                <IconSymbol 
+                    name={"line.3.horizontal.decrease" as any} 
+                    size={20} 
+                    color={isFilterVisible ? theme.primary : (theme.icon || '#888')} 
+                />
+            </TouchableOpacity>
+        </View>
+
       </KeyboardAvoidingView>
     </View>
   );
