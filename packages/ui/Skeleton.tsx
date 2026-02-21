@@ -7,7 +7,7 @@ import Animated, {
   withTiming, 
   interpolateColor 
 } from 'react-native-reanimated';
-import { useUITheme } from './theme';
+import { useUITheme } from './index';
 
 interface SkeletonProps {
   width?: number | string;

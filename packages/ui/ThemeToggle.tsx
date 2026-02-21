@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { View, Text, Switch } from 'react-native';
-import { useUITheme } from './theme';
+import { useUITheme } from './index';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
 

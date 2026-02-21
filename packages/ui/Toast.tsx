@@ -6,7 +6,7 @@ import Animated, {
   withTiming, 
   runOnJS 
 } from 'react-native-reanimated';
-import { useUITheme } from './theme';
+import { useUITheme } from './index';
 
 type ToastType = 'success' | 'error' | 'info';
 
