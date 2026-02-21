@@ -130,18 +130,18 @@ export default function ExerciseDetailsScreen() {
     }
 
     const currentColors = {
-        primary: theme.primary || '#FF6F61',
-        background: theme.bg || '#EAD4D4',
-        card: theme.bgDark || theme.bg || '#EAD4D4',
-        text: theme.text || '#2D1F1F',
-        border: theme.border || theme.bgLight || '#EAD4D4'
+        primary: theme.primary as string,
+        background: theme.bg as string,
+        card: (theme.bgDark || theme.bg) as string,
+        text: theme.text as string,
+        border: (theme.border || theme.bgLight) as string
     };
     
     // Derived UI colors
     const cardBackground = currentColors.card;
-    const toggleBackground = theme.bg || theme.bgDark || '#EAD4D4'; 
-    const activeToggleBg = theme.bgLight || '#FFF5F5'; 
-    const activeToggleText = theme.text || '#2D1F1F';
+    const toggleBackground = (theme.bg || theme.bgDark) as string;
+    const activeToggleBg = theme.bgLight as string;
+    const activeToggleText = theme.text as string;
 
     return (
         <View style={{ flex: 1, backgroundColor: currentColors.background }}>
@@ -153,12 +153,12 @@ export default function ExerciseDetailsScreen() {
                     <RaisedCard 
                         onPress={handleDelete}
                         style={{ borderRadius: 9999 }}
-                        className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center bg-light dark:bg-dark-lighter"
+                        className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center bg-lighter dark:bg-dark-lighter"
                     >
                         <IconSymbol 
                             name="trash.fill" 
                             size={24} 
-                            color={theme.destructive || '#FF3B30'} 
+                            color={theme.danger || theme.error} 
                         />
                     </RaisedCard>
                 ) : undefined}

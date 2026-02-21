@@ -155,7 +155,7 @@ export default function ExercisesScreen() {
             <RaisedCard 
                 onPress={() => router.push('/exercises/create')}
                 style={{ borderRadius: 9999 }}
-                className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center bg-light dark:bg-dark-lighter"
+                className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center bg-lighter dark:bg-dark-lighter"
             >
                 <IconSymbol 
                     name="square.and.pencil" 
