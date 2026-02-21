@@ -333,28 +333,14 @@ export default function Workout() {
                             onPress={() => {
                                 // Logic: If routine & today has workout -> Start that. Else -> Empty.
                                 if (activeRoutineObj) {
-                                     // Check if day has workouts?
-                                     // activeRoutineObj doesn't list workouts directly here, we might need to check timelineDays
-                                     // But usually user knows what "Start" means in context of routine.
-                                     // Let's check if the current day has a programmed workout? 
-                                     // The timelineDays hook gives us info.
-                                     // Let's simplify: If active routine, jump to Routine Details to start?
-                                     // User said: "start the workout that is set for today".
-                                     // We need to know what workout is set for today.
-                                     // The `useRoutineTimeline` returns days.
-                                     
-                                     // For now, let's look at `timelineDays`
-                                     // The timelineDays[0] represents the current day's active item
                                      const todayItem = timelineDays[0];
                                      
                                      if (todayItem && todayItem.type === 'workout') {
-                                         // If the routine object is hydrated with workout data
                                          if (todayItem.workout) {
                                              handleStartSavedWorkout(todayItem.workout);
                                              return;
                                          }
                                          
-                                         // Fallback to ID lookup
                                          if (todayItem.workoutId) {
                                               const workout = savedWorkouts.find(w => w.id === todayItem.workoutId);
                                               if (workout) {
@@ -373,7 +359,26 @@ export default function Workout() {
                         >
                             <View className="flex-row items-center justify-center">
                                 <IconSymbol name="play.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                                <Text className="text-lg font-bold text-white">Start Workout</Text>
+                                <Text className="text-lg font-bold text-white">
+                                    {(() => {
+                                        if (activeRoutineObj) {
+                                            const todayItem = timelineDays[0];
+                                            if (todayItem && todayItem.type === 'workout') {
+                                                if (todayItem.workout && todayItem.workout.name) {
+                                                    return `${todayItem.workout.name}`;
+                                                }
+                                                if (todayItem.workoutId) {
+                                                    const workout = savedWorkouts.find(w => w.id === todayItem.workoutId);
+                                                    if (workout && workout.name) {
+                                                        return `${workout.name}`;
+                                                    }
+                                                }
+                                                return "Start Workout";
+                                            }
+                                        }
+                                        return "Empty Workout";
+                                    })()}
+                                </Text>
                             </View>
                         </RaisedCard>
                      </View>
