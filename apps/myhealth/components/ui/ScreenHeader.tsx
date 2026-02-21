@@ -10,12 +10,12 @@ interface ScreenHeaderProps {
 
 export function ScreenHeader({ title, rightAction, leftAction, className }: ScreenHeaderProps) {
   const colorScheme = useColorScheme();
-  
+
   return (
     <BlurView 
       tint={colorScheme === 'dark' ? 'dark' : 'light'}
-      intensity={80}
-      className={`absolute top-0 left-0 right-0 py-4 pt-16 rounded-b-3xl overflow-hidden ${className || ''}`}
+      intensity={10}
+      className={`absolute top-0 left-0 right-0 py-4 pt-16 rounded-b-3xl overflow-hidden bg-light/60 dark:bg-dark/60 ${className || ''}`}
       style={{ zIndex: 50 }}
     >
       <View className="flex-row justify-center items-center relative min-h-[44px]">
