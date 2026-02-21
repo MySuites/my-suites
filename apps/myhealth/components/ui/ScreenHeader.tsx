@@ -14,7 +14,7 @@ export function ScreenHeader({ title, rightAction, leftAction, className }: Scre
   return (
     <BlurView 
       tint={colorScheme === 'dark' ? 'dark' : 'light'}
-      intensity={10}
+      intensity={5}
       className={`absolute top-0 left-0 right-0 py-4 pt-16 rounded-b-3xl overflow-hidden bg-light/60 dark:bg-dark/60 ${className || ''}`}
       style={{ zIndex: 50 }}
     >
