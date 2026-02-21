@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { SectionList, TouchableOpacity, View, TextInput, Text, ScrollView } from 'react-native'; 
+import { SectionList, TouchableOpacity, View, TextInput, Text, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'; 
 import { useRouter, useFocusEffect } from 'expo-router';
 
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, useToast, IconSymbol } from '@mysuite/ui';
@@ -166,9 +166,88 @@ export default function ExercisesScreen() {
         }
       />
       
-      <View className="mt-28 px-4 py-3 z-20">
+      {isLoading ? (
+        <View className="flex-1 px-4 mt-32">
+             {[1, 2, 3, 4, 5, 6].map((i) => (
+                <View key={i} className="flex-row items-center justify-between py-4 border-b border-light-darker/10 dark:border-highlight-dark/10">
+                    <View className="flex-1">
+                        <Skeleton height={20} width="60%" className="mb-2" />
+                        <Skeleton height={14} width="40%" />
+                    </View>
+                </View>
+             ))}
+        </View>
+      ) : (
+      <SectionList
+        sections={sections}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 150 }}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+            <View>
+                <View className="h-32" />
+                {selectedCategories.size > 0 && (
+                    <View className="px-4 pb-2 flex-row flex-wrap gap-2 mt-2">
+                        {Array.from(selectedCategories).sort().map(category => (
+                            <TouchableOpacity 
+                                key={category} 
+                                onPress={() => toggleCategory(category)}
+                                className="flex-row items-center bg-primary dark:bg-primary-dark px-3 py-1.5 rounded-full"
+                            >
+                                <Text className="text-white font-semibold text-xs mr-1">{category}</Text>
+                                <IconSymbol name="xmark" size={12} color="#fff" />
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                )}
+            </View>
+        }
+        renderSectionHeader={({ section: { title } }) => (
+            <View className="px-4 py-2 bg-light dark:bg-dark">
+                <Text className="text-sm font-bold text-gray-500 uppercase tracking-widest">{title}</Text>
+            </View>
+        )}
+        renderItem={({ item }) => (
+          <TouchableOpacity 
+            className="flex-row items-center justify-between p-4 bg-light dark:bg-dark"
+            onPress={() => {
+                router.push({
+                    pathname: '/exercises/details',
+                    params: { exercise: JSON.stringify(item) }
+                });
+            }}
+          >
+            <View>
+                <Text className="text-base leading-6 font-semibold text-light dark:text-dark">{item.name}</Text>
+                <Text className="text-xs text-light-muted dark:text-dark-muted">
+                    {item.category} • {item.properties?.join(', ') || item.rawType}
+                </Text> 
+            </View>
+          </TouchableOpacity>
+        )}
+        ItemSeparatorComponent={() => <View className="h-[1px] bg-black/10 dark:bg-white/10 mx-4" />}
+        stickySectionHeadersEnabled={false}
+        ListEmptyComponent={
+            <View className="px-4 py-8">
+                <HollowedCard className="p-8">
+                    <Text className="text-base text-center leading-6 text-light-muted dark:text-dark-muted">
+                        No exercises found. Try a different search or create a new exercise!
+                    </Text>
+                </HollowedCard>
+            </View>
+        }
+        showsVerticalScrollIndicator={false}
+      />
+      )}
+
+      {/* Floating Bottom Search Bar */}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="absolute bottom-10 left-0 right-0 z-50 px-4 pb-8 pt-4 bg-transparent shadow-lg"
+        pointerEvents="box-none"
+      >
         <View className="flex-row items-center gap-2">
-            <View className="flex-1 flex-row items-center bg-light dark:bg-dark-lighter rounded-full px-4 h-10 border border-light-darker dark:border-highlight-dark">
+            <View className="flex-1 flex-row items-center rounded-full px-4 h-12 border border-light-darker dark:border-highlight-dark shadow-xl bg-lighter dark:bg-dark-lighter">
                 <IconSymbol name="magnifyingglass" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
                 <TextInput
                     className="flex-1 ml-2 text-base h-full text-light dark:text-dark"
@@ -184,23 +263,23 @@ export default function ExercisesScreen() {
                     </TouchableOpacity>
                 )}
             </View>
-            <RaisedCard 
+            <TouchableOpacity 
+                activeOpacity={0.7}
                 onPress={() => setIsFilterVisible(!isFilterVisible)}
-                style={{ borderRadius: 14 }}
-                className={`w-10 h-10 p-0 items-center justify-center ${isFilterVisible ? 'bg-primary/10' : ''}`}
+                className={`w-12 h-12 rounded-full items-center justify-center border border-light-darker dark:border-highlight-dark shadow-xl bg-lighter dark:bg-dark-lighter ${isFilterVisible ? 'border-primary/50' : ''}`}
             >
                 <IconSymbol 
                     name={"line.3.horizontal.decrease" as any} 
                     size={20} 
                     color={isFilterVisible ? theme.primary : (theme.icon || '#888')} 
                 />
-            </RaisedCard>
+            </TouchableOpacity>
         </View>
         
-        {/* Filter Menu */}
+        {/* Filter Menu (opens upwards when search is at bottom) */}
         {isFilterVisible && (
-            <RaisedCard className="rounded-xl p-4 mt-4 absolute top-12 left-4 right-4 z-50 shadow-xl bg-light dark:bg-dark-lighter border border-light-darker/50 dark:border-highlight-dark">
-                <ScrollView showsVerticalScrollIndicator={false} className="max-h-96" keyboardShouldPersistTaps="handled">
+            <View className="rounded-xl p-4 absolute bottom-20 left-4 right-4 z-50 shadow-[0_-8px_30px_-15px_rgba(0,0,0,0.3)] bg-lighter dark:bg-dark-lighter border border-light-darker dark:border-highlight-dark">
+                <ScrollView showsVerticalScrollIndicator={false} className="max-h-80" keyboardShouldPersistTaps="handled">
                     <TouchableOpacity 
                         onPress={() => toggleCategory("All")}
                         className={`self-start px-4 py-2 rounded-full mb-4 border ${selectedCategories.size === 0 ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
@@ -246,80 +325,9 @@ export default function ExercisesScreen() {
                         </View>
                     </View>
                 </ScrollView>
-            </RaisedCard>
-        )}
-      </View>
-      
-      {isLoading ? (
-        <View className="flex-1 px-4 mt-4">
-             {[1, 2, 3, 4, 5, 6].map((i) => (
-                <View key={i} className="flex-row items-center justify-between py-4 border-b border-light-darker/10 dark:border-highlight-dark/10">
-                    <View className="flex-1">
-                        <Skeleton height={20} width="60%" className="mb-2" />
-                        <Skeleton height={14} width="40%" />
-                    </View>
-                </View>
-             ))}
-        </View>
-      ) : (
-      <SectionList
-        sections={sections}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={
-            selectedCategories.size > 0 ? (
-                <View className="px-4 pb-2 flex-row flex-wrap gap-2 mt-2">
-                    {Array.from(selectedCategories).sort().map(category => (
-                        <TouchableOpacity 
-                            key={category} 
-                            onPress={() => toggleCategory(category)}
-                            className="flex-row items-center bg-primary dark:bg-primary-dark px-3 py-1.5 rounded-full"
-                        >
-                            <Text className="text-white font-semibold text-xs mr-1">{category}</Text>
-                            <IconSymbol name="xmark" size={12} color="#fff" />
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            ) : null
-        }
-        renderSectionHeader={({ section: { title } }) => (
-            <View className="px-4 py-2 bg-light dark:bg-dark">
-                <Text className="text-sm font-bold text-gray-500 uppercase tracking-widest">{title}</Text>
             </View>
         )}
-        renderItem={({ item }) => (
-          <TouchableOpacity 
-            className="flex-row items-center justify-between p-4 bg-light dark:bg-dark"
-            onPress={() => {
-                router.push({
-                    pathname: '/exercises/details',
-                    params: { exercise: JSON.stringify(item) }
-                });
-            }}
-          >
-            <View>
-                <Text className="text-base leading-6 font-semibold text-light dark:text-dark">{item.name}</Text>
-                <Text className="text-xs text-light-muted dark:text-dark-muted">
-                    {item.category} • {item.properties?.join(', ') || item.rawType}
-                </Text> 
-            </View>
-          </TouchableOpacity>
-        )}
-        ItemSeparatorComponent={() => <View className="h-[1px] bg-black/10 dark:bg-white/10 mx-4" />}
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: 120 }}
-        stickySectionHeadersEnabled={false}
-        ListEmptyComponent={
-            <View className="px-4 py-8">
-                <HollowedCard className="p-8">
-                    <Text className="text-base text-center leading-6 text-light-muted dark:text-dark-muted">
-                        No exercises found. Try a different search or create a new exercise!
-                    </Text>
-                </HollowedCard>
-            </View>
-        }
-        showsVerticalScrollIndicator={false}
-      />
-      )}
+      </KeyboardAvoidingView>
     </View>
   );
 }
