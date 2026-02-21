@@ -209,7 +209,7 @@ export default function ExercisesScreen() {
         )}
         renderItem={({ item }) => (
           <TouchableOpacity 
-            className="flex-row items-center justify-between p-4 bg-light dark:bg-dark"
+            className="flex-row items-center justify-between py-4 pl-6 pr-6 bg-light dark:bg-dark"
             onPress={() => {
                 router.push({
                     pathname: '/exercises/details',
@@ -217,12 +217,13 @@ export default function ExercisesScreen() {
                 });
             }}
           >
-            <View>
+            <View className="flex-1 mr-4">
                 <Text className="text-base leading-6 font-semibold text-light dark:text-dark">{item.name}</Text>
                 <Text className="text-xs text-light-muted dark:text-dark-muted">
                     {item.category} • {item.properties?.join(', ') || item.rawType}
                 </Text> 
             </View>
+            <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
           </TouchableOpacity>
         )}
         ItemSeparatorComponent={() => <View className="h-[1px] bg-black/10 dark:bg-white/10 mx-4" />}
