@@ -87,7 +87,7 @@ export default function Workout() {
         new Date(activeRoutine.lastCompletedDate).toDateString() === new Date().toDateString());
 
     function handleCreateSavedWorkout() {
-        router.push('/workouts/details');
+        router.push('/workouts/create');
     }
 
     function handleEditSavedWorkout(workout: SavedWorkout) {
