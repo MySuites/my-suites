@@ -98,7 +98,7 @@ export default function CreateWorkoutScreen() {
                 showsVerticalScrollIndicator={false}
                 ListHeaderComponent={
                     <View>
-                        <View className="bg-light-lighter dark:bg-dark-lighter h-16 px-4 rounded-xl border border-transparent dark:border-highlight-dark mb-6 justify-center">
+                        <View className="bg-lighter dark:bg-dark-lighter h-16 px-4 rounded-xl border border-transparent dark:border-highlight-dark mb-6 justify-center">
                             <TextInput 
                                 placeholder="Workout Name" 
                                 value={workoutDraftName} 
