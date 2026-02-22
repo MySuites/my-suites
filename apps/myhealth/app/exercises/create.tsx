@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TextInput, Alert, KeyboardAvoidingView, Platform, View, Text, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { SelectionModal } from '../../components/ui/SelectionModal';
 import { useWorkoutManager, fetchMuscleGroups } from '../../providers/WorkoutManagerProvider';
@@ -91,6 +91,7 @@ export default function CreateExerciseScreen() {
 
   return (
     <View className="flex-1 bg-light dark:bg-dark">
+      <Stack.Screen options={{ headerShown: false }} />
       <ScreenHeader
         title="New Exercise"
         leftAction={<BackButton />}
@@ -98,7 +99,7 @@ export default function CreateExerciseScreen() {
             <RaisedCard 
                 onPress={handleCreate} 
                 disabled={isSubmitting} 
-                className="w-12 h-12 p-0 rounded-full bg-light-lighter dark:bg-dark-lighter items-center justify-center" 
+                className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark-lighter items-center justify-center" 
                 style={{ borderRadius: 9999 }}
             >
                 {isSubmitting ? (
@@ -117,7 +118,7 @@ export default function CreateExerciseScreen() {
         <View className="mt-28 mb-6">
             <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Name</Text>
             <TextInput 
-                className="bg-light-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-base border border-transparent dark:border-highlight-dark"
+                className="bg-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-base border border-transparent dark:border-highlight-dark"
                 placeholder="e.g. Bench Press" 
                 placeholderTextColor={theme.textMuted || '#888'}
                 value={name}
@@ -129,7 +130,7 @@ export default function CreateExerciseScreen() {
             <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Properties</Text>
             <RaisedCard 
                 onPress={() => setShowTypeModal(true)}
-                className="p-4 rounded-xl bg-light-lighter dark:bg-dark-lighter"
+                className="p-4 rounded-xl bg-lighter dark:bg-dark-lighter"
             >
                 <View className="flex-row items-center justify-between">
                     <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">
@@ -146,7 +147,7 @@ export default function CreateExerciseScreen() {
             <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Primary Muscle Group</Text>
             <RaisedCard 
                 onPress={() => setShowPrimaryModal(true)}
-                className="p-4 rounded-xl bg-light-lighter dark:bg-dark-lighter"
+                className="p-4 rounded-xl bg-lighter dark:bg-dark-lighter"
             >
                 <View className="flex-row items-center justify-between">
                     <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">{primaryMuscle ? primaryMuscle.name : 'Select Primary Muscle'}</Text>
@@ -159,7 +160,7 @@ export default function CreateExerciseScreen() {
             <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Secondary Muscle Groups</Text>
             <RaisedCard 
                 onPress={() => setShowSecondaryModal(true)}
-                className="p-4 rounded-xl bg-light-lighter dark:bg-dark-lighter"
+                className="p-4 rounded-xl bg-lighter dark:bg-dark-lighter"
             >
                 <View className="flex-row items-center justify-between">
                     <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">
