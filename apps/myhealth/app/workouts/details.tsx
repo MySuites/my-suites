@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
+import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
-import { useAuth } from '@mysuite/auth';
-import { useWorkoutManager, fetchExercises, getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
+import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { useWorkoutDraft } from '../../hooks/workouts/useWorkoutDraft';
-import { ExerciseSelector } from '../../components/workouts/ExerciseSelector';
+import { default as ExercisesScreen } from '../../app/exercises/index';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -18,7 +18,6 @@ export default function CreateWorkoutScreen() {
     const theme = useTheme();
     const router = useRouter();
     const { id } = useLocalSearchParams();
-    const { user } = useAuth();
     const { setIsHidden } = useFloatingButton();
     const { latestBodyWeight } = useActiveWorkout();
     
@@ -55,8 +54,6 @@ export default function CreateWorkoutScreen() {
     const [hasInitialized, setHasInitialized] = useState(false);
 
     const [isAddingExercise, setIsAddingExercise] = useState(false);
-    const [availableExercises, setAvailableExercises] = useState<any[]>([]);
-    const [isLoadingExercises, setIsLoadingExercises] = useState(false);
 
     const [expandedDraftExerciseIndex, setExpandedDraftExerciseIndex] = useState<number | null>(null);
 
@@ -105,21 +102,8 @@ export default function CreateWorkoutScreen() {
         }
     }
 
-    async function fetchAvailableExercises() {
-        setIsLoadingExercises(true);
-        try {
-             const { data } = await fetchExercises(user);
-             setAvailableExercises(data || []);
-        } catch (e) {
-            console.error("Failed to fetch exercises", e);
-        } finally {
-            setIsLoadingExercises(false);
-        }
-    }
-
     function handleOpenAddExercise() {
         setIsAddingExercise(true);
-        fetchAvailableExercises();
     }
 
     function handleAddExercise(exercises: any[]) {
@@ -285,14 +269,20 @@ export default function CreateWorkoutScreen() {
                 )}
             />
 
-            {/* Add Exercise Modal */}
-            <ExerciseSelector
-                visible={isAddingExercise}
-                onClose={() => setIsAddingExercise(false)}
-                onSelect={handleAddExercise}
-                exercises={availableExercises}
-                isLoading={isLoadingExercises}
-            />
+            {/* Add Exercise View */}
+            {isAddingExercise && (
+                <Animated.View 
+                    className="absolute inset-0 z-[100] bg-light dark:bg-dark"
+                    entering={SlideInDown.duration(300)}
+                    exiting={SlideOutDown.duration(300)}
+                >
+                    <ExercisesScreen
+                        mode="select"
+                        onSelect={handleAddExercise}
+                        onClose={() => setIsAddingExercise(false)}
+                    />
+                </Animated.View>
+            )}
         </View>
     );
 }

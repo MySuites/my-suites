@@ -2,11 +2,9 @@ import React, { useEffect } from 'react';
 import { View, ScrollView, BackHandler, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
-import { fetchExercises } from '../../providers/WorkoutManagerProvider';
-import { useAuth } from '@mysuite/auth';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
-import { ExerciseSelector } from './ExerciseSelector';
+import { default as ExercisesScreen } from '../../app/exercises/index';
 import { ExerciseCard } from '../exercises/ExerciseCard';
 import { HollowedCard, RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
@@ -33,27 +31,10 @@ export function ActiveWorkoutOverlay() {
         addExercise
     } = useActiveWorkout();
     
-    const { user } = useAuth();
     const [isAddingExercise, setIsAddingExercise] = React.useState(false);
-    const [availableExercises, setAvailableExercises] = React.useState<any[]>([]);
-    const [isLoadingExercises, setIsLoadingExercises] = React.useState(false);
-
-    async function fetchAvailableExercises() {
-        setIsLoadingExercises(true);
-        try {
-             // In a real app we might cache this or use a query hook
-             const { data } = await fetchExercises(user);
-             setAvailableExercises(data || []);
-        } catch (e) {
-            console.error("Failed to fetch exercises", e);
-        } finally {
-            setIsLoadingExercises(false);
-        }
-    }
 
     function handleOpenAddExercise() {
         setIsAddingExercise(true);
-        fetchAvailableExercises();
     }
 
     function handleAddExercise(newExercises: any[]) {
@@ -260,13 +241,19 @@ export function ActiveWorkoutOverlay() {
             </View>
 
         </Animated.View>
-            <ExerciseSelector
-                visible={isAddingExercise}
-                onClose={() => setIsAddingExercise(false)}
-                onSelect={handleAddExercise}
-                exercises={availableExercises}
-                isLoading={isLoadingExercises}
-            />
+            {isAddingExercise && (
+                <Animated.View 
+                    className="absolute inset-0 z-[1000] bg-light dark:bg-dark"
+                    entering={SlideInDown.duration(300)}
+                    exiting={SlideOutDown.duration(300)}
+                >
+                    <ExercisesScreen
+                        mode="select"
+                        onSelect={handleAddExercise}
+                        onClose={() => setIsAddingExercise(false)}
+                    />
+                </Animated.View>
+            )}
         </>
     );
 }
