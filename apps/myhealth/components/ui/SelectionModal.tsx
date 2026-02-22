@@ -1,5 +1,5 @@
-import { View, Modal, TouchableOpacity, FlatList, Text } from 'react-native';
-import { useUITheme, IconSymbol, RaisedCard } from '@mysuite/ui';
+import { View, Modal, FlatList, Text, TouchableOpacity } from 'react-native';
+import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 
 interface SelectionModalProps {
     visible: boolean;
@@ -31,13 +31,15 @@ export const SelectionModal = ({
         >
             <View className="flex-1 bg-light dark:bg-dark">
                 {/* Header */}
-                <View className="flex-row items-center justify-between px-4 py-4 border-b border-light-darker/10 dark:border-highlight-dark/10">
-                    <TouchableOpacity onPress={onClose} className="p-2 -ml-2">
-                         <Text className="text-base font-semibold text-primary dark:text-primary-dark">Cancel</Text>
+                <View className="flex-row items-center justify-between px-4 py-4">
+                    <TouchableOpacity onPress={onClose} className="p-2">
+                        <IconSymbol name="xmark" size={24} color={theme.textMuted || '#888'} />
                     </TouchableOpacity>
-                    <Text className="text-lg font-bold text-light dark:text-dark">{title}</Text>
-                    <TouchableOpacity onPress={onClose} className="p-2 -mr-2">
-                        <Text className="text-base font-bold text-primary dark:text-primary-dark">Done</Text>
+                    
+                    <Text className="text-xl font-bold text-light dark:text-dark">{title}</Text>
+                    
+                    <TouchableOpacity onPress={onClose} className="p-2">
+                        <IconSymbol name="checkmark" size={24} color={theme.primary as string} />
                     </TouchableOpacity>
                 </View>
 
@@ -51,12 +53,11 @@ export const SelectionModal = ({
                             <RaisedCard 
                                 onPress={() => {
                                     onSelect(item);
-                                    if (!multiSelect) onClose();
                                 }}
                                 className={`flex-row items-center justify-between p-4 mb-3 rounded-2xl ${
                                     selected 
-                                        ? 'bg-primary/5 dark:bg-primary/20 border-t-primary border-t-1 border-l-primary border-l-1' 
-                                        : 'bg-light-lighter dark:bg-dark-lighter'
+                                        ? 'bg-light dark:bg-dark border-t-2 border-black/20 dark:border-white/20 border-b-0 dark:border-b-0' 
+                                        : 'bg-lighter dark:bg-dark-lighter'
                                 }`}
                             >
                                 <Text className={`text-base font-semibold ${selected ? 'text-primary dark:text-primary-dark' : 'text-light dark:text-dark'}`}>
