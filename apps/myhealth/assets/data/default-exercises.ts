@@ -1,58 +1,124 @@
+const BarbellBenchPressProgression = {
+    id: "flat_barbell_bench_press",
+    name: "Barbell Bench Press",
+    type: "Weighted, Reps",
+    muscle_group: "Chest",
+    progressionId: "barbell_bench_press_progression",
+    difficulty: 2.0,
+    isActiveProgression: true,
+    variations: [
+        {
+            id: "flat_barbell_bench_press",
+            name: "Barbell Bench Press",
+            type: "Weighted, Reps",
+            muscle_group: "Chest",
+            difficulty: 2.0,
+        },
+        {
+            id: "incline_barbell_bench_press",
+            name: "Incline Barbell Bench Press",
+            type: "Weighted, Reps",
+            muscle_group: "Chest",
+            difficulty: 2.5,
+        },
+        {
+            id: "decline_barbell_bench_press",
+            name: "Decline Barbell Bench Press",
+            type: "Weighted, Reps",
+            muscle_group: "Chest",
+            difficulty: 2.0,
+        },
+    ],
+};
+
+const SmithMachineBenchPressProgression = {
+    id: "flat_smith_machine_bench_press",
+    name: "Smith Machine Bench Press",
+    type: "Weighted, Reps",
+    muscle_group: "Chest",
+    progressionId: "smith_machine_bench_press_progression",
+    difficulty: 1.5,
+    isActiveProgression: true,
+    variations: [
+        {
+            id: "flat_smith_machine_bench_press",
+            name: "Smith Machine Bench Press",
+            type: "Weighted, Reps",
+            muscle_group: "Chest",
+            difficulty: 1.5,
+        },
+        {
+            id: "incline_smith_machine_bench_press",
+            name: "Incline Smith Machine Bench Press",
+            type: "Weighted, Reps",
+            muscle_group: "Chest",
+            difficulty: 2.0,
+        },
+        {
+            id: "decline_smith_machine_bench_press",
+            name: "Decline Smith Machine Bench Press",
+            type: "Weighted, Reps",
+            muscle_group: "Chest",
+            difficulty: 1.5,
+        },
+    ],
+};
+
+const DumbbellBenchPressProgression = {
+    id: "flat_dumbbell_bench_press",
+    name: "Dumbbell Bench Press",
+    type: "Weighted, Reps",
+    muscle_group: "Chest",
+    progressionId: "dumbbell_bench_press_progression",
+    difficulty: 2.0,
+    isActiveProgression: true,
+    variations: [
+        {
+            id: "flat_dumbbell_bench_press",
+            name: "Dumbbell Bench Press",
+            type: "Weighted, Reps",
+            muscle_group: "Chest",
+            difficulty: 2.0,
+        },
+        {
+            id: "incline_dumbbell_bench_press",
+            name: "Incline Dumbbell Bench Press",
+            type: "Weighted, Reps",
+            muscle_group: "Chest",
+            difficulty: 2.5,
+        },
+        {
+            id: "decline_dumbbell_bench_press",
+            name: "Decline Dumbbell Bench Press",
+            type: "Weighted, Reps",
+            muscle_group: "Chest",
+            difficulty: 2.0,
+        },
+    ],
+};
+
 export const BenchPress = [
-    {
-        "id": "incline_barbell_bench_press",
-        "name": "Incline Barbell Bench Press",
-        "type": "Weighted, Reps",
-        "muscle_group": "Chest",
-    },
-    {
-        "id": "flat_barbell_bench_press",
-        "name": "Flat Barbell Bench Press",
-        "type": "Weighted, Reps",
-        "muscle_group": "Chest",
-    },
-    {
-        "id": "decline_barbell_bench_press",
-        "name": "Decline Barbell Bench Press",
-        "type": "Weighted, Reps",
-        "muscle_group": "Chest",
-    },
-    {
-        "id": "incline_smith_machine_bench_press",
-        "name": "Incline Smith Machine Bench Press",
-        "type": "Weighted, Reps",
-        "muscle_group": "Chest",
-    },
-    {
-        "id": "flat_smith_machine_bench_press",
-        "name": "Flat Smith Machine Bench Press",
-        "type": "Weighted, Reps",
-        "muscle_group": "Chest",
-    },
-    {
-        "id": "decline_smith_machine_bench_press",
-        "name": "Decline Smith Machine Bench Press",
-        "type": "Weighted, Reps",
-        "muscle_group": "Chest",
-    },
-    {
-        "id": "incline_dumbbell_bench_press",
-        "name": "Incline Dumbbell Bench Press",
-        "type": "Weighted, Reps",
-        "muscle_group": "Chest",
-    },
-    {
-        "id": "flat_dumbbell_bench_press",
-        "name": "Flat Dumbbell Bench Press",
-        "type": "Weighted, Reps",
-        "muscle_group": "Chest",
-    },
-    {
-        "id": "decline_dumbbell_bench_press",
-        "name": "Decline Dumbbell Bench Press",
-        "type": "Weighted, Reps",
-        "muscle_group": "Chest",
-    },
+    ...BarbellBenchPressProgression.variations.map((v) => ({
+        ...v,
+        progressionId: BarbellBenchPressProgression.progressionId,
+        isActiveProgression: v.id === "flat_barbell_bench_press"
+            ? true
+            : undefined,
+    })),
+    ...SmithMachineBenchPressProgression.variations.map((v) => ({
+        ...v,
+        progressionId: SmithMachineBenchPressProgression.progressionId,
+        isActiveProgression: v.id === "flat_smith_machine_bench_press"
+            ? true
+            : undefined,
+    })),
+    ...DumbbellBenchPressProgression.variations.map((v) => ({
+        ...v,
+        progressionId: DumbbellBenchPressProgression.progressionId,
+        isActiveProgression: v.id === "flat_dumbbell_bench_press"
+            ? true
+            : undefined,
+    })),
 ];
 
 export const ChestFlys = [
@@ -430,30 +496,49 @@ export const HipAbductors = [
     },
 ];
 
+const DumbbellCurlProgression = {
+    id: "dumbbell_curl",
+    name: "Dumbbell Curl",
+    type: "Weighted, Reps",
+    muscle_group: "Biceps",
+    progressionId: "dumbbell_curl_progression",
+    difficulty: 1.0,
+    isActiveProgression: true,
+    variations: [
+        {
+            id: "dumbbell_curl",
+            name: "Dumbbell Curl",
+            type: "Weighted, Reps",
+            muscle_group: "Biceps",
+            difficulty: 1.0,
+        },
+        {
+            id: "incline_dumbbell_curl",
+            name: "Incline Dumbbell Curl",
+            type: "Weighted, Reps",
+            muscle_group: "Biceps",
+            difficulty: 1.5,
+        },
+    ],
+};
+
 export const DumbbellCurls = [
+    ...DumbbellCurlProgression.variations.map((v) => ({
+        ...v,
+        progressionId: DumbbellCurlProgression.progressionId,
+        isActiveProgression: v.id === "dumbbell_curl" ? true : undefined,
+    })),
     {
-        "id": "dumbbell_curl",
-        "name": "Dumbbell Curl",
-        "type": "Weighted, Reps",
-        "muscle_group": "Biceps",
+        id: "hammer_dumbbell_curl",
+        name: "Hammer Dumbbell Curl",
+        type: "Weighted, Reps",
+        muscle_group: "Biceps",
     },
     {
-        "id": "incline_dumbbell_curl",
-        "name": "Incline Dumbbell Curl",
-        "type": "Weighted, Reps",
-        "muscle_group": "Biceps",
-    },
-    {
-        "id": "hammer_dumbbell_curl",
-        "name": "Hammer Dumbbell Curl",
-        "type": "Weighted, Reps",
-        "muscle_group": "Biceps",
-    },
-    {
-        "id": "reverse_dumbbell_curl",
-        "name": "Reverse Dumbbell Curl",
-        "type": "Weighted, Reps",
-        "muscle_group": "Biceps",
+        id: "reverse_dumbbell_curl",
+        name: "Reverse Dumbbell Curl",
+        type: "Weighted, Reps",
+        muscle_group: "Biceps",
     },
 ];
 

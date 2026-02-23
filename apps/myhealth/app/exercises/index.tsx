@@ -139,6 +139,11 @@ export default function ExercisesScreen({
   const sections = React.useMemo(() => {
     let filtered = processedExercises.filter(ex => ex.name.toLowerCase().includes(searchQuery.toLowerCase()));
     
+    // Hide non-active variations from the main list unless the user is actively searching
+    if (!searchQuery) {
+        filtered = filtered.filter(ex => !ex.progressionId || ex.isActiveProgression);
+    }
+    
     if (selectedCategories.size > 0) {
         filtered = filtered.filter(ex => selectedCategories.has(ex.category) || selectedCategories.has(ex.group));
     }
