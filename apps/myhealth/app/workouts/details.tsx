@@ -140,7 +140,7 @@ export default function CreateWorkoutScreen() {
         <View className="flex-1 bg-light dark:bg-dark">
             <Stack.Screen options={{ headerShown: false }} />
             <ScreenHeader
-                title={editingWorkoutId ? (isEditing ? 'Edit Workout' : 'Workout Details') : 'Create Workout'}
+                title={editingWorkoutId ? (isEditing ? 'Edit Workout' : (workoutDraftName || 'Workout Details')) : 'Create Workout'}
                 leftAction={
                     isEditing ? (
                         <RaisedCard 
@@ -199,11 +199,7 @@ export default function CreateWorkoutScreen() {
                                     placeholderTextColor={theme.textMuted || '#888'}
                                 />
                             </View>
-                        ) : (
-                            <Text className="text-2xl font-bold text-light dark:text-dark mb-6 px-1">
-                                {workoutDraftName}
-                            </Text>
-                        )}
+                        ) : null}
                         
                         {!isEditing && workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
 
