@@ -65,7 +65,7 @@ export const WorkoutDraftExerciseItem = ({
     }));
 
     return (
-        <View className="bg-light-lighter dark:bg-dark-lighter rounded-xl mb-3 overflow-hidden border border-black/5 dark:border-white/10">
+        <View className="bg-lighter dark:bg-dark-lighter rounded-xl mb-3 overflow-hidden border border-black/5 dark:border-white/10">
             <TouchableOpacity 
                 onPress={onToggleExpand}
                 className="flex-row items-center justify-between p-3"

@@ -145,7 +145,7 @@ export default function CreateWorkoutScreen() {
                     isEditing ? (
                         <RaisedCard 
                             onPress={handleCancel} 
-                            className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
+                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
                             style={{ borderRadius: 9999 }}
                         >
                              <IconSymbol name="xmark" size={24} color={theme.primary as string} />
@@ -159,7 +159,7 @@ export default function CreateWorkoutScreen() {
                         <RaisedCard 
                             onPress={handleSaveWorkoutDraft} 
                             disabled={isSaving} 
-                            className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
+                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
                             style={{ borderRadius: 9999 }}
                         >
                             {isSaving ? (
@@ -171,7 +171,7 @@ export default function CreateWorkoutScreen() {
                     ) : (
                         <RaisedCard 
                             onPress={() => setIsEditing(true)} 
-                            className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
+                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
                             style={{ borderRadius: 9999 }}
                         >
                             <IconSymbol name="pencil" size={20} color={theme.primary as string} />
@@ -189,7 +189,7 @@ export default function CreateWorkoutScreen() {
                 ListHeaderComponent={
                     <View>
                         {isEditing ? (
-                            <View className="bg-light-lighter dark:bg-dark-lighter h-16 px-4 rounded-xl border border-transparent dark:border-highlight-dark mb-6 justify-center">
+                            <View className="bg-lighter dark:bg-dark-lighter h-16 px-4 rounded-xl border border-transparent dark:border-highlight-dark mb-6 justify-center">
                                 <TextInput 
                                     placeholder="Workout Name" 
                                     value={workoutDraftName} 
