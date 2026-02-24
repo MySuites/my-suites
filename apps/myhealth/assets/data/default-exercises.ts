@@ -1,4 +1,4 @@
-const BarbellBenchPressProgression = {
+const BarbellBenchPressVariations = {
     id: "flat_barbell_bench_press",
     name: "Barbell Bench Press",
     type: "Weighted, Reps",
@@ -31,7 +31,7 @@ const BarbellBenchPressProgression = {
     ],
 };
 
-const SmithMachineBenchPressProgression = {
+const SmithMachineBenchPressVariations = {
     id: "flat_smith_machine_bench_press",
     name: "Smith Machine Bench Press",
     type: "Weighted, Reps",
@@ -64,7 +64,7 @@ const SmithMachineBenchPressProgression = {
     ],
 };
 
-const DumbbellBenchPressProgression = {
+const DumbbellBenchPressVariations = {
     id: "flat_dumbbell_bench_press",
     name: "Dumbbell Bench Press",
     type: "Weighted, Reps",
@@ -98,23 +98,23 @@ const DumbbellBenchPressProgression = {
 };
 
 export const BenchPress = [
-    ...BarbellBenchPressProgression.variations.map((v) => ({
+    ...BarbellBenchPressVariations.variations.map((v) => ({
         ...v,
-        progressionId: BarbellBenchPressProgression.progressionId,
+        progressionId: BarbellBenchPressVariations.progressionId,
         isActiveProgression: v.id === "flat_barbell_bench_press"
             ? true
             : undefined,
     })),
-    ...SmithMachineBenchPressProgression.variations.map((v) => ({
+    ...SmithMachineBenchPressVariations.variations.map((v) => ({
         ...v,
-        progressionId: SmithMachineBenchPressProgression.progressionId,
+        progressionId: SmithMachineBenchPressVariations.progressionId,
         isActiveProgression: v.id === "flat_smith_machine_bench_press"
             ? true
             : undefined,
     })),
-    ...DumbbellBenchPressProgression.variations.map((v) => ({
+    ...DumbbellBenchPressVariations.variations.map((v) => ({
         ...v,
-        progressionId: DumbbellBenchPressProgression.progressionId,
+        progressionId: DumbbellBenchPressVariations.progressionId,
         isActiveProgression: v.id === "flat_dumbbell_bench_press"
             ? true
             : undefined,
@@ -136,58 +136,100 @@ export const ChestFlys = [
     },
 ];
 
+const LatPulldownProgression = {
+    id: "lat_pulldown",
+    name: "Lat Pulldown",
+    type: "Weighted, Reps",
+    muscle_group: "Lats",
+    progressionId: "lat_pulldown_progression",
+    difficulty: 2.0,
+    isActiveProgression: true,
+    variations: [
+        {
+            id: "lat_pulldown",
+            name: "Lat Pulldown",
+            type: "Weighted, Reps",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+        {
+            id: "wide_grip_lat_pulldown",
+            name: "Wide Grip Lat Pulldown",
+            type: "Weighted, Reps",
+            muscle_group: "Lats",
+            difficulty: 2.5,
+        },
+        {
+            id: "close_grip_lat_pulldown",
+            name: "Close Grip Lat Pulldown",
+            type: "Weighted, Reps",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+        {
+            id: "reverse_grip_lat_pulldown",
+            name: "Reverse Grip Lat Pulldown",
+            type: "Weighted, Reps",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+    ],
+};
+
 export const LatPulldowns = [
-    {
-        "id": "lat_pulldown",
-        "name": "Lat Pulldown",
-        "type": "Weighted, Reps",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "wide_grip_lat_pulldown",
-        "name": "Wide Grip Lat Pulldown",
-        "type": "Weighted, Reps",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "close_grip_lat_pulldown",
-        "name": "Close Grip Lat Pulldown",
-        "type": "Weighted, Reps",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "reverse_grip_lat_pulldown",
-        "name": "Reverse Grip Lat Pulldown",
-        "type": "Weighted, Reps",
-        "muscle_group": "Lats",
-    },
+    ...LatPulldownProgression.variations.map((v) => ({
+        ...v,
+        progressionId: LatPulldownProgression.progressionId,
+        isActiveProgression: v.id === "lat_pulldown" ? true : undefined,
+    })),
 ];
 
-export const SeatedRows = [
-    {
-        "id": "seated_cable_row",
-        "name": "Seated Cable Row",
-        "type": "Weighted, Reps",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "seated_cable_row_wide_grip",
-        "name": "Seated Cable Row Wide Grip",
-        "type": "Weighted, Reps",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "seated_cable_row_close_grip",
-        "name": "Seated Cable Row Close Grip",
-        "type": "Weighted, Reps",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "seated_cable_row_reverse_grip",
-        "name": "Seated Cable Row Reverse Grip",
-        "type": "Weighted, Reps",
-        "muscle_group": "Lats",
-    },
+const SeatedCableRowVariations = {
+    id: "seated_cable_row",
+    name: "Seated Cable Row",
+    type: "Weighted, Reps",
+    muscle_group: "Lats",
+    progressionId: "seated_cable_row_progression",
+    difficulty: 2.0,
+    isActiveProgression: true,
+    variations: [
+        {
+            id: "seated_cable_row",
+            name: "Seated Cable Row",
+            type: "Weighted, Reps",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+        {
+            id: "seated_cable_row_wide_grip",
+            name: "Seated Cable Row Wide Grip",
+            type: "Weighted, Reps",
+            muscle_group: "Lats",
+            difficulty: 2.5,
+        },
+        {
+            id: "seated_cable_row_close_grip",
+            name: "Seated Cable Row Close Grip",
+            type: "Weighted, Reps",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+        {
+            id: "seated_cable_row_reverse_grip",
+            name: "Seated Cable Row Reverse Grip",
+            type: "Weighted, Reps",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+    ],
+};
+
+export const SeatedCableRows = [
+    ...SeatedCableRowVariations.variations.map((v) => ({
+        ...v,
+        progressionId: SeatedCableRowVariations.progressionId,
+        isActiveProgression: v.id === "seated_cable_row" ? true : undefined,
+    })),
 ];
 
 export const FacePulls = [
@@ -696,7 +738,7 @@ const PushUpProgression = {
     muscle_group: "Triceps",
     progressionId: "push_up_progression",
     difficulty: 2.0,
-    isActiveProgression: true, // Default active
+    isActiveProgression: true,
     variations: [
         {
             id: "wall_push_up",
@@ -719,14 +761,8 @@ const PushUpProgression = {
             muscle_group: "Chest",
             difficulty: 1.5,
         },
-        // Root is implicitly here or separate?
-        // Let's include it in variations for completeness of the "Progression List",
-        // OR handle it in the flattening.
-        // The prompt said "individual exercises as an objects... but also adding a progression field... include a list of individual exercises that is the variation of the root".
-        // So Root has `progression: [Variation1, Variation2...]`.
-        // And Root itself is part of it.
         {
-            id: "push_up", // The root itself
+            id: "push_up",
             name: "Push-up",
             type: "Bodyweight, Reps",
             muscle_group: "Triceps",
@@ -784,15 +820,12 @@ const PushUpProgression = {
     ],
 };
 
-// Helper to flatten
 export const PushUps = PushUpProgression.variations.map((v) => ({
     ...v,
     progressionId: PushUpProgression.progressionId,
-    // Ensure root properties like isActiveProgression form the 'state'
-    // but here we are defining static data.
     // The previous implementation had `isActiveProgression` on the object.
     // We should probably keep it on the root-equivalent entry or just rely on DB default.
-    isActiveProgression: v.id === "wall_push_up" ? true : undefined, // Default start at level 1?
+    isActiveProgression: v.id === "push_up" ? true : undefined, // Default start at level 1?
 }));
 
 const PullUpProgression = {
@@ -901,266 +934,378 @@ export const Dips = [
     },
 ];
 
-export const HandstandExercises = [
-    {
-        "id": "frog_stand",
-        "name": "Frog Stand",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "crow_pose",
-        "name": "Crow Pose",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "chest_to_wall_handstand",
-        "name": "Chest-to-Wall Handstand",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
-    },
-    {
-        "id": "back_to_wall_handstand",
-        "name": "Back-to-Wall Handstand",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
-    },
-    {
-        "id": "handstand",
-        "name": "Handstand",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "wall_handstand_push_up",
-        "name": "Wall Handstand Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "handstand_push_up",
-        "name": "Handstand Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "one_arm_handstand",
-        "name": "One-Arm Handstand",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
-    },
-];
+export const frog_stand = {
+    id: "frog_stand",
+    name: "Frog Stand",
+    type: "Bodyweight, Duration",
+    muscle_group: "Shoulders",
+};
 
-export const HandstandPressExercises = [
-    {
-        "id": "pike_handstand_press",
-        "name": "Pike Handstand Press",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "straddle_handstand_press",
-        "name": "Straddle Handstand Press",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "handstand_press",
-        "name": "Handstand Press",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Shoulders",
-    },
-];
+export const crow_pose = {
+    id: "crow_pose",
+    name: "Crow Pose",
+    type: "Bodyweight, Duration",
+    muscle_group: "Shoulders",
+};
 
-export const PlancheExercises = [
-    {
-        "id": "elbow_lever",
-        "name": "Elbow Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "bent_arm_planche",
-        "name": "Bent-Arm Planche",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "90_degree_push_up",
-        "name": "90-Degree Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "pseudo_planche_hold",
-        "name": "Pseudo Planche Hold",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "tuck_planche",
-        "name": "Tuck Planche",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "advanced_tuck_planche",
-        "name": "Advanced Tuck Planche",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "half_lay_planche",
-        "name": "Half-Lay Planche",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "straddle_planche",
-        "name": "Straddle Planche",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "planche",
-        "name": "Planche",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "planche_push_up",
-        "name": "Planche Push-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "maltese",
-        "name": "Maltese",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-    {
-        "id": "dragon_maltese",
-        "name": "Dragon Maltese",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Shoulders",
-    },
-];
+const handstand_progression = {
+    id: "handstand_progression",
+    name: "Handstand Progression",
+    type: "Bodyweight, Duration",
+    muscle_group: "Shoulders",
+    progressionId: "handstand_progression",
+    difficulty: 2.0,
+    isActiveProgression: true,
+    variations: [
+        frog_stand,
+        crow_pose,
+        {
+            id: "chest_to_wall_handstand",
+            name: "Chest-to-Wall Handstand",
+            type: "Bodyweight, Duration",
+            muscle_group: "Other",
+        },
+        {
+            id: "back_to_wall_handstand",
+            name: "Back-to-Wall Handstand",
+            type: "Bodyweight, Duration",
+            muscle_group: "Other",
+        },
+        {
+            id: "handstand",
+            name: "Handstand",
+            type: "Bodyweight, Duration",
+            muscle_group: "Shoulders",
+        },
+        {
+            id: "wall_handstand_push_up",
+            name: "Wall Handstand Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Shoulders",
+        },
+        {
+            id: "handstand_push_up",
+            name: "Handstand Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Shoulders",
+        },
+        {
+            id: "one_arm_handstand",
+            name: "One-Arm Handstand",
+            type: "Bodyweight, Duration",
+            muscle_group: "Other",
+        },
+    ],
+};
+
+export const HandstandExercises = handstand_progression.variations.map((v) => ({
+    ...v,
+    progressionId: handstand_progression.progressionId,
+    isActiveProgression: v.id === "handstand" ? true : undefined,
+}));
+
+const HandstandPressProgression = {
+    id: "handstand_press",
+    name: "Handstand Press",
+    type: "Bodyweight, Reps",
+    muscle_group: "Shoulders",
+    progressionId: "handstand_press_progression",
+    difficulty: 2.0,
+    isActiveProgression: true,
+    variations: [
+        {
+            id: "pike_handstand_press",
+            name: "Pike Handstand Press",
+            type: "Bodyweight, Reps",
+            muscle_group: "Shoulders",
+            difficulty: 2.0,
+        },
+        {
+            id: "straddle_handstand_press",
+            name: "Straddle Handstand Press",
+            type: "Bodyweight, Reps",
+            muscle_group: "Shoulders",
+            difficulty: 2.0,
+        },
+        {
+            id: "handstand_press",
+            name: "Handstand Press",
+            type: "Bodyweight, Reps",
+            muscle_group: "Shoulders",
+            difficulty: 2.0,
+        },
+    ],
+};
+
+export const HandstandPressExercises = HandstandPressProgression.variations.map(
+    (v) => ({
+        ...v,
+        progressionId: HandstandPressProgression.progressionId,
+        isActiveProgression: v.id === "handstand_press" ? true : undefined,
+    }),
+);
+
+export const elbow_lever = {
+    id: "elbow_lever",
+    name: "Elbow Lever",
+    type: "Bodyweight, Duration",
+    muscle_group: "Shoulders",
+};
+
+export const bent_arm_planche = {
+    id: "bent_arm_planche",
+    name: "Bent-Arm Planche",
+    type: "Bodyweight, Duration",
+    muscle_group: "Shoulders",
+};
+
+export const ninety_degree_push_up = {
+    id: "90_degree_push_up",
+    name: "90-Degree Push-up",
+    type: "Bodyweight, Reps",
+    muscle_group: "Shoulders",
+    difficulty: 2.0,
+};
+
+const PlancheProgression = {
+    id: "planche",
+    name: "Planche",
+    type: "Bodyweight, Duration",
+    muscle_group: "Shoulders",
+    progressionId: "planche_progression",
+    difficulty: 2.0,
+    isActiveProgression: true,
+    variations: [
+        {
+            id: "pseudo_planche_hold",
+            name: "Pseudo Planche Hold",
+            type: "Bodyweight, Duration",
+            muscle_group: "Shoulders",
+            difficulty: 2.0,
+        },
+        {
+            id: "tuck_planche",
+            name: "Tuck Planche",
+            type: "Bodyweight, Duration",
+            muscle_group: "Shoulders",
+            difficulty: 2.0,
+        },
+        {
+            id: "advanced_tuck_planche",
+            name: "Advanced Tuck Planche",
+            type: "Bodyweight, Duration",
+            muscle_group: "Shoulders",
+            difficulty: 2.0,
+        },
+        {
+            id: "half_lay_planche",
+            name: "Half-Lay Planche",
+            type: "Bodyweight, Duration",
+            muscle_group: "Shoulders",
+            difficulty: 2.0,
+        },
+        {
+            id: "straddle_planche",
+            name: "Straddle Planche",
+            type: "Bodyweight, Duration",
+            muscle_group: "Shoulders",
+            difficulty: 2.0,
+        },
+        {
+            id: "planche",
+            name: "Planche",
+            type: "Bodyweight, Duration",
+            muscle_group: "Shoulders",
+            difficulty: 2.0,
+        },
+        {
+            id: "planche_push_up",
+            name: "Planche Push-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Shoulders",
+            difficulty: 2.0,
+        },
+        {
+            id: "maltese",
+            name: "Maltese",
+            type: "Bodyweight, Duration",
+            muscle_group: "Shoulders",
+            difficulty: 2.0,
+        },
+        {
+            id: "dragon_maltese",
+            name: "Dragon Maltese",
+            type: "Bodyweight, Duration",
+            muscle_group: "Shoulders",
+            difficulty: 2.0,
+        },
+    ],
+};
+
+export const PlancheExercises = PlancheProgression.variations.map((v) => ({
+    ...v,
+    progressionId: PlancheProgression.progressionId,
+    isActiveProgression: v.id === "planche" ? true : undefined,
+}));
+
+const FrontLeverProgression = {
+    id: "front_lever",
+    name: "Front Lever",
+    type: "Bodyweight, Duration",
+    muscle_group: "Lats",
+    progressionId: "front_lever_progression",
+    difficulty: 2.0,
+    isActiveProgression: true,
+    variations: [
+        {
+            id: "tuck_front_lever",
+            name: "Tuck Front Lever",
+            type: "Bodyweight, Duration",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+        {
+            id: "advanced_tuck_front_lever",
+            name: "Advanced Tuck Front Lever",
+            type: "Bodyweight, Duration",
+            muscle_group: "Lats",
+            difficulty: 2.5,
+        },
+        {
+            id: "half_lay_front_lever",
+            name: "Half-Lay Front Lever",
+            type: "Bodyweight, Duration",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+        {
+            id: "straddle_front_lever",
+            name: "Straddle Front Lever",
+            type: "Bodyweight, Duration",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+        {
+            id: "front_lever",
+            name: "Front Lever",
+            type: "Bodyweight, Duration",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+        {
+            id: "front_lever_pull_up",
+            name: "Front Lever Pull-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+        {
+            id: "front_lever_touch",
+            name: "Front Lever Touch",
+            type: "Bodyweight, Duration",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+        {
+            id: "one_arm_front_lever",
+            name: "One-Arm Front Lever",
+            type: "Bodyweight, Duration",
+            muscle_group: "Lats",
+            difficulty: 2.0,
+        },
+    ],
+};
 
 export const FrontLeverExercises = [
-    {
-        "id": "tuck_front_lever",
-        "name": "Tuck Front Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "advanced_tuck_front_lever",
-        "name": "Advanced Tuck Front Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "half_lay_front_lever",
-        "name": "Half-Lay Front Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "straddle_front_lever",
-        "name": "Straddle Front Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "front_lever",
-        "name": "Front Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "front_lever_pull_up",
-        "name": "Front Lever Pull-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "front_lever_touch",
-        "name": "Front Lever Touch",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Lats",
-    },
-    {
-        "id": "one_arm_front_lever",
-        "name": "One-Arm Front Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Lats",
-    },
+    ...FrontLeverProgression.variations.map((v) => ({
+        ...v,
+        progressionId: FrontLeverProgression.progressionId,
+        isActiveProgression: v.id === "front_lever" ? true : undefined,
+    })),
 ];
+
+export const skin_the_cat = {
+    id: "skin_the_cat",
+    name: "Skin the Cat",
+    type: "Bodyweight, Reps",
+    muscle_group: "Other",
+};
+
+export const german_hang = {
+    id: "german_hang",
+    name: "German Hang",
+    type: "Bodyweight, Duration",
+    muscle_group: "Other",
+};
+
+const BackLeverProgression = {
+    id: "back_lever",
+    name: "Back Lever",
+    type: "Bodyweight, Duration",
+    muscle_group: "Abdominals",
+    progressionId: "back_lever_progression",
+    difficulty: 2.0,
+    isActiveProgression: true,
+    variations: [
+        {
+            id: "tuck_back_lever",
+            name: "Tuck Back Lever",
+            type: "Bodyweight, Duration",
+            muscle_group: "Abdominals",
+        },
+        {
+            id: "advanced_tuck_back_lever",
+            name: "Advanced Tuck Back Lever",
+            type: "Bodyweight, Duration",
+            muscle_group: "Abdominals",
+        },
+        {
+            id: "half_lay_back_lever",
+            name: "Half-Lay Back Lever",
+            type: "Bodyweight, Duration",
+            muscle_group: "Abdominals",
+        },
+        {
+            id: "straddle_back_lever",
+            name: "Straddle Back Lever",
+            type: "Bodyweight, Duration",
+            muscle_group: "Abdominals",
+        },
+        {
+            id: "back_lever",
+            name: "Back Lever",
+            type: "Bodyweight, Duration",
+            muscle_group: "Abdominals",
+        },
+        {
+            id: "back_lever_pull_up",
+            name: "Back Lever Pull-up",
+            type: "Bodyweight, Reps",
+            muscle_group: "Other",
+        },
+        {
+            id: "back_lever_touch",
+            name: "Back Lever Touch",
+            type: "Bodyweight, Duration",
+            muscle_group: "Other",
+        },
+        {
+            id: "one_arm_back_lever",
+            name: "One-Arm Back Lever",
+            type: "Bodyweight, Duration",
+            muscle_group: "Other",
+        },
+    ],
+};
+
 export const BackLeverExercises = [
-    {
-        "id": "skin_the_cat",
-        "name": "Skin the Cat",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
-    },
-    {
-        "id": "german_hang",
-        "name": "German Hang",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
-    },
-    {
-        "id": "tuck_back_lever",
-        "name": "Tuck Back Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Abdominals",
-    },
-    {
-        "id": "advanced_tuck_back_lever",
-        "name": "Advanced Tuck Back Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Abdominals",
-    },
-    {
-        "id": "half_lay_back_lever",
-        "name": "Half-Lay Back Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Abdominals",
-    },
-    {
-        "id": "straddle_back_lever",
-        "name": "Straddle Back Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Abdominals",
-    },
-    {
-        "id": "back_lever",
-        "name": "Back Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Abdominals",
-    },
-    {
-        "id": "back_lever_pull_up",
-        "name": "Back Lever Pull-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Other",
-    },
-    {
-        "id": "back_lever_touch",
-        "name": "Back Lever Touch",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Other",
-    },
-    {
-        "id": "one_arm_back_lever",
-        "name": "One-Arm Back Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Abdominals",
-    },
-    // Cardio Exercises
+    ...BackLeverProgression.variations.map((v) => ({
+        ...v,
+        progressionId: BackLeverProgression.progressionId,
+        isActiveProgression: v.id === "back_lever" ? true : undefined,
+    })),
 ];
+
 export const CardioExercises = [
     {
         "id": "treadmill",
@@ -1228,7 +1373,7 @@ export default [
     ...BenchPress,
     ...ChestFlys,
     ...LatPulldowns,
-    ...SeatedRows,
+    ...SeatedCableRows,
     ...FacePulls,
     ...LateralRaises,
     ...FrontRaises,
@@ -1269,7 +1414,7 @@ export const Groups = {
     "Bench Press": BenchPress,
     "Chest Flys": ChestFlys,
     "Lat Pulldowns": LatPulldowns,
-    "Seated Rows": SeatedRows,
+    "Seated Rows": SeatedCableRows,
     "Face Pulls": FacePulls,
     "Lateral Raises": LateralRaises,
     "Front Raises": FrontRaises,
