@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ActivityIndicator, Alert, Pressable, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUITheme } from '@mysuite/ui';
@@ -40,6 +40,8 @@ export default function VariationsScreen() {
         return () => { isMounted = false; };
     }, [progressionId]);
 
+    const [selectedVariation, setSelectedVariation] = useState<Exercise | null>(null);
+
     const handleSetActive = async (exercise: Exercise) => {
         const updated = exercises.map(e => ({
             ...e,
@@ -49,6 +51,7 @@ export default function VariationsScreen() {
 
         try {
             await DataRepository.saveExercises(updated);
+            setSelectedVariation(null);
             // Optionally, we could show a toast here.
         } catch (e) {
             console.error("Failed to save progression", e);
@@ -59,8 +62,13 @@ export default function VariationsScreen() {
     };
 
     const handleSelect = (exercise: Exercise) => {
-         router.replace({
-            pathname: '/exercises/details',
+         setSelectedVariation(exercise);
+    };
+    
+    const handleViewDetails = (exercise: Exercise) => {
+         setSelectedVariation(null);
+         router.push({
+            pathname: '/exercises/details' as any,
             params: { exercise: JSON.stringify(exercise) }
         });
     };
@@ -69,6 +77,7 @@ export default function VariationsScreen() {
         background: (theme.bgDark || theme.bg) as string,
         text: theme.text as string,
         primary: theme.primary as string,
+        card: theme.bgLight as string,
     };
 
     return (
@@ -92,7 +101,7 @@ export default function VariationsScreen() {
                     className="mt-20"
                     style={{ padding: 16, backgroundColor: 'rgba(0,0,0,0.3)', zIndex: 10 }}>
                         <Text style={{ color: bgColors.text, opacity: 0.8, fontSize: 13, textAlign: 'center' }}>
-                            Tap a variation to view details. Tap and hold to set as active goal.
+                            Tap a variation to view its details and manage goals.
                         </Text>
                     </View>
                     <VariationTree 
@@ -101,6 +110,75 @@ export default function VariationsScreen() {
                         onSetActive={handleSetActive}
                         onSelect={handleSelect}
                     />
+
+                    {/* Variation Action Modal */}
+                    <Modal transparent visible={!!selectedVariation} animationType="fade">
+                        {selectedVariation && (
+                            <View style={{
+                                flex: 1,
+                                backgroundColor: 'rgba(0,0,0,0.7)',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                padding: 24,
+                                zIndex: 1000,
+                            }}>
+                                <Pressable 
+                                    style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} 
+                                    onPress={() => setSelectedVariation(null)} 
+                                />
+                                <View style={{
+                                    backgroundColor: bgColors.card,
+                                    borderRadius: 24,
+                                    padding: 24,
+                                    width: '100%',
+                                    maxWidth: 400,
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 4 },
+                                    shadowOpacity: 0.3,
+                                    shadowRadius: 8,
+                                    elevation: 5,
+                                }}>
+                                    <Text style={{ color: bgColors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>
+                                        {selectedVariation.name}
+                                    </Text>
+                                    <Text style={{ color: bgColors.text, opacity: 0.7, fontSize: 16, marginBottom: 24, textTransform: 'capitalize', textAlign: 'center' }}>
+                                        {selectedVariation.difficulty || 'Normal'} Difficulty
+                                    </Text>
+
+                                    <Pressable
+                                        onPress={() => handleSetActive(selectedVariation)}
+                                        style={({pressed}: {pressed: boolean}) => ({
+                                            backgroundColor: bgColors.primary,
+                                            padding: 16,
+                                            borderRadius: 12,
+                                            alignItems: 'center',
+                                            marginBottom: 12,
+                                            opacity: pressed ? 0.8 : 1
+                                        })}
+                                    >
+                                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>
+                                            Set as Active Goal
+                                        </Text>
+                                    </Pressable>
+
+                                    <Pressable
+                                        onPress={() => handleViewDetails(selectedVariation)}
+                                        style={({pressed}: {pressed: boolean}) => ({
+                                            backgroundColor: 'rgba(255,255,255,0.1)',
+                                            padding: 16,
+                                            borderRadius: 12,
+                                            alignItems: 'center',
+                                            opacity: pressed ? 0.8 : 1
+                                        })}
+                                    >
+                                        <Text style={{ color: bgColors.text, fontSize: 16, fontWeight: '600' }}>
+                                            View Full Details
+                                        </Text>
+                                    </Pressable>
+                                </View>
+                            </View>
+                        )}
+                    </Modal>
                 </>
             )}
         </View>

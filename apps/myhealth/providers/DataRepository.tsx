@@ -567,7 +567,7 @@ export const DataRepository = {
                     ex.id || ex.exercise_id, 
                     ex.name || ex.exercise_name,
                     JSON.stringify(ex.muscle_groups || ex.exercise_muscle_groups || []),
-                    ex.properties || "", 
+                    Array.isArray(ex.properties) ? ex.properties.join(',') : (ex.properties || ""), 
                     ex.progressionId || null,
                     ex.difficulty || null,
                     ex.isActiveProgression ? 1 : 0,

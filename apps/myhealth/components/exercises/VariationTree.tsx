@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, Pressable, ScrollView, Dimensions, Alert } from 'react-native';
+import { View, Text, Pressable, ScrollView, Dimensions } from 'react-native';
 import Svg, { Path, Defs, Filter, FeDropShadow } from 'react-native-svg';
 import { useUITheme, IconSymbol } from '@mysuite/ui';
 import { Exercise } from '../../utils/workout-api/types';
@@ -171,18 +171,6 @@ export function VariationTree({ exercises, currentExerciseId, onSetActive, onSel
                                 <Pressable
                                     hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
                                     onPress={() => onSelect(node.exercise)}
-                                    onLongPress={() => {
-                                        if (!isActive) {
-                                            Alert.alert(
-                                                "Set Active Goal", 
-                                                `Target ${node.exercise.name} as your current variation goal?`,
-                                                [
-                                                    { text: "Cancel", style: "cancel" },
-                                                    { text: "Set Active", onPress: () => onSetActive(node.exercise) }
-                                                ]
-                                            );
-                                        }
-                                    }}
                                 >
                                     {({ pressed }) => (
                                         <View style={{
