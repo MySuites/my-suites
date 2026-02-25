@@ -1,5 +1,5 @@
 const BarbellBenchPressVariations = {
-    id: "flat_barbell_bench_press",
+    id: "barbell_bench_press",
     name: "Barbell Bench Press",
     type: "Weighted, Reps",
     muscle_group: "Chest",
@@ -9,21 +9,21 @@ const BarbellBenchPressVariations = {
     variations: [
         {
             id: "flat_barbell_bench_press",
-            name: "Barbell Bench Press",
+            name: "Flat",
             type: "Weighted, Reps",
             muscle_group: "Chest",
             difficulty: 2.0,
         },
         {
             id: "incline_barbell_bench_press",
-            name: "Incline Barbell Bench Press",
+            name: "Incline",
             type: "Weighted, Reps",
             muscle_group: "Chest",
             difficulty: 2.5,
         },
         {
             id: "decline_barbell_bench_press",
-            name: "Decline Barbell Bench Press",
+            name: "Decline",
             type: "Weighted, Reps",
             muscle_group: "Chest",
             difficulty: 2.0,
@@ -42,21 +42,21 @@ const SmithMachineBenchPressVariations = {
     variations: [
         {
             id: "flat_smith_machine_bench_press",
-            name: "Smith Machine Bench Press",
+            name: "Flat",
             type: "Weighted, Reps",
             muscle_group: "Chest",
             difficulty: 1.5,
         },
         {
             id: "incline_smith_machine_bench_press",
-            name: "Incline Smith Machine Bench Press",
+            name: "Incline",
             type: "Weighted, Reps",
             muscle_group: "Chest",
             difficulty: 2.0,
         },
         {
             id: "decline_smith_machine_bench_press",
-            name: "Decline Smith Machine Bench Press",
+            name: "Decline",
             type: "Weighted, Reps",
             muscle_group: "Chest",
             difficulty: 1.5,
@@ -75,21 +75,21 @@ const DumbbellBenchPressVariations = {
     variations: [
         {
             id: "flat_dumbbell_bench_press",
-            name: "Dumbbell Bench Press",
+            name: "Flat",
             type: "Weighted, Reps",
             muscle_group: "Chest",
             difficulty: 2.0,
         },
         {
             id: "incline_dumbbell_bench_press",
-            name: "Incline Dumbbell Bench Press",
+            name: "Incline",
             type: "Weighted, Reps",
             muscle_group: "Chest",
             difficulty: 2.5,
         },
         {
             id: "decline_dumbbell_bench_press",
-            name: "Decline Dumbbell Bench Press",
+            name: "Decline",
             type: "Weighted, Reps",
             muscle_group: "Chest",
             difficulty: 2.0,

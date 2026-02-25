@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { View, ScrollView, Pressable, Text, Alert, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Pressable, Text, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
@@ -10,7 +10,6 @@ import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import DefaultExercises from '../../assets/data/default-exercises';
-import { ProgressionSelect } from '../../components/exercises/ProgressionSelect';
 import { DataRepository } from '../../providers/DataRepository';
 import { Exercise } from '../../utils/workout-api/types';
 
@@ -38,9 +37,6 @@ export default function ExerciseDetailsScreen() {
     // effective exercise is fresh, or initial
     const exercise = freshExercise || initialExercise;
 
-    const [progressionExercises, setProgressionExercises] = useState<Exercise[]>([]);
-    const [loadingProgression, setLoadingProgression] = useState(false);
-
     useEffect(() => {
         let isMounted = true;
         
@@ -55,14 +51,6 @@ export default function ExerciseDetailsScreen() {
             const currentFresh = allExercises.find(e => e.id === initialExercise.id);
             if (currentFresh) {
                 setFreshExercise(currentFresh); // Update with DB truth
-                
-                // 2. If the fresh exercise has a progression, load siblings
-                if (currentFresh.progressionId) {
-                    setLoadingProgression(true);
-                    const siblings = allExercises.filter(e => e.progressionId === currentFresh.progressionId);
-                    setProgressionExercises(siblings);
-                    setLoadingProgression(false);
-                }
             }
         }
         
@@ -93,22 +81,7 @@ export default function ExerciseDetailsScreen() {
         );
     };
 
-    const handleSetActiveProgression = async (target: Exercise) => {
-        // Optimistic update
-        const updated = progressionExercises.map(e => ({
-            ...e,
-            isActiveProgression: e.id === target.id
-        }));
-        setProgressionExercises(updated);
 
-        // Persist
-        try {
-            await DataRepository.saveExercises(updated);
-        } catch (e) {
-            console.error("Failed to save progression", e);
-            Alert.alert("Error", "Failed to update progression");
-        }
-    };
 
     const {
         chartData,
@@ -171,22 +144,38 @@ export default function ExerciseDetailsScreen() {
                     </Text>
                 </View>
 
-                {/* Progression Selector */}
-                {loadingProgression ? (
-                    <ActivityIndicator size="small" color={currentColors.primary} style={{ marginBottom: 24 }} />
-                ) : exercise.progressionId ? (
-                    <ProgressionSelect 
-                        currentExercise={exercise}
-                        progressionExercises={progressionExercises}
-                        onSelect={(ex) => {
-                            router.replace({
-                                pathname: '/exercises/details',
-                                params: { exercise: JSON.stringify(ex) }
+                {/* Variations Button */}
+                {exercise.progressionId && (
+                    <Pressable
+                        onPress={() => {
+                            router.push({
+                                pathname: '/exercises/variations' as any,
+                                params: { 
+                                    progressionId: exercise.progressionId,
+                                    currentExerciseId: exercise.id,
+                                }
                             });
                         }}
-                        onSetActive={handleSetActiveProgression}
-                    />
-                ) : null}
+                        style={({ pressed }) => ({
+                            backgroundColor: currentColors.card,
+                            borderRadius: 12,
+                            padding: 16,
+                            marginBottom: 24,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            opacity: pressed ? 0.7 : 1,
+                        })}
+                    >
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <IconSymbol name="menu" size={24} color={currentColors.primary} style={{ marginRight: 12 }} />
+                            <Text style={{ fontSize: 16, fontWeight: '600', color: currentColors.text }}>
+                                View Variations
+                            </Text>
+                        </View>
+                        <IconSymbol name="chevron.right" size={20} color={currentColors.text} style={{ opacity: 0.5 }} />
+                    </Pressable>
+                )}
 
                 {/* Performance Chart */}
                 <ExerciseChart
