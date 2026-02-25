@@ -116,11 +116,21 @@ export default function ExerciseDetailsScreen() {
     const activeToggleBg = theme.bgLight as string; 
     const activeToggleText = theme.text as string;
 
+    // Use base progression name if applicable
+    let displayTitle = exercise.name || 'Details';
+    if (exercise.progressionId) {
+        const baseId = exercise.progressionId.replace('_progression', '');
+        displayTitle = baseId
+            .split('_')
+            .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' ');
+    }
+
     return (
         <View style={{ flex: 1, backgroundColor: currentColors.background }}>
              {/* Header */}
              <ScreenHeader 
-                title={exercise.name || 'Details'} 
+                title={displayTitle} 
                 leftAction={<BackButton />} 
                 rightAction={!isDefault ? (
                     <RaisedCard 
