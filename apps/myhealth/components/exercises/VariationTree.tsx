@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, Pressable, ScrollView, Dimensions, Alert } from 'react-native';
 import Svg, { Path, Defs, Filter, FeDropShadow } from 'react-native-svg';
-import { Image } from 'expo-image';
 import { useUITheme, IconSymbol } from '@mysuite/ui';
 import { Exercise } from '../../utils/workout-api/types';
 
@@ -137,11 +136,11 @@ export function VariationTree({ exercises, currentExerciseId, onSetActive, onSel
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }} style={{ flex: 1, backgroundColor: currentColors.background }}>
             <ScrollView horizontal contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }} showsHorizontalScrollIndicator={false}>
-                <View style={{ width: totalWidth, height: totalHeight, position: 'relative' }}>
+                <View style={{ width: totalWidth, height: totalHeight, position: 'relative' }} pointerEvents="box-none">
                     
                     {/* SVG Connections */}
-                    <View style={{ position: 'absolute', top: 0, left: 0, width: totalWidth, height: totalHeight, zIndex: 0 }}>
-                        <Svg width={totalWidth} height={totalHeight}>
+                    <View style={{ position: 'absolute', top: 0, left: 0, width: totalWidth, height: totalHeight, zIndex: 0 }} pointerEvents="none">
+                        <Svg width={totalWidth} height={totalHeight} pointerEvents="none">
                             <Defs>
                                 <Filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
                                     <FeDropShadow dx="0" dy="0" stdDeviation="6" floodColor={currentColors.lineActive} floodOpacity="0.8"/>
@@ -156,8 +155,7 @@ export function VariationTree({ exercises, currentExerciseId, onSetActive, onSel
                         const isCurrent = node.exercise.id === currentExerciseId;
                         const isActive = node.exercise.isActiveProgression;
                         
-                        const placeholderImageUrl = `https://picsum.photos/seed/${node.exercise.id}/100`;
-
+                        // The circle will replace the image in the future, for now placeholder is neutral
                         return (
                             <View 
                                 key={node.exercise.id}
@@ -167,10 +165,11 @@ export function VariationTree({ exercises, currentExerciseId, onSetActive, onSel
                                     top: node.y - NODE_SIZE / 2,
                                     width: NODE_SIZE,
                                     alignItems: 'center',
-                                    zIndex: 1,
+                                    zIndex: isActive ? 101 : 100, // bring definitively above SVGs
                                 }}
                             >
                                 <Pressable
+                                    hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
                                     onPress={() => onSelect(node.exercise)}
                                     onLongPress={() => {
                                         if (!isActive) {
@@ -184,39 +183,46 @@ export function VariationTree({ exercises, currentExerciseId, onSetActive, onSel
                                             );
                                         }
                                     }}
-                                    style={({ pressed }) => ({
-                                        width: NODE_SIZE,
-                                        height: NODE_SIZE,
-                                        borderRadius: NODE_SIZE / 2,
-                                        backgroundColor: currentColors.card,
-                                        borderWidth: isCurrent ? 4 : (isActive ? 2 : 0),
-                                        borderColor: isCurrent ? '#FFFFFF' : (isActive ? currentColors.primary : 'transparent'),
-                                        shadowColor: isCurrent || isActive ? currentColors.primary : '#000',
-                                        shadowOffset: { width: 0, height: 0 },
-                                        shadowOpacity: isCurrent || isActive ? 0.8 : 0.3,
-                                        shadowRadius: isCurrent ? 12 : (isActive ? 8 : 4),
-                                        elevation: isCurrent ? 10 : 5,
-                                        opacity: pressed ? 0.7 : 1,
-                                        overflow: 'hidden',
-                                        justifyContent: 'center',
-                                        alignItems: 'center'
-                                    })}
                                 >
-                                    <Image 
-                                        source={{ uri: placeholderImageUrl }} 
-                                        style={{ width: '100%', height: '100%' }}
-                                        contentFit="cover"
-                                    />
-                                    {isActive && (
+                                    {({ pressed }) => (
                                         <View style={{
-                                            position: 'absolute',
-                                            bottom: 0,
-                                            backgroundColor: 'rgba(0,0,0,0.6)',
-                                            width: '100%',
-                                            paddingVertical: 2,
-                                            alignItems: 'center'
+                                            width: NODE_SIZE,
+                                            height: NODE_SIZE,
+                                            borderRadius: NODE_SIZE / 2,
+                                            // Outer shadow handling natively
+                                            shadowColor: isCurrent || isActive ? currentColors.primary : '#000',
+                                            shadowOffset: { width: 0, height: 2 },
+                                            shadowOpacity: isCurrent || isActive ? 0.6 : 0.15,
+                                            shadowRadius: isCurrent ? 8 : (isActive ? 6 : 4),
+                                            elevation: isCurrent ? 8 : (isActive ? 6 : 3),
+                                            backgroundColor: currentColors.card,
+                                            borderWidth: isCurrent ? 3 : (isActive ? 3 : 2),
+                                            borderColor: isCurrent ? '#FFFFFF' : (isActive ? currentColors.primary : currentColors.lineDefault),
+                                            transform: [{ scale: pressed ? 0.9 : 1 }],
+                                            opacity: 1,
                                         }}>
-                                            <IconSymbol name="checkmark.circle.fill" size={16} color={currentColors.primary} />
+                                            <View style={{
+                                                flex: 1,
+                                                borderRadius: NODE_SIZE / 2,
+                                                overflow: 'hidden',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                backgroundColor: theme.bgLight || 'rgba(0,0,0,0.05)',
+                                            }}>
+                                                {/* Future Image will go here */}
+                                                {isActive && (
+                                                    <View style={{
+                                                        position: 'absolute',
+                                                        bottom: 0,
+                                                        backgroundColor: 'rgba(0,0,0,0.6)',
+                                                        width: '100%',
+                                                        paddingVertical: 2,
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        <IconSymbol name="checkmark.circle.fill" size={16} color={currentColors.primary} />
+                                                    </View>
+                                                )}
+                                            </View>
                                         </View>
                                     )}
                                 </Pressable>
