@@ -11,7 +11,7 @@ import { VariationTree } from '../../components/exercises/VariationTree';
 
 export default function VariationsScreen() {
     const theme = useUITheme();
-    const { progressionId, currentExerciseId } = useLocalSearchParams();
+    const { progressionId } = useLocalSearchParams();
     const router = useRouter();
     const insets = useSafeAreaInsets();
 
@@ -106,7 +106,6 @@ export default function VariationsScreen() {
                     </View>
                     <VariationTree 
                         exercises={exercises} 
-                        currentExerciseId={currentExerciseId as string}
                         onSetActive={handleSetActive}
                         onSelect={handleSelect}
                     />

@@ -162,7 +162,6 @@ export default function ExerciseDetailsScreen() {
                                 pathname: '/exercises/variations' as any,
                                 params: { 
                                     progressionId: exercise.progressionId,
-                                    currentExerciseId: exercise.id,
                                 }
                             });
                         }}

@@ -4,11 +4,10 @@ import Svg, { Path, Defs, Filter, FeDropShadow } from 'react-native-svg';
 import { useUITheme, IconSymbol } from '@mysuite/ui';
 import { Exercise } from '../../utils/workout-api/types';
 
-interface Props {
+interface VariationTreeProps {
     exercises: Exercise[];
-    currentExerciseId: string;
-    onSetActive: (ex: Exercise) => void;
-    onSelect: (ex: Exercise) => void;
+    onSetActive: (exercise: Exercise) => void;
+    onSelect: (exercise: Exercise) => void;
 }
 
 interface ProcessedNode {
@@ -17,7 +16,7 @@ interface ProcessedNode {
     y: number;
 }
 
-export function VariationTree({ exercises, currentExerciseId, onSetActive, onSelect }: Props) {
+export function VariationTree({ exercises, onSelect, onSetActive }: VariationTreeProps) {
     const theme = useUITheme();
 
     const currentColors = {
@@ -152,7 +151,6 @@ export function VariationTree({ exercises, currentExerciseId, onSetActive, onSel
 
                     {/* Nodes */}
                     {nodes.map((node) => {
-                        const isCurrent = node.exercise.id === currentExerciseId;
                         const isActive = node.exercise.isActiveProgression;
                         
                         // The circle will replace the image in the future, for now placeholder is neutral
@@ -178,14 +176,14 @@ export function VariationTree({ exercises, currentExerciseId, onSetActive, onSel
                                             height: NODE_SIZE,
                                             borderRadius: NODE_SIZE / 2,
                                             // Outer shadow handling natively
-                                            shadowColor: isCurrent || isActive ? currentColors.primary : '#000',
+                                            shadowColor: isActive ? currentColors.primary : '#000',
                                             shadowOffset: { width: 0, height: 2 },
-                                            shadowOpacity: isCurrent || isActive ? 0.6 : 0.15,
-                                            shadowRadius: isCurrent ? 8 : (isActive ? 6 : 4),
-                                            elevation: isCurrent ? 8 : (isActive ? 6 : 3),
+                                            shadowOpacity: isActive ? 0.6 : 0.15,
+                                            shadowRadius: isActive ? 6 : 4,
+                                            elevation: isActive ? 6 : 3,
                                             backgroundColor: currentColors.card,
-                                            borderWidth: isCurrent ? 3 : (isActive ? 3 : 2),
-                                            borderColor: isCurrent ? '#FFFFFF' : (isActive ? currentColors.primary : currentColors.lineDefault),
+                                            borderWidth: isActive ? 3 : 2,
+                                            borderColor: isActive ? currentColors.primary : currentColors.lineDefault,
                                             transform: [{ scale: pressed ? 0.9 : 1 }],
                                             opacity: 1,
                                         }}>
@@ -220,7 +218,7 @@ export function VariationTree({ exercises, currentExerciseId, onSetActive, onSel
                                         marginTop: 12, 
                                         color: currentColors.text, 
                                         fontSize: 12, 
-                                        fontWeight: isCurrent || isActive ? 'bold' : '500',
+                                        fontWeight: isActive ? 'bold' : '500',
                                         textAlign: 'center',
                                         width: NODE_SIZE * 1.5,
                                         textShadowColor: 'rgba(0, 0, 0, 0.8)',
