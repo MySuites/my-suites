@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, Alert, Pressable, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useUITheme } from '@mysuite/ui';
+import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { DataRepository } from '../../providers/DataRepository';
@@ -144,21 +144,18 @@ export default function VariationsScreen() {
                                         {selectedVariation.difficulty || 'Normal'} Difficulty
                                     </Text>
 
-                                    <Pressable
+                                    <RaisedCard
                                         onPress={() => handleSetActive(selectedVariation)}
-                                        style={({pressed}: {pressed: boolean}) => ({
-                                            backgroundColor: bgColors.primary,
-                                            padding: 16,
-                                            borderRadius: 12,
-                                            alignItems: 'center',
-                                            marginBottom: 12,
-                                            opacity: pressed ? 0.8 : 1
-                                        })}
+                                        className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0 mb-3"
+                                        style={{ borderRadius: 9999 }}
                                     >
-                                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>
-                                            Set as Active Goal
-                                        </Text>
-                                    </Pressable>
+                                        <View className="flex-row items-center justify-center">
+                                            <IconSymbol name="star.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
+                                            <Text className="text-lg font-bold text-white">
+                                                Set as Active
+                                            </Text>
+                                        </View>
+                                    </RaisedCard>
 
                                     <Pressable
                                         onPress={() => handleViewDetails(selectedVariation)}

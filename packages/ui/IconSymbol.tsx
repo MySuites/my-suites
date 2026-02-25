@@ -60,6 +60,7 @@ const MAPPING = {
   'clock.fill': 'history',
   'fork.knife': 'restaurant',
   'brain.head.profile': 'person',
+  'star.fill': 'star',
 } as const;
 
 

@@ -26,7 +26,7 @@ const BarbellBenchPressVariations = {
             name: "Decline",
             type: "Weighted, Reps",
             muscle_group: "Chest",
-            difficulty: 2.0,
+            difficulty: 2.5,
         },
     ],
 };
@@ -59,7 +59,7 @@ const SmithMachineBenchPressVariations = {
             name: "Decline",
             type: "Weighted, Reps",
             muscle_group: "Chest",
-            difficulty: 1.5,
+            difficulty: 2.0,
         },
     ],
 };
@@ -70,7 +70,7 @@ const DumbbellBenchPressVariations = {
     type: "Weighted, Reps",
     muscle_group: "Chest",
     progressionId: "dumbbell_bench_press_progression",
-    difficulty: 2.0,
+    difficulty: 1.0,
     isActiveProgression: true,
     variations: [
         {
@@ -78,21 +78,21 @@ const DumbbellBenchPressVariations = {
             name: "Flat",
             type: "Weighted, Reps",
             muscle_group: "Chest",
-            difficulty: 2.0,
+            difficulty: 1.0,
         },
         {
             id: "incline_dumbbell_bench_press",
             name: "Incline",
             type: "Weighted, Reps",
             muscle_group: "Chest",
-            difficulty: 2.5,
+            difficulty: 1.5,
         },
         {
             id: "decline_dumbbell_bench_press",
             name: "Decline",
             type: "Weighted, Reps",
             muscle_group: "Chest",
-            difficulty: 2.0,
+            difficulty: 1.5,
         },
     ],
 };
