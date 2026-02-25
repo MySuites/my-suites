@@ -21,6 +21,7 @@ export default function ExerciseDetailsScreen() {
     const { deleteCustomExercise } = useWorkoutManager();
     
     const [freshExercise, setFreshExercise] = useState<Exercise | null>(null);
+    const [activeTab, setActiveTab] = useState<'performance' | 'instructions'>('performance');
 
     // Initial load from params, but act as fallback/skeleton
     const initialExercise = useMemo(() => {
@@ -186,40 +187,89 @@ export default function ExerciseDetailsScreen() {
                     </Pressable>
                 )}
 
-                {/* Performance Chart */}
-                <ExerciseChart
-                    data={chartData}
-                    loading={loadingChart}
-                    selectedMetric={selectedMetric}
-                    onSelectMetric={setSelectedMetric}
-                    availableMetrics={availableMetrics}
-                    themeColors={currentColors}
-                    cardBackground={cardBackground}
-                    toggleBackground={toggleBackground}
-                    activeToggleBg={activeToggleBg}
-                    activeToggleText={activeToggleText}
-                />
-
-                <ExerciseProperties
-                    properties={exercise.properties}
-                    rawType={exercise.rawType}
-                    themeColors={currentColors}
-                    cardBackground={cardBackground}
-                    toggleBackground={activeToggleBg}
-                />
-
-                 <View style={{ 
-                    backgroundColor: cardBackground,
-                    borderRadius: 16, 
-                    padding: 16, 
-                    marginBottom: 120 
+                {/* Tabs */}
+                <View style={{
+                    flexDirection: 'row',
+                    backgroundColor: toggleBackground,
+                    borderRadius: 8,
+                    padding: 4,
+                    marginBottom: 24
                 }}>
-                    <Text className="text-base leading-6 font-semibold" style={{ marginBottom: 12, color: currentColors.text }}>Instructions</Text>
-                    <Text style={{ color: currentColors.text, opacity: 0.6, lineHeight: 24 }}>
-                        No instructions available for this exercise yet.
-                    </Text>
+                    <Pressable
+                        onPress={() => setActiveTab('instructions')}
+                        style={{
+                            flex: 1,
+                            paddingVertical: 8,
+                            alignItems: 'center',
+                            backgroundColor: activeTab === 'instructions' ? activeToggleBg : 'transparent',
+                            borderRadius: 6,
+                        }}
+                    >
+                        <Text style={{
+                            color: activeTab === 'instructions' ? activeToggleText : currentColors.text,
+                            fontWeight: activeTab === 'instructions' ? '600' : '400',
+                            opacity: activeTab === 'instructions' ? 1 : 0.7
+                        }}>Instructions</Text>
+                    </Pressable>
+                    <Pressable
+                        onPress={() => setActiveTab('performance')}
+                        style={{
+                            flex: 1,
+                            paddingVertical: 8,
+                            alignItems: 'center',
+                            backgroundColor: activeTab === 'performance' ? activeToggleBg : 'transparent',
+                            borderRadius: 6,
+                        }}
+                    >
+                        <Text style={{
+                            color: activeTab === 'performance' ? activeToggleText : currentColors.text,
+                            fontWeight: activeTab === 'performance' ? '600' : '400',
+                            opacity: activeTab === 'performance' ? 1 : 0.7
+                        }}>Performance</Text>
+                    </Pressable>
                 </View>
 
+                {activeTab === 'performance' && (
+                    <View>
+                        {/* Performance Chart */}
+                        <ExerciseChart
+                            data={chartData}
+                            loading={loadingChart}
+                            selectedMetric={selectedMetric}
+                            onSelectMetric={setSelectedMetric}
+                            availableMetrics={availableMetrics}
+                            themeColors={currentColors}
+                            cardBackground={cardBackground}
+                            toggleBackground={toggleBackground}
+                            activeToggleBg={activeToggleBg}
+                            activeToggleText={activeToggleText}
+                        />
+
+                        <ExerciseProperties
+                            properties={exercise.properties}
+                            rawType={exercise.rawType}
+                            themeColors={currentColors}
+                            cardBackground={cardBackground}
+                            toggleBackground={activeToggleBg}
+                        />
+                    </View>
+                )}
+
+                {activeTab === 'instructions' && (
+                    <View style={{ 
+                        backgroundColor: cardBackground,
+                        borderRadius: 16, 
+                        padding: 16, 
+                    }}>
+                        <Text className="text-base leading-6 font-semibold" style={{ marginBottom: 12, color: currentColors.text }}>Instructions</Text>
+                        <Text style={{ color: currentColors.text, opacity: 0.6, lineHeight: 24 }}>
+                            No instructions available for this exercise yet.
+                        </Text>
+                    </View>
+                )}
+
+                {/* Spacer to ensure content is fully scrollable above floating elements */}
+                <View style={{ height: 120 }} />
             </ScrollView>
         </View>
     );
