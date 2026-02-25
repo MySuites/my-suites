@@ -388,13 +388,14 @@ export const DataRepository = {
             for (const exData of ExerciseDefaultData) {
                  const ex = exData as any;
                  await db.runAsync(`
-                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, progression_id, difficulty, is_active_progression, created_at, updated_at, sync_status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
+                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, created_at, updated_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
                 `, [
                     ex.id, 
                     ex.name,
                     JSON.stringify([ex.muscle_group]), 
                     ex.type,
+                    ex.description || null,
                     ex.progressionId || null,
                     ex.difficulty !== undefined ? ex.difficulty : (ex.progressionLevel || null),
                     ex.isActiveProgression ? 1 : 0,
@@ -533,13 +534,16 @@ export const DataRepository = {
     getExercises: async (): Promise<any[]> => {
         const db = await getDb();
         const result = await db.getAllAsync<any>('SELECT * FROM exercises WHERE deleted_at IS NULL ORDER BY name ASC');
-        return result.map(e => ({
-            ...e,
-            muscle_groups: e.muscle_groups ? JSON.parse(e.muscle_groups) : [],
-            properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : [],
-            progressionId: e.progression_id,
-            difficulty: e.difficulty || e.progression_level, // Fallback for migration
-            isActiveProgression: e.is_active_progression === 1
+        return result.map(row => ({
+            ...row,
+            id: row.id,
+            name: row.name,
+            muscle_groups: row.muscle_groups ? JSON.parse(row.muscle_groups) : [],
+            properties: row.properties ? row.properties.split(',').map((s: string) => s.trim()) : [],
+            progressionId: row.progression_id,
+            difficulty: row.difficulty || row.progression_level, // Fallback for migration
+            description: row.description, // Added description
+            isActiveProgression: row.is_active_progression === 1
         }));
     },
 
@@ -561,13 +565,14 @@ export const DataRepository = {
         await db.withTransactionAsync(async () => {
             for (const ex of exercises) {
                 await db.runAsync(`
-                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, progression_id, difficulty, is_active_progression, created_at, updated_at, sync_status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
+                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, created_at, updated_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
                 `, [
                     ex.id || ex.exercise_id, 
                     ex.name || ex.exercise_name,
                     JSON.stringify(ex.muscle_groups || ex.exercise_muscle_groups || []),
                     Array.isArray(ex.properties) ? ex.properties.join(',') : (ex.properties || ""), 
+                    ex.description || null, // Added description
                     ex.progressionId || null,
                     ex.difficulty || null,
                     ex.isActiveProgression ? 1 : 0,

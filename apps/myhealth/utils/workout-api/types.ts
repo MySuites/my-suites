@@ -24,6 +24,7 @@ export type Exercise = {
     }[];
     progressionId?: string;
     difficulty?: number;
+    description?: string;
     isActiveProgression?: boolean;
 };
 

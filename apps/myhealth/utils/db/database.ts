@@ -90,6 +90,7 @@ export const initDatabase = async () => {
             name TEXT,
             muscle_groups TEXT, -- JSON
             properties TEXT,
+            description TEXT,
             created_at TEXT,
             updated_at INTEGER,
             sync_status TEXT DEFAULT 'synced' -- Libraries are usually synced from server
@@ -131,9 +132,9 @@ export const initDatabase = async () => {
     await safeAddColumn("exercises", "deleted_at", "INTEGER");
 
     // Exercise Progressions
-    // Exercise Progressions
     await safeAddColumn("exercises", "progression_id", "TEXT");
     await safeAddColumn("exercises", "difficulty", "REAL"); // Support 1.5, 2.5 etc
+    await safeAddColumn("exercises", "description", "TEXT");
     await safeAddColumn("exercises", "is_active_progression", "INTEGER"); // Boolean 0/1
 
     // Rename old column if exists (migration)

@@ -140,9 +140,15 @@ export default function VariationsScreen() {
                                     <Text style={{ color: bgColors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>
                                         {selectedVariation.name}
                                     </Text>
-                                    <Text style={{ color: bgColors.text, opacity: 0.7, fontSize: 16, marginBottom: 24, textTransform: 'capitalize', textAlign: 'center' }}>
+                                    <Text style={{ color: bgColors.text, opacity: 0.7, fontSize: 16, marginBottom: selectedVariation.description ? 8 : 24, textTransform: 'capitalize', textAlign: 'center' }}>
                                         {selectedVariation.difficulty || 'Normal'} Difficulty
                                     </Text>
+
+                                    {selectedVariation.description && (
+                                        <Text style={{ color: bgColors.text, opacity: 0.8, fontSize: 14, fontStyle: 'italic', marginBottom: 24, textAlign: 'center' }}>
+                                            {selectedVariation.description}
+                                        </Text>
+                                    )}
 
                                     <RaisedCard
                                         onPress={() => handleSetActive(selectedVariation)}

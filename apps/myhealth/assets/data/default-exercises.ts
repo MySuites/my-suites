@@ -13,6 +13,8 @@ const BarbellBenchPressVariations = {
             type: "Weighted, Reps",
             muscle_group: "Chest",
             difficulty: 2.0,
+            description:
+                "Standard horizontal bench press targeting overall chest volume and strength.",
         },
         {
             id: "incline_barbell_bench_press",
@@ -20,6 +22,8 @@ const BarbellBenchPressVariations = {
             type: "Weighted, Reps",
             muscle_group: "Chest",
             difficulty: 2.5,
+            description:
+                "Elevated bench angle that biases the upper pectoral muscles.",
         },
         {
             id: "decline_barbell_bench_press",
@@ -27,6 +31,8 @@ const BarbellBenchPressVariations = {
             type: "Weighted, Reps",
             muscle_group: "Chest",
             difficulty: 2.5,
+            description:
+                "Lowered bench angle focusing on the lower pectoral muscles and providing a slight mechanical advantage.",
         },
     ],
 };
