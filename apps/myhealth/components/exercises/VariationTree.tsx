@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { View, Text, Pressable, ScrollView, Dimensions } from 'react-native';
 import Svg, { Path, Defs, Filter, FeDropShadow } from 'react-native-svg';
 import { useUITheme, IconSymbol } from '@mysuite/ui';
@@ -18,6 +18,7 @@ interface ProcessedNode {
 
 export function VariationTree({ exercises, onSelect, onSetActive }: VariationTreeProps) {
     const theme = useUITheme();
+    const horizontalScrollRef = useRef<ScrollView>(null);
 
     const currentColors = {
         text: theme.text || '#FFFFFF',
@@ -134,7 +135,19 @@ export function VariationTree({ exercises, onSelect, onSetActive }: VariationTre
 
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }} style={{ flex: 1, backgroundColor: currentColors.background }}>
-            <ScrollView horizontal contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }} showsHorizontalScrollIndicator={false}>
+            <ScrollView 
+                horizontal 
+                ref={horizontalScrollRef}
+                contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }} 
+                showsHorizontalScrollIndicator={false}
+                onContentSizeChange={(w) => {
+                    if (w > windowWidth) {
+                        setTimeout(() => {
+                            horizontalScrollRef.current?.scrollTo({ x: (w - windowWidth) / 2, animated: false });
+                        }, 10);
+                    }
+                }}
+            >
                 <View style={{ width: totalWidth, height: totalHeight, position: 'relative' }} pointerEvents="box-none">
                     
                     {/* SVG Connections */}
