@@ -140,54 +140,22 @@ export const VariationTree = React.memo(function VariationTree({ exercises, onSe
             const currentLevelNodes = layoutNodes.filter(n => n.y === PADDING_Y + levelIndex * VERTICAL_SPACING);
             const prevLevelNodes = layoutNodes.filter(n => n.y === PADDING_Y + (levelIndex - 1) * VERTICAL_SPACING);
 
-            // 1. Every child connects to its closest parent
-            for (const child of currentLevelNodes) {
-                let bestParent: ProcessedNode | null = null;
-                let minDist = Infinity;
-                
-                for (const parent of prevLevelNodes) {
-                    const dist = Math.abs(child.x - parent.x);
-                    if (dist < minDist) {
-                        minDist = dist;
-                        bestParent = parent;
-                    }
-                }
-
-                if (bestParent) {
-                    const key = `${bestParent.exercise.id}->${child.exercise.id}`;
-                    if (!connectionSet.has(key)) {
-                        connectionSet.add(key);
-                        layoutConnections.push({
-                            start: bestParent,
-                            end: child,
-                            isActivePath: false
-                        });
-                    }
-                }
-            }
-
-            // 2. Every parent connects to its closest child
+                // Check every node in the current level against nodes in the previous level
             for (const parent of prevLevelNodes) {
-                let bestChild: ProcessedNode | null = null;
-                let minDist = Infinity;
+                // Determine valid children from the parent's explicit nextVariations array
+                const validChildrenIds = new Set(parent.exercise.nextVariations || []);
                 
                 for (const child of currentLevelNodes) {
-                    const dist = Math.abs(parent.x - child.x);
-                    if (dist < minDist) {
-                        minDist = dist;
-                        bestChild = child;
-                    }
-                }
-
-                if (bestChild) {
-                    const key = `${parent.exercise.id}->${bestChild.exercise.id}`;
-                    if (!connectionSet.has(key)) {
-                        connectionSet.add(key);
-                        layoutConnections.push({
-                            start: parent,
-                            end: bestChild,
-                            isActivePath: false
-                        });
+                    if (validChildrenIds.has(child.exercise.id)) {
+                        const key = `${parent.exercise.id}->${child.exercise.id}`;
+                        if (!connectionSet.has(key)) {
+                            connectionSet.add(key);
+                            layoutConnections.push({
+                                start: parent,
+                                end: child,
+                                isActivePath: false
+                            });
+                        }
                     }
                 }
             }

@@ -1072,6 +1072,9 @@ export const PlancheExercises = [
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
         "difficulty": 7.3,
+        "nextVariations": [
+            "tuck_planche",
+        ],
     },
     {
         "id": "tuck_planche",
@@ -1079,6 +1082,9 @@ export const PlancheExercises = [
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
         "difficulty": 4.1,
+        "nextVariations": [
+            "advanced_tuck_planche",
+        ],
     },
     {
         "id": "advanced_tuck_planche",
@@ -1086,6 +1092,9 @@ export const PlancheExercises = [
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
         "difficulty": 5.3,
+        "nextVariations": [
+            "half_lay_planche",
+        ],
     },
     {
         "id": "half_lay_planche",
@@ -1093,6 +1102,9 @@ export const PlancheExercises = [
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
         "difficulty": 7.1,
+        "nextVariations": [
+            "straddle_planche",
+        ],
     },
     {
         "id": "straddle_planche",
@@ -1100,6 +1112,9 @@ export const PlancheExercises = [
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
         "difficulty": 4.9,
+        "nextVariations": [
+            "planche",
+        ],
     },
     {
         "id": "planche",
@@ -1107,6 +1122,11 @@ export const PlancheExercises = [
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
         "difficulty": 2.4,
+        "nextVariations": [
+            "planche_push_up",
+            "one_arm_planche",
+            "maltese",
+        ],
     },
     {
         "id": "planche_push_up",
@@ -1116,11 +1136,21 @@ export const PlancheExercises = [
         "difficulty": 9.0,
     },
     {
+        "id": "one_arm_planche",
+        "name": "One-Arm Planche",
+        "type": "Bodyweight, Duration",
+        "muscle_group": "Shoulders",
+        "difficulty": 9.0,
+    },
+    {
         "id": "maltese",
         "name": "Maltese",
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
         "difficulty": 6.0,
+        "nextVariations": [
+            "dragon_maltese",
+        ],
     },
     {
         "id": "dragon_maltese",
