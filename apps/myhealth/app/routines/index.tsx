@@ -107,7 +107,7 @@ export default function RoutinesScreen() {
                             e.stopPropagation();
                             handleSetRoutine(item.id, item.name, item.sequence);
                         }} 
-                        className="px-4 h-10 my-0 items-center justify-center"
+                        className="px-4 h-10 active:h-9 my-0 items-center justify-center"
                     >
                         <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Set Active</Text>
                     </RaisedCard>
