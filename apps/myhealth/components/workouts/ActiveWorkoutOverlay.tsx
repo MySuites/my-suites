@@ -99,7 +99,7 @@ export function ActiveWorkoutOverlay() {
                         <View className="absolute left-5 z-10 flex-row items-center gap-2">
                             <RaisedCard 
                                 onPress={handlePress}
-                                className="h-12 w-12 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                                className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
                                 style={{ borderRadius: 9999 }}
                             >
                                 <IconSymbol name="arrow.down.right.and.arrow.up.left" size={22} className="text-primary dark:text-primary-dark" />
@@ -125,7 +125,7 @@ export function ActiveWorkoutOverlay() {
                         <View className="absolute right-5 z-10 flex-row gap-2">
                             <RaisedCard 
                                 onPress={handleEnd}
-                                className="h-12 w-12 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                                className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
                                 style={{ borderRadius: 9999 }}
                             >
                                 <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
@@ -209,9 +209,9 @@ export function ActiveWorkoutOverlay() {
 
                     <RaisedCard
                         onPress={handleOpenAddExercise}
-                        className="items-center justify-center p-4"
+                        className="items-center justify-center p-3 bg-primary"
                     >
-                        <Text className="text-base font-semibold text-primary dark:text-primary-dark text-center">
+                        <Text className="text-lg font-semibold text-white dark:text-white text-center">
                             + Add Exercise
                         </Text>
                     </RaisedCard>
