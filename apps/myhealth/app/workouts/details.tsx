@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert, Pressable } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
@@ -54,8 +54,14 @@ export default function CreateWorkoutScreen() {
     const [hasInitialized, setHasInitialized] = useState(false);
 
     const [isAddingExercise, setIsAddingExercise] = useState(false);
+    const [activeTab, setActiveTab] = useState<'exercises' | 'performance'>('exercises');
 
     const [expandedDraftExerciseIndex, setExpandedDraftExerciseIndex] = useState<number | null>(null);
+
+    // Derived UI colors for tabs
+    const toggleBackground = (theme.bg || theme.bgDark) as string;
+    const activeToggleBg = theme.bgLight as string; 
+    const activeToggleText = theme.text as string;
 
     useEffect(() => {
         if (editingWorkoutId) {
@@ -181,7 +187,7 @@ export default function CreateWorkoutScreen() {
             />
 
             <FlatList
-                data={workoutDraftExercises}
+                data={(activeTab === 'exercises' || isEditing) ? workoutDraftExercises : []}
                 keyExtractor={(item, index) => `${index}-${item.name}`} 
                 className="flex-1 mt-28"
                 contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
@@ -199,28 +205,73 @@ export default function CreateWorkoutScreen() {
                                     placeholderTextColor={theme.textMuted || '#888'}
                                 />
                             </View>
-                        ) : null}
-                        
-                        {!isEditing && workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
-
-                        <View className="flex-row justify-between items-center mb-2 mt-2">
-                            <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Exercises</Text>
-                            {isEditing && (
-                                <RaisedCard 
-                                    onPress={handleOpenAddExercise}
-                                    className="h-10 active:h-9 px-4 rounded-full items-center justify-center"
-                                    style={{ borderRadius: 9999 }}
+                        ) : (
+                            <View style={{
+                                flexDirection: 'row',
+                                backgroundColor: toggleBackground,
+                                borderRadius: 8,
+                                padding: 4,
+                                marginBottom: 24
+                            }}>
+                                <Pressable
+                                    onPress={() => setActiveTab('exercises')}
+                                    style={{
+                                        flex: 1,
+                                        paddingVertical: 8,
+                                        alignItems: 'center',
+                                        backgroundColor: activeTab === 'exercises' ? activeToggleBg : 'transparent',
+                                        borderRadius: 6,
+                                    }}
                                 >
-                                    <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>
-                                </RaisedCard>
-                            )}
-                        </View>
+                                    <Text style={{
+                                        color: activeTab === 'exercises' ? activeToggleText : (theme.text as string),
+                                        fontWeight: activeTab === 'exercises' ? '600' : '400',
+                                        opacity: activeTab === 'exercises' ? 1 : 0.7
+                                    }}>Exercises</Text>
+                                </Pressable>
+                                <Pressable
+                                    onPress={() => setActiveTab('performance')}
+                                    style={{
+                                        flex: 1,
+                                        paddingVertical: 8,
+                                        alignItems: 'center',
+                                        backgroundColor: activeTab === 'performance' ? activeToggleBg : 'transparent',
+                                        borderRadius: 6,
+                                    }}
+                                >
+                                    <Text style={{
+                                        color: activeTab === 'performance' ? activeToggleText : (theme.text as string),
+                                        fontWeight: activeTab === 'performance' ? '600' : '400',
+                                        opacity: activeTab === 'performance' ? 1 : 0.7
+                                    }}>Performance</Text>
+                                </Pressable>
+                            </View>
+                        )}
+                        
+                        {!isEditing && activeTab === 'performance' && workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
+
+                        {(isEditing || activeTab === 'exercises') && (
+                            <View className="flex-row justify-between items-center mb-2 mt-2">
+                                <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Exercises</Text>
+                                {isEditing && (
+                                    <RaisedCard 
+                                        onPress={handleOpenAddExercise}
+                                        className="h-10 active:h-9 px-4 rounded-full items-center justify-center"
+                                        style={{ borderRadius: 9999 }}
+                                    >
+                                        <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>
+                                    </RaisedCard>
+                                )}
+                            </View>
+                        )}
                     </View>
                 }
                 ListEmptyComponent={
-                    <View className="py-10 justify-center items-center opacity-50">
-                        <Text className="leading-6 mb-2 text-lg text-light-muted dark:text-dark-muted">No exercises added yet</Text>
-                    </View>
+                    (isEditing || activeTab === 'exercises') ? (
+                        <View className="py-10 justify-center items-center opacity-50">
+                            <Text className="leading-6 mb-2 text-lg text-light-muted dark:text-dark-muted">No exercises added yet</Text>
+                        </View>
+                    ) : null
                 }
                 ListFooterComponent={
                     isEditing && editingWorkoutId ? (
