@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import { View, Text, Pressable, ScrollView, Dimensions } from 'react-native';
-import Svg, { Path, Defs, Filter, FeDropShadow } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import { useUITheme, IconSymbol } from '@mysuite/ui';
 import { Exercise } from '../../utils/workout-api/types';
 
@@ -16,7 +16,7 @@ interface ProcessedNode {
     y: number;
 }
 
-export function VariationTree({ exercises, onSelect, onSetActive }: VariationTreeProps) {
+export const VariationTree = React.memo(function VariationTree({ exercises, onSelect, onSetActive }: VariationTreeProps) {
     const theme = useUITheme();
     const horizontalScrollRef = useRef<ScrollView>(null);
 
@@ -127,7 +127,6 @@ export function VariationTree({ exercises, onSelect, onSetActive }: VariationTre
                     stroke={conn.isActivePath ? currentColors.lineActive : currentColors.lineDefault}
                     strokeWidth={conn.isActivePath ? 4 : 2}
                     fill="none"
-                    filter={conn.isActivePath ? "url(#glow)" : undefined}
                 />
             );
         });
@@ -153,11 +152,6 @@ export function VariationTree({ exercises, onSelect, onSetActive }: VariationTre
                     {/* SVG Connections */}
                     <View style={{ position: 'absolute', top: 0, left: 0, width: totalWidth, height: totalHeight, zIndex: 0 }} pointerEvents="none">
                         <Svg width={totalWidth} height={totalHeight} pointerEvents="none">
-                            <Defs>
-                                <Filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                                    <FeDropShadow dx="0" dy="0" stdDeviation="6" floodColor={currentColors.lineActive} floodOpacity="0.8"/>
-                                </Filter>
-                            </Defs>
                             {renderConnections()}
                         </Svg>
                     </View>
@@ -234,9 +228,6 @@ export function VariationTree({ exercises, onSelect, onSetActive }: VariationTre
                                         fontWeight: isActive ? 'bold' : '500',
                                         textAlign: 'center',
                                         width: NODE_SIZE * 1.5,
-                                        textShadowColor: 'rgba(0, 0, 0, 0.8)',
-                                        textShadowOffset: { width: 0, height: 1 },
-                                        textShadowRadius: 3
                                     }}
                                     numberOfLines={2}
                                 >
@@ -249,4 +240,4 @@ export function VariationTree({ exercises, onSelect, onSetActive }: VariationTre
             </ScrollView>
         </ScrollView>
     );
-}
+});

@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, Pressable, Text, Alert, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
@@ -81,7 +81,7 @@ export default function ExerciseDetailsScreen() {
         return () => { isMounted = false; };
     }, [exercise?.progressionId]);
 
-    const handleSetActiveVariation = async (ex: Exercise) => {
+    const handleSetActiveVariation = useCallback(async (ex: Exercise) => {
         const updated = variations.map(e => ({
             ...e,
             isActiveProgression: e.id === ex.id
@@ -102,19 +102,19 @@ export default function ExerciseDetailsScreen() {
             Alert.alert("Error", "Failed to update progression");
             setVariations(variations);
         }
-    };
+    }, [variations, freshExercise]);
 
-    const handleSelectVariation = (ex: Exercise) => {
+    const handleSelectVariation = useCallback((ex: Exercise) => {
          setSelectedVariation(ex);
-    };
+    }, []);
     
-    const handleViewVariationDetails = (ex: Exercise) => {
+    const handleViewVariationDetails = useCallback((ex: Exercise) => {
          setSelectedVariation(null);
          router.push({
             pathname: '/exercises/details' as any,
             params: { exercise: JSON.stringify(ex) }
         });
-    };
+    }, [router]);
 
     const isDefault = useMemo(() => {
         if (!exercise) return true;
@@ -274,47 +274,44 @@ export default function ExerciseDetailsScreen() {
                     )}
                 </View>
 
-                {activeTab === 'performance' && (
-                    <View>
-                        {/* Performance Chart */}
-                        <ExerciseChart
-                            data={chartData}
-                            loading={loadingChart}
-                            selectedMetric={selectedMetric}
-                            onSelectMetric={setSelectedMetric}
-                            availableMetrics={availableMetrics}
-                            themeColors={currentColors}
-                            cardBackground={cardBackground}
-                            toggleBackground={toggleBackground}
-                            activeToggleBg={activeToggleBg}
-                            activeToggleText={activeToggleText}
-                        />
+                <View style={{ display: activeTab === 'performance' ? 'flex' : 'none' }}>
+                    {/* Performance Chart */}
+                    <ExerciseChart
+                        data={chartData}
+                        loading={loadingChart}
+                        selectedMetric={selectedMetric}
+                        onSelectMetric={setSelectedMetric}
+                        availableMetrics={availableMetrics}
+                        themeColors={currentColors}
+                        cardBackground={cardBackground}
+                        toggleBackground={toggleBackground}
+                        activeToggleBg={activeToggleBg}
+                        activeToggleText={activeToggleText}
+                    />
 
-                        <ExerciseProperties
-                            properties={exercise.properties}
-                            rawType={exercise.rawType}
-                            themeColors={currentColors}
-                            cardBackground={cardBackground}
-                            toggleBackground={activeToggleBg}
-                        />
-                    </View>
-                )}
+                    <ExerciseProperties
+                        properties={exercise.properties}
+                        rawType={exercise.rawType}
+                        themeColors={currentColors}
+                        cardBackground={cardBackground}
+                        toggleBackground={activeToggleBg}
+                    />
+                </View>
 
-                {activeTab === 'instructions' && (
-                    <View style={{ 
-                        backgroundColor: cardBackground,
-                        borderRadius: 16, 
-                        padding: 16, 
-                    }}>
-                        <Text className="text-base leading-6 font-semibold" style={{ marginBottom: 12, color: currentColors.text }}>Instructions</Text>
-                        <Text style={{ color: currentColors.text, opacity: 0.6, lineHeight: 24 }}>
-                            No instructions available for this exercise yet.
-                        </Text>
-                    </View>
-                )}
+                <View style={{ 
+                    display: activeTab === 'instructions' ? 'flex' : 'none',
+                    backgroundColor: cardBackground,
+                    borderRadius: 16, 
+                    padding: 16, 
+                }}>
+                    <Text className="text-base leading-6 font-semibold" style={{ marginBottom: 12, color: currentColors.text }}>Instructions</Text>
+                    <Text style={{ color: currentColors.text, opacity: 0.6, lineHeight: 24 }}>
+                        No instructions available for this exercise yet.
+                    </Text>
+                </View>
 
-                {activeTab === 'variations' && exercise.progressionId && (
-                    <View>
+                {exercise.progressionId && (
+                    <View style={{ display: activeTab === 'variations' ? 'flex' : 'none' }}>
                         {variations.length === 0 ? (
                             <View style={{ padding: 16, alignItems: 'center' }}>
                                 <Text style={{ color: currentColors.text }}>Loading variations...</Text>
