@@ -38,7 +38,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
                     {onRemoveExercise && (
                         <RaisedCard 
                             onPress={onRemoveExercise}
-                            className="w-11 h-11 bg-light dark:bg-dark-lighter items-center justify-center"
+                            className="w-11 h-11 bg-lighter dark:bg-dark-lighter items-center justify-center"
                             style={{ borderRadius: 9999 }}
                         >
                             <IconSymbol name="trash.fill" size={22} color={theme.danger} />

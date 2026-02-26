@@ -99,7 +99,7 @@ export function ActiveWorkoutOverlay() {
                         <View className="absolute left-5 z-10 flex-row items-center gap-2">
                             <RaisedCard 
                                 onPress={handlePress}
-                                className="h-12 w-12 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                                className="h-12 w-12 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
                                 style={{ borderRadius: 9999 }}
                             >
                                 <IconSymbol name="arrow.down.right.and.arrow.up.left" size={22} className="text-primary dark:text-primary-dark" />
@@ -125,7 +125,7 @@ export function ActiveWorkoutOverlay() {
                         <View className="absolute right-5 z-10 flex-row gap-2">
                             <RaisedCard 
                                 onPress={handleEnd}
-                                className="h-12 w-12 p-0 bg-light dark:bg-dark-lighter items-center justify-center"
+                                className="h-12 w-12 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
                                 style={{ borderRadius: 9999 }}
                             >
                                 <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
@@ -141,7 +141,7 @@ export function ActiveWorkoutOverlay() {
             <Animated.View 
                 style={{ 
                     zIndex: 1001,
-                    bottom: insets.bottom + 20, // Floating above tabs
+                    bottom: insets.bottom + 85, // Floating above tabs
                     alignSelf: 'center',
                     width: '60%', // Pill width
                     maxWidth: 300,
@@ -207,19 +207,19 @@ export function ActiveWorkoutOverlay() {
                         </>
                      )}
 
-                    <HollowedCard
+                    <RaisedCard
                         onPress={handleOpenAddExercise}
-                        className="mt-5 items-center justify-center p-4"
+                        className="items-center justify-center p-4"
                     >
                         <Text className="text-base font-semibold text-primary dark:text-primary-dark text-center">
                             + Add Exercise
                         </Text>
-                    </HollowedCard>
+                    </RaisedCard>
 
                     <View className="mt-4 flex-row gap-4">
                         <RaisedCard
                             onPress={resetWorkout}
-                            className="flex-1 h-12 bg-light dark:bg-dark-lighter items-center justify-center"
+                            className="flex-1 h-12 bg-lighter dark:bg-dark-lighter items-center justify-center"
                         >
                             <View>
                                 <Text className="text-warning font-bold text-center text-lg">Reset</Text>
@@ -230,7 +230,7 @@ export function ActiveWorkoutOverlay() {
                             onPress={() => {
                                 cancelWorkout();
                             }}
-                            className="flex-1 h-12 bg-light dark:bg-dark-lighter items-center justify-center"
+                            className="flex-1 h-12 bg-lighter dark:bg-dark-lighter items-center justify-center"
                         >
                             <View>
                                 <Text className="text-danger font-bold text-center text-lg">Discard</Text>
