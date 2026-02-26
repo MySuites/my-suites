@@ -6,7 +6,6 @@ import { Exercise } from '../../utils/workout-api/types';
 
 interface VariationTreeProps {
     exercises: Exercise[];
-    onSetActive: (exercise: Exercise) => void;
     onSelect: (exercise: Exercise) => void;
 }
 
@@ -16,7 +15,7 @@ interface ProcessedNode {
     y: number;
 }
 
-export const VariationTree = React.memo(function VariationTree({ exercises, onSelect, onSetActive }: VariationTreeProps) {
+export const VariationTree = React.memo(function VariationTree({ exercises, onSelect }: VariationTreeProps) {
     const theme = useUITheme();
     const horizontalScrollRef = useRef<ScrollView>(null);
 
@@ -29,23 +28,72 @@ export const VariationTree = React.memo(function VariationTree({ exercises, onSe
         background: (theme.bgDark || theme.bg) as string,
     };
 
-    // Group by difficulty
+    // Group by depth levels using topological sort / DAG longest path
     const levels = useMemo(() => {
-        const difficultyMap = new Map<number, Exercise[]>();
+        if (exercises.length === 0) return [];
+        
+        const inDegree = new Map<string, number>();
+        const adjList = new Map<string, string[]>();
         
         exercises.forEach(ex => {
-            const diff = ex.difficulty || 1.0;
-            if (!difficultyMap.has(diff)) {
-                difficultyMap.set(diff, []);
-            }
-            difficultyMap.get(diff)!.push(ex);
+            if (!inDegree.has(ex.id)) inDegree.set(ex.id, 0);
+            if (!adjList.has(ex.id)) adjList.set(ex.id, []);
+            
+            (ex.nextVariations || []).forEach(childId => {
+                // Ignore edges pointing out of our provided subgraph 
+                if (!exercises.some(e => e.id === childId)) return;
+
+                if (!inDegree.has(childId)) inDegree.set(childId, 0);
+                inDegree.set(childId, inDegree.get(childId)! + 1);
+                
+                if (!adjList.has(ex.id)) adjList.set(ex.id, []);
+                adjList.get(ex.id)!.push(childId);
+            });
         });
 
-        const sortedDiffs = Array.from(difficultyMap.keys()).sort((a, b) => a - b);
+        const rootNodes = exercises.filter(ex => inDegree.get(ex.id) === 0);
         
-        return sortedDiffs.map(diff => ({
-            difficulty: diff,
-            nodes: difficultyMap.get(diff)!
+        // If there are loops or no roots (fallback), just pick the first node.
+        if (rootNodes.length === 0 && exercises.length > 0) {
+            rootNodes.push(exercises[0]);
+        }
+        
+        const maxDepthMap = new Map<string, number>();
+        const topoQueue = [...rootNodes];
+        rootNodes.forEach(r => maxDepthMap.set(r.id, 1));
+        
+        while(topoQueue.length > 0) {
+            const curr = topoQueue.shift()!;
+            const currentDepth = maxDepthMap.get(curr.id) || 1;
+            
+            (curr.nextVariations || []).forEach(childId => {
+                const childDepth = maxDepthMap.get(childId) || 1;
+                if (currentDepth + 1 > childDepth) {
+                    maxDepthMap.set(childId, currentDepth + 1);
+                }
+                
+                const currentIn = inDegree.get(childId)! - 1;
+                inDegree.set(childId, currentIn);
+                
+                const childEx = exercises.find(e => e.id === childId);
+                if (currentIn === 0 && childEx) {
+                    topoQueue.push(childEx);
+                }
+            });
+        }
+        
+        const levelMap = new Map<number, Exercise[]>();
+        exercises.forEach(ex => {
+            const depth = maxDepthMap.get(ex.id) || 1;
+            if (!levelMap.has(depth)) levelMap.set(depth, []);
+            levelMap.get(depth)!.push(ex);
+        });
+
+        const sortedDepths = Array.from(levelMap.keys()).sort((a, b) => a - b);
+        
+        return sortedDepths.map(depth => ({
+            difficulty: depth,
+            nodes: levelMap.get(depth)!
         }));
     }, [exercises]);
 
@@ -112,7 +160,7 @@ export const VariationTree = React.memo(function VariationTree({ exercises, onSe
                         layoutConnections.push({
                             start: bestParent,
                             end: child,
-                            isActivePath: !!(bestParent.exercise.isActiveProgression || child.exercise.isActiveProgression)
+                            isActivePath: false
                         });
                     }
                 }
@@ -138,7 +186,7 @@ export const VariationTree = React.memo(function VariationTree({ exercises, onSe
                         layoutConnections.push({
                             start: parent,
                             end: bestChild,
-                            isActivePath: !!(parent.exercise.isActiveProgression || bestChild.exercise.isActiveProgression)
+                            isActivePath: false
                         });
                     }
                 }
@@ -189,7 +237,7 @@ export const VariationTree = React.memo(function VariationTree({ exercises, onSe
 
                     {/* Nodes */}
                     {nodes.map((node) => {
-                        const isActive = node.exercise.isActiveProgression;
+                        const isActive = false;
                         
                         // The circle will replace the image in the future, for now placeholder is neutral
                         return (

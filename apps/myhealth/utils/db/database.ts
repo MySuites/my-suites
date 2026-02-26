@@ -140,6 +140,9 @@ export const initDatabase = async () => {
     // Rename old column if exists (migration)
     await safeRenameColumn("exercises", "progression_level", "difficulty");
 
+    // Exercise Directed Graph Links
+    await safeAddColumn("exercises", "next_variations", "TEXT"); // JSON string array of IDs
+
     await safeRenameColumn("workout_logs", "workout_time", "workout_date");
 
     await safeRenameColumn("workout_logs", "workout_time", "workout_date");

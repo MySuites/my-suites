@@ -82,6 +82,7 @@ export async function fetchExercises(user: any) {
             id,
             name: e.name || e.exercise_name,
             category: firstMuscle || "General",
+            muscle_groups: e.muscle_groups || [firstMuscle || "General"],
             group: groupLookup.get(id) || "Other",
             properties: Array.isArray(props)
                 ? props

@@ -65,44 +65,74 @@ export default function ExerciseDetailsScreen() {
     useEffect(() => {
         let isMounted = true;
         async function loadVariations() {
-            if (!exercise?.progressionId) {
+            if (!exercise?.id) {
                 return;
             }
             try {
-                const all = await DataRepository.getExercises();
+                const allExercises = await DataRepository.getExercises();
                 if (!isMounted) return;
-                const siblings = all.filter(e => e.progressionId === exercise.progressionId);
-                setVariations(siblings);
+
+                // Build direct forward and backward adjacency maps to isolate the lineage
+                const forwardAdj = new Map<string, Set<string>>();
+                const backwardAdj = new Map<string, Set<string>>();
+
+                allExercises.forEach(ex => {
+                    if (!forwardAdj.has(ex.id)) forwardAdj.set(ex.id, new Set());
+                    if (!backwardAdj.has(ex.id)) backwardAdj.set(ex.id, new Set());
+                    
+                    (ex.nextVariations || []).forEach((childId: string) => {
+                        if (!forwardAdj.has(ex.id)) forwardAdj.set(ex.id, new Set());
+                        if (!forwardAdj.has(childId)) forwardAdj.set(childId, new Set());
+                        if (!backwardAdj.has(ex.id)) backwardAdj.set(ex.id, new Set());
+                        if (!backwardAdj.has(childId)) backwardAdj.set(childId, new Set());
+                        
+                        forwardAdj.get(ex.id)!.add(childId);
+                        backwardAdj.get(childId)!.add(ex.id);
+                    });
+                });
+
+                // Find all nodes in the direct lineage (ancestors + descendants) of `exercise.id`
+                const relevantNodes = new Set<string>();
+                relevantNodes.add(exercise.id);
+
+                // Find Descendants
+                let queue = [exercise.id];
+                while (queue.length > 0) {
+                    const curr = queue.shift()!;
+                    const children = forwardAdj.get(curr) || new Set();
+                    for (const child of children) {
+                        if (!relevantNodes.has(child)) {
+                            relevantNodes.add(child);
+                            queue.push(child);
+                        }
+                    }
+                }
+
+                // Find Ancestors
+                queue = [exercise.id];
+                while (queue.length > 0) {
+                    const curr = queue.shift()!;
+                    const parents = backwardAdj.get(curr) || new Set();
+                    for (const parent of parents) {
+                        if (!relevantNodes.has(parent)) {
+                            relevantNodes.add(parent);
+                            queue.push(parent);
+                        }
+                    }
+                }
+
+                const siblings = allExercises.filter(e => relevantNodes.has(e.id));
+                // Only show variation tree if there is more than 1 connected node
+                setVariations(siblings.length > 1 ? siblings : []);
             } catch (e) {
                 console.error("Failed to load variations", e);
             }
         }
         loadVariations();
         return () => { isMounted = false; };
-    }, [exercise?.progressionId]);
+    }, [exercise?.id]);
 
-    const handleSetActiveVariation = useCallback(async (ex: Exercise) => {
-        const updated = variations.map(e => ({
-            ...e,
-            isActiveProgression: e.id === ex.id
-        }));
-        setVariations(updated);
-
-        try {
-            await DataRepository.saveExercises(updated);
-            setSelectedVariation(null);
-            
-            if (ex.id === freshExercise?.id) {
-                 setFreshExercise({ ...freshExercise, isActiveProgression: true });
-            } else if (freshExercise) {
-                 setFreshExercise({ ...freshExercise, isActiveProgression: false });
-            }
-        } catch (e) {
-            console.error("Failed to save progression", e);
-            Alert.alert("Error", "Failed to update progression");
-            setVariations(variations);
-        }
-    }, [variations, freshExercise]);
+    // Removed handleSetActiveVariation because isActiveProgression is deprecated.
 
     const handleSelectVariation = useCallback((ex: Exercise) => {
          setSelectedVariation(ex);
@@ -254,7 +284,7 @@ export default function ExerciseDetailsScreen() {
                             opacity: activeTab === 'performance' ? 1 : 0.7
                         }}>Performance</Text>
                     </Pressable>
-                    {exercise.progressionId && (
+                    {variations.length > 0 && (
                         <Pressable
                             onPress={() => setActiveTab('variations')}
                             style={{
@@ -310,7 +340,7 @@ export default function ExerciseDetailsScreen() {
                     </Text>
                 </View>
 
-                {exercise.progressionId && (
+                {variations.length > 0 && (
                     <View style={{ display: activeTab === 'variations' ? 'flex' : 'none' }}>
                         {variations.length === 0 ? (
                             <View style={{ padding: 16, alignItems: 'center' }}>
@@ -325,7 +355,6 @@ export default function ExerciseDetailsScreen() {
                                 </View>
                                 <VariationTree 
                                     exercises={variations} 
-                                    onSetActive={handleSetActiveVariation}
                                     onSelect={handleSelectVariation}
                                 />
                             </>
@@ -367,28 +396,7 @@ export default function ExerciseDetailsScreen() {
                             <Text style={{ color: currentColors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>
                                 {selectedVariation.name}
                             </Text>
-                            <Text style={{ color: currentColors.text, opacity: 0.7, fontSize: 16, marginBottom: selectedVariation.description ? 8 : 24, textTransform: 'capitalize', textAlign: 'center' }}>
-                                {selectedVariation.difficulty || 'Normal'} Difficulty
-                            </Text>
-
-                            {selectedVariation.description && (
-                                <Text style={{ color: currentColors.text, opacity: 0.8, fontSize: 14, fontStyle: 'italic', marginBottom: 24, textAlign: 'center' }}>
-                                    {selectedVariation.description}
-                                </Text>
-                            )}
-
-                            <RaisedCard
-                                onPress={() => handleSetActiveVariation(selectedVariation)}
-                                className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0 mb-3"
-                                style={{ borderRadius: 9999 }}
-                            >
-                                <View className="flex-row items-center justify-center">
-                                    <IconSymbol name="star.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                                    <Text className="text-lg font-bold text-white">
-                                        Set as Active
-                                    </Text>
-                                </View>
-                            </RaisedCard>
+                            {/* Legacy Set Active Button removed */}
 
                             <Pressable
                                 onPress={() => handleViewVariationDetails(selectedVariation)}

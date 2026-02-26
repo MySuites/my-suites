@@ -109,7 +109,7 @@ export default function ExercisesScreen({
       return [...singles, ...progressionRepresentatives];
   }, [exercises]);
 
-  const uniqueMuscleGroups = React.useMemo(() => ["All", ...Array.from(new Set(processedExercises.map(e => e.category))).filter(Boolean).sort()], [processedExercises]);
+  const uniqueMuscleGroups = React.useMemo(() => ["All", ...Array.from(new Set(processedExercises.flatMap(e => e.muscle_groups || []))).filter(Boolean).sort()], [processedExercises]);
   const uniqueExerciseGroups = React.useMemo(() => Array.from(new Set(processedExercises.map(e => e.group))).filter(g => g && g !== "Other").sort(), [processedExercises]);
 
   const toggleCategory = (category: string) => {
@@ -136,7 +136,10 @@ export default function ExercisesScreen({
     }
     
     if (selectedCategories.size > 0) {
-        filtered = filtered.filter(ex => selectedCategories.has(ex.category) || selectedCategories.has(ex.group));
+        filtered = filtered.filter(ex => 
+            (ex.muscle_groups || []).some((m: string) => selectedCategories.has(m)) || 
+            selectedCategories.has(ex.group)
+        );
     }
     
     const result: { title: string, data: any[] }[] = [];
@@ -254,7 +257,7 @@ export default function ExercisesScreen({
                 <View className="flex-1 mr-4">
                     <Text className="text-base leading-6 font-semibold text-light dark:text-dark">{item.name}</Text>
                     <Text className="text-xs text-light-muted dark:text-dark-muted">
-                        {item.category} • {item.properties?.join(', ') || item.rawType}
+                        {item.muscle_groups?.join(', ')} • {item.properties?.join(', ') || item.rawType}
                     </Text> 
                 </View>
                 {mode === 'select' ? (
