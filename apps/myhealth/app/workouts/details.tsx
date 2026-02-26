@@ -208,7 +208,7 @@ export default function CreateWorkoutScreen() {
                             {isEditing && (
                                 <RaisedCard 
                                     onPress={handleOpenAddExercise}
-                                    className="h-10 px-4 rounded-full items-center justify-center"
+                                    className="h-10 active:h-9 px-4 rounded-full items-center justify-center"
                                     style={{ borderRadius: 9999 }}
                                 >
                                     <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>
