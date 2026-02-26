@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
-import { useUITheme as useTheme, IconSymbol } from '@mysuite/ui';
+import React, { useState, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Dimensions, Modal } from 'react-native';
+import { useUITheme as useTheme, IconSymbol, RaisedCard } from '@mysuite/ui';
 import { getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
 
 export interface WorkoutDraftExerciseItemProps {
@@ -17,6 +17,8 @@ export interface WorkoutDraftExerciseItemProps {
     isEditing: boolean;
 }
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 export const WorkoutDraftExerciseItem = ({
     item,
     index,
@@ -31,6 +33,9 @@ export const WorkoutDraftExerciseItem = ({
     isEditing
 }: WorkoutDraftExerciseItemProps) => {
     const theme = useTheme();
+    const [menuVisible, setMenuVisible] = useState(false);
+    const ellipsisRef = useRef<View>(null);
+    const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
 
     // Helper to determine which columns to show
     const getExerciseFields = (properties?: string[], exerciseId?: string) => {
@@ -65,10 +70,18 @@ export const WorkoutDraftExerciseItem = ({
     }));
 
     return (
-        <View className="bg-lighter dark:bg-dark-lighter rounded-xl mb-3 overflow-hidden border border-black/5 dark:border-white/10">
+        <View 
+            className="mb-3 border border-black/5 dark:border-white/10"
+            style={{ 
+                backgroundColor: theme.bgLighter as string, // bg-lighter/dark-lighter equivalent 
+                borderRadius: 12, 
+                zIndex: menuVisible ? 10 : 1 
+            }}
+        >
             <TouchableOpacity 
                 onPress={onToggleExpand}
                 className="flex-row items-center justify-between p-3"
+                style={{ zIndex: menuVisible ? 999 : 1, elevation: menuVisible ? 999 : 1 }}
             >
                 <View className="flex-1 mr-2">
                     <Text className="text-base text-light dark:text-dark leading-6 font-semibold">{item.name}</Text>
@@ -76,25 +89,64 @@ export const WorkoutDraftExerciseItem = ({
                         {item.sets} Sets
                     </Text>
                 </View>
-                <View className="flex-row items-center">
-                    {isEditing && (
-                        <>
-                            <TouchableOpacity onPress={(e) => { e.stopPropagation(); onMove(-1); }} className="p-2"> 
-                                <IconSymbol name="arrow.up" size={16} color={theme.icon || '#888'} />
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={(e) => { e.stopPropagation(); onMove(1); }} className="p-2"> 
-                                <IconSymbol name="arrow.down" size={16} color={theme.icon || '#888'} />
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={(e) => { e.stopPropagation(); onRemove(); }} className="p-2 ml-1"> 
-                                <IconSymbol name="trash.fill" size={18} color={theme.options?.destructiveColor || '#ff4444'} />
-                            </TouchableOpacity>
-                        </>
-                    )}
+                <View className="flex-row items-center relative z-20">
+                    <TouchableOpacity 
+                        ref={ellipsisRef as any}
+                        onPress={(e) => { 
+                            e.stopPropagation(); 
+                            ellipsisRef.current?.measure((x, y, width, height, pageX, pageY) => {
+                                setMenuPos({ 
+                                    top: pageY + height + 4, 
+                                    right: SCREEN_WIDTH - pageX - width 
+                                });
+                                setMenuVisible(true);
+                            });
+                        }} 
+                        className="p-2 ml-1"
+                    >
+                        <IconSymbol name="ellipsis" size={20} color={theme.icon || '#888'} />
+                    </TouchableOpacity>
+
+                    <Modal transparent visible={menuVisible} animationType="fade" onRequestClose={() => setMenuVisible(false)}>
+                        <TouchableOpacity 
+                            activeOpacity={1} 
+                            onPress={() => setMenuVisible(false)}
+                            className="flex-1"
+                            style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
+                        >
+                            <RaisedCard 
+                                className="absolute w-48 p-1 origin-top-right rounded-xl bg-lighter dark:bg-dark-lighter"
+                                style={{ 
+                                    top: menuPos.top,
+                                    right: menuPos.right - 8,
+                                    shadowColor: '#000', 
+                                    shadowOffset: { width: 0, height: 4 }, 
+                                    shadowOpacity: 0.15, 
+                                    shadowRadius: 12, 
+                                    elevation: 5,
+                                }}
+                            >
+                                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); onMove(-1); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
+                                    <IconSymbol name="arrow.up" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
+                                    <Text style={{ color: theme.text as string }} className="font-medium">Move Up</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); onMove(1); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
+                                    <IconSymbol name="arrow.down" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
+                                    <Text style={{ color: theme.text as string }} className="font-medium">Move Down</Text>
+                                </TouchableOpacity>
+                                <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
+                                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); onRemove(); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
+                                    <IconSymbol name="trash.fill" size={18} color={theme.options?.destructiveColor || '#ff4444'} style={{ marginRight: 12 }} />
+                                    <Text style={{ color: theme.options?.destructiveColor || '#ff4444' }} className="font-medium">Remove</Text>
+                                </TouchableOpacity>
+                            </RaisedCard>
+                        </TouchableOpacity>
+                    </Modal>
                 </View>
             </TouchableOpacity>
             
             {isExpanded && (
-                <View className="px-3 pb-3 pt-1 bg-light/50 dark:bg-dark/30">
+                <View className="px-3 pb-3 pt-1 rounded-b-xl" style={{ backgroundColor: theme.isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.5)' }}>
                     <View className="flex-row mb-2">
                         <Text className="w-10 text-xs text-gray-500 font-semibold text-center">Set</Text>
                         {showBodyweight && <Text className="w-12 text-xs text-gray-500 font-semibold text-center">{latestBodyWeight ? 'Lbs' : 'BW'}</Text>}
