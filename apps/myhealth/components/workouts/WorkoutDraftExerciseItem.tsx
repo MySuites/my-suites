@@ -17,7 +17,7 @@ export interface WorkoutDraftExerciseItemProps {
     isEditing: boolean;
 }
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export const WorkoutDraftExerciseItem = ({
     item,
@@ -71,25 +71,20 @@ export const WorkoutDraftExerciseItem = ({
 
     return (
         <View 
-            className="mb-3 border border-black/5 dark:border-white/10"
+            className="mb-3 border border-black/5 dark:border-white/10 bg-lighter dark:bg-dark-lighter"
             style={{ 
-                backgroundColor: theme.bgLighter as string, // bg-lighter/dark-lighter equivalent 
                 borderRadius: 12, 
                 zIndex: menuVisible ? 10 : 1 
             }}
         >
-            <TouchableOpacity 
+            <View className="flex-row justify-between items-center bg-lighter dark:bg-dark-lighter rounded-t-xl">
+                <TouchableOpacity 
                 onPress={onToggleExpand}
-                className="flex-row items-center justify-between p-3"
-                style={{ zIndex: menuVisible ? 999 : 1, elevation: menuVisible ? 999 : 1 }}
-            >
-                <View className="flex-1 mr-2">
+                className="p-3 flex-1"
+                style={{ zIndex: menuVisible ? 999 : 1, elevation: menuVisible ? 999 : 1 }}>
                     <Text className="text-base text-light dark:text-dark leading-6 font-semibold">{item.name}</Text>
-                    <Text className="text-gray-500 dark:text-gray-400 text-sm">
-                        {item.sets} Sets
-                    </Text>
-                </View>
-                <View className="flex-row items-center relative z-20">
+                </TouchableOpacity>
+                <View className="flex-row items-center relative z-20 pr-1">
                     <TouchableOpacity 
                         ref={ellipsisRef as any}
                         onPress={(e) => { 
@@ -143,10 +138,9 @@ export const WorkoutDraftExerciseItem = ({
                         </TouchableOpacity>
                     </Modal>
                 </View>
-            </TouchableOpacity>
-            
+            </View>
             {isExpanded && (
-                <View className="px-3 pb-3 pt-1 rounded-b-xl" style={{ backgroundColor: theme.isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.5)' }}>
+                <View className="px-3 pb-3 pt-1 rounded-b-xl" style={{ backgroundColor: theme.isDark ? theme.bgDark : theme.bgLight }}>
                     <View className="flex-row mb-2">
                         <Text className="w-10 text-xs text-gray-500 font-semibold text-center">Set</Text>
                         {showBodyweight && <Text className="w-12 text-xs text-gray-500 font-semibold text-center">{latestBodyWeight ? 'Lbs' : 'BW'}</Text>}
