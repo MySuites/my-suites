@@ -111,13 +111,14 @@ export default function CreateWorkoutScreen() {
                         
                         <View className="flex-row justify-between items-center mb-2 mt-2">
                             <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Exercises</Text>
-                            <RaisedCard 
-                                onPress={handleOpenAddExercise}
-                                className="h-10 px-4 rounded-full items-center justify-center"
-                                style={{ borderRadius: 9999 }}
-                            >
-                                <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>
-                            </RaisedCard>
+                            <View className="flex-1 right-0 w-12 ml-32">
+                                <RaisedCard 
+                                    onPress={handleOpenAddExercise}
+                                    className="items-center justify-center px-4 h-10 active:h-9"
+                                >
+                                    <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>
+                                </RaisedCard>
+                            </View>
                         </View>
                     </View>
                 }
