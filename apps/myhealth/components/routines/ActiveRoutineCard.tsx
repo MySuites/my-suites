@@ -44,24 +44,24 @@ export function ActiveRoutineCard({
             <RaisedCard
               onPress={onClearRoutine}
               style={{ borderRadius: 9999 }}
-              className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center"
+              className="w-12 h-12 active:h-11 p-0 my-0 rounded-full items-center justify-center"
             >
               <IconSymbol 
-                  name="stop.fill" 
-                  size={22} 
-                  color={theme.primary} 
+                name="stop.fill" 
+                size={22} 
+                color={theme.primary} 
               />
             </RaisedCard>
             <RaisedCard 
-                onPress={onMenuPress}
-                style={{ borderRadius: 9999 }}
-                className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center"
+              onPress={onMenuPress}
+              style={{ borderRadius: 9999 }}
+              className="w-12 h-12 active:h-11 p-0 my-0 rounded-full items-center justify-center"
             >
-                <IconSymbol 
-                    name="line.3.horizontal" 
-                    size={24} 
-                    color={theme.primary} 
-                />
+              <IconSymbol 
+                  name="line.3.horizontal" 
+                  size={24} 
+                  color={theme.primary} 
+              />
             </RaisedCard>
           </View>
         </View>

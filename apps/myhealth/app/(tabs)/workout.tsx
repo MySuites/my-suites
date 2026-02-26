@@ -139,8 +139,10 @@ export default function Workout() {
                             name="line.3.horizontal" 
                             size={24} 
                             color={theme.primary} 
-                    />
-                </RaisedCard>} />
+                        />
+                    </RaisedCard>
+                } 
+            />
 
 			{/* Dashboard: Routines & Saved Workouts */}
 			<ScrollView 
@@ -207,73 +209,68 @@ export default function Workout() {
                         />
                     )}
                 </View>
+                {/* Active Routine Section */}
+                <View>
+                    {activeRoutineObj ? (
+                        <View className="px-4">
+                            <ActiveRoutineCard
+                                activeRoutineObj={activeRoutineObj}
+                                timelineDays={timelineDays}
+                                dayIndex={dayIndex}
+                                isDayCompleted={isDayCompleted}
+                                onClearRoutine={clearActiveRoutine}
+                                onStartWorkout={(exercises, name, workoutId) => {
+                                    console.log("Workout.tsx: onStartWorkout called. ID:", workoutId);
+                                    
+                                    let exercisesToStart = exercises;
+                                    // Try to find fresh version from saved workouts if ID exists
+                                    let fresh;
+                                    
+                                    if (workoutId) {
+                                        fresh = savedWorkouts.find(w => w.id === workoutId);
+                                    }
 
-                    <View className="h-6" />
+                                    // Fallback to name match if ID failed
+                                    if (!fresh && name) {
+                                        fresh = savedWorkouts.find(w => w.name.trim() === name.trim());
+                                    }
 
-                    {/* Active Routine Section */}
-                    <View>
-                        {activeRoutineObj ? (
-                            <View className="px-4">
-                                <ActiveRoutineCard
-                                    activeRoutineObj={activeRoutineObj}
-                                    timelineDays={timelineDays}
-                                    dayIndex={dayIndex}
-                                    isDayCompleted={isDayCompleted}
-                                    onClearRoutine={clearActiveRoutine}
-                                    onStartWorkout={(exercises, name, workoutId) => {
-                                        console.log("Workout.tsx: onStartWorkout called. ID:", workoutId);
-                                        
-                                        let exercisesToStart = exercises;
-                                        // Try to find fresh version from saved workouts if ID exists
-                                        let fresh;
-                                        
-                                        if (workoutId) {
-                                            fresh = savedWorkouts.find(w => w.id === workoutId);
-                                        }
+                                    if (fresh && fresh.exercises && fresh.exercises.length > 0) {
+                                        exercisesToStart = fresh.exercises;
+                                    }
 
-                                        // Fallback to name match if ID failed
-                                        if (!fresh && name) {
-                                            fresh = savedWorkouts.find(w => w.name.trim() === name.trim());
-                                        }
-
-                                        if (fresh && fresh.exercises && fresh.exercises.length > 0) {
-                                            exercisesToStart = fresh.exercises;
-                                        }
-
-                                        startWorkout(exercisesToStart, name, activeRoutineObj.id);
-                                    }}
-                                    onJumpToDay={setActiveRoutineIndex}
-                                    onMenuPress={() => router.push('/routines')}
-                                />
-                            </View>
-                        ) : (
-                            <View className="mb-6 px-4">
-                                <RaisedCard className="p-4">
-                                    <View className="flex-row justify-between items-center mb-3">
-                                        <Text className="text-lg font-semibold text-light dark:text-dark">No Active Routine</Text>
-                                        <View className="flex-row h-12">
-                                            <RaisedCard 
-                                                onPress={() => router.push('/routines')}
-                                                style={{ borderRadius: 9999 }}
-                                                className="w-12 p-0 my-0 items-center justify-center"
-                                            >
-                                                <IconSymbol 
-                                                    name="line.3.horizontal" 
-                                                    size={24} 
-                                                    color={theme.primary} 
-                                                />
-                                            </RaisedCard>
-                                        </View>
-                                    </View>
-                                    <HollowedCard className="p-8">
-                                        <Text className="text-light-muted dark:text-dark-muted text-center">
-                                            Select a routine below to start tracking your progress.
-                                        </Text>
-                                    </HollowedCard>
-                                </RaisedCard>
-                            </View>
-                        )}
-                    </View>     
+                                    startWorkout(exercisesToStart, name, activeRoutineObj.id);
+                                }}
+                                onJumpToDay={setActiveRoutineIndex}
+                                onMenuPress={() => router.push('/routines')}
+                            />
+                        </View>
+                    ) : (
+                        <View className="mb-6 px-4">
+                            <RaisedCard className="p-4">
+                                <View className="flex-row justify-between items-center mb-3">
+                                    <Text className="text-lg font-semibold text-light dark:text-dark">No Active Routine</Text>
+                                    <RaisedCard 
+                                        onPress={() => router.push('/routines')}
+                                        style={{ borderRadius: 9999 }}
+                                        className="w-12 h-12 active:h-11 items-center justify-center"
+                                    >
+                                        <IconSymbol 
+                                            name="line.3.horizontal" 
+                                            size={24} 
+                                            color={theme.primary} 
+                                        />
+                                    </RaisedCard>
+                                </View>
+                                <HollowedCard className="p-8">
+                                    <Text className="text-light-muted dark:text-dark-muted text-center">
+                                        Select a routine below to start tracking your progress.
+                                    </Text>
+                                </HollowedCard>
+                            </RaisedCard>
+                        </View>
+                    )}
+                </View>     
 			</ScrollView>
                 
                 {/* Menu Overlay */}
