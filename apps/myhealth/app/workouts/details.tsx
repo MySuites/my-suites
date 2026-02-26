@@ -56,9 +56,7 @@ export default function CreateWorkoutScreen() {
     const [isAddingExercise, setIsAddingExercise] = useState(false);
     const [activeTab, setActiveTab] = useState<'exercises' | 'performance'>('exercises');
 
-    const [expandedDraftExerciseIndex, setExpandedDraftExerciseIndex] = useState<number | null>(null);
 
-    // Derived UI colors for tabs
     const toggleBackground = (theme.bg || theme.bgDark) as string;
     const activeToggleBg = theme.bgLight as string; 
     const activeToggleText = theme.text as string;
@@ -303,8 +301,8 @@ export default function CreateWorkoutScreen() {
                     <WorkoutDraftExerciseItem
                         item={item}
                         index={index}
-                        isExpanded={expandedDraftExerciseIndex === index}
-                        onToggleExpand={() => setExpandedDraftExerciseIndex(expandedDraftExerciseIndex === index ? null : index)}
+                        isExpanded={true}
+                        onToggleExpand={() => {}}
                         onMove={(dir) => moveExercise(index, dir)}
                         onRemove={() => removeExercise(index)}
                         onUpdateSet={(setIndex, field, value) => updateSetTarget(index, setIndex, field, value)}
