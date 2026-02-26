@@ -82,37 +82,68 @@ export const VariationTree = React.memo(function VariationTree({ exercises, onSe
                 
                 const node: ProcessedNode = { exercise: ex, x, y };
                 layoutNodes.push(node);
+            });
+        });
 
-                // Add connection to previous level
-                if (levelIndex > 0) {
-                    const prevLevel = levels[levelIndex - 1];
-                    const prevLevelStartX = (width - prevLevel.nodes.length * HORIZONTAL_SPACING) / 2 + (HORIZONTAL_SPACING / 2);
-                    
-                    let bestParent: ProcessedNode | null = null;
-                    let minDist = Infinity;
-                    
-                    prevLevel.nodes.forEach((prevEx, prevIndex) => {
-                        const prevX = prevLevelStartX + prevIndex * HORIZONTAL_SPACING;
-                        const dist = Math.abs(x - prevX);
-                        if (dist < minDist) {
-                            minDist = dist;
-                            bestParent = { exercise: prevEx, x: prevX, y: PADDING_Y + (levelIndex - 1) * VERTICAL_SPACING };
-                        }
-                    });
+        // Compute connections
+        const connectionSet = new Set<string>();
 
-                    if (bestParent) {
-                        const parent = bestParent as ProcessedNode;
-                        const isActivePath = ex.isActiveProgression || parent.exercise.isActiveProgression;
-                        
+        for (let levelIndex = 1; levelIndex < levels.length; levelIndex++) {
+            const currentLevelNodes = layoutNodes.filter(n => n.y === PADDING_Y + levelIndex * VERTICAL_SPACING);
+            const prevLevelNodes = layoutNodes.filter(n => n.y === PADDING_Y + (levelIndex - 1) * VERTICAL_SPACING);
+
+            // 1. Every child connects to its closest parent
+            for (const child of currentLevelNodes) {
+                let bestParent: ProcessedNode | null = null;
+                let minDist = Infinity;
+                
+                for (const parent of prevLevelNodes) {
+                    const dist = Math.abs(child.x - parent.x);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        bestParent = parent;
+                    }
+                }
+
+                if (bestParent) {
+                    const key = `${bestParent.exercise.id}->${child.exercise.id}`;
+                    if (!connectionSet.has(key)) {
+                        connectionSet.add(key);
                         layoutConnections.push({
-                            start: parent,
-                            end: node,
-                            isActivePath: !!isActivePath
+                            start: bestParent,
+                            end: child,
+                            isActivePath: !!(bestParent.exercise.isActiveProgression || child.exercise.isActiveProgression)
                         });
                     }
                 }
-            });
-        });
+            }
+
+            // 2. Every parent connects to its closest child
+            for (const parent of prevLevelNodes) {
+                let bestChild: ProcessedNode | null = null;
+                let minDist = Infinity;
+                
+                for (const child of currentLevelNodes) {
+                    const dist = Math.abs(parent.x - child.x);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        bestChild = child;
+                    }
+                }
+
+                if (bestChild) {
+                    const key = `${parent.exercise.id}->${bestChild.exercise.id}`;
+                    if (!connectionSet.has(key)) {
+                        connectionSet.add(key);
+                        layoutConnections.push({
+                            start: parent,
+                            end: bestChild,
+                            isActivePath: !!(parent.exercise.isActiveProgression || bestChild.exercise.isActiveProgression)
+                        });
+                    }
+                }
+            }
+        }
 
         return { nodes: layoutNodes, connections: layoutConnections, totalWidth: width, totalHeight: height };
     }, [levels, PADDING_X]);
