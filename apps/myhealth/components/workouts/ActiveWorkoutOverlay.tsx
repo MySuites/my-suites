@@ -141,7 +141,7 @@ export function ActiveWorkoutOverlay() {
             <Animated.View 
                 style={{ 
                     zIndex: 1001,
-                    bottom: insets.bottom + 85, // Floating above tabs
+                    bottom: insets.bottom + 65, // Floating above tabs
                     alignSelf: 'center',
                     width: '60%', // Pill width
                     maxWidth: 300,

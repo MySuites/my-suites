@@ -327,7 +327,7 @@ export default function Workout() {
                 {!hasActiveSession && (
                      <View 
                         className="absolute self-center"
-                        style={{ bottom: insets.bottom + 20, width: 'auto', minWidth: 200, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8 }}
+                        style={{ bottom: insets.bottom, width: 'auto', minWidth: 200, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8 }}
                      >
                         <RaisedCard
                             onPress={() => {
