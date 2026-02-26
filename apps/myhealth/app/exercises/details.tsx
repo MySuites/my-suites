@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { View, ScrollView, Pressable, Text, Alert } from 'react-native';
+import { View, ScrollView, Pressable, Text, Alert, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
@@ -12,6 +12,7 @@ import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import DefaultExercises from '../../assets/data/default-exercises';
 import { DataRepository } from '../../providers/DataRepository';
 import { Exercise } from '../../utils/workout-api/types';
+import { VariationTree } from '../../components/exercises/VariationTree';
 
 export default function ExerciseDetailsScreen() {
     const router = useRouter();
@@ -21,7 +22,9 @@ export default function ExerciseDetailsScreen() {
     const { deleteCustomExercise } = useWorkoutManager();
     
     const [freshExercise, setFreshExercise] = useState<Exercise | null>(null);
-    const [activeTab, setActiveTab] = useState<'performance' | 'instructions'>('performance');
+    const [activeTab, setActiveTab] = useState<'instructions' | 'performance' | 'variations'>('performance');
+    const [variations, setVariations] = useState<Exercise[]>([]);
+    const [selectedVariation, setSelectedVariation] = useState<Exercise | null>(null);
 
     // Initial load from params, but act as fallback/skeleton
     const initialExercise = useMemo(() => {
@@ -58,6 +61,60 @@ export default function ExerciseDetailsScreen() {
         loadData();
         return () => { isMounted = false; };
     }, [initialExercise?.id]);
+
+    useEffect(() => {
+        let isMounted = true;
+        async function loadVariations() {
+            if (!exercise?.progressionId) {
+                return;
+            }
+            try {
+                const all = await DataRepository.getExercises();
+                if (!isMounted) return;
+                const siblings = all.filter(e => e.progressionId === exercise.progressionId);
+                setVariations(siblings);
+            } catch (e) {
+                console.error("Failed to load variations", e);
+            }
+        }
+        loadVariations();
+        return () => { isMounted = false; };
+    }, [exercise?.progressionId]);
+
+    const handleSetActiveVariation = async (ex: Exercise) => {
+        const updated = variations.map(e => ({
+            ...e,
+            isActiveProgression: e.id === ex.id
+        }));
+        setVariations(updated);
+
+        try {
+            await DataRepository.saveExercises(updated);
+            setSelectedVariation(null);
+            
+            if (ex.id === freshExercise?.id) {
+                 setFreshExercise({ ...freshExercise, isActiveProgression: true });
+            } else if (freshExercise) {
+                 setFreshExercise({ ...freshExercise, isActiveProgression: false });
+            }
+        } catch (e) {
+            console.error("Failed to save progression", e);
+            Alert.alert("Error", "Failed to update progression");
+            setVariations(variations);
+        }
+    };
+
+    const handleSelectVariation = (ex: Exercise) => {
+         setSelectedVariation(ex);
+    };
+    
+    const handleViewVariationDetails = (ex: Exercise) => {
+         setSelectedVariation(null);
+         router.push({
+            pathname: '/exercises/details' as any,
+            params: { exercise: JSON.stringify(ex) }
+        });
+    };
 
     const isDefault = useMemo(() => {
         if (!exercise) return true;
@@ -155,37 +212,7 @@ export default function ExerciseDetailsScreen() {
                     </Text>
                 </View>
 
-                {/* Variations Button */}
-                {exercise.progressionId && (
-                    <Pressable
-                        onPress={() => {
-                            router.push({
-                                pathname: '/exercises/variations' as any,
-                                params: { 
-                                    progressionId: exercise.progressionId,
-                                }
-                            });
-                        }}
-                        style={({ pressed }) => ({
-                            backgroundColor: currentColors.card,
-                            borderRadius: 12,
-                            padding: 16,
-                            marginBottom: 24,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            opacity: pressed ? 0.7 : 1,
-                        })}
-                    >
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <IconSymbol name="menu" size={24} color={currentColors.primary} style={{ marginRight: 12 }} />
-                            <Text style={{ fontSize: 16, fontWeight: '600', color: currentColors.text }}>
-                                View Variations
-                            </Text>
-                        </View>
-                        <IconSymbol name="chevron.right" size={20} color={currentColors.text} style={{ opacity: 0.5 }} />
-                    </Pressable>
-                )}
+                {/* Variations button removed */}
 
                 {/* Tabs */}
                 <View style={{
@@ -227,6 +254,24 @@ export default function ExerciseDetailsScreen() {
                             opacity: activeTab === 'performance' ? 1 : 0.7
                         }}>Performance</Text>
                     </Pressable>
+                    {exercise.progressionId && (
+                        <Pressable
+                            onPress={() => setActiveTab('variations')}
+                            style={{
+                                flex: 1,
+                                paddingVertical: 8,
+                                alignItems: 'center',
+                                backgroundColor: activeTab === 'variations' ? activeToggleBg : 'transparent',
+                                borderRadius: 6,
+                            }}
+                        >
+                            <Text style={{
+                                color: activeTab === 'variations' ? activeToggleText : currentColors.text,
+                                fontWeight: activeTab === 'variations' ? '600' : '400',
+                                opacity: activeTab === 'variations' ? 1 : 0.7
+                            }}>Variations</Text>
+                        </Pressable>
+                    )}
                 </View>
 
                 {activeTab === 'performance' && (
@@ -268,9 +313,104 @@ export default function ExerciseDetailsScreen() {
                     </View>
                 )}
 
+                {activeTab === 'variations' && exercise.progressionId && (
+                    <View>
+                        {variations.length === 0 ? (
+                            <View style={{ padding: 16, alignItems: 'center' }}>
+                                <Text style={{ color: currentColors.text }}>Loading variations...</Text>
+                            </View>
+                        ) : (
+                            <>
+                                <View style={{ padding: 16, backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: 12, marginBottom: 16 }}>
+                                    <Text style={{ color: currentColors.text, opacity: 0.8, fontSize: 13, textAlign: 'center' }}>
+                                        Tap a variation to view its details and manage goals.
+                                    </Text>
+                                </View>
+                                <VariationTree 
+                                    exercises={variations} 
+                                    onSetActive={handleSetActiveVariation}
+                                    onSelect={handleSelectVariation}
+                                />
+                            </>
+                        )}
+                    </View>
+                )}
+
                 {/* Spacer to ensure content is fully scrollable above floating elements */}
                 <View style={{ height: 120 }} />
             </ScrollView>
+
+            {/* Variation Action Modal */}
+            <Modal transparent visible={!!selectedVariation} animationType="fade">
+                {selectedVariation && (
+                    <View style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: 24,
+                        zIndex: 1000,
+                    }}>
+                        <Pressable 
+                            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} 
+                            onPress={() => setSelectedVariation(null)} 
+                        />
+                        <View style={{
+                            backgroundColor: currentColors.card,
+                            borderRadius: 24,
+                            padding: 24,
+                            width: '100%',
+                            maxWidth: 400,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 8,
+                            elevation: 5,
+                        }}>
+                            <Text style={{ color: currentColors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>
+                                {selectedVariation.name}
+                            </Text>
+                            <Text style={{ color: currentColors.text, opacity: 0.7, fontSize: 16, marginBottom: selectedVariation.description ? 8 : 24, textTransform: 'capitalize', textAlign: 'center' }}>
+                                {selectedVariation.difficulty || 'Normal'} Difficulty
+                            </Text>
+
+                            {selectedVariation.description && (
+                                <Text style={{ color: currentColors.text, opacity: 0.8, fontSize: 14, fontStyle: 'italic', marginBottom: 24, textAlign: 'center' }}>
+                                    {selectedVariation.description}
+                                </Text>
+                            )}
+
+                            <RaisedCard
+                                onPress={() => handleSetActiveVariation(selectedVariation)}
+                                className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0 mb-3"
+                                style={{ borderRadius: 9999 }}
+                            >
+                                <View className="flex-row items-center justify-center">
+                                    <IconSymbol name="star.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
+                                    <Text className="text-lg font-bold text-white">
+                                        Set as Active
+                                    </Text>
+                                </View>
+                            </RaisedCard>
+
+                            <Pressable
+                                onPress={() => handleViewVariationDetails(selectedVariation)}
+                                style={({pressed}: {pressed: boolean}) => ({
+                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    padding: 16,
+                                    borderRadius: 12,
+                                    alignItems: 'center',
+                                    opacity: pressed ? 0.8 : 1
+                                })}
+                            >
+                                <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '600' }}>
+                                    View Full Details
+                                </Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                )}
+            </Modal>
         </View>
     );
 }
