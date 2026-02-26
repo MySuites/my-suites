@@ -396,7 +396,57 @@ export default function ExerciseDetailsScreen() {
                             <Text style={{ color: currentColors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>
                                 {selectedVariation.name}
                             </Text>
-                            {/* Legacy Set Active Button removed */}
+
+                            {selectedVariation.difficulty !== undefined && (() => {
+                                const diff = Number(selectedVariation.difficulty);
+                                const maxStars = 10;
+                                const fullStars = Math.floor(diff);
+                                const hasHalfStar = diff % 1 !== 0;
+                                
+                                return (
+                                    <View style={{ 
+                                        flexDirection: 'row',
+                                        alignSelf: 'center', 
+                                        paddingHorizontal: 12, 
+                                        paddingVertical: 4, 
+                                        borderRadius: 12, 
+                                        marginBottom: 16,
+                                        borderWidth: 1,
+                                        borderColor: currentColors.primary,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 2
+                                    }}>
+                                        <View style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            bottom: 0,
+                                            backgroundColor: currentColors.primary,
+                                            opacity: 0.15,
+                                            borderRadius: 12,
+                                        }} />
+                                        
+                                        {Array.from({ length: maxStars }).map((_, index) => {
+                                            if (index < fullStars) {
+                                                return <IconSymbol key={index} name="star.fill" size={12} color={currentColors.primary} />;
+                                            } else if (index === fullStars && hasHalfStar) {
+                                                return <IconSymbol key={index} name="star.leadinghalf.filled" size={12} color={currentColors.primary} />;
+                                            }
+                                            return null;
+                                        })}
+                                    </View>
+                                );
+                            })()}
+
+                            {selectedVariation.description ? (
+                                <Text style={{ color: currentColors.text, fontSize: 15, opacity: 0.8, marginBottom: 24, textAlign: 'center', lineHeight: 22 }}>
+                                    {selectedVariation.description}
+                                </Text>
+                            ) : (
+                                <View style={{ height: 8 }} />
+                            )}
 
                             <Pressable
                                 onPress={() => handleViewVariationDetails(selectedVariation)}

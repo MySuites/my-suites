@@ -61,6 +61,7 @@ const MAPPING = {
   'fork.knife': 'restaurant',
   'brain.head.profile': 'person',
   'star.fill': 'star',
+  'star.leadinghalf.filled': 'star-half',
 } as const;
 
 
