@@ -51,7 +51,7 @@ export default function RoutinesScreen() {
         leftAction={<BackButton />}
         rightAction={
             <RaisedCard 
-                onPress={() => router.push('/routines/details')}
+                onPress={() => router.push('/routines/create')}
                 style={{ borderRadius: 9999 }}
                 className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center"
             >

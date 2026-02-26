@@ -10,7 +10,7 @@ import { AddDay } from '../../components/routines/AddDay';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 
-export default function CreateRoutineScreen() {
+export default function RoutineDetailsScreen() {
     const theme = useTheme();
     const router = useRouter();
     const { id } = useLocalSearchParams();
@@ -25,14 +25,14 @@ export default function CreateRoutineScreen() {
     const { 
         routines,
         savedWorkouts, 
-        saveRoutineDraft, 
+
         updateRoutine, 
         deleteRoutine 
     } = useWorkoutManager();
 
-    const editingRoutineId = typeof id === 'string' ? id : null;
+    const editingRoutineId = typeof id === 'string' ? id : '';
     const [routineDraftName, setRoutineDraftName] = useState("");
-    const [isEditing, setIsEditing] = useState(!editingRoutineId);
+    const [isEditing, setIsEditing] = useState(false);
     
     const {
         routineSequence,
@@ -50,21 +50,23 @@ export default function CreateRoutineScreen() {
 
     // Initialize
     useEffect(() => {
-        if (editingRoutineId) {
-            const routine = routines.find((r: any) => r.id === editingRoutineId);
-            if (routine && !hasInitialized) {
-                setRoutineDraftName(routine.name);
-                setRoutineSequence(routine.sequence ? JSON.parse(JSON.stringify(routine.sequence)) : []);
-                setHasInitialized(true);
-                setIsLoading(false);
-            } else if (routines.length > 0 && !hasInitialized) {
-                // If we've loaded routines but ours isn't there and we haven't initialized yet,
-                // then it's actually missing. If we HAVE initialized, it was probably just deleted.
-                Alert.alert("Error", "Routine not found");
-                router.back();
-                setIsLoading(false);
-            }
-        } else {
+        if (!editingRoutineId) {
+            Alert.alert("Error", "Routine ID is required");
+            router.back();
+            return;
+        }
+
+        const routine = routines.find((r: any) => r.id === editingRoutineId);
+        if (routine && !hasInitialized) {
+            setRoutineDraftName(routine.name);
+            setRoutineSequence(routine.sequence ? JSON.parse(JSON.stringify(routine.sequence)) : []);
+            setHasInitialized(true);
+            setIsLoading(false);
+        } else if (routines.length > 0 && !hasInitialized) {
+            // If we've loaded routines but ours isn't there and we haven't initialized yet,
+            // then it's actually missing. If we HAVE initialized, it was probably just deleted.
+            Alert.alert("Error", "Routine not found");
+            router.back();
             setIsLoading(false);
         }
     }, [editingRoutineId, routines, router, setRoutineSequence, hasInitialized]);
@@ -83,13 +85,11 @@ export default function CreateRoutineScreen() {
         setIsSaving(true);
         const onSuccess = () => {
              setIsSaving(false);
-             router.back();
+             setIsEditing(false); // Switch back to view mode on success
         };
 
         if (editingRoutineId) {
             updateRoutine(editingRoutineId, routineDraftName, routineSequence, onSuccess);
-        } else {
-            saveRoutineDraft(routineDraftName, routineSequence, onSuccess);
         }
     }
 
@@ -143,7 +143,6 @@ export default function CreateRoutineScreen() {
             }
             setIsEditing(false);
         } else {
-            // If creating new, just go back
             router.back();
         }
     }
@@ -160,7 +159,7 @@ export default function CreateRoutineScreen() {
         <View className="flex-1 bg-light dark:bg-dark">
             <Stack.Screen options={{ headerShown: false }} />
              <ScreenHeader
-                title={!isEditing ? 'Routine Details' : (editingRoutineId ? 'Edit Routine' : 'Create Routine')}
+                title={isEditing ? 'Edit Routine' : 'Routine Details'}
                 leftAction={
                     isEditing ? (
                         <RaisedCard 

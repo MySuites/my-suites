@@ -62,6 +62,7 @@ const MAPPING = {
   'brain.head.profile': 'person',
   'star.fill': 'star',
   'star.leadinghalf.filled': 'star-half',
+  'info.circle': 'info-outline',
 } as const;
 
 

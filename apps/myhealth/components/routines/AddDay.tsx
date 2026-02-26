@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, ScrollView } from 'react-native';
+import { View, Text, Modal, ScrollView, TouchableOpacity } from 'react-native';
 import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { BackButton } from '../ui/BackButton';
@@ -62,7 +62,7 @@ export const AddDay = ({
                         savedWorkouts.map((workout) => (
                             <RaisedCard
                                 key={workout.id}
-                                onPress={() => handleOpenPreview(workout)}
+                                onPress={() => onAddWorkout(workout)}
                                 className="p-4 mb-3"
                             >
                                 <View className="flex-row items-center justify-between">
@@ -70,16 +70,15 @@ export const AddDay = ({
                                         <Text className="font-semibold text-lg text-light dark:text-dark">{workout.name}</Text>
                                         <Text className="text-light-muted dark:text-dark-muted text-sm">{workout.exercises?.length || 0} Exercises</Text>
                                     </View>
-                                    <RaisedCard
+                                    <TouchableOpacity
                                         onPress={(e) => {
                                             e.stopPropagation();
-                                            onAddWorkout(workout);
+                                            handleOpenPreview(workout);
                                         }}
-                                        className="w-12 h-12 p-0 rounded-full items-center justify-center"
-                                        style={{ borderRadius: 9999 }}
+                                        className="w-12 h-12 items-center justify-center -mr-2"
                                     >
-                                        <IconSymbol name="plus" size={24} color={theme.primary} />
-                                    </RaisedCard>
+                                        <IconSymbol name="info.circle" size={24} color={theme.primary} />
+                                    </TouchableOpacity>
                                 </View>
                             </RaisedCard>
                         ))
