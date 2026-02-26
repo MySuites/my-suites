@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, Alert, ScrollView, Switch } from 'react-native';
+import { View, Text, Alert, ScrollView, Switch, InteractionManager } from 'react-native';
 import { useAuth, supabase } from '@mysuite/auth';
 import { useUITheme, ThemeToggle, IconSymbol, useToast, RaisedCard } from '@mysuite/ui';
 import { DataRepository } from '../../providers/DataRepository';
@@ -181,8 +181,11 @@ export default function SettingsScreen() {
   }, [allWeightHistory, selectedRange]);
 
   useEffect(() => {
-     fetchLatestWeight();
-     fetchAllWeightHistory().catch(err => console.error(err));
+     const task = InteractionManager.runAfterInteractions(() => {
+         fetchLatestWeight();
+         fetchAllWeightHistory().catch(err => console.error(err));
+     });
+     return () => task.cancel();
   }, [user, fetchLatestWeight, fetchAllWeightHistory]);
 
   const handleSaveWeight = async (weight: number, date: Date) => {
@@ -256,13 +259,16 @@ export default function SettingsScreen() {
   }, []);
 
   useEffect(() => {
-    checkHealthStatus();
-    // Auto-sync when visiting settings
-    BodyWeightService.syncWithHealthKit(user?.id || null).then(() => {
-        // Refresh local data after sync
-        fetchLatestWeight();
-        fetchAllWeightHistory();
+    const task = InteractionManager.runAfterInteractions(() => {
+        checkHealthStatus();
+        // Auto-sync when visiting settings
+        BodyWeightService.syncWithHealthKit(user?.id || null).then(() => {
+            // Refresh local data after sync
+            fetchLatestWeight();
+            fetchAllWeightHistory();
+        });
     });
+    return () => task.cancel();
   }, [user?.id, checkHealthStatus, fetchLatestWeight, fetchAllWeightHistory]);
 
   const handleConnectHealth = async () => {

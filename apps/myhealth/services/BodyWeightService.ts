@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DataRepository } from "../providers/DataRepository";
 import { HealthKitService } from "./HealthKitService";
+import uuid from "react-native-uuid";
 
 const LEGACY_LOCAL_STORAGE_KEY = "myhealth_guest_body_weight";
 
@@ -16,30 +17,43 @@ export const BodyWeightService = {
      * One-time migration of legacy guest data to DataRepository
      */
     async migrateGuestDataIfNeeded(userId: string | null): Promise<void> {
-        // If we already have data in the new table, we assume migration is done or not needed
-        // (This might be a bit naive if they add data and then we migrate? But good enough for now)
-        const existing = await DataRepository.getBodyWeightHistory(userId);
-        if (existing.length > 0) return;
-
         try {
             const jsonValue = await AsyncStorage.getItem(
                 LEGACY_LOCAL_STORAGE_KEY,
             );
-            if (jsonValue) {
-                const history: BodyWeightEntry[] = JSON.parse(jsonValue);
-                if (history.length > 0) {
-                    console.log(
-                        `Migrating ${history.length} legacy body weight entries...`,
-                    );
-                    for (const item of history) {
-                        await DataRepository.saveBodyWeight({
-                            userId: userId || "guest",
-                            weight: item.weight,
-                            date: item.date,
-                        });
-                    }
+
+            // If there's no legacy data in AsyncStorage, skip entirely.
+            if (!jsonValue) return;
+
+            const history: BodyWeightEntry[] = JSON.parse(jsonValue);
+            if (history.length > 0) {
+                // Verify we haven't already migrated something
+                const existing = await DataRepository.getBodyWeightHistory(
+                    userId,
+                );
+                if (existing.length > 0) {
+                    // We probably already migrated, just clean up
+                    await AsyncStorage.removeItem(LEGACY_LOCAL_STORAGE_KEY);
+                    return;
                 }
+
+                console.log(
+                    `Migrating ${history.length} legacy body weight entries...`,
+                );
+
+                // Do a bulk insert instead of individual saves for migration
+                const measurements = history.map((item) => ({
+                    id: uuid.v4(),
+                    userId: userId || "guest",
+                    weight: item.weight,
+                    date: item.date,
+                    syncStatus: "pending",
+                }));
+
+                await DataRepository.saveBodyMeasurements(measurements);
             }
+            // Cleanup so we skip checking next time
+            await AsyncStorage.removeItem(LEGACY_LOCAL_STORAGE_KEY);
         } catch (e) {
             console.error("Error migrating guest body weight data:", e);
         }
@@ -93,7 +107,7 @@ export const BodyWeightService = {
     },
 
     /**
-     * Syncs body weight data from HealthKit to the app.
+     * Syncs body weight data from HealthKit to the app using a bulk insert transaction.
      */
     async syncWithHealthKit(userId: string | null): Promise<void> {
         const isAuth = await HealthKitService.isAuthorized();
@@ -111,12 +125,27 @@ export const BodyWeightService = {
             return;
         }
 
-        console.log(`Found ${samples.length} HealthKit samples. Saving...`);
-        for (const sample of samples) {
-            // Check if we already have this date? DataRepository might handle duplicates or updates.
-            // For now, naive save.
-            await this.saveWeight(userId, sample.value, new Date(sample.date));
-        }
+        console.log(
+            `Found ${samples.length} HealthKit samples. Saving in bulk...`,
+        );
+
+        // Prepare measurements for bulk insert
+        const measurements = samples.map((sample) => {
+            const date = new Date(sample.date);
+            const dateStr = date.toISOString().split("T")[0];
+
+            return {
+                id: uuid.v4(),
+                userId: userId || "guest",
+                weight: sample.value,
+                date: dateStr,
+                syncStatus: "pending",
+            };
+        });
+
+        // Do a single transaction bulk save instead of 1000s of loop awaits
+        await DataRepository.saveBodyMeasurements(measurements);
+
         console.log("HealthKit sync complete.");
     },
 };
