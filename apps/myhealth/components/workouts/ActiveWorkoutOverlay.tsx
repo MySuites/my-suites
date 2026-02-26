@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, ScrollView, BackHandler, Text } from 'react-native';
+import { View, ScrollView, BackHandler, Text, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
@@ -228,7 +228,18 @@ export function ActiveWorkoutOverlay() {
 
                         <RaisedCard
                             onPress={() => {
-                                cancelWorkout();
+                                Alert.alert(
+                                    "Discard Workout?",
+                                    "Are you sure you want to discard this workout? All progress will be lost.",
+                                    [
+                                        { text: "Cancel", style: "cancel" },
+                                        { 
+                                            text: "Discard", 
+                                            style: "destructive", 
+                                            onPress: () => cancelWorkout() 
+                                        }
+                                    ]
+                                );
                             }}
                             className="flex-1 h-12 bg-lighter dark:bg-dark-lighter items-center justify-center"
                         >

@@ -163,8 +163,21 @@ export default function EndWorkoutScreen() {
     };
 
     const handleDiscard = () => {
-        cancelWorkout();
-        router.dismiss();
+        Alert.alert(
+            "Discard Workout?",
+            "Are you sure you want to discard this workout? All progress will be lost.",
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "Discard", 
+                    style: "destructive", 
+                    onPress: () => {
+                        cancelWorkout();
+                        router.dismiss();
+                    }
+                }
+            ]
+        );
     };
 
     const handlePromptSave = async (name: string) => {
