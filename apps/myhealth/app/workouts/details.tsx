@@ -131,7 +131,6 @@ export default function CreateWorkoutScreen() {
             exercises.forEach(exercise => {
                 addExercise(exercise);
             });
-            setIsEditing(true);
         }
         setIsAddingExercise(false);
     }
