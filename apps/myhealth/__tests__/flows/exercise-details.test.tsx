@@ -21,6 +21,12 @@ jest.mock('@mysuite/auth', () => ({
     useAuth: () => ({ user: { id: 'test-user' } })
 }));
 
+jest.mock('../../providers/WorkoutManagerProvider', () => ({
+    useWorkoutManager: () => ({
+        deleteCustomExercise: jest.fn()
+    })
+}));
+
 jest.mock('@mysuite/ui', () => ({
     useUITheme: () => ({ primary: 'blue', text: 'black' }),
     IconSymbol: () => null,
@@ -40,15 +46,7 @@ jest.mock('../../components/exercises/ExerciseChart', () => {
     };
 });
 
-jest.mock('../../components/exercises/ExerciseProperties', () => {
-    return {
-        ExerciseProperties: ({ properties }: any) => (
-            <mockRN.View>
-                 {properties?.map((p: string) => <mockRN.Text key={p}>{p}</mockRN.Text>)}
-            </mockRN.View>
-        )
-    };
-});
+
 
 jest.mock('../../components/ui/ScreenHeader', () => {
     return {
@@ -67,7 +65,7 @@ jest.mock('../../components/ui/BackButton', () => {
 });
 
 describe('Exercise Details Integration', () => {
-    const mockExercise = { id: 'ex1', name: 'Handstand Pushup', category: 'Shoulders', properties: ['Bodyweight', 'Reps'] };
+    const mockExercise = { id: 'ex1', name: 'Handstand Pushup', muscle_groups: ['Shoulders'], properties: ['Bodyweight', 'Reps'] };
 
     beforeEach(() => {
         jest.clearAllMocks();

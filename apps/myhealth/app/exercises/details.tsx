@@ -5,7 +5,7 @@ import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
 import { useExerciseStats } from '../../hooks/workouts/useExerciseStats';
 import { ExerciseChart } from '../../components/exercises/ExerciseChart';
-import { ExerciseProperties } from '../../components/exercises/ExerciseProperties';
+
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
@@ -236,10 +236,45 @@ export default function ExerciseDetailsScreen() {
              />
 
             <ScrollView style={{ flex: 1, padding: 16, paddingTop: 124 }}>
-                <View style={{ marginBottom: 24 }}>
-                    <Text style={{ fontSize: 18, color: currentColors.text, opacity: 0.7 }}>
-                        {exercise.category || 'Category'}
-                    </Text>
+                <View style={{ 
+                    backgroundColor: 'transparent',
+                    borderRadius: 16, 
+                    padding: 16, 
+                    marginBottom: 24 
+                }}>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                        {(() => {
+                            const combinedProps = [...(exercise?.muscle_groups || []), ...(exercise?.properties || [])].filter(Boolean);
+                            if (combinedProps.length > 0) {
+                                return combinedProps.map((prop: string, index: number) => (
+                                    <View key={index} style={{ 
+                                        backgroundColor: activeToggleBg, 
+                                        paddingHorizontal: 12, 
+                                        paddingVertical: 6, 
+                                        borderRadius: 16 
+                                    }}>
+                                        <Text style={{ fontSize: 13, color: currentColors.text }}>{String(prop)}</Text>
+                                    </View>
+                                ));
+                            } else {
+                                return (
+                                    <>
+                                        <Text style={{ fontStyle: 'italic', color: currentColors.text, opacity: 0.6 }}>No specific properties</Text>
+                                        {exercise?.rawType && (
+                                            <View style={{ 
+                                                backgroundColor: activeToggleBg, 
+                                                paddingHorizontal: 12, 
+                                                paddingVertical: 6, 
+                                                borderRadius: 16 
+                                            }}>
+                                                <Text style={{ fontSize: 13, color: currentColors.text }}>{String(exercise.rawType)}</Text>
+                                            </View>
+                                        )}
+                                    </>
+                                );
+                            }
+                        })()}
+                    </View>
                 </View>
 
                 {/* Variations button removed */}
@@ -319,13 +354,7 @@ export default function ExerciseDetailsScreen() {
                         activeToggleText={activeToggleText}
                     />
 
-                    <ExerciseProperties
-                        properties={exercise.properties}
-                        rawType={exercise.rawType}
-                        themeColors={currentColors}
-                        cardBackground={cardBackground}
-                        toggleBackground={activeToggleBg}
-                    />
+
                 </View>
 
                 <View style={{ 
