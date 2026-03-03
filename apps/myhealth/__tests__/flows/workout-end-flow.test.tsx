@@ -15,6 +15,7 @@ const mockRouterDismiss = jest.fn();
 
 // Values we can mutate in tests
 let mockActiveWorkoutState: any = {};
+let mockActiveWorkoutTimerState: any = {};
 let mockWorkoutManagerState: any = {};
 
 jest.mock('expo-router', () => ({
@@ -22,7 +23,8 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('../../providers/ActiveWorkoutProvider', () => ({
-    useActiveWorkout: () => mockActiveWorkoutState
+    useActiveWorkout: () => mockActiveWorkoutState,
+    useActiveWorkoutTimer: () => mockActiveWorkoutTimerState
 }));
 
 jest.mock('../../providers/WorkoutManagerProvider', () => ({
@@ -62,10 +64,12 @@ describe('End Workout Flow', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         
-        // Default Mock State
+        mockActiveWorkoutTimerState = {
+            workoutSeconds: 3661, // 1h 1m 1s
+        };
+
         mockActiveWorkoutState = {
             workoutName: "Test Workout",
-            workoutSeconds: 3661, // 1h 1m 1s
             exercises: [
                 { id: '1', name: 'Push Ups', completedSets: 3, sets: 3, reps: 10 },
                 { id: '2', name: 'Squats', completedSets: 2, sets: 3, reps: 10 } // 5 total sets, 2 exercises
@@ -102,6 +106,20 @@ describe('End Workout Flow', () => {
     it('can discard workout', () => {
         const { getByText } = render(<EndWorkoutScreen />);
         fireEvent.press(getByText('Discard Workout'));
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            "Discard Workout?",
+            expect.any(String),
+            expect.any(Array)
+        );
+
+        const alertCall = (Alert.alert as jest.Mock).mock.calls.find(c => c[0] === "Discard Workout?");
+        const buttons = alertCall[2];
+        const discardAction = buttons.find((b: any) => b.text === 'Discard');
+
+        act(() => {
+            discardAction.onPress();
+        });
         
         expect(mockCancelWorkout).toHaveBeenCalled();
         expect(mockRouterDismiss).toHaveBeenCalled();

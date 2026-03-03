@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { View, ScrollView, BackHandler, Text, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
+import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { default as ExercisesScreen } from '../../app/exercises/index';
 import { ExerciseCard } from '../exercises/ExerciseCard';
-import { HollowedCard, RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
+import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
 
 export function ActiveWorkoutOverlay() {
@@ -23,13 +23,14 @@ export function ActiveWorkoutOverlay() {
         resetWorkout,
         cancelWorkout,
         removeExercise,
-        isRunning,
-        workoutSeconds,
         workoutName,
         hasActiveSession,
         pauseWorkout,
-        addExercise
+        addExercise,
+        latestBodyWeight
     } = useActiveWorkout();
+    
+    const { isRunning, workoutSeconds } = useActiveWorkoutTimer();
     
     const [isAddingExercise, setIsAddingExercise] = React.useState(false);
 
@@ -201,6 +202,7 @@ export function ActiveWorkoutOverlay() {
                                         completeSet={completeSet}
                                         updateExercise={updateExercise}
                                         onRemoveExercise={removeExercise}
+                                        latestBodyWeight={latestBodyWeight}
                                     />
                                 </View>
                             ))}
@@ -269,13 +271,14 @@ export function ActiveWorkoutOverlay() {
     );
 }
 
-function ActiveWorkoutExerciseItem({
+const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem({
     exercise,
     index,
     isCurrent,
     completeSet,
     updateExercise,
     onRemoveExercise,
+    latestBodyWeight,
 }: {
     exercise: any;
     index: number;
@@ -283,9 +286,9 @@ function ActiveWorkoutExerciseItem({
     completeSet: (exerciseIndex: number, setIndex: number, input: any) => void;
     updateExercise: (exerciseIndex: number, updates: any) => void;
     onRemoveExercise: (index: number) => void;
+    latestBodyWeight: number | null;
 }) {
     const theme = useUITheme();
-    const { latestBodyWeight } = useActiveWorkout();
 
     return (
         <ExerciseCard 
@@ -401,5 +404,12 @@ function ActiveWorkoutExerciseItem({
             }}
         />
     );
-}
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.exercise === nextProps.exercise &&
+        prevProps.index === nextProps.index &&
+        prevProps.isCurrent === nextProps.isCurrent &&
+        prevProps.latestBodyWeight === nextProps.latestBodyWeight
+    );
+});
 

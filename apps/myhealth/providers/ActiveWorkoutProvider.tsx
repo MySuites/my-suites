@@ -11,8 +11,6 @@ import uuid from 'react-native-uuid';
 interface ActiveWorkoutContextType {
     exercises: Exercise[];
     setExercises: React.Dispatch<React.SetStateAction<Exercise[]>>;
-    isRunning: boolean;
-    workoutSeconds: number;
 
     currentIndex: number;
     workoutName: string;
@@ -39,6 +37,17 @@ interface ActiveWorkoutContextType {
 
 const ActiveWorkoutContext = createContext<ActiveWorkoutContextType | undefined>(undefined);
 
+export interface ActiveWorkoutTimerContextType {
+    isRunning: boolean;
+    setRunning: (r: boolean) => void;
+    workoutSeconds: number;
+    setWorkoutSeconds: (s: number) => void;
+    restSeconds: number;
+    startRestTimer: (s: number) => void;
+    resetTimers: () => void;
+}
+export const ActiveWorkoutTimerContext = createContext<ActiveWorkoutTimerContextType | undefined>(undefined);
+
 export function ActiveWorkoutProvider({ children }: { children: React.ReactNode }) {
     // State
     const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -51,13 +60,8 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     const [isExpanded, setIsExpanded] = useState(false);
 
     // Hooks
-    const {
-        isRunning,
-        setRunning,
-        workoutSeconds,
-        setWorkoutSeconds,
-        resetTimers,
-    } = useActiveWorkoutTimers();
+    const timerState = useActiveWorkoutTimers();
+    const { isRunning, setRunning, workoutSeconds, setWorkoutSeconds, resetTimers } = timerState;
 
     // Auto-pause when minimized, auto-resume when expanded
     useEffect(() => {
@@ -162,52 +166,52 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
 
 
-    const addExercise = (name: string, sets: string, reps: string, properties?: string[]) => {
+    const addExercise = useCallback((name: string, sets: string, reps: string, properties?: string[]) => {
         const ex = createExercise(name, sets, reps, properties);
-        // Ensure type compatibility by setting completedSets and logs explicitly if missing
-		setExercises((e) => [...e, { ...ex, completedSets: 0, logs: [] }]);
-	};
+        setExercises((e) => [...e, { ...ex, completedSets: 0, logs: [] }]);
+    }, []);
 
-    const nextExercise = () => {
-		setCurrentIndex((i) => Math.min(exercises.length - 1, i + 1));
-	};
+    const nextExercise = useCallback(() => {
+        setExercises((exs) => {
+            setCurrentIndex((i) => Math.min(exs.length - 1, i + 1));
+            return exs;
+        });
+    }, []);
 
-	const prevExercise = () => {
-		setCurrentIndex((i) => Math.max(0, i - 1));
-	};
+    const prevExercise = useCallback(() => {
+        setCurrentIndex((i) => Math.max(0, i - 1));
+    }, []);
 
-    const updateExercise = (index: number, updates: Partial<Exercise>) => {
+    const updateExercise = useCallback((index: number, updates: Partial<Exercise>) => {
         setExercises(current => 
             current.map((ex, i) => i === index ? { ...ex, ...updates } : ex)
         );
-    };
+    }, []);
 
-    const removeExercise = (index: number) => {
+    const removeExercise = useCallback((index: number) => {
         setExercises(current => current.filter((_, i) => i !== index));
-        // If we removed the current exercise, move current index back if needed
         setCurrentIndex(prev => {
             if (index <= prev) {
                 return Math.max(0, prev - 1);
             }
             return prev;
         });
-    };
+    }, []);
 
-    const handleCompleteSet = (targetIndex: number,  setIndex: number, input?: { weight?: number; bodyweight?: number; reps?: number; duration?: number; distance?: number }) => {
-        const indexToComplete = targetIndex ?? currentIndex;
-        
+    const handleCompleteSet = useCallback((targetIndex: number,  setIndex: number, input?: { weight?: number; bodyweight?: number; reps?: number; duration?: number; distance?: number }) => {
         setExercises(currentExercises => {
+            // Need a tiny hack because currentIndex might not be in closure, but we can't reliably read it from state inside setExercises if we depend on it directly
+            // Actually targetIndex is always provided by our UI now, let's rely on it.
+            const indexToComplete = targetIndex; 
+
             return currentExercises.map((ex, idx) => {
                 if (idx === indexToComplete) {
                     const logs = [...(ex.logs || [])];
                     
-                    // Inputs are already numbers
                     const weight = input?.weight;
                     const bodyweight = input?.bodyweight;
                     const reps = input?.reps; 
-                    // Fallback to target reps if not provided
                     const props = ex.properties?.map((p: string) => p.toLowerCase()) || [];
-                    // Using undefined for finalReps so database receives null (or we filter it out)
                     const isDurationOnly = props.includes('duration') && !props.includes('reps');
                     const finalReps = reps !== undefined ? reps : (isDurationOnly ? undefined : ex.reps);
                     
@@ -220,10 +224,8 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                         distance: input?.distance,
                     };
 
-                    // Insert at specific index (filling gaps if necessary with undefined/empty)
                     logs[setIndex] = newLog;
 
-                    // Recalculate completed sets count (filter out holes/undefined)
                     const completedCount = logs.filter(l => l !== undefined && l !== null).length;
 
                     return { 
@@ -235,15 +237,9 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                 return ex;
             });
         });
+    }, []);
 
- 
-    };
-
-
-
-
-
-    const toggleExpanded = () => setIsExpanded(prev => !prev);
+    const toggleExpanded = useCallback(() => setIsExpanded(prev => !prev), []);
 
     const { saveCompletedWorkout } = useWorkoutManager();
 
@@ -279,11 +275,9 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         clearPersistence();
     }, [setRunning, resetTimers, clearPersistence]);
 
-    const value = {
+    const value = React.useMemo(() => ({
         exercises,
         setExercises,
-        isRunning,
-        workoutSeconds,
 
         currentIndex,
         workoutName,
@@ -306,16 +300,23 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         routineId,
         sourceWorkoutId,
         latestBodyWeight,
-    };
+    }), [
+        exercises, currentIndex, workoutName, startWorkout, pauseWorkout, resetWorkout, 
+        handleCompleteSet, nextExercise, prevExercise, addExercise, updateExercise, 
+        removeExercise, handleFinishWorkout, handleCancelWorkout, isExpanded, hasActiveSession, 
+        toggleExpanded, routineId, sourceWorkoutId, latestBodyWeight
+    ]);
 
     if (!isLoaded) {
         return null;
     }
 
     return (
-        <ActiveWorkoutContext.Provider value={value}>
-            {children}
-        </ActiveWorkoutContext.Provider>
+        <ActiveWorkoutTimerContext.Provider value={timerState}>
+            <ActiveWorkoutContext.Provider value={value}>
+                {children}
+            </ActiveWorkoutContext.Provider>
+        </ActiveWorkoutTimerContext.Provider>
     );
 }
 
@@ -323,6 +324,14 @@ export function useActiveWorkout() {
     const context = useContext(ActiveWorkoutContext);
     if (context === undefined) {
         throw new Error('useActiveWorkout must be used within an ActiveWorkoutProvider');
+    }
+    return context;
+}
+
+export function useActiveWorkoutTimer() {
+    const context = useContext(ActiveWorkoutTimerContext);
+    if (context === undefined) {
+        throw new Error('useActiveWorkoutTimer must be used within an ActiveWorkoutProvider');
     }
     return context;
 }

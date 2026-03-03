@@ -1,18 +1,18 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { ActiveWorkoutProvider, useActiveWorkout } from '../providers/ActiveWorkoutProvider';
+import { ActiveWorkoutProvider, useActiveWorkout, useActiveWorkoutTimer } from '../providers/ActiveWorkoutProvider';
 import { Button, Text, View, Alert } from 'react-native';
 
 // Simple component to consume context for testing
 const TestComponent = () => {
     const { 
         exercises, 
-        startWorkout, 
-        isRunning, 
-        addExercise, 
-        completeSet, 
-        workoutSeconds 
+        startWorkout,
+        addExercise,
+        completeSet
     } = useActiveWorkout();
+    
+    const { isRunning, workoutSeconds } = useActiveWorkoutTimer();
 
     return (
         <View>
@@ -37,6 +37,13 @@ jest.mock('../providers/WorkoutManagerProvider', () => ({
     useWorkoutManager: () => ({
         saveCompletedWorkout: jest.fn(),
         createCustomExercise: jest.fn(),
+    })
+}));
+
+jest.mock('../hooks/workouts/useActiveWorkoutPersistence', () => ({
+    useActiveWorkoutPersistence: () => ({
+        isLoaded: true,
+        clearPersistence: jest.fn(),
     })
 }));
 

@@ -5,7 +5,7 @@ import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
-import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
+import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { WorkoutNamePrompt } from '../../components/workouts/WorkoutNamePrompt';
 
@@ -13,13 +13,14 @@ export default function EndWorkoutScreen() {
     const router = useRouter();
     const theme = useUITheme();
     const { 
-        workoutName, 
-        workoutSeconds, 
-        exercises, 
-        finishWorkout, 
+        workoutName,
+        exercises,
+        finishWorkout,
         cancelWorkout,
         sourceWorkoutId 
     } = useActiveWorkout();
+    
+    const { workoutSeconds } = useActiveWorkoutTimer();
     
     const { savedWorkouts, updateSavedWorkout, saveWorkout } = useWorkoutManager();
     const [isSaving, setIsSaving] = React.useState(false);
