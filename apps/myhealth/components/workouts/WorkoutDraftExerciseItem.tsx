@@ -36,6 +36,9 @@ export const WorkoutDraftExerciseItem = ({
     const [menuVisible, setMenuVisible] = useState(false);
     const ellipsisRef = useRef<View>(null);
     const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
+    const [isLocalEditing, setIsLocalEditing] = useState(false);
+
+    const _isEditing = isEditing || isLocalEditing;
 
     // Helper to determine which columns to show
     const getExerciseFields = (properties?: string[], exerciseId?: string) => {
@@ -119,6 +122,11 @@ export const WorkoutDraftExerciseItem = ({
                                     elevation: 5,
                                 }}
                             >
+                                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); setIsLocalEditing(!isLocalEditing); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
+                                    <IconSymbol name={isLocalEditing ? "checkmark" : "pencil"} size={18} color={theme.text as string} style={{ marginRight: 12 }} />
+                                    <Text style={{ color: theme.text as string }} className="font-medium">{isLocalEditing ? "Done" : "Edit"}</Text>
+                                </TouchableOpacity>
+                                <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
                                 <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); onMove(-1); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
                                     <IconSymbol name="arrow.up" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
                                     <Text style={{ color: theme.text as string }} className="font-medium">Move Up</Text>
@@ -164,14 +172,14 @@ export const WorkoutDraftExerciseItem = ({
 
                             {showWeight && (
                                 <View className="flex-1 flex-row justify-center">
-                                    {isEditing ? (
+                                    {_isEditing ? (
                                         <TextInput 
                                             value={String(set.weight || 0)} 
                                             keyboardType="numeric"
                                             onChangeText={(v) => onUpdateSet(setIdx, 'weight', v)}
                                             className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
                                             selectTextOnFocus
-                                            editable={isEditing}
+                                            editable={_isEditing}
                                         />
                                     ) : (
                                         <Text className="text-light dark:text-dark font-medium">{set.weight || 0}</Text>
@@ -181,14 +189,14 @@ export const WorkoutDraftExerciseItem = ({
 
                             {showReps && (
                                 <View className="flex-1 flex-row justify-center">
-                                    {isEditing ? (
+                                    {_isEditing ? (
                                         <TextInput 
                                             value={String(set.reps || 0)} 
                                             keyboardType="numeric"
                                             onChangeText={(v) => onUpdateSet(setIdx, 'reps', v)}
                                             className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
                                             selectTextOnFocus
-                                            editable={isEditing}
+                                            editable={_isEditing}
                                         />
                                     ) : (
                                         <Text className="text-light dark:text-dark font-medium">{set.reps || 0}</Text>
@@ -198,14 +206,14 @@ export const WorkoutDraftExerciseItem = ({
 
                             {showDuration && (
                                 <View className="flex-1 flex-row justify-center">
-                                    {isEditing ? (
+                                    {_isEditing ? (
                                         <TextInput 
                                             value={String(set.duration || 0)} 
                                             keyboardType="numeric"
                                             onChangeText={(v) => onUpdateSet(setIdx, 'duration', v)}
                                             className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
                                             selectTextOnFocus
-                                            editable={isEditing}
+                                            editable={_isEditing}
                                         />
                                     ) : (
                                         <Text className="text-light dark:text-dark font-medium">{set.duration || 0}</Text>
@@ -215,14 +223,14 @@ export const WorkoutDraftExerciseItem = ({
 
                             {showDistance && (
                                 <View className="flex-1 flex-row justify-center">
-                                    {isEditing ? (
+                                    {_isEditing ? (
                                         <TextInput 
                                             value={String(set.distance || 0)} 
                                             keyboardType="numeric"
                                             onChangeText={(v) => onUpdateSet(setIdx, 'distance', v)}
                                             className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
                                             selectTextOnFocus
-                                            editable={isEditing}
+                                            editable={_isEditing}
                                         />
                                     ) : (
                                         <Text className="text-light dark:text-dark font-medium">{set.distance || 0}</Text>
@@ -231,7 +239,7 @@ export const WorkoutDraftExerciseItem = ({
                             )}
 
                             <View className="w-8 ml-2 flex-row justify-center">
-                                {isEditing && (
+                                {_isEditing && (
                                     <TouchableOpacity 
                                         onPress={() => onRemoveSet(setIdx)}
                                         className="items-center justify-center rounded h-8"
@@ -242,7 +250,7 @@ export const WorkoutDraftExerciseItem = ({
                             </View>
                         </View>
                     ))}
-                    {isEditing && (
+                    {_isEditing && (
                         <TouchableOpacity 
                             onPress={onAddSet}
                             className="flex-row items-center justify-center p-2 mt-1 rounded-lg border border-dashed border-black/10 dark:border-white/10"
