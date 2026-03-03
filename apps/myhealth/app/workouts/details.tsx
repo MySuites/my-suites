@@ -129,8 +129,9 @@ export default function CreateWorkoutScreen() {
     function handleAddExercise(exercises: any[]) {
         if (exercises.length > 0) {
             exercises.forEach(exercise => {
-                addExercise(exercise);
+                addExercise({ ...exercise, isNewlyAdded: true });
             });
+            setIsEditing(true);
         }
         setIsAddingExercise(false);
     }
@@ -162,7 +163,19 @@ export default function CreateWorkoutScreen() {
         <View className="flex-1 bg-light dark:bg-dark">
             <Stack.Screen options={{ headerShown: false }} />
             <ScreenHeader
-                title={editingWorkoutId ? (isEditing ? 'Edit Workout' : (workoutDraftName || 'Workout Details')) : 'Create Workout'}
+                title={isEditing ? (
+                    <TextInput 
+                        placeholder="Workout Name" 
+                        value={workoutDraftName} 
+                        onChangeText={setWorkoutDraftName} 
+                        className="text-xl font-bold text-light dark:text-dark text-center"
+                        style={{ paddingVertical: 0 }}
+                        placeholderTextColor={theme.textMuted || '#888'}
+                        autoFocus
+                    />
+                ) : (
+                    editingWorkoutId ? workoutDraftName || 'Workout Details' : 'Create Workout'
+                )}
                 leftAction={
                     isEditing ? (
                         <RaisedCard 
@@ -210,18 +223,6 @@ export default function CreateWorkoutScreen() {
                 showsVerticalScrollIndicator={false}
                 ListHeaderComponent={
                     <View>
-                        {isEditing ? (
-                            <View className="bg-lighter dark:bg-dark-lighter h-16 px-4 rounded-xl border border-transparent dark:border-highlight-dark mb-6 justify-center">
-                                <TextInput 
-                                    placeholder="Workout Name" 
-                                    value={workoutDraftName} 
-                                    onChangeText={setWorkoutDraftName} 
-                                    className="text-light dark:text-dark"
-                                    style={{ fontSize: 16, paddingVertical: 0, flex: 1 }}
-                                    placeholderTextColor={theme.textMuted || '#888'}
-                                />
-                            </View>
-                        ) : (
                             <View style={{
                                 flexDirection: 'row',
                                 backgroundColor: toggleBackground,
@@ -262,7 +263,6 @@ export default function CreateWorkoutScreen() {
                                     }}>Performance</Text>
                                 </Pressable>
                             </View>
-                        )}
                         
                         {!isEditing && activeTab === 'performance' && workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
 

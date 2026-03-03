@@ -14,6 +14,7 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
             category: exercise.category,
             properties: exercise.properties, // Copy properties
             type: exercise.rawType,
+            isNewlyAdded: exercise.isNewlyAdded,
             setTargets: Array.from(
                 { length: 3 },
                 () => ({ reps: 10, weight: 0, duration: 0, distance: 0 }),

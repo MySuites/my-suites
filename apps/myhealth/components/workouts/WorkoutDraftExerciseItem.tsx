@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Dimensions, Modal } from 'react-native';
 import { useUITheme as useTheme, IconSymbol, RaisedCard } from '@mysuite/ui';
 import { getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
@@ -36,7 +36,13 @@ export const WorkoutDraftExerciseItem = ({
     const [menuVisible, setMenuVisible] = useState(false);
     const ellipsisRef = useRef<View>(null);
     const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
-    const [isLocalEditing, setIsLocalEditing] = useState(false);
+    const [isLocalEditing, setIsLocalEditing] = useState(item.isNewlyAdded || false);
+
+    useEffect(() => {
+        if (!isEditing) {
+            setIsLocalEditing(false);
+        }
+    }, [isEditing]);
 
     const _isEditing = isEditing || isLocalEditing;
 

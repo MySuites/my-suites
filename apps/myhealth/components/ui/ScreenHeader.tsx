@@ -2,7 +2,7 @@ import { View, Text, useColorScheme } from 'react-native';
 import { BlurView } from 'expo-blur';
 
 interface ScreenHeaderProps {
-  title: string;
+  title: string | React.ReactNode;
   rightAction?: React.ReactNode;
   leftAction?: React.ReactNode;
   className?: string; // Allow additional styling if needed, though we aim for consistency
@@ -24,7 +24,11 @@ export function ScreenHeader({ title, rightAction, leftAction, className }: Scre
                 {leftAction}
             </View>
         )}
-        <Text className="text-xl font-bold text-light dark:text-dark text-center flex-1 mx-16" numberOfLines={1}>{title}</Text>
+        {typeof title === 'string' ? (
+            <Text className="text-xl font-bold text-light dark:text-dark text-center flex-1 mx-16" numberOfLines={1}>{title}</Text>
+        ) : (
+            <View className="flex-1 mx-16 justify-center items-center">{title}</View>
+        )}
         {rightAction && (
           <View className="absolute right-5 flex-row h-12">
               {rightAction}
