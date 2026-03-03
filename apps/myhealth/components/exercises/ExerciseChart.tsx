@@ -38,8 +38,7 @@ export const ExerciseChart = ({
             marginBottom: 24,
             overflow: 'hidden'
         }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <Text className="text-base leading-6 font-semibold" style={{ color: themeColors.text }}>Performance</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 20 }}>
                 {availableMetrics.length > 0 && (
                     <View style={{ 
                         flexDirection: 'row', 
