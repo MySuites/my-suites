@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert, Pressable } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
@@ -20,6 +21,7 @@ export default function CreateWorkoutScreen() {
     const { id } = useLocalSearchParams();
     const { setIsHidden } = useFloatingButton();
     const { latestBodyWeight } = useActiveWorkout();
+    const insets = useSafeAreaInsets();
     
     useEffect(() => {
         setIsHidden(true);
@@ -34,6 +36,8 @@ export default function CreateWorkoutScreen() {
     } = useWorkoutManager();
 
     const editingWorkoutId = typeof id === 'string' ? id : null;
+    const originalWorkout = savedWorkouts.find(w => w.id === editingWorkoutId);
+    
     const [isEditing, setIsEditing] = useState(!editingWorkoutId);
     console.log("CreateWorkoutScreen params:", { id, editingWorkoutId });
     const [workoutDraftName, setWorkoutDraftName] = useState("");
@@ -60,6 +64,18 @@ export default function CreateWorkoutScreen() {
     const toggleBackground = (theme.bg || theme.bgDark) as string;
     const activeToggleBg = theme.bgLight as string; 
     const activeToggleText = theme.text as string;
+
+    const hasUnsavedChanges = (() => {
+        if (!editingWorkoutId) {
+            return workoutDraftExercises.length > 0 || workoutDraftName.trim().length > 0;
+        }
+        if (!originalWorkout) return false;
+        
+        const currentDraftString = JSON.stringify(workoutDraftExercises);
+        const originalExercisesString = JSON.stringify(originalWorkout.exercises || []);
+        
+        return workoutDraftName !== originalWorkout.name || currentDraftString !== originalExercisesString;
+    })();
 
     useEffect(() => {
         if (editingWorkoutId) {
@@ -324,6 +340,32 @@ export default function CreateWorkoutScreen() {
                         onSelect={handleAddExercise}
                         onClose={() => setIsAddingExercise(false)}
                     />
+                </Animated.View>
+            )}
+
+            {/* Quick Start Style Save Button */}
+            {isEditing && hasUnsavedChanges && !isAddingExercise && (
+                <Animated.View 
+                    entering={SlideInDown.duration(300)}
+                    exiting={SlideOutDown.duration(300)}
+                    className="absolute self-center"
+                    style={{ bottom: insets.bottom + 20, width: 'auto', minWidth: 200, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8, zIndex: 50 }}
+                >
+                    <RaisedCard
+                        onPress={handleSaveWorkoutDraft}
+                        disabled={isSaving}
+                        className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
+                        style={{ borderRadius: 9999 }}
+                    >
+                        {isSaving ? (
+                            <ActivityIndicator size="small" color="#FFF" />
+                        ) : (
+                            <View className="flex-row items-center justify-center">
+                                <IconSymbol name="checkmark.circle.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
+                                <Text className="text-lg font-bold text-white">Save Workout</Text>
+                            </View>
+                        )}
+                    </RaisedCard>
                 </Animated.View>
             )}
         </View>
