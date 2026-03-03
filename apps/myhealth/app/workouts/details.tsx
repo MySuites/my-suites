@@ -20,7 +20,7 @@ export default function CreateWorkoutScreen() {
     const router = useRouter();
     const { id } = useLocalSearchParams();
     const { setIsHidden } = useFloatingButton();
-    const { latestBodyWeight } = useActiveWorkout();
+    const { latestBodyWeight, startWorkout } = useActiveWorkout();
     const insets = useSafeAreaInsets();
     
     useEffect(() => {
@@ -103,6 +103,11 @@ export default function CreateWorkoutScreen() {
             setIsEditing(true);
         }
     }, [editingWorkoutId, savedWorkouts, router, setWorkoutDraftExercises, hasInitialized]);
+
+    function handleStartWorkout() {
+        startWorkout(workoutDraftExercises, workoutDraftName, undefined, editingWorkoutId || undefined);
+        router.back(); // or navigate to active workout screen depending on how top-level handles it
+    }
 
     async function handleSaveWorkoutDraft() {
         if (!workoutDraftName.trim()) {
@@ -420,8 +425,8 @@ export default function CreateWorkoutScreen() {
                 </Animated.View>
             )}
 
-            {/* Quick Start Style Save Button */}
-            {hasUnsavedChanges && !isAddingExercise && (
+            {/* Quick Start Style Start/Save Button */}
+            {!isAddingExercise && (
                 <Animated.View 
                     entering={SlideInDown.duration(300)}
                     exiting={SlideOutDown.duration(300)}
@@ -429,7 +434,7 @@ export default function CreateWorkoutScreen() {
                     style={{ bottom: insets.bottom + 20, width: 'auto', minWidth: 200, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8, zIndex: 50 }}
                 >
                     <RaisedCard
-                        onPress={handleSaveWorkoutDraft}
+                        onPress={hasUnsavedChanges ? handleSaveWorkoutDraft : handleStartWorkout}
                         disabled={isSaving}
                         className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
                         style={{ borderRadius: 9999 }}
@@ -438,8 +443,17 @@ export default function CreateWorkoutScreen() {
                             <ActivityIndicator size="small" color="#FFF" />
                         ) : (
                             <View className="flex-row items-center justify-center">
-                                <IconSymbol name="checkmark.circle.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                                <Text className="text-lg font-bold text-white">Save Workout</Text>
+                                {hasUnsavedChanges ? (
+                                    <>
+                                        <IconSymbol name="checkmark.circle.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
+                                        <Text className="text-lg font-bold text-white">Save Workout</Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <IconSymbol name="play.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
+                                        <Text className="text-lg font-bold text-white">Start Workout</Text>
+                                    </>
+                                )}
                             </View>
                         )}
                     </RaisedCard>
