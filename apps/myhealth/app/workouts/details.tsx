@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert, Pressable } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert, Pressable, Modal, Dimensions } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
@@ -59,6 +59,11 @@ export default function CreateWorkoutScreen() {
 
     const [isAddingExercise, setIsAddingExercise] = useState(false);
     const [activeTab, setActiveTab] = useState<'exercises' | 'performance'>('exercises');
+
+    const [headerMenuVisible, setHeaderMenuVisible] = useState(false);
+    const [headerMenuPos, setHeaderMenuPos] = useState({ top: 0, right: 0 });
+    const headerMenuRef = useRef<View>(null);
+    const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 
     const toggleBackground = (theme.bg || theme.bgDark) as string;
@@ -204,16 +209,85 @@ export default function CreateWorkoutScreen() {
                             )}
                         </RaisedCard>
                     ) : (
-                        <RaisedCard 
-                            onPress={() => setIsEditing(true)} 
-                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
-                            style={{ borderRadius: 9999 }}
-                        >
-                            <IconSymbol name="pencil" size={20} color={theme.primary as string} />
-                        </RaisedCard>
+                        <View ref={headerMenuRef as any}>
+                            <RaisedCard 
+                                onPress={(e) => { 
+                                    headerMenuRef.current?.measure((x, y, width, height, pageX, pageY) => {
+                                        setHeaderMenuPos({ 
+                                            top: pageY + height + 4, 
+                                            right: SCREEN_WIDTH - pageX - width
+                                        });
+                                        setHeaderMenuVisible(true);
+                                    });
+                                }} 
+                                className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
+                                style={{ borderRadius: 9999 }}
+                            >
+                                <IconSymbol name="ellipsis" size={20} color={theme.primary as string} />
+                            </RaisedCard>
+                        </View>
                     )
                 }
             />
+
+            {/* Header Menu */}
+            <Modal transparent visible={headerMenuVisible} animationType="fade" onRequestClose={() => setHeaderMenuVisible(false)}>
+                <TouchableOpacity 
+                    activeOpacity={1} 
+                    onPress={() => setHeaderMenuVisible(false)}
+                    className="flex-1"
+                    style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
+                >
+                    <RaisedCard 
+                        className="absolute w-48 p-1 origin-top-right rounded-xl bg-lighter dark:bg-dark-lighter"
+                        style={{ 
+                            top: headerMenuPos.top,
+                            right: headerMenuPos.right,
+                            shadowColor: '#000', 
+                            shadowOffset: { width: 0, height: 4 }, 
+                            shadowOpacity: 0.15, 
+                            shadowRadius: 12, 
+                            elevation: 5,
+                        }}
+                    >
+                        <TouchableOpacity onPress={(e) => { e.stopPropagation(); setHeaderMenuVisible(false); setIsEditing(true); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
+                            <IconSymbol name="pencil" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
+                            <Text style={{ color: theme.text as string }} className="font-medium">Edit Workout</Text>
+                        </TouchableOpacity>
+                        
+                        {editingWorkoutId && (
+                            <>
+                                <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
+                                <TouchableOpacity 
+                                    onPress={(e) => { 
+                                        e.stopPropagation(); 
+                                        setHeaderMenuVisible(false); 
+                                        Alert.alert('Delete Workout', 'Are you sure?', [
+                                            { text: 'Cancel', style: 'cancel' },
+                                            { 
+                                                text: 'Delete', 
+                                                style: 'destructive', 
+                                                onPress: () => {
+                                                    deleteSavedWorkout(editingWorkoutId, {
+                                                        skipConfirmation: true,
+                                                        onSuccess: () => {
+                                                            router.back();
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        ]);
+                                    }} 
+                                    className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                                >
+                                    <IconSymbol name="trash.fill" size={18} color={theme.options?.destructiveColor || '#ff4444'} style={{ marginRight: 12 }} />
+                                    <Text style={{ color: theme.options?.destructiveColor || '#ff4444' }} className="font-medium">Delete</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
+                    </RaisedCard>
+                </TouchableOpacity>
+            </Modal>
 
             <FlatList
                 data={(activeTab === 'exercises' || isEditing) ? workoutDraftExercises : []}
