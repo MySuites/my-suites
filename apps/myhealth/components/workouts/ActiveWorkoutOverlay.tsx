@@ -2,10 +2,11 @@ import React, { useEffect } from 'react';
 import { View, ScrollView, BackHandler, Text, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
-import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import Animated, { SlideInDown, SlideOutDown, FadeIn, FadeOut } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { default as ExercisesScreen } from '../../app/exercises/index';
 import { ExerciseCard } from '../exercises/ExerciseCard';
+import { ScreenHeader } from '../ui/ScreenHeader';
 import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
 
@@ -80,68 +81,52 @@ export function ActiveWorkoutOverlay() {
     const renderHeader = () => {
         if (isExpanded) {
             return (
-                <View 
-                    style={{ 
-                        zIndex: 1001,
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        paddingTop: insets.top,
-                        paddingBottom: 16,
-                    }}
-                    className="absolute bg-light/80 dark:bg-dark/80 rounded-b-3xl"
-                >
-                    {/* Content Container (Expanded) */}
-                    <View 
-                        className="flex-row justify-center items-center relative z-10 min-h-[44px]"
-                        pointerEvents="box-none"
-                    >
-                        {/* Left: Timer + Status */}
-                        <View className="absolute left-5 z-10 flex-row items-center gap-2">
-                            <RaisedCard 
-                                onPress={handlePress}
-                                className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                                style={{ borderRadius: 9999 }}
-                            >
-                                <IconSymbol name="arrow.down.right.and.arrow.up.left" size={22} className="text-primary dark:text-primary-dark" />
-                            </RaisedCard>
-                        </View>
-                        
-                        {/* Center: Title */}
-                        <View className="absolute left-1/5 z-10 flex-col items-center">
+                <ScreenHeader
+                    title={
+                        <View className="flex-col items-center pt-2">
                             <Text 
-                                className="text-lg font-bold text-light dark:text-dark text-center flex-1 mt-4" 
+                                className="text-lg font-bold text-light dark:text-dark text-center" 
                                 numberOfLines={1}
                                 pointerEvents="none"
                             >
                                 {title}
                             </Text>
-                            <View className="flex-row items-center gap-2">
+                            <View className="flex-row items-center gap-2 mt-1">
                                 <View className={`w-2 h-2 rounded-full ${isRunning ? 'bg-primary dark:bg-primary-dark' : 'bg-gray-400'}`} />
                                 <Text className="text-sm font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
                             </View>
                         </View>
-                        
-                        {/* Right: Actions */}
-                        <View className="absolute right-5 z-10 flex-row gap-2">
-                            <RaisedCard 
-                                onPress={handleEnd}
-                                className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                                style={{ borderRadius: 9999 }}
-                            >
-                                <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
-                            </RaisedCard>
-                        </View>
-                    </View>
-                </View>
+                    }
+                    leftAction={
+                        <RaisedCard 
+                            onPress={handlePress}
+                            className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                            style={{ borderRadius: 9999 }}
+                        >
+                            <IconSymbol name="chevron.down" size={22} className="text-primary dark:text-primary-dark" />
+                        </RaisedCard>
+                    }
+                    rightAction={
+                        <RaisedCard 
+                            onPress={handleEnd}
+                            className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                            style={{ borderRadius: 9999 }}
+                        >
+                            <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
+                        </RaisedCard>
+                    }
+                    className="z-[1001] border-b-0"
+                />
             );
         }
 
         // Minimized Pill State
         return (
             <Animated.View 
+                entering={FadeIn.delay(200).duration(300)}
+                exiting={FadeOut.duration(200)}
                 style={{ 
-                    zIndex: 1001,
+                    zIndex: 40,
                     bottom: insets.bottom + 65, // Floating above tabs
                     alignSelf: 'center',
                     width: '60%', // Pill width
@@ -171,20 +156,17 @@ export function ActiveWorkoutOverlay() {
         );
     };
 
-    if (!isExpanded) {
-        // Render only the minimized pill
-        return renderHeader();
-    }
-
     return (
         <>
-        <Animated.View 
-            className="absolute inset-0 z-[999] bg-light dark:bg-dark"
-            entering={SlideInDown.duration(400)} 
-            exiting={SlideOutDown.duration(400)}
-        >
-            {renderHeader()}
-            <View className="flex-1">
+        {!isExpanded && renderHeader()}
+        {isExpanded && (
+            <Animated.View 
+                className="absolute inset-0 z-[999] bg-light dark:bg-dark"
+                entering={SlideInDown.duration(400)} 
+                exiting={SlideOutDown.duration(400)}
+            >
+                {renderHeader()}
+                <View className="flex-1">
                 <ScrollView contentContainerStyle={{ padding: 12, paddingTop: insets.top + 80, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
                      {(!exercises || exercises.length === 0) ? (
                         <View className="flex-1 items-center justify-center py-20">
@@ -253,7 +235,8 @@ export function ActiveWorkoutOverlay() {
                 </ScrollView>
             </View>
 
-        </Animated.View>
+            </Animated.View>
+        )}
             {isAddingExercise && (
                 <Animated.View 
                     className="absolute inset-0 z-[1000] bg-light dark:bg-dark"
