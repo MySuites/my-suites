@@ -313,6 +313,7 @@ export default function CreateWorkoutScreen() {
                         </TouchableOpacity>
                     ) : null
                 }
+                ItemSeparatorComponent={() => <View className="h-[1px] bg-black/10 dark:bg-white/10 my-2" />}
                 renderItem={({item, index}) => (
                     <WorkoutDraftExerciseItem
                         item={item}

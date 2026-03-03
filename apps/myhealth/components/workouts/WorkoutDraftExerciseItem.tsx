@@ -71,13 +71,11 @@ export const WorkoutDraftExerciseItem = ({
 
     return (
         <View 
-            className="mb-3 border border-black/5 dark:border-white/10 bg-lighter dark:bg-dark-lighter"
             style={{ 
-                borderRadius: 12, 
                 zIndex: menuVisible ? 10 : 1 
             }}
         >
-            <View className="flex-row justify-between items-center bg-lighter dark:bg-dark-lighter rounded-t-xl">
+            <View className="flex-row justify-between items-center">
                 <TouchableOpacity 
                 onPress={onToggleExpand}
                 className="p-3 flex-1"
@@ -140,7 +138,7 @@ export const WorkoutDraftExerciseItem = ({
                 </View>
             </View>
             {isExpanded && (
-                <View className="px-3 pb-3 pt-1 rounded-b-xl" style={{ backgroundColor: theme.isDark ? theme.bgDark : theme.bgLight }}>
+                <View className="px-2 pb-3 pt-1">
                     <View className="flex-row mb-2">
                         <Text className="w-12 text-xs text-gray-500 font-semibold text-center">Set</Text>
                         {showBodyweight && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">{latestBodyWeight ? 'Lbs' : 'BW'}</Text>}
