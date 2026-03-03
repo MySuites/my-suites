@@ -70,12 +70,18 @@ export default function SettingsScreen() {
   }, []);
 
   useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
     const task = InteractionManager.runAfterInteractions(() => {
-        checkHealthStatus();
-        // Auto-sync when visiting settings
-        BodyWeightService.syncWithHealthKit(user?.id || null);
+        // Defer heavy bridge work (HealthKit APIs) until after the screen transition is fully settled
+        timeout = setTimeout(() => {
+            checkHealthStatus();
+            BodyWeightService.syncWithHealthKit(user?.id || null);
+        }, 200);
     });
-    return () => task.cancel();
+    return () => {
+        task.cancel();
+        if (timeout) clearTimeout(timeout);
+    };
   }, [user?.id, checkHealthStatus]);
 
   const handleConnectHealth = async () => {

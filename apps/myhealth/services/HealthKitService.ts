@@ -1,5 +1,8 @@
-import HealthKit from "@kingstinct/react-native-healthkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// Lazily require HealthKit to prevent blocking JS thread when importing this file during navigation
+const getHealthKit = () =>
+    require("@kingstinct/react-native-healthkit").default;
 
 const HEALTH_KIT_SYNC_ENABLED_KEY = "myhealth_hk_sync_enabled";
 
@@ -10,6 +13,7 @@ export const HealthKitService = {
 
     initHealthKit: async (): Promise<void> => {
         try {
+            const HealthKit = getHealthKit();
             const isRequested = await HealthKit.requestAuthorization({
                 toRead: ["HKQuantityTypeIdentifierBodyMass"],
                 toShare: ["HKQuantityTypeIdentifierBodyMass"],
@@ -34,6 +38,7 @@ export const HealthKitService = {
     isAuthorized: async (): Promise<boolean> => {
         try {
             // 1. Check System Permission
+            const HealthKit = getHealthKit();
             const status = await HealthKit.authorizationStatusFor(
                 "HKQuantityTypeIdentifierBodyMass",
             );
@@ -85,6 +90,7 @@ export const HealthKitService = {
         try {
             const start = startDate ||
                 new Date(new Date().setFullYear(new Date().getFullYear() - 1));
+            const HealthKit = getHealthKit();
             const samples = await HealthKit.queryQuantitySamples(
                 "HKQuantityTypeIdentifierBodyMass",
                 {
@@ -98,7 +104,7 @@ export const HealthKitService = {
                 },
             );
 
-            return samples.map((sample) => ({
+            return samples.map((sample: any) => ({
                 date: (sample.startDate as unknown as Date).toISOString(), // Cast to handle potential type discrepancies
                 value: sample.quantity,
             }));
