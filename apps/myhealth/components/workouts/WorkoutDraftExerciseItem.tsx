@@ -17,7 +17,7 @@ export interface WorkoutDraftExerciseItemProps {
     isEditing: boolean;
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const WorkoutDraftExerciseItem = ({
     item,
@@ -97,8 +97,16 @@ export const WorkoutDraftExerciseItem = ({
                         onPress={(e) => { 
                             e.stopPropagation(); 
                             ellipsisRef.current?.measure((x, y, width, height, pageX, pageY) => {
+                                const MENU_ESTIMATED_HEIGHT = 210; // Approx height of the menu
+                                let topPos = pageY + height + 4;
+                                
+                                // Output upwards if it goes beyond the screen
+                                if (topPos + MENU_ESTIMATED_HEIGHT > SCREEN_HEIGHT - 50) {
+                                    topPos = pageY - MENU_ESTIMATED_HEIGHT - 4;
+                                }
+                                
                                 setMenuPos({ 
-                                    top: pageY + height + 4, 
+                                    top: topPos, 
                                     right: SCREEN_WIDTH - pageX - width 
                                 });
                                 setMenuVisible(true);
