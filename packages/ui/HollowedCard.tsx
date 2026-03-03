@@ -4,7 +4,7 @@ import { cssInterop, useColorScheme } from 'nativewind';
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface CardProps extends Omit<PressableProps, 'children'> {
-  children?: React.ReactNode;
+  children?: React.ReactNode | ((state: { pressed: boolean; hovered?: boolean }) => React.ReactNode);
   onPress?: () => void;
   className?: string;
 }
@@ -36,17 +36,17 @@ export function HollowedCard({ children, style, className, onPress, ...props }: 
         onPress={onPress} 
         {...props}
     >
-        {({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => (
+        {(state) => (
             <>
                 <View style={{ zIndex: 1 }}>
-                    {children}
+                    {typeof children === 'function' ? children(state) : children}
                 </View>
             </>
         )}
     </Pressable>
   ) : (
     <View style={[style, shadowStyle]} className={baseClassName} {...props}>
-        {children}
+        {typeof children === 'function' ? children({ pressed: false }) : children}
     </View>
   );
 }

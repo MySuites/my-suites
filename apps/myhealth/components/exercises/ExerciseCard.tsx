@@ -79,15 +79,19 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
 
 
                 {/* Add Set Button */}
-                {/* Add Set Button */}
                 <View className="items-center justify-center mt-1">
                     <HollowedCard 
                         onPress={onAddSet} 
-                        className="py-3 w-full items-center justify-center p-3" // Using p-3 to match HollowedCard default and existing py-3
+                        className="py-3 w-full items-center justify-center p-3"
                     >
-                        <Text className="text-sm font-semibold text-primary dark:text-primary-dark text-center">
-                            + Add Set
-                        </Text>
+                        {({ pressed }) => (
+                            <Text 
+                                className="text-sm font-semibold text-center text-primary dark:text-primary-dark"
+                                style={{ opacity: pressed ? 0.4 : 1 }}
+                            >
+                                + Add Set
+                            </Text>
+                        )}
                     </HollowedCard>
                 </View>
             </View>
