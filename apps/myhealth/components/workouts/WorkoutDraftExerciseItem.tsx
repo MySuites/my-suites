@@ -142,20 +142,22 @@ export const WorkoutDraftExerciseItem = ({
             {isExpanded && (
                 <View className="px-3 pb-3 pt-1 rounded-b-xl" style={{ backgroundColor: theme.isDark ? theme.bgDark : theme.bgLight }}>
                     <View className="flex-row mb-2">
-                        <Text className="w-10 text-xs text-gray-500 font-semibold text-center">Set</Text>
-                        {showBodyweight && <Text className="w-12 text-xs text-gray-500 font-semibold text-center">{latestBodyWeight ? 'Lbs' : 'BW'}</Text>}
+                        <Text className="w-12 text-xs text-gray-500 font-semibold text-center">Set</Text>
+                        {showBodyweight && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">{latestBodyWeight ? 'Lbs' : 'BW'}</Text>}
                         {showWeight && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Lbs</Text>}
                         {showReps && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Reps</Text>}
                         {showDuration && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Time</Text>}
                         {showDistance && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Dist</Text>}
-                        <View className="w-8" />
+                        <View className="w-8 ml-2" />
                     </View>
                     {currentTargets.map((set: any, setIdx: number) => (
                         <View key={setIdx} className="flex-row items-center mb-2">
-                            <Text className="w-10 text-light dark:text-dark text-center font-medium">{setIdx + 1}</Text>
+                            <View className="w-12 items-center justify-center">
+                                <Text className="text-light dark:text-dark font-medium">{setIdx + 1}</Text>
+                            </View>
                             
                             {showBodyweight && (
-                                <View className="w-12 items-center justify-center">
+                                <View className="flex-1 items-center justify-center">
                                     <Text className="text-sm font-bold text-black/50 dark:text-white/50">
                                         {latestBodyWeight ? `${latestBodyWeight}` : 'BW'}
                                     </Text>
@@ -230,14 +232,16 @@ export const WorkoutDraftExerciseItem = ({
                                 </View>
                             )}
 
-                            {isEditing && (
-                                <TouchableOpacity 
-                                    onPress={() => onRemoveSet(setIdx)}
-                                    className="w-8 items-center justify-center rounded h-8 ml-2"
-                                >
-                                    <IconSymbol name="minus.circle.fill" size={20} color="#ff4444" />
-                                </TouchableOpacity>
-                            )}
+                            <View className="w-8 ml-2 flex-row justify-center">
+                                {isEditing && (
+                                    <TouchableOpacity 
+                                        onPress={() => onRemoveSet(setIdx)}
+                                        className="items-center justify-center rounded h-8"
+                                    >
+                                        <IconSymbol name="minus.circle.fill" size={20} color="#ff4444" />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         </View>
                     ))}
                     {isEditing && (
