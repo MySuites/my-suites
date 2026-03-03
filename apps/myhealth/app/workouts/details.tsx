@@ -127,9 +127,12 @@ export default function CreateWorkoutScreen() {
     }
 
     function handleAddExercise(exercises: any[]) {
-        exercises.forEach(exercise => {
-            addExercise(exercise);
-        });
+        if (exercises.length > 0) {
+            exercises.forEach(exercise => {
+                addExercise(exercise);
+            });
+            setIsEditing(true);
+        }
         setIsAddingExercise(false);
     }
 
@@ -344,7 +347,7 @@ export default function CreateWorkoutScreen() {
             )}
 
             {/* Quick Start Style Save Button */}
-            {isEditing && hasUnsavedChanges && !isAddingExercise && (
+            {hasUnsavedChanges && !isAddingExercise && (
                 <Animated.View 
                     entering={SlideInDown.duration(300)}
                     exiting={SlideOutDown.duration(300)}
