@@ -20,7 +20,7 @@ export default function CreateWorkoutScreen() {
     const router = useRouter();
     const { id } = useLocalSearchParams();
     const { setIsHidden } = useFloatingButton();
-    const { latestBodyWeight, startWorkout } = useActiveWorkout();
+    const { latestBodyWeight, startWorkout, hasActiveSession, cancelWorkout } = useActiveWorkout();
     const insets = useSafeAreaInsets();
     
     useEffect(() => {
@@ -105,6 +105,26 @@ export default function CreateWorkoutScreen() {
     }, [editingWorkoutId, savedWorkouts, router, setWorkoutDraftExercises, hasInitialized]);
 
     function handleStartWorkout() {
+        if (hasActiveSession) {
+            Alert.alert(
+                "Active Workout", 
+                "You already have a workout in progress. Please finish or discard it before starting a new one.",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    { 
+                        text: "Discard and Start Workout", 
+                        style: "destructive",
+                        onPress: () => {
+                            cancelWorkout();
+                            startWorkout(workoutDraftExercises, workoutDraftName, undefined, editingWorkoutId || undefined);
+                            router.back();
+                        }
+                    }
+                ]
+            );
+            return;
+        }
+
         startWorkout(workoutDraftExercises, workoutDraftName, undefined, editingWorkoutId || undefined);
         router.back(); // or navigate to active workout screen depending on how top-level handles it
     }
