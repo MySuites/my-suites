@@ -8,6 +8,10 @@ import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { BodyWeightService } from '../../services/BodyWeightService';
 import { HealthKitService } from '../../services/HealthKitService';
+import * as WebBrowser from 'expo-web-browser';
+
+const PRIVACY_POLICY_URL = 'https://mysuites.github.io/myhealth-privacy_policy/';
+const TERMS_OF_SERVICE_URL = 'https://mysuites.github.io/myhealth-terms_of_service/';
 
 export default function SettingsScreen() {
   const { user } = useAuth();
@@ -117,7 +121,7 @@ export default function SettingsScreen() {
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Privacy Policy</Text>
             <RaisedCard 
-              onPress={() => Alert.alert('Privacy Policy', 'Link to Privacy Policy')}
+              onPress={() => WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL)}
               className="w-10 h-10 p-0 rounded-full items-center justify-center"
               style={{ borderRadius: 9999 }}
             >
@@ -127,7 +131,7 @@ export default function SettingsScreen() {
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Terms of Service</Text>
             <RaisedCard 
-              onPress={() => Alert.alert('Terms of Service', 'Link to Terms of Service')}
+              onPress={() => WebBrowser.openBrowserAsync(TERMS_OF_SERVICE_URL)}
               className="w-10 h-10 p-0 rounded-full items-center justify-center"
               style={{ borderRadius: 9999 }}
             >
