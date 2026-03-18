@@ -13,6 +13,9 @@ export interface BodyWeightEntry {
 }
 
 export const BodyWeightService = {
+    // Singleton lock to prevent overlapping HealthKit sync transactions
+    _syncPromise: null as Promise<void> | null,
+
     /**
      * One-time migration of legacy guest data to DataRepository
      */
@@ -64,6 +67,8 @@ export const BodyWeightService = {
      */
     async getLatestWeight(userId: string | null): Promise<number | null> {
         await this.migrateGuestDataIfNeeded(userId);
+        // Trigger background sync when home screen asks for data
+        this.syncWithHealthKit(userId).catch(console.error);
         return DataRepository.getLatestBodyWeight(userId || "guest");
     },
 
@@ -75,6 +80,8 @@ export const BodyWeightService = {
         startDate?: string,
     ): Promise<BodyWeightEntry[]> {
         await this.migrateGuestDataIfNeeded(userId);
+        // Trigger background sync
+        this.syncWithHealthKit(userId).catch(console.error);
         const history = await DataRepository.getBodyWeightHistory(
             userId || "guest",
             startDate,
@@ -104,48 +111,68 @@ export const BodyWeightService = {
             weight: weight,
             date: dateStr,
         });
+
+        // 2. Also save to HealthKit if authorized
+        const isHKAuthorized = await HealthKitService.isAuthorized();
+        if (isHKAuthorized) {
+            await HealthKitService.saveBodyMass(weight, date);
+        }
     },
 
     /**
      * Syncs body weight data from HealthKit to the app using a bulk insert transaction.
+     * Guaranteed to only run one concurrent sync process at a time via mutex lock.
      */
     async syncWithHealthKit(userId: string | null): Promise<void> {
-        const isAuth = await HealthKitService.isAuthorized();
-        if (!isAuth) {
-            console.log(
-                "HealthKit sync skipped: Not authorized or sync disabled.",
-            );
-            return;
+        if (this._syncPromise) {
+            console.log("HealthKit sync already in progress, returning existing promise.");
+            return this._syncPromise;
         }
 
-        console.log("Syncing with HealthKit...");
-        const samples = await HealthKitService.fetchBodyMass();
-        if (samples.length === 0) {
-            console.log("No HealthKit samples found.");
-            return;
-        }
+        this._syncPromise = (async () => {
+            try {
+                const isAuth = await HealthKitService.isAuthorized();
+                if (!isAuth) {
+                    console.log(
+                        "HealthKit sync skipped: Not authorized or sync disabled.",
+                    );
+                    return;
+                }
 
-        console.log(
-            `Found ${samples.length} HealthKit samples. Saving in bulk...`,
-        );
+                console.log("Syncing with HealthKit...");
+                const samples = await HealthKitService.fetchBodyMass();
+                if (samples.length === 0) {
+                    console.log("No HealthKit samples found.");
+                    return;
+                }
 
-        // Prepare measurements for bulk insert
-        const measurements = samples.map((sample) => {
-            const date = new Date(sample.date);
-            const dateStr = date.toISOString().split("T")[0];
+                console.log(
+                    `Found ${samples.length} HealthKit samples. Saving in bulk...`,
+                );
 
-            return {
-                id: uuid.v4(),
-                userId: userId || "guest",
-                weight: sample.value,
-                date: dateStr,
-                syncStatus: "pending",
-            };
-        });
+                // Prepare measurements for bulk insert
+                const measurements = samples.map((sample) => {
+                    const date = new Date(sample.date);
+                    const dateStr = date.toISOString().split("T")[0];
 
-        // Do a single transaction bulk save instead of 1000s of loop awaits
-        await DataRepository.saveBodyMeasurements(measurements);
+                    return {
+                        id: uuid.v4(),
+                        userId: userId || "guest",
+                        weight: sample.value,
+                        date: dateStr,
+                        syncStatus: "pending",
+                    };
+                });
 
-        console.log("HealthKit sync complete.");
+                // Do a single transaction bulk save instead of 1000s of loop awaits
+                await DataRepository.saveBodyMeasurements(measurements);
+
+                console.log("HealthKit sync complete.");
+            } finally {
+                this._syncPromise = null;
+            }
+        })();
+
+        return this._syncPromise;
     },
 };

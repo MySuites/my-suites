@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { useUITheme } from '@mysuite/ui';
 
 export interface SegmentedControlOption<T> {
   label: string;
@@ -19,23 +20,31 @@ export function SegmentedControl<T extends string>({
   onChange,
   containerClassName = '',
 }: SegmentedControlProps<T>) {
+  const theme = useUITheme();
   return (
-    <View className={`flex-row bg-light-muted dark:bg-dark-muted rounded-lg p-0.5 ${containerClassName}`}>
+    <View className={`flex-row bg-light/50 dark:bg-dark/50 rounded-lg p-0.5 ${containerClassName}`}>
       {options.map((option) => {
         const isActive = value === option.value;
         return (
           <Pressable
             key={option.value}
             onPress={() => onChange(option.value)}
-            className="flex-1 py-1.5 rounded-md items-center justify-center" // Changed px-4 to flex-1, reduced py slightly for better fit if needed
+            className="flex-1 py-1.5 rounded-md items-center justify-center"
             style={[
               styles.segment,
-              isActive && styles.activeSegment,
+              isActive && {
+                backgroundColor: theme.bgLight,
+                shadowColor: '#000',
+                shadowOpacity: 0.1,
+                shadowOffset: { width: 0, height: 1 },
+                shadowRadius: 2,
+                elevation: 2,
+              },
             ]}
           >
             <Text
               className="text-xs font-medium text-center"
-              style={{ color: isActive ? '#111827' : '#6b7280' }}
+              style={{ color: isActive ? theme.text : theme.textMuted }}
             >
               {option.label}
             </Text>
@@ -49,13 +58,5 @@ export function SegmentedControl<T extends string>({
 const styles = StyleSheet.create({
   segment: {
     backgroundColor: 'transparent',
-  },
-  activeSegment: {
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 2,
-    elevation: 2,
   },
 });

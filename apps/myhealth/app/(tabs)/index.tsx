@@ -167,13 +167,13 @@ export default function HomeScreen() {
     return { weightHistory: result, rangeAverage: avg };
   }, [allWeightHistory, selectedRange]);
 
-  useEffect(() => {
-     const task = InteractionManager.runAfterInteractions(() => {
-         fetchLatestWeight();
-         fetchAllWeightHistory().catch(err => console.error(err));
-     });
-     return () => task.cancel();
-  }, [user, fetchLatestWeight, fetchAllWeightHistory]);
+     useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            fetchLatestWeight();
+            fetchAllWeightHistory().catch(err => console.error(err));
+        });
+        return () => task.cancel();
+     }, [user, fetchLatestWeight, fetchAllWeightHistory]);
 
   const handleSaveWeight = async (weight: number, date: Date) => {
     try {

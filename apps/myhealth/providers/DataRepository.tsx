@@ -382,29 +382,36 @@ export const DataRepository = {
 
     seedDefaultExercises: async (): Promise<void> => {
         const db = await getDb();
-        console.log(`Seeding ${ExerciseDefaultData.length} default exercises (overwrite mode)...`);
+        console.log(`Seeding ${ExerciseDefaultData.length} default exercises in chunks...`);
         
-        await db.withTransactionAsync(async () => {
-            for (const exData of ExerciseDefaultData) {
-                 const ex = exData as any;
-                 await db.runAsync(`
-                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, created_at, updated_at, sync_status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
-                `, [
-                    ex.id, 
-                    ex.name,
-                    JSON.stringify([ex.muscle_group]), 
-                    ex.type,
-                    ex.description || null,
-                    ex.progressionId || null,
-                    ex.difficulty !== undefined ? ex.difficulty : (ex.progressionLevel || null),
-                    ex.isActiveProgression ? 1 : 0,
-                    ex.nextVariations ? JSON.stringify(ex.nextVariations) : JSON.stringify([]),
-                    new Date().toISOString(),
-                    Date.now()
-                ]);
-            }
-        });
+        // Use chunks to avoid overly large transactions and potential lock/memory issues
+        const CHUNK_SIZE = 50;
+        for (let i = 0; i < ExerciseDefaultData.length; i += CHUNK_SIZE) {
+            const chunk = ExerciseDefaultData.slice(i, i + CHUNK_SIZE);
+            console.log(`  Seeding chunk ${Math.floor(i / CHUNK_SIZE) + 1}...`);
+            
+            await db.withTransactionAsync(async () => {
+                for (const exData of chunk) {
+                    const ex = exData as any;
+                    await db.runAsync(`
+                        INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, created_at, updated_at, sync_status)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
+                    `, [
+                        ex.id, 
+                        ex.name,
+                        JSON.stringify([ex.muscle_group]), 
+                        ex.type,
+                        ex.description || null,
+                        ex.progressionId || null,
+                        ex.difficulty !== undefined ? ex.difficulty : (ex.progressionLevel || null),
+                        ex.isActiveProgression ? 1 : 0,
+                        ex.nextVariations ? JSON.stringify(ex.nextVariations) : JSON.stringify([]),
+                        new Date().toISOString(),
+                        Date.now()
+                    ]);
+                }
+            });
+        }
         console.log("Seeding complete.");
     },
 

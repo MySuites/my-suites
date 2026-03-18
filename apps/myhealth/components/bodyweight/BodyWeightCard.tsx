@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { BodyWeightChart } from './BodyWeightChart';
 import { SegmentedControl, SegmentedControlOption } from '../ui/SegmentedControl';
-import { RaisedCard, HollowedCard, useUITheme, Skeleton, IconSymbol } from '@mysuite/ui';
+import { HollowedCard, useUITheme, Skeleton, IconSymbol, RaisedCard } from '@mysuite/ui';
 
 // Defined locally to avoid circular dependencies if any
 // Update: Importing from TimeSeriesChart to ensure consistency
@@ -89,7 +89,7 @@ export function BodyWeightCard({
   };
 
   return (
-    <RaisedCard className="p-4 mb-4">
+    <View className="mb-4">
       <View className="flex-row justify-between items-center mb-2">
         <View className="flex-row items-center">
             <Text className="font-semibold text-base text-light dark:text-dark">Body Weight</Text>
@@ -192,6 +192,6 @@ export function BodyWeightCard({
             </HollowedCard>
         )}
       </View>
-    </RaisedCard>
+    </View>
   );
 }

@@ -12,90 +12,116 @@ export const getDb = async () => {
 export const initDatabase = async () => {
     const database = await getDb();
 
-    // Create tables if they don't exist
-    await database.execAsync(`
-        PRAGMA journal_mode = WAL;
+    console.log("[DB] Starting create tables...");
+    try {
+        await database.execAsync(`
+            CREATE TABLE IF NOT EXISTS workouts (
+                id TEXT PRIMARY KEY,
+                user_id TEXT,
+                name TEXT,
+                exercises TEXT,
+                created_at TEXT,
+                updated_at INTEGER,
+                deleted_at INTEGER,
+                sync_status TEXT DEFAULT 'pending'
+            );
+        `);
+        console.log("[DB] Created workouts");
         
-        CREATE TABLE IF NOT EXISTS workouts (
-            id TEXT PRIMARY KEY,
-            user_id TEXT,
-            name TEXT,
-            exercises TEXT, -- JSON string
-            created_at TEXT,
-            updated_at INTEGER,
-            deleted_at INTEGER,
-            sync_status TEXT DEFAULT 'pending'
-        );
+        await database.execAsync(`
+            CREATE TABLE IF NOT EXISTS workout_logs (
+                id TEXT PRIMARY KEY,
+                user_id TEXT,
+                workout_date TEXT, 
+                workout_name TEXT,
+                duration INTEGER,
+                note TEXT,
+                created_at TEXT,
+                updated_at INTEGER,
+                deleted_at INTEGER,
+                sync_status TEXT DEFAULT 'pending'
+            );
+        `);
+        console.log("[DB] Created workout_logs");
 
-        CREATE TABLE IF NOT EXISTS workout_logs (
-            id TEXT PRIMARY KEY,
-            user_id TEXT,
-            workout_date TEXT, -- date alias
-            workout_name TEXT,
-            duration INTEGER,
-            note TEXT,
-            created_at TEXT,
-            updated_at INTEGER,
-            deleted_at INTEGER,
-            sync_status TEXT DEFAULT 'pending'
-        );
+        await database.execAsync(`
+            CREATE TABLE IF NOT EXISTS set_logs (
+                id TEXT PRIMARY KEY,
+                workout_log_id TEXT,
+                exercise_id TEXT,
+                exercise_name TEXT,
+                weight REAL,
+                reps INTEGER,
+                distance REAL,
+                duration INTEGER,
+                bodyweight BOOLEAN,
+                created_at TEXT,
+                sync_status TEXT DEFAULT 'pending',
+                FOREIGN KEY(workout_log_id) REFERENCES workout_logs(id)
+            );
+        `);
+        console.log("[DB] Created set_logs");
 
-        CREATE TABLE IF NOT EXISTS set_logs (
-            id TEXT PRIMARY KEY,
-            workout_log_id TEXT,
-            exercise_id TEXT,
-            exercise_name TEXT, -- denormalized for speed
-            weight REAL,
-            reps INTEGER,
-            distance REAL,
-            duration INTEGER,
-            bodyweight BOOLEAN,
-            created_at TEXT,
-            sync_status TEXT DEFAULT 'pending',
-            FOREIGN KEY(workout_log_id) REFERENCES workout_logs(id)
-        );
+        await database.execAsync(`
+            CREATE TABLE IF NOT EXISTS body_measurements (
+                id TEXT PRIMARY KEY,
+                user_id TEXT,
+                weight REAL,
+                date TEXT,
+                created_at TEXT,
+                updated_at INTEGER,
+                sync_status TEXT DEFAULT 'pending'
+            );
+        `);
+        console.log("[DB] Created body_measurements");
 
-        CREATE TABLE IF NOT EXISTS body_measurements (
-            id TEXT PRIMARY KEY,
-            user_id TEXT,
-            weight REAL,
-            date TEXT,
-            created_at TEXT,
-            updated_at INTEGER,
-            sync_status TEXT DEFAULT 'pending'
-        );
+        await database.execAsync(`
+            CREATE TABLE IF NOT EXISTS profiles (
+                id TEXT PRIMARY KEY,
+                email TEXT,
+                username TEXT,
+                full_name TEXT,
+                active_routine TEXT,
+                updated_at INTEGER,
+                sync_status TEXT DEFAULT 'pending'
+            );
+        `);
+        console.log("[DB] Created profiles");
 
-        CREATE TABLE IF NOT EXISTS profiles (
-            id TEXT PRIMARY KEY,
-            email TEXT,
-            username TEXT,
-            full_name TEXT,
-            active_routine TEXT, -- JSON { id, dayIndex, lastCompletedDate }
-            updated_at INTEGER,
-            sync_status TEXT DEFAULT 'pending'
-        );
+        await database.execAsync(`
+            CREATE TABLE IF NOT EXISTS routines (
+                id TEXT PRIMARY KEY,
+                name TEXT,
+                sequence TEXT,
+                created_at TEXT,
+                updated_at INTEGER,
+                deleted_at INTEGER,
+                sync_status TEXT DEFAULT 'pending'
+            );
+        `);
+        console.log("[DB] Created routines");
 
-        CREATE TABLE IF NOT EXISTS routines (
-            id TEXT PRIMARY KEY,
-            name TEXT,
-            sequence TEXT, -- JSON string
-            created_at TEXT,
-            updated_at INTEGER,
-            deleted_at INTEGER,
-            sync_status TEXT DEFAULT 'pending'
-        );
-
-        CREATE TABLE IF NOT EXISTS exercises (
-            id TEXT PRIMARY KEY,
-            name TEXT,
-            muscle_groups TEXT, -- JSON
-            properties TEXT,
-            description TEXT,
-            created_at TEXT,
-            updated_at INTEGER,
-            sync_status TEXT DEFAULT 'synced' -- Libraries are usually synced from server
-        );
-    `);
+        await database.execAsync(`
+            CREATE TABLE IF NOT EXISTS exercises (
+                id TEXT PRIMARY KEY,
+                name TEXT,
+                muscle_groups TEXT,
+                properties TEXT,
+                description TEXT,
+                progression_id TEXT,
+                difficulty REAL,
+                is_active_progression INTEGER,
+                next_variations TEXT,
+                created_at TEXT,
+                updated_at INTEGER,
+                deleted_at INTEGER,
+                sync_status TEXT DEFAULT 'synced'
+            );
+        `);
+        console.log("[DB] Created exercises");
+    } catch (createErr) {
+        console.error("[DB] FATAL ERROR CREATING TABLES:", createErr);
+    }
 
     // Migrations: Ensure new columns exist for existing installations
     const safeAddColumn = async (
@@ -104,7 +130,7 @@ export const initDatabase = async () => {
         def: string,
     ) => {
         try {
-            await database.execAsync(
+            await database.runAsync(
                 `ALTER TABLE ${table} ADD COLUMN ${column} ${def}`,
             );
         } catch {
@@ -118,9 +144,9 @@ export const initDatabase = async () => {
         newName: string,
     ) => {
         try {
-            // Check if old column exists and new one doesn't (SQLite doesn't support IF EXISTS in ALTER RENAME directly usually, but standard execAsync fail is fine)
+            // Check if old column exists and new one doesn't
             // Simpler: Just try rename. If it fails, it's likely already renamed or old doesn't exist.
-            await database.execAsync(
+            await database.runAsync(
                 `ALTER TABLE ${table} RENAME COLUMN ${oldName} TO ${newName}`,
             );
         } catch {
@@ -145,20 +171,16 @@ export const initDatabase = async () => {
 
     await safeRenameColumn("workout_logs", "workout_time", "workout_date");
 
-    await safeRenameColumn("workout_logs", "workout_time", "workout_date");
-
-    // Cleanup ghost data (null IDs) caused by previous bug
     try {
-        await database.execAsync(`
-            DELETE FROM workouts WHERE id IS NULL OR id = 'null';
-            DELETE FROM workout_logs WHERE id IS NULL OR id = 'null';
-            DELETE FROM set_logs WHERE id IS NULL OR id = 'null';
-            DELETE FROM body_measurements WHERE id IS NULL OR id = 'null';
-            DELETE FROM routines WHERE id IS NULL OR id = 'null';
-        `);
-        console.log("Cleanup of ghost data complete");
+        console.log("[DB] Starting ghost data cleanup...");
+        await database.execAsync(`DELETE FROM workouts WHERE id IS NULL OR id = 'null';`);
+        await database.execAsync(`DELETE FROM workout_logs WHERE id IS NULL OR id = 'null';`);
+        await database.execAsync(`DELETE FROM set_logs WHERE id IS NULL OR id = 'null';`);
+        await database.execAsync(`DELETE FROM body_measurements WHERE id IS NULL OR id = 'null';`);
+        await database.execAsync(`DELETE FROM routines WHERE id IS NULL OR id = 'null';`);
+        console.log("[DB] Cleanup of ghost data complete");
     } catch (e) {
-        console.error("Failed to cleanup ghost data", e);
+        console.error("[DB] Failed to cleanup ghost data", e);
     }
 
     console.log("Database initialized successfully");

@@ -109,11 +109,32 @@ export const HealthKitService = {
                 value: sample.quantity,
             }));
         } catch (error) {
-            console.error(
-                "[HealthKitService] Error fetching body mass:",
-                error,
-            );
+            console.error("[HealthKitService] Error fetching body mass:", error);
             return [];
+        }
+    },
+    
+    /**
+     * Save a weight sample to HealthKit.
+     * @param weight The weight in lbs
+     * @param date The date of the measurement
+     */
+    saveBodyMass: async (weight: number, date: Date): Promise<void> => {
+        try {
+            const HealthKit = getHealthKit();
+            await HealthKit.saveQuantitySample(
+                "HKQuantityTypeIdentifierBodyMass",
+                "lb",
+                weight,
+                {
+                    start: date,
+                    end: date,
+                },
+            );
+            console.log("[HealthKitService] Weight saved successfully to Health app");
+        } catch (error) {
+            console.error("[HealthKitService] Error saving weight to Health app:", error);
+            // Don't throw, just log. This shouldn't crash the app's local save.
         }
     },
 };

@@ -80,7 +80,7 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
                             onPress={handleSave} 
                             disabled={!weight}
                             style={{ borderRadius: 9999 }}
-                            className={`w-12 h-12 p-0 rounded-full items-center justify-center ${!weight ? 'opacity-40' : ''}`}
+                            className={`w-12 h-12 p-0 rounded-full items-center justify-center active:h-11 ${!weight ? 'opacity-40' : ''}`}
                         >
                             <IconSymbol name="checkmark" size={24} color={theme.primary} />
                         </RaisedCard>
