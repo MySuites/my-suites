@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, Alert, ScrollView, Switch, InteractionManager } from 'react-native';
-import { useAuth, supabase } from '@mysuite/auth';
 import { useUITheme, ThemeToggle, IconSymbol, useToast, RaisedCard } from '@mysuite/ui';
+
 import { DataRepository } from '../../providers/DataRepository';
 import { useThemePreference } from '../../providers/AppThemeProvider';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -14,7 +14,6 @@ const PRIVACY_POLICY_URL = 'https://mysuites.github.io/myhealth-privacy_policy/'
 const TERMS_OF_SERVICE_URL = 'https://mysuites.github.io/myhealth-terms_of_service/';
 
 export default function SettingsScreen() {
-  const { user } = useAuth();
   const theme = useUITheme();
   const { preference, setPreference } = useThemePreference();
   const { showToast } = useToast();
@@ -22,9 +21,7 @@ export default function SettingsScreen() {
   const handleDeleteData = () => {
     Alert.alert(
         "Delete All Data?",
-        user 
-          ? "This will permanently delete ALL workouts, logs, and measurements from both this device AND the cloud. This action cannot be undone."
-          : "This will permanently delete ALL workouts, logs, and measurements stored on this device. This action cannot be undone.",
+        "This will permanently delete ALL workouts, logs, and measurements stored on this device. This action cannot be undone.",
         [
             { text: "Cancel", style: "cancel" },
             { 
@@ -32,27 +29,16 @@ export default function SettingsScreen() {
                 style: "destructive", 
                 onPress: async () => {
                     try {
-                        
-                        // 1. Delete Local Data (Always)
+                        // 1. Delete Local Data
                         await DataRepository.clearAllLocalData();
                         
-                        // 2. Reseed Default Data (to fix any schema/data changes)
+                        // 2. Reseed Default Data
                         await DataRepository.seedDefaultExercises();
-                        
-                        // 3. Delete Cloud Data (If signed in)
-                        if (user) {
-                            await supabase.from('workouts').delete().eq('user_id', user.id);
-                            await supabase.from('workout_logs').delete().eq('user_id', user.id);
-                            await supabase.from('set_logs').delete().eq('user_id', user.id).then(async ({error}) => {
-                            });
-                             await supabase.from('body_measurements').delete().eq('user_id', user.id);
-                             await supabase.from('routines').delete().eq('user_id', user.id);
-                        }
 
-                        // 4. Disable HealthKit Sync
+                        // 3. Disable HealthKit Sync
                         await HealthKitService.disableSync();
 
-                        // 5. Refresh State
+                        // 4. Refresh State
                         await checkHealthStatus();
                         
                         showToast({ message: "All data reset and reseeded", type: 'success' });
@@ -79,20 +65,20 @@ export default function SettingsScreen() {
         // Defer heavy bridge work (HealthKit APIs) until after the screen transition is fully settled
         timeout = setTimeout(() => {
             checkHealthStatus();
-            BodyWeightService.syncWithHealthKit(user?.id || null);
+            BodyWeightService.syncWithHealthKit(null);
         }, 200);
     });
     return () => {
         task.cancel();
         if (timeout) clearTimeout(timeout);
     };
-  }, [user?.id, checkHealthStatus]);
+  }, [checkHealthStatus]);
 
   const handleConnectHealth = async () => {
     try {
       await HealthKitService.initHealthKit();
       await HealthKitService.enableSync();
-      await BodyWeightService.syncWithHealthKit(user?.id || null);
+      await BodyWeightService.syncWithHealthKit(null);
       showToast({ message: "HealthKit synced successfully", type: 'success' });
       await checkHealthStatus();
     } catch (error) {
