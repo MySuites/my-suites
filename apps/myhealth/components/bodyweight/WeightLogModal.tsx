@@ -61,7 +61,7 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
             </TouchableWithoutFeedback>
             
             {/* Modal content */}
-            <View className="bg-light-lighter dark:bg-dark-lighter rounded-t-3xl overflow-hidden" style={{ maxHeight: '90%' }}>
+            <View className="bg-light dark:bg-dark-lighter rounded-t-3xl overflow-hidden" style={{ maxHeight: '90%' }}>
                 <ScrollView 
                     bounces={false} 
                     showsVerticalScrollIndicator={false}
@@ -71,7 +71,7 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
                         <RaisedCard 
                             onPress={onClose} 
                             style={{ borderRadius: 9999 }}
-                            className="w-12 h-12 p-0 rounded-full items-center justify-center"
+                            className="w-12 h-12 p-0 rounded-full items-center justify-center active:h-11"
                         >
                             <IconSymbol name="xmark" size={22} color={theme.primary} />
                         </RaisedCard>

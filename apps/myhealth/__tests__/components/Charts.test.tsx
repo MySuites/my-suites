@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { BodyWeightChart } from '../../components/profile/BodyWeightChart';
+import { BodyWeightChart } from '../../components/bodyweight/BodyWeightChart';
 import * as RN from 'react-native';
 
 const mockRN = RN;

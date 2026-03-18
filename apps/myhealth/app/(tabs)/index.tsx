@@ -5,8 +5,8 @@ import { RaisedCard, useUITheme, IconSymbol, useToast } from '@mysuite/ui';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { SettingsButton } from '../../components/ui/SettingsButton';
-import { BodyWeightCard } from '../../components/profile/BodyWeightCard';
-import { WeightLogModal } from '../../components/profile/WeightLogModal';
+import { BodyWeightCard } from '../../components/bodyweight/BodyWeightCard';
+import { WeightLogModal } from '../../components/bodyweight/WeightLogModal';
 import { BodyWeightService, BodyWeightEntry } from '../../services/BodyWeightService';
 import { DateRange } from '../../components/ui/TimeSeriesChart';
 
