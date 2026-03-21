@@ -63,12 +63,9 @@
         "expo-build-properties",
         {
           "ios": {
-            "extraPods": [
-              {
-                "name": "ENABLE_USER_SCRIPT_SANDBOXING",
-                "path": "NO"
-              }
-            ]
+            "buildSettings": {
+              "ENABLE_USER_SCRIPT_SANDBOXING": "NO"
+            }
           }
         }
       ]
