@@ -58,6 +58,19 @@
           "NSHealthShareUsageDescription": "Read your body weight data to sync with MyHealth.",
           "NSHealthUpdateUsageDescription": "Save your body weight data to Apple Health."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "extraPods": [
+              {
+                "name": "ENABLE_USER_SCRIPT_SANDBOXING",
+                "path": "NO"
+              }
+            ]
+          }
+        }
       ]
     ],
     "experiments": {
