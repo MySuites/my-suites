@@ -70,7 +70,6 @@ function RootLayoutContent({ isDbReady, setIsDbReady }: { isDbReady: boolean, se
         console.error("App setup failed:", err);
       } finally {
         setIsDbReady(true);
-        SplashScreen.hideAsync();
       }
     }
     
@@ -78,6 +77,14 @@ function RootLayoutContent({ isDbReady, setIsDbReady }: { isDbReady: boolean, se
       setupApp();
     }
   }, [isDbReady, setIsDbReady]);
+
+  useEffect(() => {
+    // Only hide splash screen once DB is ready
+    // Auth is synchronous guest mode, so no loading state needed
+    if (isDbReady) {
+      SplashScreen.hideAsync();
+    }
+  }, [isDbReady]);
 
   useEffect(() => {
     if (user && isDbReady) {
