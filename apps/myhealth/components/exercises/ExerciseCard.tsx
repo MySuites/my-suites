@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Exercise } from '../../providers/WorkoutManagerProvider';
 import { RaisedCard, HollowedCard, IconSymbol } from '@mysuite/ui';
 import { SetRow, getExerciseFields } from '../workouts/SetRow';
@@ -27,8 +27,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
     const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(exercise.properties, exercise.id);
 
     return (
-        <RaisedCard>
-
+        <>
             <View className="flex-row justify-between items-center p-4">
                 <View className="flex-1">
                     <Text className="text-lg font-bold text-light dark:text-dark">{exercise.name}</Text>
@@ -79,23 +78,15 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
 
 
                 {/* Add Set Button */}
-                <View className="items-center justify-center mt-1">
-                    <HollowedCard 
-                        onPress={onAddSet} 
-                        className="py-3 w-full items-center justify-center p-3"
-                    >
-                        {({ pressed }) => (
-                            <Text 
-                                className="text-sm font-semibold text-center text-primary dark:text-primary-dark"
-                                style={{ opacity: pressed ? 0.4 : 1 }}
-                            >
-                                + Add Set
-                            </Text>
-                        )}
-                    </HollowedCard>
-                </View>
+                        <TouchableOpacity 
+                            onPress={onAddSet}
+                            className="flex-row items-center justify-center p-2 mt-1 rounded-lg border border-dashed border-black/10 dark:border-white/10"
+                        >
+                            <IconSymbol name="plus" size={14} color={theme.primary} />
+                            <Text className="ml-2 text-sm text-primary dark:text-primary-dark font-medium">Add Set</Text>
+                        </TouchableOpacity>
             </View>
-        </RaisedCard>
+        </>
     );
 }
 
