@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.mysuite.myhealth",
+      "icon": "./assets/images/Lotus_Icon.png",
       "appleTeamId": "7Y22TWVLZ2",
       "buildNumber": "1",
       "config": {
