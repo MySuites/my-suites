@@ -31,6 +31,7 @@ export function BodyWeightChart({ data, color = '#3b82f6', textColor = '#9ca3af'
         aggregation={aggregation}
         onPointSelect={onPointSelect}
         height={150}
+        paddingHorizontal={32}
     />
   );
 }

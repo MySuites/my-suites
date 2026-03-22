@@ -15,6 +15,7 @@ interface TimeSeriesChartProps {
   aggregation?: AggregationType;
   onPointSelect?: (item: { value: number; date: string } | null) => void;
   height?: number;
+  paddingHorizontal?: number;
 }
 
 export function TimeSeriesChart({ 
@@ -25,7 +26,8 @@ export function TimeSeriesChart({
   selectedRange, 
   aggregation,
   onPointSelect,
-  height = 150
+  height = 150,
+  paddingHorizontal = 70
 }: TimeSeriesChartProps) {
   
   // Pre-process data if aggregation is requested
@@ -179,9 +181,8 @@ export function TimeSeriesChart({
   const sortedData = [...processedData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const screenWidth = Dimensions.get('window').width;
-  const paddingHorizontal = 70; // Card mx-4 (32) + p-4 (32)
-  const yAxisWidth = 30; // Dedicated space for custom Y-axis labels
-  const availableChartWidth = screenWidth - paddingHorizontal - yAxisWidth;
+  const yAxisWidth = 20; // Dedicated space for custom Y-axis labels
+  const availableChartWidth = screenWidth - paddingHorizontal - yAxisWidth - 8; // Subtract 8 for marginLeft
   
   // We want the chart to fill the available width exactly
   let computedWidth = availableChartWidth;

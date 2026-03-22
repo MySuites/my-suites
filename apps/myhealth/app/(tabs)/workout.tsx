@@ -156,17 +156,6 @@ export default function Workout() {
                         <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">Saved Workouts</Text>
                         <View className="flex-row gap-4 h-12">
                             <RaisedCard 
-                                onPress={handleCreateSavedWorkout}
-                                style={{ borderRadius: 9999 }}
-                                className="w-12 p-0 my-0 items-center justify-center"
-                            >
-                                <IconSymbol 
-                                    name="plus" 
-                                    size={24} 
-                                    color={theme.primary} 
-                                />
-                            </RaisedCard>
-                            <RaisedCard 
                                 onPress={() => router.push('/workouts/saved')}
                                 style={{ borderRadius: 9999 }}
                                 className="w-12 p-0 my-0 items-center justify-center"
