@@ -185,6 +185,13 @@ export function ActiveWorkoutOverlay() {
                                         updateExercise={updateExercise}
                                         onRemoveExercise={removeExercise}
                                         latestBodyWeight={latestBodyWeight}
+                                        onPressName={() => {
+                                            setExpanded(false);
+                                            router.push({
+                                                pathname: '/exercises/details' as any,
+                                                params: { exercise: JSON.stringify(exercise) }
+                                            });
+                                        }}
                                     />
                                 </View>
                             ))}
@@ -262,6 +269,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     updateExercise,
     onRemoveExercise,
     latestBodyWeight,
+    onPressName,
 }: {
     exercise: any;
     index: number;
@@ -270,6 +278,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     updateExercise: (exerciseIndex: number, updates: any) => void;
     onRemoveExercise: (index: number) => void;
     latestBodyWeight: number | null;
+    onPressName?: () => void;
 }) {
     const theme = useUITheme();
 
@@ -278,6 +287,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
             exercise={exercise}
             isCurrent={isCurrent}
             onRemoveExercise={() => onRemoveExercise(index)}
+            onPressName={onPressName}
 
             theme={theme}
             latestBodyWeight={latestBodyWeight}

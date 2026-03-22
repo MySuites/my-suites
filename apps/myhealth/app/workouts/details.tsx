@@ -419,6 +419,12 @@ export default function CreateWorkoutScreen() {
                         index={index}
                         isExpanded={true}
                         onToggleExpand={() => {}}
+                        onPressName={() => {
+                            router.push({
+                                pathname: '/exercises/details' as any,
+                                params: { exercise: JSON.stringify(item) }
+                            });
+                        }}
                         onMove={(dir) => moveExercise(index, dir)}
                         onRemove={() => removeExercise(index)}
                         onUpdateSet={(setIndex, field, value) => updateSetTarget(index, setIndex, field, value)}

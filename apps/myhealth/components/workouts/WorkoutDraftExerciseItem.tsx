@@ -15,6 +15,7 @@ export interface WorkoutDraftExerciseItemProps {
     onRemoveSet: (setIndex: number) => void;
     latestBodyWeight?: number | null;
     isEditing: boolean;
+    onPressName?: () => void;
 }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -30,7 +31,8 @@ export const WorkoutDraftExerciseItem = ({
     onAddSet,
     onRemoveSet,
     latestBodyWeight,
-    isEditing
+    isEditing,
+    onPressName
 }: WorkoutDraftExerciseItemProps) => {
     const theme = useTheme();
     const [menuVisible, setMenuVisible] = useState(false);
@@ -86,7 +88,7 @@ export const WorkoutDraftExerciseItem = ({
         >
             <View className="flex-row justify-between items-center">
                 <TouchableOpacity 
-                onPress={onToggleExpand}
+                onPress={onPressName || onToggleExpand}
                 className="p-3 flex-1"
                 style={{ zIndex: menuVisible ? 999 : 1, elevation: menuVisible ? 999 : 1 }}>
                     <Text className="text-base text-light dark:text-dark leading-6 font-semibold">{item.name}</Text>

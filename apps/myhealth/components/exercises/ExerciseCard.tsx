@@ -14,12 +14,13 @@ interface ExerciseCardProps {
     onAddSet: () => void;
     onDeleteSet: (index: number) => void;
     onRemoveExercise?: () => void;
+    onPressName?: () => void;
 
     theme: any;
     latestBodyWeight?: number | null;
 }
 
-export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onAddSet, onDeleteSet, onRemoveExercise, theme, latestBodyWeight }: ExerciseCardProps) {
+export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onAddSet, onDeleteSet, onRemoveExercise, onPressName, theme, latestBodyWeight }: ExerciseCardProps) {
     // Derived state
     const completedSets = exercise.completedSets || 0;
     const isFinished = completedSets >= exercise.sets;
@@ -29,9 +30,9 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
     return (
         <>
             <View className="flex-row justify-between items-center p-4">
-                <View className="flex-1">
+                <TouchableOpacity className="flex-1" onPress={onPressName} disabled={!onPressName}>
                     <Text className="text-lg font-bold text-light dark:text-dark">{exercise.name}</Text>
-                </View>
+                </TouchableOpacity>
                 <View className="flex-row items-center gap-3">
                     {isFinished && <IconSymbol name="checkmark.circle.fill" size={24} color={theme.primary} />}
                     {onRemoveExercise && (
