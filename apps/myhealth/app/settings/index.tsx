@@ -108,7 +108,7 @@ export default function SettingsScreen() {
             <Text className="text-base text-light dark:text-dark">Privacy Policy</Text>
             <RaisedCard 
               onPress={() => WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL)}
-              className="w-10 h-10 p-0 rounded-full items-center justify-center"
+              className="w-10 h-10 active:h-9 p-0 rounded-full items-center justify-center"
               style={{ borderRadius: 9999 }}
             >
               <IconSymbol name="chevron.right" size={20} color={theme.primary} />
@@ -118,7 +118,7 @@ export default function SettingsScreen() {
             <Text className="text-base text-light dark:text-dark">Terms of Service</Text>
             <RaisedCard 
               onPress={() => WebBrowser.openBrowserAsync(TERMS_OF_SERVICE_URL)}
-              className="w-10 h-10 p-0 rounded-full items-center justify-center"
+              className="w-10 h-10 active:h-9 p-0 rounded-full items-center justify-center"
               style={{ borderRadius: 9999 }}
             >
               <IconSymbol name="chevron.right" size={20} color={theme.primary} />
