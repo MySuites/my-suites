@@ -167,7 +167,7 @@ export function ActiveWorkoutOverlay() {
             >
                 {renderHeader()}
                 <View className="flex-1">
-                <ScrollView contentContainerStyle={{ padding: 12, paddingTop: insets.top + 80, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+                <ScrollView contentContainerStyle={{ padding: 4, paddingTop: insets.top + 80, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
                      {(!exercises || exercises.length === 0) ? (
                         <View className="flex-1 items-center justify-center py-20">
                             <Text className="text-xl text-light dark:text-dark mb-6 text-center">No exercises found</Text>

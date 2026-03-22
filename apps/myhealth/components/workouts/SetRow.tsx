@@ -10,7 +10,8 @@ import Animated, {
     Extrapolation,
     withTiming,
     Easing,
-    SharedValue
+    SharedValue,
+    withSequence
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { IconSymbol } from "@mysuite/ui";
@@ -108,10 +109,27 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
 
     const cardOffset = useSharedValue(0);
     const rowWidth = useSharedValue(0);
+    const scale = useSharedValue(1);
+    const bgOpacity = useSharedValue(isCompleted ? 1 : 0);
+    const prevCompletedRef = useRef(isCompleted);
+
+    React.useEffect(() => {
+        if (isCompleted && !prevCompletedRef.current) {
+            scale.value = withSequence(
+                withTiming(1.06, { duration: 100 }),
+                withTiming(1, { duration: 150 })
+            );
+        }
+        bgOpacity.value = withTiming(isCompleted ? 1 : 0, { duration: 250 });
+        prevCompletedRef.current = isCompleted;
+    }, [isCompleted, scale, bgOpacity]);
 
     const animatedRowStyle = useAnimatedStyle(() => {
         return {
-            transform: [{ translateX: cardOffset.value }]
+            transform: [
+                { translateX: cardOffset.value },
+                { scale: scale.value }
+            ]
         };
     });
 
@@ -144,12 +162,18 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
             containerStyle={{ overflow: 'visible' }}
         >
              <Animated.View 
-                className={`flex-row items-center mb-2 h-11 px-1 ${isEvenSet ? 'bg-light dark:bg-dark rounded-lg' : ''}`}
+                className={`flex-row items-center mb-2 h-11 px-1 ${isEvenSet ? 'bg-light dark:bg-dark' : ''} rounded-lg overflow-hidden`}
                 style={animatedRowStyle}
                 onLayout={(e) => {
                     rowWidth.value = e.nativeEvent.layout.width;
                 }}
              >
+                 {/* Background completion overlay */}
+                 <Animated.View 
+                     className="absolute inset-0 bg-primary/25 dark:bg-primary-dark/40"
+                     style={useAnimatedStyle(() => ({ opacity: bgOpacity.value }))}
+                 />
+
                  {/* Set Number */}
                  <View className="w-[30px] items-center justify-center">
                      <Text className="text-xs font-bold text-light dark:text-dark">{index + 1}</Text>
