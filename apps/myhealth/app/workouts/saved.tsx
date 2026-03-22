@@ -1,8 +1,9 @@
 import React from 'react';
-import { FlatList, TouchableOpacity, View, Alert, Text } from 'react-native';
+import { FlatList, View, Alert, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
+import { SavedWorkoutItem } from '../../components/workouts/SavedWorkoutItem';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -12,8 +13,9 @@ export default function SavedWorkoutsScreen() {
   const router = useRouter();
   const theme = useUITheme();
   
-  const { savedWorkouts, isLoading } = useWorkoutManager();
-  const { hasActiveSession, startWorkout } = useActiveWorkout();
+  const { savedWorkouts, isLoading, deleteSavedWorkout } = useWorkoutManager();
+  const { hasActiveSession, startWorkout, finishWorkout, cancelWorkout } = useActiveWorkout();
+  const [activeSwipedCardId, setActiveSwipedCardId] = React.useState<string | null>(null);
   
   // Hide floating buttons
   const { setIsHidden } = useFloatingButton();
@@ -24,11 +26,27 @@ export default function SavedWorkoutsScreen() {
 
   const handleStart = (id: string, name: string, workoutExercises: any[]) => {
       if (hasActiveSession) {
-          Alert.alert("Active Session", "Please finish or cancel your current workout before starting a new one.");
-          return;
+          Alert.alert(
+              "Active Workout",
+              "You have an active workout. What would you like to do?",
+              [
+                  { text: "Cancel", style: "cancel" },
+                  { text: "Stop Current", onPress: () => { finishWorkout(); router.back(); } },
+                  { 
+                      text: "Replace", 
+                      style: "destructive", 
+                      onPress: () => {
+                          cancelWorkout();
+                          setTimeout(() => startWorkout(workoutExercises || [], name, undefined, id), 100);
+                          router.back();
+                      }
+                  }
+              ]
+          );
+      } else {
+          startWorkout(workoutExercises || [], name, undefined, id);
+          router.back();
       }
-      startWorkout(workoutExercises || [], name, undefined, id);
-      router.back();
   };
 
 
@@ -77,39 +95,22 @@ export default function SavedWorkoutsScreen() {
           <FlatList
             data={savedWorkouts}
             keyExtractor={(item) => item.id}
+            ItemSeparatorComponent={() => <View className="h-3" />}
             renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => {
-                  router.push({
-                      pathname: '/workouts/details',
-                      params: { id: item.id }
-                  });
-              }} activeOpacity={0.7}>
-              <RaisedCard className="flex-row items-center justify-between p-4 mb-3">
-                <View className="flex-1">
-                    <Text className="text-base leading-6 font-semibold text-light dark:text-dark">{item.name}</Text>
-                    <Text className="text-xs text-light-muted dark:text-dark-muted">
-                        {new Date(item.createdAt).toLocaleDateString()}
-                    </Text> 
-                </View>
-                <View className="flex-row gap-2">
-                    <RaisedCard 
-                        onPress={(e) => {
-                            e.stopPropagation();
-                            handleStart(item.id, item.name, item.exercises);
-                        }}
-                        style={{ borderRadius: 9999 }}
-                        className="w-10 h-10 p-0 my-0 rounded-full items-center justify-center"
-                    >
-                        <IconSymbol 
-                            name="play.fill" 
-                            size={20} 
-                            color={theme.primary} 
-                        />
-                    </RaisedCard>
-
-                </View>
-              </RaisedCard>
-              </TouchableOpacity>
+                <SavedWorkoutItem
+                    item={item}
+                    onEdit={() => {
+                        router.push({
+                            pathname: '/workouts/details',
+                            params: { id: item.id }
+                        });
+                    }}
+                    onStart={() => handleStart(item.id, item.name, item.exercises)}
+                    onDelete={() => deleteSavedWorkout(item.id, { skipConfirmation: true })}
+                    swipeGroupId={item.id}
+                    activeSwipeId={activeSwipedCardId}
+                    onSwipeStart={setActiveSwipedCardId}
+                />
             )}
             className="flex-1"
             contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 16, paddingTop: 124 }}
