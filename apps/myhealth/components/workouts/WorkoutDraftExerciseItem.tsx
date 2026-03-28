@@ -76,9 +76,26 @@ export const WorkoutDraftExerciseItem = ({
     const rawTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || 0, weight: 0 }));
     const currentTargets = rawTargets.map((t: any) => ({
         ...t,
-        duration: t.duration || (showDuration ? (item.duration || item.reps) : 0),
-        distance: t.distance || 0
+        weight: t.weight,
+        reps: t.reps,
+        duration: t.duration,
+        distance: t.distance
     }));
+
+    const isZeroValue = (val: any) => val === 0 || val === '0' || val === '0.0';
+    const getTextColorClass = (val: any, defaultClass = "text-light dark:text-dark") => 
+        (val === undefined || val === null || val === '') ? "text-light-muted dark:text-dark-muted" : defaultClass;
+
+    const handleNumericChange = (text: string, currentVal: any, onUpdate: (v: string) => void) => {
+        const currentStr = String(currentVal);
+        if (isZeroValue(currentStr) && text.length > 0) {
+            if (text.length > 1 && text.startsWith('0') && text[1] !== '.') {
+                onUpdate(text.substring(1));
+                return;
+            }
+        }
+        onUpdate(text);
+    };
 
     return (
         <View 
@@ -186,70 +203,74 @@ export const WorkoutDraftExerciseItem = ({
                                 </View>
                             )}
 
-                            {showWeight && (
+                             {showWeight && (
                                 <View className="flex-1 flex-row justify-center">
                                     {_isEditing ? (
                                         <TextInput 
-                                            value={String(set.weight || 0)} 
+                                            value={set.weight !== undefined && set.weight !== null ? String(set.weight) : ''} 
                                             keyboardType="numeric"
-                                            onChangeText={(v) => onUpdateSet(setIdx, 'weight', v)}
-                                            className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
+                                            onChangeText={(v) => handleNumericChange(v, set.weight, (newVal) => onUpdateSet(setIdx, 'weight', newVal))}
+                                            className={`bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center ${getTextColorClass(set.weight)}`}
+                                            placeholder="-"
                                             selectTextOnFocus
                                             editable={_isEditing}
                                         />
                                     ) : (
-                                        <Text className="text-light dark:text-dark font-medium">{set.weight || 0}</Text>
+                                        <Text className={`font-medium ${getTextColorClass(set.weight)}`}>{set.weight !== undefined && set.weight !== null ? set.weight : "-"}</Text>
                                     )}
                                 </View>
                             )}
 
-                            {showReps && (
+                             {showReps && (
                                 <View className="flex-1 flex-row justify-center">
                                     {_isEditing ? (
                                         <TextInput 
-                                            value={String(set.reps || 0)} 
+                                            value={set.reps !== undefined && set.reps !== null ? String(set.reps) : ''} 
                                             keyboardType="numeric"
-                                            onChangeText={(v) => onUpdateSet(setIdx, 'reps', v)}
-                                            className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
+                                            onChangeText={(v) => handleNumericChange(v, set.reps, (newVal) => onUpdateSet(setIdx, 'reps', newVal))}
+                                            className={`bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center ${getTextColorClass(set.reps)}`}
+                                            placeholder="-"
                                             selectTextOnFocus
                                             editable={_isEditing}
                                         />
                                     ) : (
-                                        <Text className="text-light dark:text-dark font-medium">{set.reps || 0}</Text>
+                                        <Text className={`font-medium ${getTextColorClass(set.reps)}`}>{set.reps !== undefined && set.reps !== null ? set.reps : "-"}</Text>
                                     )}
                                 </View>
                             )}
 
-                            {showDuration && (
+                             {showDuration && (
                                 <View className="flex-1 flex-row justify-center">
                                     {_isEditing ? (
                                         <TextInput 
-                                            value={String(set.duration || 0)} 
+                                            value={set.duration !== undefined && set.duration !== null ? String(set.duration) : ''} 
                                             keyboardType="numeric"
-                                            onChangeText={(v) => onUpdateSet(setIdx, 'duration', v)}
-                                            className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
+                                            onChangeText={(v) => handleNumericChange(v, set.duration, (newVal) => onUpdateSet(setIdx, 'duration', newVal))}
+                                            className={`bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center ${getTextColorClass(set.duration)}`}
+                                            placeholder="-"
                                             selectTextOnFocus
                                             editable={_isEditing}
                                         />
                                     ) : (
-                                        <Text className="text-light dark:text-dark font-medium">{set.duration || 0}</Text>
+                                        <Text className={`font-medium ${getTextColorClass(set.duration)}`}>{set.duration !== undefined && set.duration !== null ? set.duration : "-"}</Text>
                                     )}
                                 </View>
                             )}
 
-                            {showDistance && (
+                             {showDistance && (
                                 <View className="flex-1 flex-row justify-center">
                                     {_isEditing ? (
                                         <TextInput 
-                                            value={String(set.distance || 0)} 
+                                            value={set.distance !== undefined && set.distance !== null ? String(set.distance) : ''} 
                                             keyboardType="numeric"
-                                            onChangeText={(v) => onUpdateSet(setIdx, 'distance', v)}
-                                            className="bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center text-light dark:text-dark"
+                                            onChangeText={(v) => handleNumericChange(v, set.distance, (newVal) => onUpdateSet(setIdx, 'distance', newVal))}
+                                            className={`bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center ${getTextColorClass(set.distance)}`}
+                                            placeholder="-"
                                             selectTextOnFocus
                                             editable={_isEditing}
                                         />
                                     ) : (
-                                        <Text className="text-light dark:text-dark font-medium">{set.distance || 0}</Text>
+                                        <Text className={`font-medium ${getTextColorClass(set.distance)}`}>{set.distance !== undefined && set.distance !== null ? set.distance : "-"}</Text>
                                     )}
                                 </View>
                             )}

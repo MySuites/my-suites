@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert, Pressable, Modal, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert, Pressable, Modal, Dimensions, Keyboard } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
@@ -202,6 +202,7 @@ export default function CreateWorkoutScreen() {
                         style={{ paddingVertical: 0 }}
                         placeholderTextColor={theme.textMuted || '#888'}
                         autoFocus
+                        selectTextOnFocus
                     />
                 ) : (
                     editingWorkoutId ? workoutDraftName || 'Workout Details' : 'Create Workout'
@@ -314,13 +315,19 @@ export default function CreateWorkoutScreen() {
                 </TouchableOpacity>
             </Modal>
 
-            <FlatList
-                data={(activeTab === 'exercises' || isEditing) ? workoutDraftExercises : []}
-                keyExtractor={(item, index) => `${index}-${item.name}`} 
-                className="flex-1 mt-28"
-                contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-                showsVerticalScrollIndicator={false}
-                ListHeaderComponent={
+            <Pressable 
+                className="flex-1" 
+                onPress={() => Keyboard.dismiss()} 
+                accessible={false}
+            >
+                <FlatList
+                    data={(activeTab === 'exercises' || isEditing) ? workoutDraftExercises : []}
+                    keyExtractor={(item, index) => `${index}-${item.name}`} 
+                    className="flex-1 mt-28"
+                    contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    ListHeaderComponent={
                     <View>
                             <View style={{
                                 flexDirection: 'row',
@@ -434,7 +441,8 @@ export default function CreateWorkoutScreen() {
                         isEditing={isEditing}
                     />
                 )}
-            />
+                />
+            </Pressable>
 
             {/* Add Exercise View */}
             {isAddingExercise && (

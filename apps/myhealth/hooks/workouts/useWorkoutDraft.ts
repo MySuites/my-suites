@@ -52,15 +52,16 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
                 );
             }
             const newTargets = [...ex.setTargets];
+            const numValue = value === '' ? undefined : Number(value);
             newTargets[setIndex] = {
                 ...newTargets[setIndex],
-                [field]: Number(value) || 0,
+                [field]: (value === '' || isNaN(numValue as any)) ? undefined : numValue
             };
             ex.setTargets = newTargets;
 
             // Sync top level properties for the first set (legacy behavior/UI summary)
             if (setIndex === 0) {
-                if (field === "reps") ex.reps = Number(value) || 0;
+                if (field === "reps") ex.reps = (value === '' || isNaN(numValue as any)) ? undefined : numValue;
             }
             newArr[exerciseIndex] = ex;
             return newArr;

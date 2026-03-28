@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, ScrollView } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, ScrollView, Keyboard, Pressable } from 'react-native';
 import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -24,6 +24,9 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
       onClose();
     }
   };
+
+  const isZeroValue = (val: string) => val === '0' || val === '0.0';
+  const getTextColorClass = (val: string) => (val === '') ? 'text-light-muted dark:text-dark-muted' : 'text-light dark:text-dark';
 
   const onDateChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
@@ -66,78 +69,86 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
                     bounces={false} 
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ padding: 24, paddingBottom: 36 }}
+                    keyboardShouldPersistTaps="handled"
                 >
-                    <View className="flex-row justify-between items-center mb-6">
-                        <RaisedCard 
-                            onPress={onClose} 
-                            style={{ borderRadius: 9999 }}
-                            className="w-12 h-12 p-0 rounded-full items-center justify-center active:h-11"
-                        >
-                            <IconSymbol name="xmark" size={22} color={theme.primary} />
-                        </RaisedCard>
-                        <Text className="text-lg font-bold text-light dark:text-dark">Log Weight</Text>
-                        <RaisedCard 
-                            onPress={handleSave} 
-                            disabled={!weight}
-                            style={{ borderRadius: 9999 }}
-                            className={`w-12 h-12 p-0 rounded-full items-center justify-center active:h-11 ${!weight ? 'opacity-40' : ''}`}
-                        >
-                            <IconSymbol name="checkmark" size={24} color={theme.primary} />
-                        </RaisedCard>
-                    </View>
-
-                    <View>
-                        <Text className="text-sm text-light-muted dark:text-dark-muted mb-2 font-medium">DATE</Text>
-                        <TouchableOpacity 
-                            onPress={() => setShowDatePicker(true)}
-                            className="flex-row items-center justify-between p-4 bg-light dark:bg-dark rounded-xl"
-                        >
-                            <Text className="text-base text-light dark:text-dark">
-                                {formatDate(date)}
-                            </Text>
-                            <IconSymbol name="calendar" size={20} color={theme.primary} />
-                        </TouchableOpacity>
-
-                        {/* Date wheel picker */}
-                        {(showDatePicker || Platform.OS === 'ios') && (
-                            <View className={Platform.OS === 'ios' ? 'mt-2' : ''}>
-                                {Platform.OS === 'ios' ? (
-                                    <DateTimePicker
-                                        value={date}
-                                        mode="date"
-                                        display="spinner"
-                                        onChange={onDateChange}
-                                        maximumDate={new Date()}
-                                    />
-                                ) : showDatePicker && (
-                                    <DateTimePicker
-                                        value={date}
-                                        mode="date"
-                                        display="default"
-                                        onChange={onDateChange}
-                                        maximumDate={new Date()}
-                                    />
-                                )}
-                            </View>
-                        )}
-                    </View>
-
-                    <View>
-                        <Text className="text-sm text-light-muted dark:text-dark-muted mb-2 font-medium">WEIGHT (LBS)</Text>
-                        <TextInput
-                            className="text-2xl font-bold text-center py-4 bg-light dark:bg-dark rounded-xl text-light dark:text-dark"
-                            value={weight}
-                            onChangeText={(text) => {
-                                if (text === '' || /^\d*\.?\d{0,2}$/.test(text)) {
-                                    setWeight(text);
-                                }
-                            }}
-                            keyboardType="numeric"
-                            placeholder="0.0"
-                            placeholderTextColor={theme.placeholder}
-                            autoFocus={Platform.OS !== 'ios'}
-                        />
-                    </View>
+                    <Pressable onPress={() => Keyboard.dismiss()} accessible={false}>
+                        <View className="flex-row justify-between items-center mb-6">
+                            <RaisedCard 
+                                onPress={onClose} 
+                                style={{ borderRadius: 9999 }}
+                                className="w-12 h-12 p-0 rounded-full items-center justify-center active:h-11"
+                            >
+                                <IconSymbol name="xmark" size={22} color={theme.primary} />
+                            </RaisedCard>
+                            <Text className="text-lg font-bold text-light dark:text-dark">Log Weight</Text>
+                            <RaisedCard 
+                                onPress={handleSave} 
+                                disabled={!weight}
+                                style={{ borderRadius: 9999 }}
+                                className={`w-12 h-12 p-0 rounded-full items-center justify-center active:h-11 ${!weight ? 'opacity-40' : ''}`}
+                            >
+                                <IconSymbol name="checkmark" size={24} color={theme.primary} />
+                            </RaisedCard>
+                        </View>
+    
+                        <View>
+                            <Text className="text-sm text-light-muted dark:text-dark-muted mb-2 font-medium">DATE</Text>
+                            <TouchableOpacity 
+                                onPress={() => setShowDatePicker(true)}
+                                className="flex-row items-center justify-between p-4 bg-light dark:bg-dark rounded-xl"
+                            >
+                                <Text className="text-base text-light dark:text-dark">
+                                    {formatDate(date)}
+                                </Text>
+                                <IconSymbol name="calendar" size={20} color={theme.primary} />
+                            </TouchableOpacity>
+    
+                            {/* Date wheel picker */}
+                            {(showDatePicker || Platform.OS === 'ios') && (
+                                <View className={Platform.OS === 'ios' ? 'mt-2' : ''}>
+                                    {Platform.OS === 'ios' ? (
+                                        <DateTimePicker
+                                            value={date}
+                                            mode="date"
+                                            display="spinner"
+                                            onChange={onDateChange}
+                                            maximumDate={new Date()}
+                                        />
+                                    ) : showDatePicker && (
+                                        <DateTimePicker
+                                            value={date}
+                                            mode="date"
+                                            display="default"
+                                            onChange={onDateChange}
+                                            maximumDate={new Date()}
+                                        />
+                                    )}
+                                </View>
+                            )}
+                        </View>
+    
+                        <View className="mt-6">
+                            <Text className="text-sm text-light-muted dark:text-dark-muted mb-2 font-medium">WEIGHT (LBS)</Text>
+                            <TextInput
+                                className={`text-2xl font-bold text-center py-4 bg-light dark:bg-dark rounded-xl ${getTextColorClass(weight)}`}
+                                value={weight}
+                                onChangeText={(text) => {
+                                    if (text === '' || /^\d*\.?\d{0,2}$/.test(text)) {
+                                        if (isZeroValue(weight) && text.length > 1 && text.startsWith('0') && text[1] !== '.') {
+                                            setWeight(text.substring(1));
+                                        } else {
+                                            setWeight(text);
+                                        }
+                                    }
+                                }}
+                                keyboardType="numeric"
+                                placeholder="-"
+                                placeholderTextColor={theme.placeholder}
+                                autoFocus={Platform.OS !== 'ios'}
+                                selectTextOnFocus
+                            />
+                        </View>
+                    </Pressable>
                 </ScrollView>
             </View>
         </View>

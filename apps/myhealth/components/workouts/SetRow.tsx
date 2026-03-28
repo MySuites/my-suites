@@ -72,6 +72,19 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
         return val.toString();
     };
 
+    const isZeroValue = (val: string) => val === '0' || val === '0.0';
+    const getTextColor = (val: string) => (val === '') ? 'text-light-muted dark:text-dark-muted' : 'text-light dark:text-dark';
+
+    const handleNumericChange = (text: string, currentVal: string, onUpdate: (v: string) => void) => {
+        if (isZeroValue(currentVal) && text.length > 0) {
+            if (text.length > 1 && text.startsWith('0') && text[1] !== '.') {
+                onUpdate(text.substring(1));
+                return;
+            }
+        }
+        onUpdate(text);
+    };
+
     const getPreviousDisplay = () => {
         const prev = exercise.previousLog?.[index];
         if (!prev) return "-";
@@ -192,46 +205,54 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                                 </Text>
                             </View>
                         )}
-                        {showWeight && (
+                         {showWeight && (
+                              <TextInput 
+                                 className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getLogValue('weight'))}`}
+                                 value={getLogValue('weight')}
+                                 onChangeText={(t: string) => handleNumericChange(t, getLogValue('weight'), (v) => onUpdateLog?.(index, 'weight', v))}
+                                 keyboardType="numeric" 
+                                 placeholder="-"
+                                 placeholderTextColor={theme.placeholder || '#888'}
+                                 textAlignVertical="center"
+                                 selectTextOnFocus
+                             />
+                         )}
+                         {showReps && (
                              <TextInput 
-                                className="w-[60px] bg-transparent text-center text-sm font-bold text-light dark:text-dark mx-1 p-0 -mt-[6px]"
-                                value={getLogValue('weight')}
-                                onChangeText={(t: string) => onUpdateLog?.(index, 'weight', t)}
-                                keyboardType="numeric" 
-                                placeholderTextColor={theme.placeholder || '#888'}
-                                textAlignVertical="center"
-                            />
-                        )}
-                        {showReps && (
-                            <TextInput 
-                                className="w-[60px] bg-transparent text-center text-sm font-bold text-light dark:text-dark mx-1 p-0 -mt-[6px]"
-                                value={getLogValue('reps')}
-                                onChangeText={(t: string) => onUpdateLog?.(index, 'reps', t)}
-                                keyboardType="numeric" 
-                                placeholderTextColor={theme.placeholder || '#888'}
-                                textAlignVertical="center"
-                            />
-                        )}
-                        {showDuration && (
-                            <TextInput 
-                                className="w-[60px] bg-transparent text-center text-sm font-bold text-light dark:text-dark mx-1 p-0 -mt-[6px]"
-                                value={getLogValue('duration')}
-                                onChangeText={(t: string) => onUpdateLog?.(index, 'duration', t)}
-                                keyboardType="numeric" 
-                                placeholderTextColor={theme.placeholder || '#888'}
-                                textAlignVertical="center"
-                            />
-                        )}
-                         {showDistance && (
-                            <TextInput 
-                                className="w-[60px] bg-transparent text-center text-sm font-bold text-light dark:text-dark mx-1 p-0 -mt-[6px]"
-                                value={getLogValue('distance')}
-                                onChangeText={(t: string) => onUpdateLog?.(index, 'distance', t)}
-                                keyboardType="numeric" 
-                                placeholderTextColor={theme.placeholder || '#888'}
-                                textAlignVertical="center"
-                            />
-                        )}
+                                 className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getLogValue('reps'))}`}
+                                 value={getLogValue('reps')}
+                                 onChangeText={(t: string) => handleNumericChange(t, getLogValue('reps'), (v) => onUpdateLog?.(index, 'reps', v))}
+                                 keyboardType="numeric" 
+                                 placeholder="-"
+                                 placeholderTextColor={theme.placeholder || '#888'}
+                                 textAlignVertical="center"
+                                 selectTextOnFocus
+                             />
+                         )}
+                         {showDuration && (
+                             <TextInput 
+                                 className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getLogValue('duration'))}`}
+                                 value={getLogValue('duration')}
+                                 onChangeText={(t: string) => handleNumericChange(t, getLogValue('duration'), (v) => onUpdateLog?.(index, 'duration', v))}
+                                 keyboardType="numeric" 
+                                 placeholder="-"
+                                 placeholderTextColor={theme.placeholder || '#888'}
+                                 textAlignVertical="center"
+                                 selectTextOnFocus
+                             />
+                         )}
+                          {showDistance && (
+                             <TextInput 
+                                 className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getLogValue('distance'))}`}
+                                 value={getLogValue('distance')}
+                                 onChangeText={(t: string) => handleNumericChange(t, getLogValue('distance'), (v) => onUpdateLog?.(index, 'distance', v))}
+                                 keyboardType="numeric" 
+                                 placeholder="-"
+                                 placeholderTextColor={theme.placeholder || '#888'}
+                                 textAlignVertical="center"
+                                 selectTextOnFocus
+                             />
+                         )}
                         <TouchableOpacity 
                             className="w-7 h-7 rounded-lg bg-primary dark:bg-primary-dark items-center justify-center ml-1"
                             onPress={() => onUncompleteSet?.(index)}
@@ -250,46 +271,50 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                         )}
                         {showWeight && (
                             <TextInput 
-                                className="w-[60px] bg-transparent text-center text-sm font-bold text-light dark:text-dark mx-1 p-0 -mt-[6px]"
+                                className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('weight'))}`}
                                 value={getValue('weight')}
-                                onChangeText={(t: string) => onUpdateSetTarget?.(index, 'weight', t)}
-                                placeholder={getValue('weight') || "-"} 
+                                onChangeText={(t: string) => handleNumericChange(t, getValue('weight'), (v: string) => onUpdateSetTarget?.(index, 'weight', v))}
+                                placeholder="-" 
                                 keyboardType="numeric" 
                                 placeholderTextColor={theme.placeholder || '#888'}
                                 textAlignVertical="center"
+                                selectTextOnFocus
                             />
                         )}
                         {showReps && (
                             <TextInput 
-                                className="w-[60px] bg-transparent text-center text-sm font-bold text-light dark:text-dark mx-1 p-0 -mt-[6px]"
+                                className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('reps'))}`}
                                 value={getValue('reps')} 
-                                onChangeText={(t: string) => onUpdateSetTarget?.(index, 'reps', t)}
-                                placeholder={getValue('reps') || (exercise.reps || 0).toString()}
+                                onChangeText={(t: string) => handleNumericChange(t, getValue('reps'), (v: string) => onUpdateSetTarget?.(index, 'reps', v))}
+                                placeholder="-"
                                 keyboardType="numeric" 
                                 placeholderTextColor={theme.placeholder || '#888'}
                                 textAlignVertical="center"
+                                selectTextOnFocus
                             />
                         )}
                         {showDuration && (
                             <TextInput 
-                                className="w-[60px] bg-transparent text-center text-sm font-bold text-light dark:text-dark mx-1 p-0 -mt-[6px]"
+                                className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('duration'))}`}
                                 value={getValue('duration')} 
-                                onChangeText={(t: string) => onUpdateSetTarget?.(index, 'duration', t)}
-                                placeholder={getValue('duration') || "-"}
+                                onChangeText={(t: string) => handleNumericChange(t, getValue('duration'), (v: string) => onUpdateSetTarget?.(index, 'duration', v))}
+                                placeholder="-"
                                 keyboardType="numeric" 
                                 placeholderTextColor={theme.placeholder || '#888'}
                                 textAlignVertical="center"
+                                selectTextOnFocus
                             />
                         )}
                         {showDistance && (
                             <TextInput 
-                                className="w-[60px] bg-transparent text-center text-sm font-bold text-light dark:text-dark mx-1 p-0 -mt-[6px]"
+                                className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('distance'))}`}
                                 value={getValue('distance')} 
-                                onChangeText={(t: string) => onUpdateSetTarget?.(index, 'distance', t)}
-                                placeholder={getValue('distance') || "-"}
+                                onChangeText={(t: string) => handleNumericChange(t, getValue('distance'), (v: string) => onUpdateSetTarget?.(index, 'distance', v))}
+                                placeholder="-"
                                 keyboardType="numeric" 
                                 placeholderTextColor={theme.placeholder}
                                 textAlignVertical="center"
+                                selectTextOnFocus
                             />
                         )}
                         <TouchableOpacity 
