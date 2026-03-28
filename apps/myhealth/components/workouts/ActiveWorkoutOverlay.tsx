@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, ScrollView, BackHandler, Text, Alert, Pressable, Keyboard, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, BackHandler, Text, Alert, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import Animated, { SlideInDown, SlideOutDown, FadeIn, FadeOut } from 'react-native-reanimated';
@@ -9,6 +9,7 @@ import { ExerciseCard } from '../exercises/ExerciseCard';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
+import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 
 function RestTimerBar({ seconds, onSkip, onAdjust }: { seconds: number; onSkip: () => void; onAdjust: (amt: number) => void }) {
     const theme = useUITheme();
@@ -76,6 +77,7 @@ export function ActiveWorkoutOverlay() {
         resetWorkout,
         cancelWorkout,
         removeExercise,
+        reorderExercises,
         workoutName,
         hasActiveSession,
         pauseWorkout,
@@ -87,48 +89,20 @@ export function ActiveWorkoutOverlay() {
     
     const [isAddingExercise, setIsAddingExercise] = React.useState(false);
 
+    if (!hasActiveSession) {
+        return null;
+    }
+
     function handleOpenAddExercise() {
         setIsAddingExercise(true);
     }
 
     function handleAddExercise(newExercises: any[]) {
         newExercises.forEach(exercise => {
-            // Default to 3 sets of 10 reps if not specified
             addExercise(exercise.name, "3", "10", exercise.properties);
         });
         setIsAddingExercise(false);
     }
-
-    useEffect(() => {
-        if (!isExpanded) return;
-
-        const onBackPress = () => {
-            setExpanded(false);
-            return true; // prevent default behavior
-        };
-
-        const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-        return () => subscription.remove();
-    }, [isExpanded, setExpanded]);
-
-    if (!hasActiveSession) {
-        return null;
-    }
-
-    const title = workoutName || "Current Workout";
-
-    const handlePress = () => {
-         toggleExpanded();
-    };
-
-    const handleEnd = (e: any) => {
-        // Stop propagation to prevent toggling expansion
-        e?.stopPropagation();
-        
-        // Pause and navigate to end screen
-        pauseWorkout();
-        router.push('/workouts/end');
-    };
 
     const renderHeader = () => {
         if (isExpanded) {
@@ -141,7 +115,7 @@ export function ActiveWorkoutOverlay() {
                                 numberOfLines={1}
                                 pointerEvents="none"
                             >
-                                {title}
+                                {workoutName || "Current Workout"}
                             </Text>
                             <View className="flex-row items-center gap-2 mt-1">
                                 <View className={`w-2 h-2 rounded-full ${isRunning ? 'bg-primary dark:bg-primary-dark' : 'bg-gray-400'}`} />
@@ -151,7 +125,7 @@ export function ActiveWorkoutOverlay() {
                     }
                     leftAction={
                         <RaisedCard 
-                            onPress={handlePress}
+                            onPress={() => setExpanded(false)}
                             className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
                             style={{ borderRadius: 9999 }}
                         >
@@ -160,7 +134,10 @@ export function ActiveWorkoutOverlay() {
                     }
                     rightAction={
                         <RaisedCard 
-                            onPress={handleEnd}
+                            onPress={() => {
+                                pauseWorkout();
+                                router.push('/workouts/end');
+                            }}
                             className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
                             style={{ borderRadius: 9999 }}
                         >
@@ -172,16 +149,15 @@ export function ActiveWorkoutOverlay() {
             );
         }
 
-        // Minimized Pill State
         return (
             <Animated.View 
                 entering={FadeIn.delay(200).duration(300)}
                 exiting={FadeOut.duration(200)}
                 style={{ 
                     zIndex: 40,
-                    bottom: insets.bottom + 65, // Floating above tabs
+                    bottom: insets.bottom + 65,
                     alignSelf: 'center',
-                    width: '60%', // Pill width
+                    width: '60%',
                     maxWidth: 300,
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 4 },
@@ -192,11 +168,10 @@ export function ActiveWorkoutOverlay() {
                 className="absolute"
             >
                 <RaisedCard
-                    onPress={handlePress} // Tapping anywhere expands
+                    onPress={toggleExpanded}
                     className="flex-row items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
                     style={{ borderRadius: 9999 }}
                 >
-                     {/* Timer + Status */}
                      <View className="flex-row items-center gap-2">
                          <View className={`w-2.5 h-2.5 rounded-full ${isRunning ? 'bg-white animate-pulse' : 'bg-white/50'}`} />
                          <Text className="text-lg font-bold tabular-nums text-white">
@@ -208,119 +183,121 @@ export function ActiveWorkoutOverlay() {
         );
     };
 
+    const renderFooter = () => (
+        <View className="px-4 pb-20 mt-4">
+            <RaisedCard
+                onPress={handleOpenAddExercise}
+                className="items-center justify-center p-3 bg-primary"
+            >
+                <Text className="text-lg font-semibold text-white dark:text-white text-center">
+                    + Add Exercise
+                </Text>
+            </RaisedCard>
+
+            <View className="mt-4 flex-row gap-4">
+                <RaisedCard
+                    onPress={resetWorkout}
+                    className="flex-1 h-12 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                >
+                    <View>
+                        <Text className="text-warning font-bold text-center text-lg">Reset</Text>
+                    </View>
+                </RaisedCard>
+
+                <RaisedCard
+                    onPress={() => {
+                        Alert.alert(
+                            "Discard Workout?",
+                            "Are you sure you want to discard this workout? All progress will be lost.",
+                            [
+                                { text: "Cancel", style: "cancel" },
+                                { 
+                                    text: "Discard", 
+                                    style: "destructive", 
+                                    onPress: () => cancelWorkout() 
+                                }
+                            ]
+                        );
+                    }}
+                    className="flex-1 h-12 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                >
+                    <View>
+                        <Text className="text-danger font-bold text-center text-lg">Discard</Text>
+                    </View>
+                </RaisedCard>
+            </View>
+        </View>
+    );
+
+    const renderItem = ({ item: exercise, drag, isActive, getIndex }: RenderItemParams<any>) => {
+        const index = getIndex() ?? 0;
+        return (
+            <ScaleDecorator activeScale={1.05}>
+                <View className={`mb-6 p-1.5 ${isActive ? 'bg-light dark:bg-dark rounded-2xl' : ''}`}>
+                    <ActiveWorkoutExerciseItem
+                        exercise={exercise}
+                        index={index}
+                        isCurrent={index === currentIndex}
+
+                        completeSet={completeSet}
+                        updateExercise={updateExercise}
+                        onRemoveExercise={removeExercise}
+                        onMoveUp={index > 0 ? () => reorderExercises(index, index - 1) : undefined}
+                        onMoveDown={index < exercises.length - 1 ? () => reorderExercises(index, index + 1) : undefined}
+                        onUpdateRestTime={(newRestTime) => updateExercise(index, { restTime: newRestTime })}
+                        latestBodyWeight={latestBodyWeight}
+                        onPressName={() => {
+                            setExpanded(false);
+                            router.push({
+                                pathname: '/exercises/details' as any,
+                                params: { exercise: JSON.stringify(exercise) }
+                            });
+                        }}
+                        onDrag={drag}
+                    />
+                </View>
+            </ScaleDecorator>
+        );
+    };
+
     return (
         <>
-        {!isExpanded && renderHeader()}
-        {isExpanded && (
-            <Animated.View 
-                className="absolute inset-0 z-[999] bg-light dark:bg-dark"
-                entering={SlideInDown.duration(400)} 
-                exiting={SlideOutDown.duration(400)}
-            >
-                {renderHeader()}
-                <View className="flex-1">
-                    <ScrollView 
-                        className="flex-1"
-                        contentContainerStyle={{ 
-                            padding: 4, 
-                            paddingTop: insets.top + 80, 
-                            paddingBottom: 120,
-                            minHeight: '100%' 
-                        }} 
-                        showsVerticalScrollIndicator={false}
-                        keyboardShouldPersistTaps="handled"
-                        keyboardDismissMode="on-drag"
-                    >
-                        <Pressable 
-                            className="flex-1" 
-                            onPress={() => Keyboard.dismiss()} 
-                            accessible={false}
-                        >
-                             {(!exercises || exercises.length === 0) ? (
-                                <View className="flex-1 items-center justify-center py-20">
-                                    <Text className="text-xl text-light dark:text-dark mb-6 text-center">No exercises found</Text>
-                                </View>
-                             ) : (
-                                <>
-                                     {exercises.map((exercise, index) => (
-                                        <View key={index} className="mb-6">
-                                            <ActiveWorkoutExerciseItem
-                                                exercise={exercise}
-                                                index={index}
-                                                isCurrent={index === currentIndex}
-        
-                                                completeSet={completeSet}
-                                                updateExercise={updateExercise}
-                                                onRemoveExercise={removeExercise}
-                                                onUpdateRestTime={(newRestTime) => updateExercise(index, { restTime: newRestTime })}
-                                                latestBodyWeight={latestBodyWeight}
-                                                onPressName={() => {
-                                                    setExpanded(false);
-                                                    router.push({
-                                                        pathname: '/exercises/details' as any,
-                                                        params: { exercise: JSON.stringify(exercise) }
-                                                    });
-                                                }}
-                                            />
-                                        </View>
-                                    ))}
-                                </>
-                             )}
-        
-                            <RaisedCard
-                                onPress={handleOpenAddExercise}
-                                className="items-center justify-center p-3 bg-primary"
-                            >
-                                <Text className="text-lg font-semibold text-white dark:text-white text-center">
-                                    + Add Exercise
-                                </Text>
-                            </RaisedCard>
-        
-                            <View className="mt-4 flex-row gap-4">
-                                <RaisedCard
-                                    onPress={resetWorkout}
-                                    className="flex-1 h-12 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                                >
-                                    <View>
-                                        <Text className="text-warning font-bold text-center text-lg">Reset</Text>
-                                    </View>
-                                </RaisedCard>
-        
-                                <RaisedCard
-                                    onPress={() => {
-                                        Alert.alert(
-                                            "Discard Workout?",
-                                            "Are you sure you want to discard this workout? All progress will be lost.",
-                                            [
-                                                { text: "Cancel", style: "cancel" },
-                                                { 
-                                                    text: "Discard", 
-                                                    style: "destructive", 
-                                                    onPress: () => cancelWorkout() 
-                                                }
-                                            ]
-                                        );
-                                    }}
-                                    className="flex-1 h-12 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                                >
-                                    <View>
-                                        <Text className="text-danger font-bold text-center text-lg">Discard</Text>
-                                    </View>
-                                </RaisedCard>
+            {!isExpanded && renderHeader()}
+            {isExpanded && (
+                <Animated.View 
+                    className="absolute inset-0 z-[999] bg-light dark:bg-dark"
+                    entering={SlideInDown.duration(400)} 
+                    exiting={SlideOutDown.duration(400)}
+                >
+                    {renderHeader()}
+                    <DraggableFlatList
+                        data={exercises}
+                        onDragEnd={({ from, to }) => reorderExercises(from, to)}
+                        keyExtractor={(item, index) => `${item.id}-${index}`}
+                        renderItem={renderItem}
+                        ListFooterComponent={renderFooter}
+                        ListEmptyComponent={
+                            <View className="flex-1 items-center justify-center py-20">
+                                <Text className="text-xl text-light dark:text-dark mb-6 text-center">No exercises found</Text>
                             </View>
-                        </Pressable>
-                    </ScrollView>
-                </View>
+                        }
+                        contentContainerStyle={{ 
+                            paddingTop: insets.top + 80, 
+                            paddingBottom: 40,
+                        }}
+                        activationDistance={20}
+                    />
 
-            {restSeconds > 0 && (
-                <RestTimerBar 
-                    seconds={restSeconds} 
-                    onSkip={() => startRestTimer(0)} 
-                    onAdjust={(amt) => startRestTimer(Math.max(0, restSeconds + amt))}
-                />
+                    {restSeconds > 0 && (
+                        <RestTimerBar 
+                            seconds={restSeconds} 
+                            onSkip={() => startRestTimer(0)} 
+                            onAdjust={(amt) => startRestTimer(Math.max(0, restSeconds + amt))}
+                        />
+                    )}
+                </Animated.View>
             )}
-            </Animated.View>
-        )}
+            
             {isAddingExercise && (
                 <Animated.View 
                     className="absolute inset-0 z-[1000] bg-light dark:bg-dark"
@@ -345,6 +322,9 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     completeSet,
     updateExercise,
     onRemoveExercise,
+    onMoveUp,
+    onMoveDown,
+    onDrag,
     latestBodyWeight,
     onPressName,
     onUpdateRestTime,
@@ -355,6 +335,9 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     completeSet: (exerciseIndex: number, setIndex: number, input: any) => void;
     updateExercise: (exerciseIndex: number, updates: any) => void;
     onRemoveExercise: (index: number) => void;
+    onMoveUp?: () => void;
+    onMoveDown?: () => void;
+    onDrag?: () => void;
     latestBodyWeight: number | null;
     onPressName?: () => void;
     onUpdateRestTime?: (restTime: number) => void;
@@ -366,8 +349,10 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
             exercise={exercise}
             isCurrent={isCurrent}
             onRemoveExercise={() => onRemoveExercise(index)}
+            onMoveUp={onMoveUp}
+            onMoveDown={onMoveDown}
+            onDrag={onDrag}
             onPressName={onPressName}
-
             theme={theme}
             latestBodyWeight={latestBodyWeight}
             onCompleteSet={(setIndex, input) => {
@@ -384,14 +369,9 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
             onUpdateRestTime={onUpdateRestTime}
             onUncompleteSet={(setIndex) => {
                 const currentLogs = exercise.logs || [];
-                // Allow clearing any index, even if it's beyond current length (though unlikely via UI)
                 const newLogs = [...currentLogs];
-                // Set to undefined/null to preserve indices of other sets
-                newLogs[setIndex] = undefined; // or null
-                
-                // Recalculate completed sets
+                newLogs[setIndex] = undefined;
                 const completedCount = newLogs.filter(l => l !== undefined && l !== null).length;
-
                 updateExercise(index, { 
                     logs: newLogs, 
                     completedSets: completedCount,
@@ -400,27 +380,18 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
             onUpdateSetTarget={(setIndex, key, value) => {
                 const numValue = value === '' ? undefined : parseFloat(value);
                 const currentTargets = exercise.setTargets ? [...exercise.setTargets] : [];
-                
-                // Ensure targets exist up to setIndex
                 while (currentTargets.length <= setIndex) {
                     currentTargets.push({ weight: 0, reps: exercise.reps });
                 }
-
                 currentTargets[setIndex] = {
                     ...currentTargets[setIndex],
                     [key]: (value === '' || isNaN(numValue as any)) ? undefined : numValue
                 };
-
                 updateExercise(index, { setTargets: currentTargets });
             }}
-            
             onUpdateLog={(setIndex, key, value) => {
                 const newLogs = [...(exercise.logs || [])];
                 if (newLogs[setIndex]) {
-                    // Cast to any to allow string intermediate state for better input UX, 
-                    // or assumes SetLog handles string/number.
-                    // If strict typing requires number, we might need a local state approach.
-                    // For now, mirroring flexible behavior.
                     (newLogs[setIndex] as any)[key] = value;
                     updateExercise(index, { logs: newLogs });
                 }
@@ -428,21 +399,12 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
             onAddSet={() => {
                 const nextSetIndex = exercise.sets;
                 const previousTarget = exercise.setTargets?.[nextSetIndex - 1];
-                
-                // Default fallback or use previous values
-                const newTarget = previousTarget 
-                    ? { ...previousTarget }
-                    : { weight: 0, reps: exercise.reps };
-                    
+                const newTarget = previousTarget ? { ...previousTarget } : { weight: 0, reps: exercise.reps };
                 const currentTargets = exercise.setTargets ? [...exercise.setTargets] : [];
-                
-                // Ensure array continuity
                 while (currentTargets.length < nextSetIndex) {
                     currentTargets.push({ weight: 0, reps: exercise.reps });
                 }
-                
                 currentTargets[nextSetIndex] = newTarget;
-
                 updateExercise(index, { 
                     sets: exercise.sets + 1,
                     setTargets: currentTargets
@@ -452,23 +414,14 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
                 const currentLogs = exercise.logs || [];
                 const currentTarget = exercise.sets;
                 const currentSetTargets = exercise.setTargets ? [...exercise.setTargets] : [];
-
-                // Remove the target definition for this index if it exists
                 if (setIndex < currentSetTargets.length) {
                     currentSetTargets.splice(setIndex, 1);
                 }
-                
-                // Handle logs (sparse array safe splice)
                 const newLogs = [...currentLogs];
-                // Only splice if within bounds, but with sparse array we just splice anyway if we want to shift
-                // If setIndex >= newLogs.length, nothing happens, which is fine for "future" sets that have no log entry yet
                 if (setIndex < newLogs.length) {
                     newLogs.splice(setIndex, 1);
                 }
-
-                // Recalculate completed sets count
                 const completedCount = newLogs.filter(l => l !== undefined && l !== null).length;
-
                 updateExercise(index, { 
                     logs: newLogs, 
                     setTargets: currentSetTargets,
@@ -483,7 +436,9 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
         prevProps.exercise === nextProps.exercise &&
         prevProps.index === nextProps.index &&
         prevProps.isCurrent === nextProps.isCurrent &&
-        prevProps.latestBodyWeight === nextProps.latestBodyWeight
+        prevProps.latestBodyWeight === nextProps.latestBodyWeight &&
+        prevProps.onMoveUp === nextProps.onMoveUp &&
+        prevProps.onMoveDown === nextProps.onMoveDown &&
+        prevProps.onDrag === nextProps.onDrag
     );
 });
-

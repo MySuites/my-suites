@@ -15,14 +15,17 @@ interface ExerciseCardProps {
     onAddSet: () => void;
     onDeleteSet: (index: number) => void;
     onRemoveExercise?: () => void;
+    onMoveUp?: () => void;
+    onMoveDown?: () => void;
     onPressName?: () => void;
     onUpdateRestTime?: (restTime: number) => void;
+    onDrag?: () => void;
 
     theme: any;
     latestBodyWeight?: number | null;
 }
 
-export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onAddSet, onDeleteSet, onRemoveExercise, onPressName, onUpdateRestTime, theme, latestBodyWeight }: ExerciseCardProps) {
+export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, theme, latestBodyWeight }: ExerciseCardProps) {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number, right: number } | null>(null);
@@ -48,19 +51,27 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
     return (
         <>
             <View className="flex-row justify-between items-center p-4">
-                <TouchableOpacity className="flex-1" onPress={onPressName} disabled={!onPressName}>
-                    <Text className="text-lg font-bold text-light dark:text-dark">{exercise.name}</Text>
-                    
+                <View className="flex-1 flex-row items-center">
                     <TouchableOpacity 
-                        className="flex-row items-center mt-1"
-                        onPress={() => setIsPickerVisible(true)}
+                        className="flex-1" 
+                        onPress={onPressName} 
+                        onLongPress={onDrag}
+                        delayLongPress={200}
+                        disabled={!onPressName && !onDrag}
                     >
-                        <IconSymbol name="timer" size={12} color={theme.bgDark === '#000000' ? '#999' : '#666'} />
-                        <Text className="ml-1 text-[11px] font-semibold text-light-muted dark:text-dark-muted">
-                            {exercise.restTime ?? 90}s rest
-                        </Text>
+                        <Text className="text-lg font-bold text-light dark:text-dark">{exercise.name}</Text>
+                        
+                        <TouchableOpacity 
+                            className="flex-row items-center mt-1"
+                            onPress={() => setIsPickerVisible(true)}
+                        >
+                            <IconSymbol name="timer" size={12} color={theme.bgDark === '#000000' ? '#999' : '#666'} />
+                            <Text className="ml-1 text-[11px] font-semibold text-light-muted dark:text-dark-muted">
+                                {exercise.restTime ?? 90}s rest
+                            </Text>
+                        </TouchableOpacity>
                     </TouchableOpacity>
-                </TouchableOpacity>
+                </View>
                 <View className="flex-row items-center gap-3">
                     {isFinished && <IconSymbol name="checkmark.circle.fill" size={24} color={theme.primary} />}
                     {onRemoveExercise && (
@@ -102,6 +113,9 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
                             elevation: 8 
                         }}
                     >
+
+
+
                         <TouchableOpacity 
                             onPress={() => {
                                 setIsMenuVisible(false);

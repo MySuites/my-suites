@@ -24,6 +24,7 @@ interface ActiveWorkoutContextType {
     addExercise: (name: string, sets: string, reps: string, properties?: string[]) => void;
     updateExercise: (index: number, updates: Partial<Exercise>) => void;
     removeExercise: (index: number) => void;
+    reorderExercises: (from: number, to: number) => void;
     isExpanded: boolean;
     toggleExpanded: () => void;
     setExpanded: (expanded: boolean) => void;
@@ -198,6 +199,24 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         });
     }, []);
 
+    const reorderExercises = useCallback((from: number, to: number) => {
+        setExercises(prev => {
+            if (from < 0 || from >= prev.length || to < 0 || to >= prev.length) return prev;
+            const result = [...prev];
+            const [removed] = result.splice(from, 1);
+            result.splice(to, 0, removed);
+            return result;
+        });
+        
+        // Update currentIndex if it was affected
+        setCurrentIndex(prev => {
+            if (from === prev) return to;
+            if (from < prev && to >= prev) return prev - 1;
+            if (from > prev && to <= prev) return prev + 1;
+            return prev;
+        });
+    }, []);
+
     const handleCompleteSet = useCallback((targetIndex: number,  setIndex: number, input?: { weight?: number; bodyweight?: number; reps?: number; duration?: number; distance?: number }) => {
         setExercises(currentExercises => {
             // Need a tiny hack because currentIndex might not be in closure, but we can't reliably read it from state inside setExercises if we depend on it directly
@@ -297,6 +316,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         addExercise,
         updateExercise,
         removeExercise,
+        reorderExercises,
         finishWorkout: handleFinishWorkout,
         cancelWorkout: handleCancelWorkout,
         isExpanded,
@@ -310,7 +330,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     }), [
         exercises, currentIndex, workoutName, startWorkout, pauseWorkout, resetWorkout, 
         handleCompleteSet, nextExercise, prevExercise, addExercise, updateExercise, 
-        removeExercise, handleFinishWorkout, handleCancelWorkout, isExpanded, hasActiveSession, 
+        removeExercise, reorderExercises, handleFinishWorkout, handleCancelWorkout, isExpanded, hasActiveSession, 
         toggleExpanded, routineId, sourceWorkoutId, latestBodyWeight
     ]);
 
