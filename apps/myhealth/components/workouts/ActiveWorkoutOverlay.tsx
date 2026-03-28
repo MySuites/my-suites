@@ -219,91 +219,98 @@ export function ActiveWorkoutOverlay() {
             >
                 {renderHeader()}
                 <View className="flex-1">
-                <Pressable 
-                    className="flex-1" 
-                    onPress={() => Keyboard.dismiss()} 
-                    accessible={false}
-                >
                     <ScrollView 
-                        contentContainerStyle={{ padding: 4, paddingTop: insets.top + 80, paddingBottom: 120 }} 
+                        className="flex-1"
+                        contentContainerStyle={{ 
+                            padding: 4, 
+                            paddingTop: insets.top + 80, 
+                            paddingBottom: 120,
+                            minHeight: '100%' 
+                        }} 
                         showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps="handled"
+                        keyboardDismissMode="on-drag"
                     >
-                         {(!exercises || exercises.length === 0) ? (
-                            <View className="flex-1 items-center justify-center py-20">
-                                <Text className="text-xl text-light dark:text-dark mb-6 text-center">No exercises found</Text>
-                            </View>
-                         ) : (
-                            <>
-                                 {exercises.map((exercise, index) => (
-                                    <View key={index} className="mb-6">
-                                        <ActiveWorkoutExerciseItem
-                                            exercise={exercise}
-                                            index={index}
-                                            isCurrent={index === currentIndex}
-    
-                                            completeSet={completeSet}
-                                            updateExercise={updateExercise}
-                                            onRemoveExercise={removeExercise}
-                                            onUpdateRestTime={(newRestTime) => updateExercise(index, { restTime: newRestTime })}
-                                            latestBodyWeight={latestBodyWeight}
-                                            onPressName={() => {
-                                                setExpanded(false);
-                                                router.push({
-                                                    pathname: '/exercises/details' as any,
-                                                    params: { exercise: JSON.stringify(exercise) }
-                                                });
-                                            }}
-                                        />
-                                    </View>
-                                ))}
-                            </>
-                         )}
-    
-                        <RaisedCard
-                            onPress={handleOpenAddExercise}
-                            className="items-center justify-center p-3 bg-primary"
+                        <Pressable 
+                            className="flex-1" 
+                            onPress={() => Keyboard.dismiss()} 
+                            accessible={false}
                         >
-                            <Text className="text-lg font-semibold text-white dark:text-white text-center">
-                                + Add Exercise
-                            </Text>
-                        </RaisedCard>
-    
-                        <View className="mt-4 flex-row gap-4">
-                            <RaisedCard
-                                onPress={resetWorkout}
-                                className="flex-1 h-12 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                            >
-                                <View>
-                                    <Text className="text-warning font-bold text-center text-lg">Reset</Text>
+                             {(!exercises || exercises.length === 0) ? (
+                                <View className="flex-1 items-center justify-center py-20">
+                                    <Text className="text-xl text-light dark:text-dark mb-6 text-center">No exercises found</Text>
                                 </View>
-                            </RaisedCard>
-    
+                             ) : (
+                                <>
+                                     {exercises.map((exercise, index) => (
+                                        <View key={index} className="mb-6">
+                                            <ActiveWorkoutExerciseItem
+                                                exercise={exercise}
+                                                index={index}
+                                                isCurrent={index === currentIndex}
+        
+                                                completeSet={completeSet}
+                                                updateExercise={updateExercise}
+                                                onRemoveExercise={removeExercise}
+                                                onUpdateRestTime={(newRestTime) => updateExercise(index, { restTime: newRestTime })}
+                                                latestBodyWeight={latestBodyWeight}
+                                                onPressName={() => {
+                                                    setExpanded(false);
+                                                    router.push({
+                                                        pathname: '/exercises/details' as any,
+                                                        params: { exercise: JSON.stringify(exercise) }
+                                                    });
+                                                }}
+                                            />
+                                        </View>
+                                    ))}
+                                </>
+                             )}
+        
                             <RaisedCard
-                                onPress={() => {
-                                    Alert.alert(
-                                        "Discard Workout?",
-                                        "Are you sure you want to discard this workout? All progress will be lost.",
-                                        [
-                                            { text: "Cancel", style: "cancel" },
-                                            { 
-                                                text: "Discard", 
-                                                style: "destructive", 
-                                                onPress: () => cancelWorkout() 
-                                            }
-                                        ]
-                                    );
-                                }}
-                                className="flex-1 h-12 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                                onPress={handleOpenAddExercise}
+                                className="items-center justify-center p-3 bg-primary"
                             >
-                                <View>
-                                    <Text className="text-danger font-bold text-center text-lg">Discard</Text>
-                                </View>
+                                <Text className="text-lg font-semibold text-white dark:text-white text-center">
+                                    + Add Exercise
+                                </Text>
                             </RaisedCard>
-                        </View>
+        
+                            <View className="mt-4 flex-row gap-4">
+                                <RaisedCard
+                                    onPress={resetWorkout}
+                                    className="flex-1 h-12 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                                >
+                                    <View>
+                                        <Text className="text-warning font-bold text-center text-lg">Reset</Text>
+                                    </View>
+                                </RaisedCard>
+        
+                                <RaisedCard
+                                    onPress={() => {
+                                        Alert.alert(
+                                            "Discard Workout?",
+                                            "Are you sure you want to discard this workout? All progress will be lost.",
+                                            [
+                                                { text: "Cancel", style: "cancel" },
+                                                { 
+                                                    text: "Discard", 
+                                                    style: "destructive", 
+                                                    onPress: () => cancelWorkout() 
+                                                }
+                                            ]
+                                        );
+                                    }}
+                                    className="flex-1 h-12 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                                >
+                                    <View>
+                                        <Text className="text-danger font-bold text-center text-lg">Discard</Text>
+                                    </View>
+                                </RaisedCard>
+                            </View>
+                        </Pressable>
                     </ScrollView>
-                </Pressable>
-            </View>
+                </View>
 
             {restSeconds > 0 && (
                 <RestTimerBar 
