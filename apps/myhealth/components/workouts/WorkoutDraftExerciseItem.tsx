@@ -16,6 +16,7 @@ export interface WorkoutDraftExerciseItemProps {
     latestBodyWeight?: number | null;
     isEditing: boolean;
     onPressName?: () => void;
+    onDrag?: () => void;
 }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -32,7 +33,8 @@ export const WorkoutDraftExerciseItem = ({
     onRemoveSet,
     latestBodyWeight,
     isEditing,
-    onPressName
+    onPressName,
+    onDrag
 }: WorkoutDraftExerciseItemProps) => {
     const theme = useTheme();
     const [menuVisible, setMenuVisible] = useState(false);
@@ -106,6 +108,8 @@ export const WorkoutDraftExerciseItem = ({
             <View className="flex-row justify-between items-center">
                 <TouchableOpacity 
                 onPress={onPressName || onToggleExpand}
+                onLongPress={onDrag}
+                delayLongPress={200}
                 className="p-3 flex-1"
                 style={{ zIndex: menuVisible ? 999 : 1, elevation: menuVisible ? 999 : 1 }}>
                     <Text className="text-base text-light dark:text-dark leading-6 font-semibold">{item.name}</Text>
@@ -158,15 +162,6 @@ export const WorkoutDraftExerciseItem = ({
                                 <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); setIsLocalEditing(!isLocalEditing); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
                                     <IconSymbol name={isLocalEditing ? "checkmark" : "pencil"} size={18} color={theme.text as string} style={{ marginRight: 12 }} />
                                     <Text style={{ color: theme.text as string }} className="font-medium">{isLocalEditing ? "Done" : "Edit"}</Text>
-                                </TouchableOpacity>
-                                <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
-                                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); onMove(-1); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
-                                    <IconSymbol name="arrow.up" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
-                                    <Text style={{ color: theme.text as string }} className="font-medium">Move Up</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); onMove(1); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
-                                    <IconSymbol name="arrow.down" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
-                                    <Text style={{ color: theme.text as string }} className="font-medium">Move Down</Text>
                                 </TouchableOpacity>
                                 <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
                                 <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); onRemove(); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">

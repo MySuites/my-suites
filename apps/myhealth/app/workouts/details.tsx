@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert, Pressable, Modal, Dimensions, Keyboard } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Pressable, Modal, Dimensions, Keyboard } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
@@ -9,6 +10,7 @@ import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { useWorkoutDraft } from '../../hooks/workouts/useWorkoutDraft';
 import { default as ExercisesScreen } from '../../app/exercises/index';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
+import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
@@ -48,6 +50,7 @@ export default function CreateWorkoutScreen() {
         addExercise,
         removeExercise,
         moveExercise,
+        reorderExercises,
         updateSetTarget,
         addSet,
         removeSet
@@ -315,18 +318,21 @@ export default function CreateWorkoutScreen() {
                 </TouchableOpacity>
             </Modal>
 
-            <Pressable 
-                className="flex-1" 
-                onPress={() => Keyboard.dismiss()} 
-                accessible={false}
-            >
-                <FlatList
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                <DraggableFlatList
                     data={(activeTab === 'exercises' || isEditing) ? workoutDraftExercises : []}
+                    onDragEnd={({ from, to }) => reorderExercises(from, to)}
                     keyExtractor={(item, index) => `${index}-${item.name}`} 
-                    className="flex-1 mt-28"
-                    contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+                    containerStyle={{ flex: 1 }}
+                    contentContainerStyle={{ 
+                        padding: 16, 
+                        paddingTop: 112,
+                        paddingBottom: 120 
+                    }}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
+                    keyboardDismissMode="on-drag"
+                    activationDistance={20}
                     ListHeaderComponent={
                     <View>
                             <View style={{
@@ -420,29 +426,37 @@ export default function CreateWorkoutScreen() {
                     ) : null
                 }
                 ItemSeparatorComponent={() => <View className="h-[1px] bg-black/10 dark:bg-white/10 my-2" />}
-                renderItem={({item, index}) => (
-                    <WorkoutDraftExerciseItem
-                        item={item}
-                        index={index}
-                        isExpanded={true}
-                        onToggleExpand={() => {}}
-                        onPressName={() => {
-                            router.push({
-                                pathname: '/exercises/details' as any,
-                                params: { exercise: JSON.stringify(item) }
-                            });
-                        }}
-                        onMove={(dir) => moveExercise(index, dir)}
-                        onRemove={() => removeExercise(index)}
-                        onUpdateSet={(setIndex, field, value) => updateSetTarget(index, setIndex, field, value)}
-                        onAddSet={() => addSet(index)}
-                        onRemoveSet={(setIndex) => removeSet(index, setIndex)}
-                        latestBodyWeight={latestBodyWeight}
-                        isEditing={isEditing}
-                    />
-                )}
+                renderItem={({item, getIndex, drag, isActive}: RenderItemParams<any>) => {
+                    const index = getIndex() ?? 0;
+                    return (
+                        <ScaleDecorator activeScale={1.05}>
+                            <View className={`${isActive ? 'bg-light dark:bg-dark rounded-2xl' : ''}`}>
+                                <WorkoutDraftExerciseItem
+                                    item={item}
+                                    index={index}
+                                    isExpanded={true}
+                                    onToggleExpand={() => {}}
+                                    onPressName={() => {
+                                        router.push({
+                                            pathname: '/exercises/details' as any,
+                                            params: { exercise: JSON.stringify(item) }
+                                        });
+                                    }}
+                                    onMove={(dir) => moveExercise(index, dir)}
+                                    onRemove={() => removeExercise(index)}
+                                    onUpdateSet={(setIndex, field, value) => updateSetTarget(index, setIndex, field, value)}
+                                    onAddSet={() => addSet(index)}
+                                    onRemoveSet={(setIndex) => removeSet(index, setIndex)}
+                                    latestBodyWeight={latestBodyWeight}
+                                    isEditing={isEditing}
+                                    onDrag={drag}
+                                />
+                            </View>
+                        </ScaleDecorator>
+                    );
+                }}
                 />
-            </Pressable>
+            </GestureHandlerRootView>
 
             {/* Add Exercise View */}
             {isAddingExercise && (

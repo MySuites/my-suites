@@ -36,6 +36,14 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
         setWorkoutDraftExercises(newArr);
     }
 
+    function reorderExercises(from: number, to: number) {
+        if (from === to) return;
+        const newArr = [...workoutDraftExercises];
+        const [moved] = newArr.splice(from, 1);
+        newArr.splice(to, 0, moved);
+        setWorkoutDraftExercises(newArr);
+    }
+
     function updateSetTarget(
         exerciseIndex: number,
         setIndex: number,
@@ -119,6 +127,7 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
         addExercise,
         removeExercise,
         moveExercise,
+        reorderExercises,
         updateSetTarget,
         addSet,
         removeSet,
