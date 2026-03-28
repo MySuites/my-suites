@@ -9,6 +9,7 @@ export type Exercise = {
     properties?: string[];
     logs?: any[];
     setTargets?: any[];
+    restTime?: number;
 };
 
 export function createExercise(
@@ -16,6 +17,7 @@ export function createExercise(
     setsStr: string,
     repsStr: string,
     properties?: string[],
+    restTime?: number,
 ): Exercise {
     const sets = Math.max(1, Number(setsStr) || 1);
     const reps = Math.max(1, Number(repsStr) || 1);
@@ -28,6 +30,7 @@ export function createExercise(
         completedSets: 0,
         properties: properties || [],
         setTargets: Array.from({ length: sets }, () => ({ reps, weight: 0 })),
+        restTime,
     };
 }
 

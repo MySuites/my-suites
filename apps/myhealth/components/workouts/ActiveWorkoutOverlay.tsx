@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, ScrollView, BackHandler, Text, Alert, Pressable, Keyboard } from 'react-native';
+import { View, ScrollView, BackHandler, Text, Alert, Pressable, Keyboard, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import Animated, { SlideInDown, SlideOutDown, FadeIn, FadeOut } from 'react-native-reanimated';
@@ -9,6 +9,58 @@ import { ExerciseCard } from '../exercises/ExerciseCard';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
+
+function RestTimerBar({ seconds, onSkip, onAdjust }: { seconds: number; onSkip: () => void; onAdjust: (amt: number) => void }) {
+    const theme = useUITheme();
+    const insets = useSafeAreaInsets();
+    return (
+        <Animated.View 
+            entering={SlideInDown.duration(300)} 
+            exiting={SlideOutDown.duration(300)}
+            className="absolute left-4 right-4 z-[2000] p-4 rounded-2xl flex-row items-center justify-between"
+            style={{ 
+                bottom: insets.bottom + 12,
+                backgroundColor: theme.bgLight, 
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.2,
+                shadowRadius: 10,
+                elevation: 10,
+                borderWidth: 1,
+                borderColor: theme.bgDark === '#000000' ? '#333' : '#eee'
+            }}
+        >
+            <View className="flex-row items-center gap-3">
+                <TouchableOpacity 
+                    onPress={() => onAdjust(-15)} 
+                    className="w-12 h-10 rounded-xl bg-light dark:bg-dark-lighter items-center justify-center active:opacity-70"
+                >
+                    <Text className="text-light dark:text-dark font-bold text-xs">-15s</Text>
+                </TouchableOpacity>
+
+                <View className="items-center px-2">
+                    <Text className="text-light-muted dark:text-dark-muted text-[10px] font-bold uppercase tracking-wider">Resting</Text>
+                    <Text className="text-light dark:text-dark text-xl font-black tabular-nums">{formatSeconds(seconds)}</Text>
+                </View>
+
+                <TouchableOpacity 
+                    onPress={() => onAdjust(15)} 
+                    className="w-12 h-10 rounded-xl bg-light dark:bg-dark-lighter items-center justify-center active:opacity-70"
+                >
+                    <Text className="text-light dark:text-dark font-bold text-xs">+15s</Text>
+                </TouchableOpacity>
+            </View>
+            
+            <RaisedCard 
+                onPress={onSkip}
+                className="px-6 py-2.5 rounded-full bg-primary"
+                style={{ borderRadius: 9999 }}
+            >
+                <Text className="text-white font-bold">Skip</Text>
+            </RaisedCard>
+        </Animated.View>
+    );
+}
 
 export function ActiveWorkoutOverlay() {
     const router = useRouter();
@@ -31,7 +83,7 @@ export function ActiveWorkoutOverlay() {
         latestBodyWeight
     } = useActiveWorkout();
     
-    const { isRunning, workoutSeconds } = useActiveWorkoutTimer();
+    const { isRunning, workoutSeconds, restSeconds, startRestTimer } = useActiveWorkoutTimer();
     
     const [isAddingExercise, setIsAddingExercise] = React.useState(false);
 
@@ -193,6 +245,7 @@ export function ActiveWorkoutOverlay() {
                                             completeSet={completeSet}
                                             updateExercise={updateExercise}
                                             onRemoveExercise={removeExercise}
+                                            onUpdateRestTime={(newRestTime) => updateExercise(index, { restTime: newRestTime })}
                                             latestBodyWeight={latestBodyWeight}
                                             onPressName={() => {
                                                 setExpanded(false);
@@ -252,6 +305,13 @@ export function ActiveWorkoutOverlay() {
                 </Pressable>
             </View>
 
+            {restSeconds > 0 && (
+                <RestTimerBar 
+                    seconds={restSeconds} 
+                    onSkip={() => startRestTimer(0)} 
+                    onAdjust={(amt) => startRestTimer(Math.max(0, restSeconds + amt))}
+                />
+            )}
             </Animated.View>
         )}
             {isAddingExercise && (
@@ -280,6 +340,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     onRemoveExercise,
     latestBodyWeight,
     onPressName,
+    onUpdateRestTime,
 }: {
     exercise: any;
     index: number;
@@ -289,6 +350,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     onRemoveExercise: (index: number) => void;
     latestBodyWeight: number | null;
     onPressName?: () => void;
+    onUpdateRestTime?: (restTime: number) => void;
 }) {
     const theme = useUITheme();
 
@@ -312,6 +374,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
                 };
                 completeSet(index, setIndex, parsedInput);
             }}
+            onUpdateRestTime={onUpdateRestTime}
             onUncompleteSet={(setIndex) => {
                 const currentLogs = exercise.logs || [];
                 // Allow clearing any index, even if it's beyond current length (though unlikely via UI)

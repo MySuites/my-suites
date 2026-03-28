@@ -25,6 +25,7 @@ export type Exercise = {
     description?: string;
     nextVariations?: string[];
     difficulty?: number;
+    restTime?: number; // seconds
 };
 
 export type WorkoutLog = {

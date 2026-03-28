@@ -61,7 +61,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
     // Hooks
     const timerState = useActiveWorkoutTimers();
-    const { isRunning, setRunning, workoutSeconds, setWorkoutSeconds, resetTimers } = timerState;
+    const { isRunning, setRunning, workoutSeconds, setWorkoutSeconds, resetTimers, startRestTimer } = timerState;
 
     // Auto-pause when minimized, auto-resume when expanded
     useEffect(() => {
@@ -237,7 +237,14 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                 return ex;
             });
         });
-    }, []);
+
+        // Trigger rest timer
+        const exercise = exercises[targetIndex];
+        if (exercise && input) {
+            const restTime = exercise.restTime ?? 90;
+            startRestTimer(restTime);
+        }
+    }, [exercises, startRestTimer]);
 
     const toggleExpanded = useCallback(() => setIsExpanded(prev => !prev), []);
 

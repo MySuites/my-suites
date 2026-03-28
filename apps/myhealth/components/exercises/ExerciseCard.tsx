@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { RestTimerPicker } from '../workouts/RestTimerPicker';
 import { Exercise } from '../../providers/WorkoutManagerProvider';
-import { RaisedCard, HollowedCard, IconSymbol } from '@mysuite/ui';
+import { RaisedCard, IconSymbol } from '@mysuite/ui';
 import { SetRow, getExerciseFields } from '../workouts/SetRow';
 
 interface ExerciseCardProps {
@@ -15,12 +16,14 @@ interface ExerciseCardProps {
     onDeleteSet: (index: number) => void;
     onRemoveExercise?: () => void;
     onPressName?: () => void;
+    onUpdateRestTime?: (restTime: number) => void;
 
     theme: any;
     latestBodyWeight?: number | null;
 }
 
-export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onAddSet, onDeleteSet, onRemoveExercise, onPressName, theme, latestBodyWeight }: ExerciseCardProps) {
+export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onAddSet, onDeleteSet, onRemoveExercise, onPressName, onUpdateRestTime, theme, latestBodyWeight }: ExerciseCardProps) {
+    const [isPickerVisible, setIsPickerVisible] = useState(false);
     // Derived state
     const completedSets = exercise.completedSets || 0;
     const isFinished = completedSets >= exercise.sets;
@@ -32,6 +35,16 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
             <View className="flex-row justify-between items-center p-4">
                 <TouchableOpacity className="flex-1" onPress={onPressName} disabled={!onPressName}>
                     <Text className="text-lg font-bold text-light dark:text-dark">{exercise.name}</Text>
+                    
+                    <TouchableOpacity 
+                        className="flex-row items-center mt-1"
+                        onPress={() => setIsPickerVisible(true)}
+                    >
+                        <IconSymbol name="timer" size={12} color={theme.bgDark === '#000000' ? '#999' : '#666'} />
+                        <Text className="ml-1 text-[11px] font-semibold text-light-muted dark:text-dark-muted">
+                            {exercise.restTime ?? 90}s rest
+                        </Text>
+                    </TouchableOpacity>
                 </TouchableOpacity>
                 <View className="flex-row items-center gap-3">
                     {isFinished && <IconSymbol name="checkmark.circle.fill" size={24} color={theme.primary} />}
@@ -87,6 +100,16 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
                             <Text className="ml-2 text-sm text-primary dark:text-primary-dark font-medium">Add Set</Text>
                         </TouchableOpacity>
             </View>
+
+            <RestTimerPicker
+                visible={isPickerVisible}
+                onClose={() => setIsPickerVisible(false)}
+                initialValue={exercise.restTime ?? 90}
+                onSave={(val) => {
+                    onUpdateRestTime?.(val);
+                    setIsPickerVisible(false);
+                }}
+            />
         </>
     );
 }

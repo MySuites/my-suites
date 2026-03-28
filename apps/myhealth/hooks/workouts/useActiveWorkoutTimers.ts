@@ -56,8 +56,9 @@ export function useActiveWorkoutTimers() {
     }, [isRunning]);
 
     // Rest Timer Logic
+    const isResting = restSeconds > 0;
     useEffect(() => {
-        if (restSeconds > 0) {
+        if (isResting) {
             if (!lastRestTickRef.current) {
                 lastRestTickRef.current = Date.now();
             }
@@ -105,7 +106,7 @@ export function useActiveWorkoutTimers() {
                 clearInterval(restTimerRef.current);
             }
         };
-    }, [restSeconds]);
+    }, [isResting]);
 
     const startRestTimer = useCallback((seconds: number) => {
         // Clear existing if any
