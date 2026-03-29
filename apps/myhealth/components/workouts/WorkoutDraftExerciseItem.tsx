@@ -16,6 +16,8 @@ export interface WorkoutDraftExerciseItemProps {
     onRemoveSet: (setIndex: number) => void;
     latestBodyWeight?: number | null;
     isEditing: boolean;
+    lastSaved?: number;
+    onToggleLocalEdit?: (isEditing: boolean) => void;
     onPressName?: () => void;
     onDrag?: () => void;
 }
@@ -34,6 +36,8 @@ export const WorkoutDraftExerciseItem = ({
     onRemoveSet,
     latestBodyWeight,
     isEditing,
+    lastSaved,
+    onToggleLocalEdit,
     onPressName,
     onDrag
 }: WorkoutDraftExerciseItemProps) => {
@@ -41,7 +45,7 @@ export const WorkoutDraftExerciseItem = ({
     const [menuVisible, setMenuVisible] = useState(false);
     const ellipsisRef = useRef<View>(null);
     const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
-    const [isLocalEditing, setIsLocalEditing] = useState(item.isNewlyAdded || false);
+    const [isLocalEditing, setIsLocalEditing] = useState<boolean>(item.isNewlyAdded || false);
     
     // RPE Picker state
     const [isRPEPickerVisible, setIsRPEPickerVisible] = useState(false);
@@ -49,10 +53,12 @@ export const WorkoutDraftExerciseItem = ({
     const [rpePickerIndex, setRPEPickerIndex] = useState<number | null>(null);
 
     useEffect(() => {
-        if (!isEditing) {
-            setIsLocalEditing(false);
-        }
-    }, [isEditing]);
+        setIsLocalEditing(false);
+    }, [lastSaved]);
+
+    useEffect(() => {
+        onToggleLocalEdit?.(isLocalEditing);
+    }, [isLocalEditing, onToggleLocalEdit]);
 
     const _isEditing = isEditing || isLocalEditing;
 
@@ -167,7 +173,7 @@ export const WorkoutDraftExerciseItem = ({
                                     elevation: 5,
                                 }}
                             >
-                                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); setIsLocalEditing(!isLocalEditing); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
+                                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); setIsLocalEditing(prev => !prev); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
                                     <IconSymbol name={isLocalEditing ? "checkmark" : "pencil"} size={18} color={theme.text as string} style={{ marginRight: 12 }} />
                                     <Text style={{ color: theme.text as string }} className="font-medium">{isLocalEditing ? "Done" : "Edit"}</Text>
                                 </TouchableOpacity>

@@ -58,6 +58,8 @@ export default function CreateWorkoutScreen() {
 
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [lastSaved, setLastSaved] = useState(0);
+    const [currentlyEditingIndices, setCurrentlyEditingIndices] = useState<Set<number>>(new Set());
     const [hasInitialized, setHasInitialized] = useState(false);
 
     const [isAddingExercise, setIsAddingExercise] = useState(false);
@@ -73,16 +75,31 @@ export default function CreateWorkoutScreen() {
     const activeToggleBg = theme.bgLight as string; 
     const activeToggleText = theme.text as string;
 
+    const normalizeExercises = (exercises: any[]) => {
+        return (exercises || []).map(ex => {
+            const { isNewlyAdded, ...rest } = ex;
+            // Ensure setTargets are also normalized (no undefined values)
+            const normalizedTargets = (ex.setTargets || []).map((t: any) => {
+                const nt = { ...t };
+                Object.keys(nt).forEach(key => {
+                    if (nt[key] === undefined || nt[key] === null) delete nt[key];
+                });
+                return nt;
+            });
+            return { ...rest, setTargets: normalizedTargets };
+        });
+    };
+
     const hasUnsavedChanges = (() => {
         if (!editingWorkoutId) {
             return workoutDraftExercises.length > 0 || workoutDraftName.trim().length > 0;
         }
         if (!originalWorkout) return false;
         
-        const currentDraftString = JSON.stringify(workoutDraftExercises);
-        const originalExercisesString = JSON.stringify(originalWorkout.exercises || []);
+        const currentDraftString = JSON.stringify(normalizeExercises(workoutDraftExercises));
+        const originalExercisesString = JSON.stringify(normalizeExercises(originalWorkout.exercises || []));
         
-        return workoutDraftName !== originalWorkout.name || currentDraftString !== originalExercisesString;
+        return workoutDraftName.trim() !== originalWorkout.name.trim() || currentDraftString !== originalExercisesString;
     })();
 
     useEffect(() => {
@@ -141,6 +158,8 @@ export default function CreateWorkoutScreen() {
         setIsSaving(true);
         const onSuccess = () => {
              setIsSaving(false);
+             setLastSaved(Date.now());
+             setCurrentlyEditingIndices(new Set());
              if (editingWorkoutId) {
                  setIsEditing(false);
              } else {
@@ -449,6 +468,15 @@ export default function CreateWorkoutScreen() {
                                     onRemoveSet={(setIndex) => removeSet(index, setIndex)}
                                     latestBodyWeight={latestBodyWeight}
                                     isEditing={isEditing}
+                                    lastSaved={lastSaved}
+                                    onToggleLocalEdit={(isNowEditing) => {
+                                        setCurrentlyEditingIndices(prev => {
+                                            const next = new Set(prev);
+                                            if (isNowEditing) next.add(index);
+                                            else next.delete(index);
+                                            return next;
+                                        });
+                                    }}
                                     onDrag={drag}
                                 />
                             </View>
@@ -474,7 +502,9 @@ export default function CreateWorkoutScreen() {
             )}
 
             {/* Quick Start Style Start/Save Button */}
-            {!isAddingExercise && (
+            {!isAddingExercise && (() => {
+                const isSavingMode = hasUnsavedChanges || currentlyEditingIndices.size > 0 || isEditing;
+                return (
                 <Animated.View 
                     entering={SlideInDown.duration(300)}
                     exiting={SlideOutDown.duration(300)}
@@ -482,7 +512,7 @@ export default function CreateWorkoutScreen() {
                     style={{ bottom: insets.bottom + 20, width: 'auto', minWidth: 200, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8, zIndex: 50 }}
                 >
                     <RaisedCard
-                        onPress={hasUnsavedChanges ? handleSaveWorkoutDraft : handleStartWorkout}
+                        onPress={isSavingMode ? handleSaveWorkoutDraft : handleStartWorkout}
                         disabled={isSaving}
                         className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
                         style={{ borderRadius: 9999 }}
@@ -491,7 +521,7 @@ export default function CreateWorkoutScreen() {
                             <ActivityIndicator size="small" color="#FFF" />
                         ) : (
                             <View className="flex-row items-center justify-center">
-                                {hasUnsavedChanges ? (
+                                {isSavingMode ? (
                                     <>
                                         <IconSymbol name="checkmark.circle.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
                                         <Text className="text-lg font-bold text-white">Save Workout</Text>
@@ -506,7 +536,8 @@ export default function CreateWorkoutScreen() {
                         )}
                     </RaisedCard>
                 </Animated.View>
-            )}
+                );
+            })()}
         </View>
     );
 }
