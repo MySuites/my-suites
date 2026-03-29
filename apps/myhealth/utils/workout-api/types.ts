@@ -5,6 +5,7 @@ export type SetLog = {
     reps?: number;
     duration?: number; // seconds
     distance?: number; // meters or user unit
+    rpe?: number;
 };
 
 export type Exercise = {
@@ -21,6 +22,7 @@ export type Exercise = {
         weight: number;
         duration?: number;
         distance?: number;
+        rpe?: number;
     }[];
     description?: string;
     nextVariations?: string[];

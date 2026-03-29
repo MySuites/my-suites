@@ -1,0 +1,135 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, Modal, FlatList, TouchableOpacity, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
+
+const ITEM_HEIGHT = 50;
+const VISIBLE_ITEMS = 5;
+const WHEEL_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
+
+// Generate values from 1.0 to 10.0 in steps of 0.5
+const VALUES = Array.from({ length: 19 }, (_, i) => 1 + i * 0.5);
+
+interface RPEPickerProps {
+    visible: boolean;
+    onClose: () => void;
+    initialValue: number | string | undefined;
+    onSave: (value: number) => void;
+}
+
+export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerProps) {
+    const theme = useUITheme();
+    const parsedInitialValue = typeof initialValue === 'string' ? parseFloat(initialValue) : initialValue;
+    const [selectedValue, setSelectedValue] = useState(parsedInitialValue || 8.0);
+    const flatListRef = useRef<FlatList>(null);
+
+    // Pad values for centering
+    const data = [null, null, ...VALUES, null, null];
+
+    useEffect(() => {
+        if (visible) {
+            const startVal = parsedInitialValue || 8.0;
+            setSelectedValue(startVal);
+            
+            // Scroll to initial value after a short delay
+            setTimeout(() => {
+                const index = VALUES.indexOf(startVal);
+                if (index !== -1 && flatListRef.current) {
+                    flatListRef.current.scrollToOffset({ 
+                        offset: index * ITEM_HEIGHT, 
+                        animated: false 
+                    });
+                }
+            }, 100);
+        }
+    }, [visible, initialValue, parsedInitialValue]);
+
+    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const offset = event.nativeEvent.contentOffset.y;
+        const index = Math.round(offset / ITEM_HEIGHT);
+        if (index >= 0 && index < VALUES.length) {
+            setSelectedValue(VALUES[index]);
+        }
+    };
+
+    return (
+        <Modal
+            visible={visible}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={onClose}
+        >
+            <View className="flex-1 justify-end bg-black/50">
+                <View className="bg-light dark:bg-dark-lighter rounded-t-3xl p-6 pb-12">
+                    <View className="flex-row items-center justify-between mb-8">
+                        <Text className="text-xl font-bold text-light dark:text-dark">Select RPE</Text>
+                        <TouchableOpacity onPress={onClose} className="p-2">
+                            <IconSymbol name="xmark" size={24} color={theme.textMuted || '#888'} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={{ height: WHEEL_HEIGHT, overflow: 'hidden' }} className="relative justify-center px-4">
+                        {/* Highlights */}
+                        <View 
+                            className="absolute left-0 right-0 border-t border-b border-primary/20 bg-primary/5"
+                            style={{ height: ITEM_HEIGHT, top: ITEM_HEIGHT * 2 }} 
+                            pointerEvents="none"
+                        />
+                        
+                        <FlatList
+                            ref={flatListRef}
+                            data={data}
+                            keyExtractor={(_, i) => i.toString()}
+                            showsVerticalScrollIndicator={false}
+                            snapToInterval={ITEM_HEIGHT}
+                            snapToAlignment="start"
+                            decelerationRate="fast"
+                            onScroll={handleScroll}
+                            onMomentumScrollEnd={handleScroll}
+                            scrollEventThrottle={16}
+                            renderItem={({ item, index }) => {
+                                if (item === null) return <View style={{ height: ITEM_HEIGHT }} />;
+                                
+                                const isSelected = item === selectedValue;
+                                return (
+                                    <View 
+                                        style={{ height: ITEM_HEIGHT }} 
+                                        className="items-center justify-center"
+                                    >
+                                        <Text className={`text-2xl font-bold ${
+                                            isSelected 
+                                                ? 'text-primary dark:text-primary-dark' 
+                                                : 'text-light-muted dark:text-dark-muted opacity-40'
+                                        }`}>
+                                            {item.toFixed(1)}
+                                        </Text>
+                                    </View>
+                                );
+                            }}
+                        />
+                    </View>
+
+                    <View className="mt-8 flex-row items-center justify-center gap-2 mb-4">
+                        <Text className="text-light-muted dark:text-dark-muted text-sm text-center italic">
+                            {(() => {
+                                const rir = 10 - selectedValue;
+                                if (rir === 0) return 'Maximum Effort (0 RIR)';
+                                if (rir % 1 === 0.5) return `Maybe ${Math.ceil(rir)} Reps in Reserve`;
+                                return `${rir} ${rir === 1 ? 'Rep' : 'Reps'} in Reserve`;
+                            })()}
+                        </Text>
+                    </View>
+
+                    <RaisedCard 
+                        onPress={() => onSave(selectedValue)}
+                        className="py-3 px-6 bg-primary items-center justify-center"
+                        style={{ backgroundColor: theme.primary, borderRadius: 9999 }}
+                    >
+                        <View className="flex-row items-center justify-center">
+                            <Text className="text-white text-lg font-bold">Save RPE</Text>
+                        </View>
+                    </RaisedCard>
+                </View>
+            </View>
+        </Modal>
+    );
+}

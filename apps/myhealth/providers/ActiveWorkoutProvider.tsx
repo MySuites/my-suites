@@ -18,7 +18,7 @@ interface ActiveWorkoutContextType {
     startWorkout: (exercisesToStart?: Exercise[], name?: string, routineId?: string, sourceWorkoutId?: string) => void;
     pauseWorkout: () => void;
     resetWorkout: () => void;
-    completeSet: (index: number, setIndex: number, input?: { weight?: number; bodyweight?: number; reps?: number; duration?: number; distance?: number }) => void;
+    completeSet: (index: number, setIndex: number, input?: { weight?: number; bodyweight?: number; reps?: number; duration?: number; distance?: number; rpe?: number }) => void;
     nextExercise: () => void;
     prevExercise: () => void;
     addExercise: (name: string, sets: string, reps: string, properties?: string[]) => void;
@@ -217,7 +217,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         });
     }, []);
 
-    const handleCompleteSet = useCallback((targetIndex: number,  setIndex: number, input?: { weight?: number; bodyweight?: number; reps?: number; duration?: number; distance?: number }) => {
+    const handleCompleteSet = useCallback((targetIndex: number,  setIndex: number, input?: { weight?: number; bodyweight?: number; reps?: number; duration?: number; distance?: number; rpe?: number }) => {
         setExercises(currentExercises => {
             // Need a tiny hack because currentIndex might not be in closure, but we can't reliably read it from state inside setExercises if we depend on it directly
             // Actually targetIndex is always provided by our UI now, let's rely on it.
@@ -241,6 +241,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                         reps: finalReps,
                         duration: input?.duration,
                         distance: input?.distance,
+                        rpe: input?.rpe,
                     };
 
                     logs[setIndex] = newLog;

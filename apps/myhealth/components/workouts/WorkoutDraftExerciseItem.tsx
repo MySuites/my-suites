@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Dimensions, Modal } from 'react-native';
 import { useUITheme as useTheme, IconSymbol, RaisedCard } from '@mysuite/ui';
 import { getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
+import { RPEPicker } from './RPEPicker';
 
 export interface WorkoutDraftExerciseItemProps {
     item: any;
@@ -10,7 +11,7 @@ export interface WorkoutDraftExerciseItemProps {
     onToggleExpand: () => void;
     onMove: (dir: -1 | 1) => void;
     onRemove: () => void;
-    onUpdateSet: (setIndex: number, field: 'reps' | 'weight' | 'duration' | 'distance', value: string) => void;
+    onUpdateSet: (setIndex: number, field: 'reps' | 'weight' | 'duration' | 'distance' | 'rpe', value: string) => void;
     onAddSet: () => void;
     onRemoveSet: (setIndex: number) => void;
     latestBodyWeight?: number | null;
@@ -41,6 +42,11 @@ export const WorkoutDraftExerciseItem = ({
     const ellipsisRef = useRef<View>(null);
     const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
     const [isLocalEditing, setIsLocalEditing] = useState(item.isNewlyAdded || false);
+    
+    // RPE Picker state
+    const [isRPEPickerVisible, setIsRPEPickerVisible] = useState(false);
+    const [rpePickerValue, setRPEPickerValue] = useState<string | undefined>(undefined);
+    const [rpePickerIndex, setRPEPickerIndex] = useState<number | null>(null);
 
     useEffect(() => {
         if (!isEditing) {
@@ -68,11 +74,12 @@ export const WorkoutDraftExerciseItem = ({
             showWeight: lowerProps.includes('weighted'),
             showReps: lowerProps.includes('reps'),
             showDuration: lowerProps.includes('duration'),
-            showDistance: lowerProps.includes('distance')
+            showDistance: lowerProps.includes('distance'),
+            showRPE: lowerProps.includes('weighted') || lowerProps.includes('reps') || lowerProps.includes('rpe')
         };
     };
 
-    const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(item.properties, item.id);
+    const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(item.properties, item.id);
     
     // Ensure duration falls back to reps if needed (legacy data fix for display)
     const rawTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || 0, weight: 0 }));
@@ -81,7 +88,8 @@ export const WorkoutDraftExerciseItem = ({
         weight: t.weight,
         reps: t.reps,
         duration: t.duration,
-        distance: t.distance
+        distance: t.distance,
+        rpe: t.rpe
     }));
 
     const isZeroValue = (val: any) => val === 0 || val === '0' || val === '0.0';
@@ -182,6 +190,7 @@ export const WorkoutDraftExerciseItem = ({
                         {showReps && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Reps</Text>}
                         {showDuration && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Time</Text>}
                         {showDistance && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Dist</Text>}
+                        {showRPE && <Text className="w-12 text-xs text-gray-500 font-semibold text-center">RPE</Text>}
                         <View className="w-8 ml-2" />
                     </View>
                     {currentTargets.map((set: any, setIdx: number) => (
@@ -270,6 +279,27 @@ export const WorkoutDraftExerciseItem = ({
                                 </View>
                             )}
 
+                            {showRPE && (
+                                <View className="w-12 flex-row justify-center">
+                                    <TouchableOpacity 
+                                        onPress={() => {
+                                            if (_isEditing) {
+                                                setRPEPickerIndex(setIdx);
+                                                setRPEPickerValue(set.rpe ? String(set.rpe) : undefined);
+                                                setIsRPEPickerVisible(true);
+                                            }
+                                        }}
+                                        className={`items-center justify-center p-1 ${
+                                            _isEditing ? 'bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded w-10 h-8' : ''
+                                        }`}
+                                    >
+                                        <Text className={`font-semibold ${getTextColorClass(set.rpe)}`}>
+                                            {set.rpe !== undefined && set.rpe !== null ? set.rpe : "-"}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+
                             <View className="w-8 ml-2 flex-row justify-center">
                                 {_isEditing && (
                                     <TouchableOpacity 
@@ -293,6 +323,18 @@ export const WorkoutDraftExerciseItem = ({
                     )}
                 </View>
             )}
+
+            <RPEPicker 
+                visible={isRPEPickerVisible}
+                onClose={() => setIsRPEPickerVisible(false)}
+                initialValue={rpePickerValue}
+                onSave={(val) => {
+                    if (rpePickerIndex !== null) {
+                        onUpdateSet(rpePickerIndex, 'rpe', val.toString());
+                    }
+                    setIsRPEPickerVisible(false);
+                }}
+            />
         </View>
     );
 };

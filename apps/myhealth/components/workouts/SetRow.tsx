@@ -35,38 +35,40 @@ export const getExerciseFields = (properties?: string[], exerciseId?: string) =>
         showWeight: lowerProps.includes('weighted'),
         showReps: lowerProps.includes('reps'),
         showDuration: lowerProps.includes('duration'),
-        showDistance: lowerProps.includes('distance')
+        showDistance: lowerProps.includes('distance'),
+        showRPE: lowerProps.includes('weighted') || lowerProps.includes('reps') || lowerProps.includes('rpe')
     };
 };
 
 interface SetRowProps {
     index: number;
     exercise: any;
-    onCompleteSet: (input: { weight?: string | number, bodyweight?: string | number, reps?: string, duration?: string, distance?: string }) => void;
+    onCompleteSet: (input: { weight?: string | number, bodyweight?: string | number, reps?: string, duration?: string, distance?: string, rpe?: string }) => void;
     onUncompleteSet?: (index: number) => void;
-    onUpdateSetTarget?: (index: number, key: 'weight' | 'reps' | 'duration' | 'distance', value: string) => void;
-    onUpdateLog?: (index: number, key: 'weight' | 'reps' | 'duration' | 'distance', value: string) => void;
+    onUpdateSetTarget?: (index: number, key: 'weight' | 'reps' | 'duration' | 'distance' | 'rpe', value: string) => void;
+    onUpdateLog?: (index: number, key: 'weight' | 'reps' | 'duration' | 'distance' | 'rpe', value: string) => void;
     onDeleteSet: (index: number) => void;
+    onPressRPE?: (index: number, currentVal: string) => void;
     theme: any;
     latestBodyWeight?: number | null;
 }
 
-export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onDeleteSet, theme, latestBodyWeight }: SetRowProps) => {
+export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onDeleteSet, onPressRPE, theme, latestBodyWeight }: SetRowProps) => {
     const shouldDelete = useRef(false);
     const swipeableRef = useRef<any>(null);
     const log = exercise.logs?.[index];
     const isCompleted = !!log;
     const isEvenSet = (index + 1) % 2 === 0;
 
-    const { showBodyweight, showWeight, showReps, showDuration, showDistance } = getExerciseFields(exercise.properties, exercise.id);
+    const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(exercise.properties, exercise.id);
 
-    const getValue = (field: 'weight' | 'reps' | 'duration' | 'distance') => {
+    const getValue = (field: 'weight' | 'reps' | 'duration' | 'distance' | 'rpe') => {
         const target = exercise.setTargets?.[index]?.[field];
         if (target === undefined || target === null) return '';
         return target.toString();
     };
 
-    const getLogValue = (field: 'weight' | 'reps' | 'duration' | 'distance') => {
+    const getLogValue = (field: 'weight' | 'reps' | 'duration' | 'distance' | 'rpe') => {
         const val = log?.[field];
         if (val === undefined || val === null) return '';
         return val.toString();
@@ -253,6 +255,16 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                                  selectTextOnFocus
                              />
                          )}
+                         {showRPE && (
+                            <TouchableOpacity 
+                                className="w-[45px] items-center justify-center mx-0.5"
+                                onPress={() => onPressRPE?.(index, getLogValue('rpe'))}
+                            >
+                                <Text className={`text-sm font-bold ${getTextColor(getLogValue('rpe'))}`}>
+                                    {getLogValue('rpe') || '-'}
+                                </Text>
+                            </TouchableOpacity>
+                         )}
                         <TouchableOpacity 
                             className="w-7 h-7 rounded-lg bg-primary dark:bg-primary-dark items-center justify-center ml-1"
                             onPress={() => onUncompleteSet?.(index)}
@@ -317,6 +329,16 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                                 selectTextOnFocus
                             />
                         )}
+                         {showRPE && (
+                            <TouchableOpacity 
+                                className="w-[45px] items-center justify-center mx-0.5"
+                                onPress={() => onPressRPE?.(index, getValue('rpe'))}
+                            >
+                                <Text className={`text-sm font-bold ${getTextColor(getValue('rpe'))}`}>
+                                    {getValue('rpe') || '-'}
+                                </Text>
+                            </TouchableOpacity>
+                         )}
                         <TouchableOpacity 
                             className={`w-7 h-7 rounded-lg items-center justify-center ml-1 border-2 border-primary dark:border-primary-dark`}
                             onPress={() => onCompleteSet({ 
@@ -325,6 +347,7 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                                 reps: showReps ? (getValue('reps') || (exercise.reps || 0).toString()) : undefined,
                                 duration: showDuration ? getValue('duration') : undefined,
                                 distance: showDistance ? getValue('distance') : undefined,
+                                rpe: showRPE ? getValue('rpe') : undefined,
                             })}
                         >
                             <IconSymbol name="checkmark" size={16} color={theme.primary} />

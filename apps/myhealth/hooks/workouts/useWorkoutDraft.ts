@@ -47,7 +47,7 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
     function updateSetTarget(
         exerciseIndex: number,
         setIndex: number,
-        field: "reps" | "weight" | "duration" | "distance",
+        field: "reps" | "weight" | "duration" | "distance" | "rpe",
         value: string,
     ) {
         setWorkoutDraftExercises((prev) => {
