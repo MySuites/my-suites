@@ -1300,6 +1300,44 @@ export const BackLeverExercises = [
     },
 ];
 
+export const WristExercises = [
+    {
+        "id": "dumbbell_wrist_curl",
+        "name": "Dumbbell Wrist Curl",
+        "type": "Weighted, Reps",
+        "muscle_group": "Forearms",
+        difficulty: 2.0,
+    },
+    {
+        "id": "dumbbell_reverse_wrist_curl",
+        "name": "Dumbbell Reverse Wrist Curl",
+        "type": "Weighted, Reps",
+        "muscle_group": "Forearms",
+        difficulty: 2.5,
+    },
+    {
+        "id": "barbell_wrist_curl",
+        "name": "Barbell Wrist Curl",
+        "type": "Weighted, Reps",
+        "muscle_group": "Forearms",
+        difficulty: 3.0,
+    },
+    {
+        "id": "barbell_reverse_wrist_curl",
+        "name": "Barbell Reverse Wrist Curl",
+        "type": "Weighted, Reps",
+        "muscle_group": "Forearms",
+        difficulty: 3.5,
+    },
+    {
+        "id": "first_knuckle_raise",
+        "name": "First Knuckle Raise",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Forearms",
+        difficulty: 4.0,
+    },
+];
+
 export const CardioExercises = [
     {
         "id": "treadmill",
@@ -1413,6 +1451,7 @@ export default [
     ...PlancheExercises,
     ...FrontLeverExercises,
     ...BackLeverExercises,
+    ...WristExercises,
     ...CardioExercises,
 ];
 
@@ -1456,5 +1495,6 @@ export const Groups = {
     "Planche Exercises": PlancheExercises,
     "Front Lever Exercises": FrontLeverExercises,
     "Back Lever Exercises": BackLeverExercises,
+    "Wrist Exercises": WristExercises,
     "Cardio Exercises": CardioExercises,
 };
