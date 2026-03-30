@@ -38,16 +38,18 @@ export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerP
             const startVal = getParsedValue(initialValue) ?? 8.0;
             setSelectedValue(startVal);
             
-            // Scroll to initial value after a short delay to ensure FlatList is mounted
-            setTimeout(() => {
-                const index = VALUES.indexOf(startVal);
+            // Use a slightly longer delay to ensure the Modal is fully visible and Layout is done
+            const timer = setTimeout(() => {
+                const index = VALUES.findIndex(v => Math.abs(v - startVal) < 0.1);
+                
                 if (index !== -1 && flatListRef.current) {
-                    flatListRef.current.scrollToOffset({ 
-                        offset: index * ITEM_HEIGHT, 
+                    flatListRef.current.scrollToIndex({ 
+                        index: index, 
                         animated: false 
                     });
                 }
-            }, 60); // Slightly shorter delay for snappiness
+            }, 100);
+            return () => clearTimeout(timer);
         }
     }, [visible, initialValue]);
 
@@ -58,6 +60,8 @@ export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerP
             setSelectedValue(VALUES[index]);
         }
     };
+
+    const initialIndex = VALUES.findIndex(v => Math.abs(v - (getParsedValue(initialValue) ?? 8.0)) < 0.1);
 
     return (
         <Modal
@@ -91,8 +95,16 @@ export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerP
                             snapToInterval={ITEM_HEIGHT}
                             snapToAlignment="start"
                             decelerationRate="fast"
-                            onScroll={handleScroll}
+                            // Use a key to force re-render when visible changes to ensure initialScrollIndex works better
+                            key={visible ? 'visible' : 'hidden'}
+                            initialScrollIndex={initialIndex !== -1 ? initialIndex : undefined}
+                            getItemLayout={(_, index) => ({
+                                length: ITEM_HEIGHT,
+                                offset: ITEM_HEIGHT * index,
+                                index,
+                            })}
                             onMomentumScrollEnd={handleScroll}
+                            onScrollEndDrag={handleScroll}
                             scrollEventThrottle={16}
                             renderItem={({ item, index }) => {
                                 if (item === null) return <View style={{ height: ITEM_HEIGHT }} />;
