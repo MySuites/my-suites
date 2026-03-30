@@ -18,8 +18,16 @@ interface RPEPickerProps {
 
 export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerProps) {
     const theme = useUITheme();
-    const parsedInitialValue = typeof initialValue === 'string' ? parseFloat(initialValue) : initialValue;
-    const [selectedValue, setSelectedValue] = useState(parsedInitialValue || 8.0);
+    
+    // Safely parse initial value which can be string or number
+    const getParsedValue = (val: any) => {
+        if (val === undefined || val === null || val === '') return undefined;
+        const parsed = typeof val === 'string' ? parseFloat(val) : val;
+        return isNaN(parsed) ? undefined : parsed;
+    };
+
+    const parsedInitialValue = getParsedValue(initialValue);
+    const [selectedValue, setSelectedValue] = useState(parsedInitialValue ?? 8.0);
     const flatListRef = useRef<FlatList>(null);
 
     // Pad values for centering
@@ -27,10 +35,10 @@ export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerP
 
     useEffect(() => {
         if (visible) {
-            const startVal = parsedInitialValue || 8.0;
+            const startVal = getParsedValue(initialValue) ?? 8.0;
             setSelectedValue(startVal);
             
-            // Scroll to initial value after a short delay
+            // Scroll to initial value after a short delay to ensure FlatList is mounted
             setTimeout(() => {
                 const index = VALUES.indexOf(startVal);
                 if (index !== -1 && flatListRef.current) {
@@ -39,9 +47,9 @@ export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerP
                         animated: false 
                     });
                 }
-            }, 100);
+            }, 60); // Slightly shorter delay for snappiness
         }
-    }, [visible, initialValue, parsedInitialValue]);
+    }, [visible, initialValue]);
 
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const offset = event.nativeEvent.contentOffset.y;
