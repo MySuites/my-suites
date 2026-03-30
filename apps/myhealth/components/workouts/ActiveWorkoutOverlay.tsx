@@ -363,6 +363,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
                     reps: parsedValue(input?.reps),
                     duration: parsedValue(input?.duration),
                     distance: parsedValue(input?.distance),
+                    rpe: parsedValue(input?.rpe),
                 };
                 completeSet(index, setIndex, parsedInput);
             }}
@@ -370,11 +371,30 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
             onUncompleteSet={(setIndex) => {
                 const currentLogs = exercise.logs || [];
                 const newLogs = [...currentLogs];
+                const logToUncomplete = newLogs[setIndex];
                 newLogs[setIndex] = undefined;
                 const completedCount = newLogs.filter(l => l !== undefined && l !== null).length;
+
+                // Sync log back to targets if it exists to preserve edits made while completed
+                const currentTargets = exercise.setTargets ? [...exercise.setTargets] : [];
+                if (logToUncomplete) {
+                    while (currentTargets.length <= setIndex) {
+                        currentTargets.push({ weight: 0, reps: exercise.reps });
+                    }
+                    currentTargets[setIndex] = {
+                        ...currentTargets[setIndex],
+                        weight: logToUncomplete.weight,
+                        reps: logToUncomplete.reps,
+                        duration: logToUncomplete.duration,
+                        distance: logToUncomplete.distance,
+                        rpe: logToUncomplete.rpe,
+                    };
+                }
+
                 updateExercise(index, { 
                     logs: newLogs, 
                     completedSets: completedCount,
+                    setTargets: currentTargets,
                 });
             }}
             onUpdateSetTarget={(setIndex, key, value) => {
@@ -391,8 +411,10 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
             }}
             onUpdateLog={(setIndex, key, value) => {
                 const newLogs = [...(exercise.logs || [])];
-                if (newLogs[setIndex]) {
-                    (newLogs[setIndex] as any)[key] = value;
+                const log = newLogs[setIndex];
+                if (log) {
+                    const numValue = value === '' ? undefined : parseFloat(value);
+                    (newLogs[setIndex] as any)[key] = (value === '' || isNaN(numValue as any)) ? undefined : numValue;
                     updateExercise(index, { logs: newLogs });
                 }
             }}
