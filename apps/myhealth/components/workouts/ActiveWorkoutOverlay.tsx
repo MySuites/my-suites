@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, BackHandler, Text, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, TouchableOpacity, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import Animated, { SlideInDown, SlideOutDown, FadeIn, FadeOut } from 'react-native-reanimated';
@@ -94,6 +94,7 @@ export function ActiveWorkoutOverlay() {
     }
 
     function handleOpenAddExercise() {
+        Keyboard.dismiss();
         setIsAddingExercise(true);
     }
 
@@ -125,7 +126,10 @@ export function ActiveWorkoutOverlay() {
                     }
                     leftAction={
                         <RaisedCard 
-                            onPress={() => setExpanded(false)}
+                            onPress={() => {
+                                Keyboard.dismiss();
+                                setExpanded(false);
+                            }}
                             className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
                             style={{ borderRadius: 9999 }}
                         >
@@ -135,6 +139,7 @@ export function ActiveWorkoutOverlay() {
                     rightAction={
                         <RaisedCard 
                             onPress={() => {
+                                Keyboard.dismiss();
                                 pauseWorkout();
                                 router.push('/workouts/end');
                             }}
@@ -247,6 +252,7 @@ export function ActiveWorkoutOverlay() {
                         onUpdateRestTime={(newRestTime) => updateExercise(index, { restTime: newRestTime })}
                         latestBodyWeight={latestBodyWeight}
                         onPressName={() => {
+                            Keyboard.dismiss();
                             setExpanded(false);
                             router.push({
                                 pathname: '/exercises/details' as any,
