@@ -1,6 +1,7 @@
 import { getDb } from "../utils/db/database";
 import type { LocalWorkoutLog, Exercise } from "../utils/workout-api/types";
 import uuid from 'react-native-uuid';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import ExerciseDefaultData from '../assets/data/default-exercises';
 
 // --- Generic Helpers ---
@@ -417,6 +418,24 @@ export const DataRepository = {
             });
         }
         console.log("Seeding complete.");
+    },
+
+    getStoredExerciseVersion: async (): Promise<number> => {
+        try {
+            const version = await AsyncStorage.getItem('exercise_data_version');
+            return version ? parseInt(version, 10) : 0;
+        } catch (e) {
+            console.error("Failed to get stored exercise version", e);
+            return 0;
+        }
+    },
+
+    setStoredExerciseVersion: async (version: number): Promise<void> => {
+        try {
+            await AsyncStorage.setItem('exercise_data_version', version.toString());
+        } catch (e) {
+            console.error("Failed to set stored exercise version", e);
+        }
     },
 
     // --- Body Measurements ---

@@ -16,6 +16,7 @@ import { WorkoutManagerProvider } from '../providers/WorkoutManagerProvider';
 import { FloatingButtonProvider } from '../providers/FloatingButtonContext';
 import { ToastProvider } from '@mysuite/ui';
 import { DataRepository } from '../providers/DataRepository';
+import { EXERCISE_DATA_VERSION } from '../assets/data/default-exercises';
 import { BodyWeightService } from '../services/BodyWeightService';
 
 SplashScreen.preventAutoHideAsync();
@@ -61,10 +62,14 @@ function RootLayoutContent({ isDbReady, setIsDbReady }: { isDbReady: boolean, se
       try {
         await initDatabase();
         
-        // Optimistic seeding: Only seed if the exercise table is empty
-        const exercises = await DataRepository.getExercises();
-        if (exercises.length === 0) {
+        // Versioned seeding: Only seed if the stored version is older than the code version
+        const storedVersion = await DataRepository.getStoredExerciseVersion();
+        
+        if (storedVersion < EXERCISE_DATA_VERSION) {
+           console.log(`[Sync] Updating exercises from version ${storedVersion} to ${EXERCISE_DATA_VERSION}...`);
            await DataRepository.seedDefaultExercises();
+           await DataRepository.setStoredExerciseVersion(EXERCISE_DATA_VERSION);
+           console.log("[Sync] Exercise synchronization complete.");
         }
       } catch (err) {
         console.error("App setup failed:", err);

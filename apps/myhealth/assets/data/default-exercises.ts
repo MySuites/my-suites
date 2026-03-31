@@ -1,3 +1,5 @@
+export const EXERCISE_DATA_VERSION = 2;
+
 export const BarbellBenchPress = [
     {
         "id": "flat_barbell_bench_press",
