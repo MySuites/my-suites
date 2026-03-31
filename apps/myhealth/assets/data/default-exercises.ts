@@ -1338,6 +1338,17 @@ export const WristExercises = [
     },
 ];
 
+export const TibialisExercises = [
+    {
+        "id": "tibialis_raise",
+        "name": "Tibialis Raise",
+        "type": "Weighted, Reps",
+        "muscle_group": "Tibialis",
+        difficulty: 2.0,
+        "description": "Exercise to isolate the tibialis anterior muscle on the front of the shin.",
+    },
+];
+
 export const CardioExercises = [
     {
         "id": "treadmill",
@@ -1452,6 +1463,7 @@ export default [
     ...FrontLeverExercises,
     ...BackLeverExercises,
     ...WristExercises,
+    ...TibialisExercises,
     ...CardioExercises,
 ];
 
@@ -1496,5 +1508,6 @@ export const Groups = {
     "Front Lever Exercises": FrontLeverExercises,
     "Back Lever Exercises": BackLeverExercises,
     "Wrist Exercises": WristExercises,
+    "Tibialis Exercises": TibialisExercises,
     "Cardio Exercises": CardioExercises,
 };
