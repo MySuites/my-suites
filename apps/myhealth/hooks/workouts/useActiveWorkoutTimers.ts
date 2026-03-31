@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+// Safely import Audio to avoid crashing on missing native module
+let Audio: any;
+try {
+    Audio = require("expo-av").Audio;
+} catch {
+    console.warn(
+        "expo-av native module not found. Sound playback will be disabled.",
+    );
+}
+
 export function useActiveWorkoutTimers() {
     const [isRunning, setRunning] = useState(false);
     const [workoutSeconds, setWorkoutSeconds] = useState(0);
@@ -12,6 +22,27 @@ export function useActiveWorkoutTimers() {
     // Timestamp refs for background handling
     const lastWorkoutTickRef = useRef<number | null>(null);
     const lastRestTickRef = useRef<number | null>(null);
+
+    const playTimerCompleteSound = async () => {
+        if (!Audio) return;
+        try {
+            const { sound } = await Audio.Sound.createAsync(
+                require("../../assets/sounds/timer_success.mp3"),
+            );
+            await sound.playAsync();
+            // Optional: unload after some time or on finish
+            sound.setOnPlaybackStatusUpdate((status: any) => {
+                if (status.isLoaded && status.didJustFinish) {
+                    sound.unloadAsync();
+                }
+            });
+        } catch {
+            // Silently fail if sound file is missing or invalid placeholder
+            console.log(
+                "Timer sound playback failed (expected if placeholder is invalid)",
+            );
+        }
+    };
 
     // Workout Timer Logic
     useEffect(() => {
@@ -83,6 +114,9 @@ export function useActiveWorkoutTimers() {
                                         restTimerRef.current = null;
                                     }
                                     lastRestTickRef.current = null;
+
+                                    // Play sound
+                                    playTimerCompleteSound();
                                 }
                                 return newValue;
                             });
