@@ -111,4 +111,33 @@ describe("useActiveWorkoutTimers", () => {
         expect(result.current.workoutSeconds).toBe(0);
         expect(result.current.restSeconds).toBe(0);
     });
+
+    it("should continue counting when rest timer is adjusted", () => {
+        const { result } = renderHook(() => useActiveWorkoutTimers());
+
+        act(() => {
+            result.current.startRestTimer(60);
+        });
+
+        act(() => {
+            jest.advanceTimersByTime(5000);
+        });
+
+        expect(result.current.restSeconds).toBe(55);
+
+        // Adjust timer (+15s)
+        act(() => {
+            result.current.startRestTimer(result.current.restSeconds + 15);
+        });
+
+        expect(result.current.restSeconds).toBe(70);
+
+        // Advance 5 more seconds
+        act(() => {
+            jest.advanceTimersByTime(5000);
+        });
+
+        // If bug exists, it will still be 70 because the interval was cleared and not restarted
+        expect(result.current.restSeconds).toBe(65);
+    });
 });

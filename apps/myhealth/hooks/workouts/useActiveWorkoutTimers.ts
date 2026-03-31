@@ -143,11 +143,6 @@ export function useActiveWorkoutTimers() {
     }, [isResting]);
 
     const startRestTimer = useCallback((seconds: number) => {
-        // Clear existing if any
-        if (restTimerRef.current) {
-            clearInterval(restTimerRef.current);
-            restTimerRef.current = null;
-        }
         setRestSeconds(seconds);
         lastRestTickRef.current = Date.now();
     }, []);
