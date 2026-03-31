@@ -101,16 +101,14 @@ function RootLayoutContent({ isDbReady, setIsDbReady }: { isDbReady: boolean, se
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <ToastProvider>
-        <WorkoutManagerProvider>
-          <ActiveWorkoutProvider>
-            <FloatingButtonProvider>
-              <RootLayoutNav />
-            </FloatingButtonProvider>
-            <StatusBar style="auto" />
-          </ActiveWorkoutProvider>
-        </WorkoutManagerProvider>
-      </ToastProvider>
+      <WorkoutManagerProvider>
+        <ActiveWorkoutProvider>
+          <FloatingButtonProvider>
+            <RootLayoutNav />
+          </FloatingButtonProvider>
+          <StatusBar style="auto" />
+        </ActiveWorkoutProvider>
+      </WorkoutManagerProvider>
     </ThemeProvider>
   );
 }
@@ -120,13 +118,15 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView className="flex-1">
-      <AuthProvider>
-        <NavigationSettingsProvider>
-          <AppThemeProvider>
-            <RootLayoutContent isDbReady={isDbReady} setIsDbReady={setIsDbReady} />
-          </AppThemeProvider>
-        </NavigationSettingsProvider>
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <NavigationSettingsProvider>
+            <AppThemeProvider>
+              <RootLayoutContent isDbReady={isDbReady} setIsDbReady={setIsDbReady} />
+            </AppThemeProvider>
+          </NavigationSettingsProvider>
+        </AuthProvider>
+      </ToastProvider>
     </GestureHandlerRootView>
   );
 }

@@ -9,7 +9,7 @@ import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 
-export default function SavedWorkoutsScreen() {
+function SavedWorkoutsScreen() {
   const router = useRouter();
   const theme = useUITheme();
   
@@ -121,3 +121,5 @@ export default function SavedWorkoutsScreen() {
 }
 
 
+
+export default SavedWorkoutsScreen;

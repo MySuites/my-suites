@@ -19,6 +19,11 @@
       },
       "entitlements": {
         "com.apple.developer.healthkit": true
+      },
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
       }
     },
     "android": {

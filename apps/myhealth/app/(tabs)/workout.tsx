@@ -22,7 +22,7 @@ import { SavedWorkout } from '../../types';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { SettingsButton } from '../../components/ui/SettingsButton';
 
-export default function Workout() {
+function Workout() {
 	const router = useRouter();
     const theme = useUITheme();
     const insets = useSafeAreaInsets();
@@ -372,3 +372,4 @@ export default function Workout() {
 		</View>
 	);
 }
+export default Workout;
