@@ -55,6 +55,7 @@ export const initDatabase = async () => {
                 distance REAL,
                 duration INTEGER,
                 bodyweight BOOLEAN,
+                rpe REAL,
                 created_at TEXT,
                 sync_status TEXT DEFAULT 'pending',
                 FOREIGN KEY(workout_log_id) REFERENCES workout_logs(id)
@@ -130,11 +131,19 @@ export const initDatabase = async () => {
         def: string,
     ) => {
         try {
-            await database.runAsync(
-                `ALTER TABLE ${table} ADD COLUMN ${column} ${def}`,
-            );
-        } catch {
-            // Column likely already exists, ignore
+            // Check if column exists first to avoid unnecessary error logging
+            const info = await database.getAllAsync<any>(`PRAGMA table_info(${table})`);
+            const exists = info.some(c => c.name === column);
+            
+            if (!exists) {
+                console.log(`[DB] Adding column ${column} to table ${table}...`);
+                await database.execAsync(
+                    `ALTER TABLE ${table} ADD COLUMN ${column} ${def};`
+                );
+                console.log(`[DB] Successfully added column ${column} to ${table}`);
+            }
+        } catch (err) {
+            console.error(`[DB] Failed to add column ${column} to ${table}:`, err);
         }
     };
 
@@ -168,6 +177,8 @@ export const initDatabase = async () => {
 
     // Exercise Directed Graph Links
     await safeAddColumn("exercises", "next_variations", "TEXT"); // JSON string array of IDs
+
+    await safeAddColumn("set_logs", "rpe", "REAL");
 
     await safeRenameColumn("workout_logs", "workout_time", "workout_date");
 

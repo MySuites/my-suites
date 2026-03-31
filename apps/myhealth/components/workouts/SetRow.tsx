@@ -118,7 +118,10 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
             parts.push(formatValue(prev.distance));
         }
         
-        const display = parts.join(" x ");
+        let display = parts.join(" x ");
+        if (showRPE && prev.rpe) {
+            display += ` @ ${prev.rpe}`;
+        }
         return display.length > 0 ? display : "-";
     };
 
@@ -194,9 +197,13 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                      <Text className="text-xs font-bold text-light dark:text-dark">{index + 1}</Text>
                  </View>
 
-                 <Text className="flex-1 text-center text-xs text-light-muted dark:text-dark-muted">
-                    {getPreviousDisplay()}
-                 </Text>
+                  <View className="flex-1 items-center justify-center">
+                      <View className="px-2 py-0.5 rounded-md min-w-[48px]">
+                          <Text className="text-center text-[10px] font-bold text-light-muted dark:text-dark-muted">
+                             {getPreviousDisplay()}
+                          </Text>
+                      </View>
+                  </View>
 
                  {isCompleted ? (
                       <>

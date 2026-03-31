@@ -91,7 +91,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     // Fetch previous performance logs for exercises
     const exerciseIdsSerialized = JSON.stringify(exercises.map(ex => ex.id));
     useEffect(() => {
-        if (!user || !hasActiveSession || exercises.length === 0) return;
+        if (!hasActiveSession || exercises.length === 0) return;
 
         let isMounted = true;
         const fetchMissingLogs = async () => {

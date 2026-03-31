@@ -125,6 +125,7 @@ export const DataRepository = {
                       distance: set.distance,
                       duration: set.duration,
                       bodyweight: set.bodyweight,
+                      rpe: set.rpe,
                  });
                  ex.completedSets = (ex.completedSets || 0) + 1;
              });
@@ -205,6 +206,7 @@ export const DataRepository = {
                      distance: set.distance,
                      duration: set.duration,
                      bodyweight: set.bodyweight, // Keep as number (0/1) if type expects number
+                     rpe: set.rpe,
                 });
                 ex.completedSets = (ex.completedSets || 0) + 1;
             });
@@ -254,8 +256,8 @@ export const DataRepository = {
                          if (ex.logs) {
                              for (const s of ex.logs) {
                                  await db.runAsync(`
-                                    INSERT OR REPLACE INTO set_logs (id, workout_log_id, exercise_id, exercise_name, weight, reps, distance, duration, bodyweight, created_at, sync_status)
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    INSERT OR REPLACE INTO set_logs (id, workout_log_id, exercise_id, exercise_name, weight, reps, distance, duration, bodyweight, rpe, created_at, sync_status)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                  `, [
                                      s.id || uuid.v4(),
                                      l.id,
@@ -266,6 +268,7 @@ export const DataRepository = {
                                      s.distance || null,
                                      s.duration || null,
                                      s.bodyweight ? 1 : 0,
+                                     s.rpe || null,
                                      l.createdAt || null,
                                      'synced' 
                                  ]);
@@ -314,8 +317,8 @@ export const DataRepository = {
                     if (ex.logs) {
                         for (const s of ex.logs) {
                             await db.runAsync(`
-                                INSERT INTO set_logs (id, workout_log_id, exercise_id, exercise_name, weight, reps, distance, duration, bodyweight, created_at, sync_status)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+                                INSERT INTO set_logs (id, workout_log_id, exercise_id, exercise_name, weight, reps, distance, duration, bodyweight, rpe, created_at, sync_status)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
                             `, [
                                 s.id || uuid.v4(),
                                 id,
@@ -326,6 +329,7 @@ export const DataRepository = {
                                 s.distance || null,
                                 s.duration || null,
                                 s.bodyweight ? 1 : 0,
+                                s.rpe || null,
                                 timestamp
                             ]);
                         }
