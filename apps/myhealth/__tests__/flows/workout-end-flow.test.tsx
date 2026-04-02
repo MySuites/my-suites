@@ -224,4 +224,23 @@ describe('End Workout Flow', () => {
         );
         expect(mockFinishWorkout).toHaveBeenCalled();
     });
+
+    it('saves history immediately if routineId is present, skipping template prompt', () => {
+        mockActiveWorkoutState.routineId = 'some-routine-id';
+        mockActiveWorkoutState.sourceWorkoutId = null;
+
+        const { getByTestId } = render(<EndWorkoutScreen />);
+        const saveButton = getByTestId('save-workout-btn');
+        fireEvent.press(saveButton);
+
+        // Should NOT show the "Save as Template?" alert
+        expect(Alert.alert).not.toHaveBeenCalledWith(
+            "Save as Template?",
+            expect.any(String),
+            expect.any(Array)
+        );
+
+        expect(mockFinishWorkout).toHaveBeenCalled();
+        expect(mockRouterDismiss).toHaveBeenCalled();
+    });
 });

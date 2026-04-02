@@ -17,7 +17,8 @@ export default function EndWorkoutScreen() {
         exercises,
         finishWorkout,
         cancelWorkout,
-        sourceWorkoutId 
+        sourceWorkoutId,
+        routineId 
     } = useActiveWorkout();
     
     const { workoutSeconds } = useActiveWorkoutTimer();
@@ -131,7 +132,7 @@ export default function EndWorkoutScreen() {
                 );
                 return;
             }
-        } else if (totalExercises > 0) {
+        } else if (totalExercises > 0 && !routineId) {
             // Started from "Empty" or no source template, prompt to save as new template
             const showTemplateAlert = () => {
                 Alert.alert(

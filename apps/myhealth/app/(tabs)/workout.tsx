@@ -86,9 +86,6 @@ function Workout() {
     const isDayCompleted = !!(activeRoutine?.lastCompletedDate && 
         new Date(activeRoutine.lastCompletedDate).toDateString() === new Date().toDateString());
 
-    function handleCreateSavedWorkout() {
-        router.push('/workouts/create');
-    }
 
     function handleEditSavedWorkout(workout: SavedWorkout) {
         console.log("handleEditSavedWorkout called with:", workout);
@@ -228,7 +225,7 @@ function Workout() {
                                         exercisesToStart = fresh.exercises;
                                     }
 
-                                    startWorkout(exercisesToStart, name, activeRoutineObj.id);
+                                    startWorkout(exercisesToStart, name, activeRoutineObj.id, workoutId);
                                 }}
                                 onJumpToDay={setActiveRoutineIndex}
                                 onMenuPress={() => router.push('/routines')}
