@@ -72,7 +72,6 @@ function Workout() {
         routines, 
         activeRoutine,
         setActiveRoutineIndex,
-        clearActiveRoutine,
         deleteSavedWorkout,
     } = useWorkoutManager();
 
@@ -173,12 +172,10 @@ function Workout() {
                     </View>
 
                     {savedWorkouts.length === 0 ? (
-                        <HollowedCard className="p-2">
-                            <View>
-                                <Text className="text-light-muted dark:text-dark-muted text-center">
-                                    Create a workout to save your favorite exercises and sets.
-                                </Text>
-                            </View>
+                        <HollowedCard className="p-8">
+                            <Text className="text-base text-light-muted dark:text-dark-muted text-center">
+                                Create a workout to save your favorite exercises and sets.
+                            </Text>
                         </HollowedCard>
                     ) : (
                         <FlatList
@@ -203,46 +200,35 @@ function Workout() {
                 </View>
                 {/* Active Routine Section */}
                 <View className="px-4">
-                    <Text className="text-lg font-semibold text-light dark:text-dark mb-3">Active Routine</Text>
+                    <View className="flex-row justify-between items-end mb-3">
+                        <Text className="text-lg font-semibold text-light dark:text-dark">
+                            Active Routine{activeRoutineObj ? `: ${activeRoutineObj.name}` : ''}
+                        </Text>
+                        <TouchableOpacity 
+                            onPress={() => router.push('/routines')}
+                            className="py-1.5 rounded-lg active:opacity-50"
+                        >
+                            <Text className="text-black dark:text-white text-sm">See all</Text>
+                        </TouchableOpacity>
+                    </View>
                     {activeRoutineObj ? (
-                        <View className="px-4">
-                            <ActiveRoutineCard
-                                activeRoutineObj={activeRoutineObj}
-                                timelineDays={timelineDays}
-                                dayIndex={dayIndex}
-                                isDayCompleted={isDayCompleted}
-                                onClearRoutine={clearActiveRoutine}
-                                 onStartWorkout={(exercises, name, workoutId) => {
-                                    handleStartSavedWorkout({ id: workoutId as string, name: name || "", exercises: exercises, createdAt: new Date().toISOString() }, activeRoutineObj.id);
-                                }}
-                                onJumpToDay={setActiveRoutineIndex}
-                                onMenuPress={() => router.push('/routines')}
-                            />
-                        </View>
+                        <ActiveRoutineCard
+                            activeRoutineObj={activeRoutineObj}
+                            timelineDays={timelineDays}
+                            dayIndex={dayIndex}
+                            isDayCompleted={isDayCompleted}
+                             onStartWorkout={(exercises, name, workoutId) => {
+                                handleStartSavedWorkout({ id: workoutId as string, name: name || "", exercises: exercises, createdAt: new Date().toISOString() }, activeRoutineObj.id);
+                            }}
+                            onJumpToDay={setActiveRoutineIndex}
+                            onMenuPress={() => router.push('/routines')}
+                        />
                     ) : (
-                        <View className="mb-6 px-4">
-                            <RaisedCard className="p-4">
-                                <View className="flex-row justify-between items-center mb-3">
-                                    <Text className="text-lg font-semibold text-light dark:text-dark">No Active Routine</Text>
-                                    <RaisedCard 
-                                        onPress={() => router.push('/routines')}
-                                        style={{ borderRadius: 9999 }}
-                                        className="w-12 h-12 active:h-11 items-center justify-center"
-                                    >
-                                        <IconSymbol 
-                                            name="line.3.horizontal" 
-                                            size={24} 
-                                            color={theme.primary} 
-                                        />
-                                    </RaisedCard>
-                                </View>
-                                <HollowedCard className="p-8">
-                                    <Text className="text-light-muted dark:text-dark-muted text-center">
-                                        Select a routine below to start tracking your progress.
-                                    </Text>
-                                </HollowedCard>
-                            </RaisedCard>
-                        </View>
+                        <HollowedCard className="p-8 mb-8">
+                            <Text className="text-base text-light-muted dark:text-dark-muted text-center">
+                                Select a routine to start tracking your progress.
+                            </Text>
+                        </HollowedCard>
                     )}
                 </View>     
 			</ScrollView>

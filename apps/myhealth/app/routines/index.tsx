@@ -12,7 +12,7 @@ import { BackButton } from '../../components/ui/BackButton';
 export default function RoutinesScreen() {
   const router = useRouter();
   
-  const { routines, startActiveRoutine, isLoading } = useWorkoutManager();
+  const { routines, startActiveRoutine, clearActiveRoutine, activeRoutine, isLoading } = useWorkoutManager();
   const { hasActiveSession, setExercises } = useActiveWorkout();
   const theme = useUITheme();
 
@@ -86,8 +86,10 @@ export default function RoutinesScreen() {
           <FlatList
             data={routines}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-
+            renderItem={({ item }) => {
+              const isActive = item.id === activeRoutine?.id;
+              
+              return (
               <TouchableOpacity onPress={() => {
                   router.push({
                       pathname: '/routines/details',
@@ -105,17 +107,23 @@ export default function RoutinesScreen() {
                     <RaisedCard 
                         onPress={(e) => {
                             e.stopPropagation();
-                            handleSetRoutine(item.id, item.name, item.sequence);
+                            if (isActive) {
+                                clearActiveRoutine();
+                            } else {
+                                handleSetRoutine(item.id, item.name, item.sequence);
+                            }
                         }} 
-                        className="px-4 h-10 active:h-9 my-0 items-center justify-center"
+                        className={`px-4 h-10 active:h-9 my-0 items-center justify-center ${isActive ? 'bg-red-500/10 border-red-500/20' : ''}`}
                     >
-                        <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Set Active</Text>
+                        <Text className={`${isActive ? 'text-red-500' : 'text-primary dark:text-primary-dark'} text-sm font-semibold`}>
+                            {isActive ? 'Stop Routine' : 'Set Active'}
+                        </Text>
                     </RaisedCard>
-
                 </View>
               </RaisedCard>
               </TouchableOpacity>
-            )}
+              );
+            }}
             className="flex-1"
             contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 16, paddingTop: 124 }}
           />

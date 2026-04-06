@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import { useUITheme, RaisedCard } from '@mysuite/ui';
+import { RaisedCard } from '@mysuite/ui';
 
 interface ActiveRoutineTimelineItemProps {
   item: any;
@@ -25,141 +25,101 @@ export function ActiveRoutineTimelineItem({
   onStartWorkout,
   routineName,
 }: ActiveRoutineTimelineItemProps) {
-  const theme = useUITheme();
-  
   const isToday = index === 0;
-  const globalDayNum = dayIndex + index + 1;
   const isCompletedToday = isToday && isDayCompleted;
 
-  const dotColor = isCompletedToday
-    ? '#4CAF50' // Success Green
-    : isToday
-    ? theme.primary
-    : theme.bgDark;
+  // Safe date formatting
+  const dateStr = React.useMemo(() => {
+     if (!item.date) return "";
+     const d = typeof item.date === 'string' ? new Date(item.date) : item.date;
+     if (isNaN(d.getTime())) return "";
+     return d.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+     }).toUpperCase();
+  }, [item.date]);
 
   return (
-    <TouchableOpacity
-      className="flex-row"
-      activeOpacity={isToday ? 1 : 0.7}
-      onPress={() => {
-        if (!isToday && item.originalIndex !== undefined) {
-          Alert.alert("Jump to Day", `Skip to ${item.name || "this day"}?`, [
-            { text: "Cancel", style: "cancel" },
-            { text: "Yes", onPress: () => onJumpToDay(item.originalIndex) }
-          ]);
-        }
-      }}
+    <RaisedCard
+      className={`mx-2 p-4 ${isToday ? 'border-2 border-primary/20 dark:border-primary-dark/20' : ''}`}
+      style={{ width: isToday ? 280 : 180, height: 160 }}
     >
-      <View className="w-[30px] items-center">
-        <View
-          style={{
-            width: 14,
-            height: 14,
-            borderRadius: 7,
-            backgroundColor: dotColor,
-            borderWidth: isToday && !isCompletedToday ? 0 : 2,
-            borderColor: isToday
-              ? dotColor
-              : theme.options?.borderColor || 'rgba(150,150,150,0.3)',
-          }}
-          className="z-[2] mt-1"
-        />
-
-        {!isLastInView && (
-          <View
-            className="w-[2px] flex-1 bg-dark dark:bg-dark-darker -my-0.5 z-[1]"
-          />
-        )}
-
-        {isLastInView &&
-          globalDayNum === activeRoutineLength && (
-            <View
-              style={{ backgroundColor: theme.bgDark }}
-              className="w-2 h-2 rounded-full -mt-1 z-[2]"
-            />
-          )}
-      </View>
-
-      <View className={`flex-1 pl-2 ${isLastInView ? '' : 'pb-6'}`}>
-        <View className="flex-row justify-between items-center">
-          <View
-            className="flex-1 mr-2"
-          >
+      <TouchableOpacity
+        activeOpacity={isToday ? 1 : 0.7}
+        onPress={() => {
+          if (!isToday && item.originalIndex !== undefined) {
+             Alert.alert("Jump to Day", `Skip to ${item.name || "this day"}?`, [
+               { text: "Cancel", style: "cancel" },
+               { text: "Yes", onPress: () => onJumpToDay(item.originalIndex) }
+             ]);
+          }
+        }}
+        className="flex-1 justify-between"
+      >
+        <View className="flex-row justify-between items-start">
+          <View className="flex-1 pr-2">
+            <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">
+              {dateStr}
+            </Text>
             <Text
               style={{
-                fontWeight: isToday ? '700' : '500',
-                fontSize: isToday ? 18 : 16,
+                fontWeight: '700',
+                fontSize: 18,
+                lineHeight: 22,
                 textDecorationLine: isCompletedToday ? 'line-through' : 'none',
               }}
-              className={`${isCompletedToday ? 'text-light-muted dark:text-dark-muted' : isToday ? 'text-light dark:text-dark' : 'text-light-muted dark:text-dark-muted'}`}
+              className={`${isCompletedToday ? 'text-gray-400 dark:text-gray-500' : 'text-black dark:text-white'}`}
+              numberOfLines={2}
             >
-              {item.type === 'rest'
-                ? 'Rest Day'
-                : item.name || 'Unknown Workout'}
+              {item.type === 'rest' ? 'Rest Day' : item.name || 'Workout'}
             </Text>
           </View>
 
-          <View className="flex-row items-center">
-            {!isToday && (
-              <TouchableOpacity
-                onPress={() => {
-                  if (item.originalIndex !== undefined) {
-                    Alert.alert("Jump to Day", `Skip to ${item.name || "this day"}?`, [
-                      { text: "Cancel", style: "cancel" },
-                      { text: "Yes", onPress: () => onJumpToDay(item.originalIndex) }
-                    ]);
-                  }
-                }}
-                className="mr-2 bg-primary/10 dark:bg-white/10 px-3 py-1 rounded-md"
-              >
-                <Text className="text-primary dark:text-white text-xs font-bold">Start</Text>
-              </TouchableOpacity>
+          <View>
+            {isToday && !isCompletedToday && (
+              <View className="bg-primary/10 px-2.5 py-1 rounded-full">
+                <Text className="text-[10px] text-primary font-bold">TODAY</Text>
+              </View>
             )}
-
-            <View className="items-end w-[75px]">
-              {item.date && !isToday && (
-                <Text className="text-xs text-light-muted dark:text-dark-muted mb-0.5 text-right" numberOfLines={1}>
-                  {item.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                </Text>
-              )}
-              {isToday && !isCompletedToday && (
-                <View className="px-2 py-0.5 rounded">
-                  <Text className="text-xs text-light-muted dark:text-dark-muted font-bold">
-                    TODAY
-                  </Text>
-                </View>
-              )}
-              {isCompletedToday && (
-                <View className="bg-[#4CAF50]/10 px-2 py-0.5 rounded">
-                  <Text className="text-[10px] text-[#4CAF50] font-bold">
-                    DONE
-                  </Text>
-                </View>
-              )}
-            </View>
+            {isCompletedToday && (
+              <View className="bg-[#4CAF50]/10 px-2.5 py-1 rounded-full">
+                <Text className="text-[10px] text-[#4CAF50] font-bold">DONE</Text>
+              </View>
+            )}
           </View>
         </View>
 
-        {isToday && !isCompletedToday && (
-          <View className="flex-row gap-3 mt-2">
-            <RaisedCard
-              className="flex-1 mr-0 my-0 h-12 items-center justify-center"
-              onPress={() => {
-                if (item?.type === 'workout' && item.workout) {
-                  console.log("ActiveRoutineCard: item.workout ID:", item.workout.id);
-                  onStartWorkout(item.workout.exercises || [], item.name || routineName, item.workout.id);
-                } else {
-                  Alert.alert('Rest Day', 'Enjoy your rest!');
-                }
-              }}
-            >
-              <Text className="text-center text-primary font-bold text-lg">
-                {item?.type === 'rest' ? 'Mark Complete' : 'Start Workout'}
+        <View>
+          {item.type !== 'rest' && !isCompletedToday ? (
+             <TouchableOpacity
+                className="h-12 w-full items-center justify-center rounded-xl bg-primary dark:bg-primary-dark active:opacity-80"
+                onPress={() => {
+                  if (item.workout) {
+                    onStartWorkout(item.workout.exercises || [], item.name || routineName, item.workout.id);
+                  }
+                }}
+              >
+                <Text className="text-white font-bold text-lg">
+                  {isToday ? 'Start Workout' : 'Jump & Start'}
+                </Text>
+              </TouchableOpacity>
+          ) : item.type === 'rest' && isToday && !isCompletedToday ? (
+             <TouchableOpacity
+                className="h-12 w-full items-center justify-center rounded-xl bg-gray-200 dark:bg-gray-800 active:opacity-80"
+                onPress={() => onJumpToDay(dayIndex)}
+              >
+                <Text className="text-gray-600 dark:text-gray-400 font-bold text-lg">Mark Complete</Text>
+              </TouchableOpacity>
+          ) : (
+            <View className="h-12 items-center justify-center">
+              <Text className="text-gray-400 dark:text-gray-500 font-medium">
+                {isCompletedToday ? 'Finished!' : 'Upcoming'}
               </Text>
-            </RaisedCard>
-          </View>
-        )}
-      </View>
-    </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    </RaisedCard>
   );
 }
