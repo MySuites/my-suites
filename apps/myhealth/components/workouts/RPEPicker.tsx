@@ -6,8 +6,8 @@ const ITEM_HEIGHT = 50;
 const VISIBLE_ITEMS = 5;
 const WHEEL_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 
-// Generate values from 1.0 to 10.0 in steps of 0.5
-const VALUES = Array.from({ length: 19 }, (_, i) => 1 + i * 0.5);
+// Hardcoded values to simplify selection based on user preference
+const VALUES = [1, 4, 6, 7, 8, 8.5, 9, 9.5, 10];
 
 interface RPEPickerProps {
     visible: boolean;
@@ -35,7 +35,23 @@ export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerP
 
     useEffect(() => {
         if (visible) {
-            const startVal = getParsedValue(initialValue) ?? 8.0;
+            let startVal = getParsedValue(initialValue) ?? 8.0;
+            
+            // If the start value isn't in our reduced options, snap to the nearest one
+            const exactIndex = VALUES.findIndex(v => Math.abs(v - startVal) < 0.1);
+            if (exactIndex === -1) {
+                let nearest = VALUES[0];
+                let minDiff = Math.abs(VALUES[0] - startVal);
+                for (let i = 1; i < VALUES.length; i++) {
+                    const diff = Math.abs(VALUES[i] - startVal);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        nearest = VALUES[i];
+                    }
+                }
+                startVal = nearest;
+            }
+
             setSelectedValue(startVal);
             
             // Use a slightly longer delay to ensure the Modal is fully visible and Layout is done
@@ -120,7 +136,7 @@ export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerP
                                                 ? 'text-primary dark:text-primary-dark' 
                                                 : 'text-light-muted dark:text-dark-muted opacity-40'
                                         }`}>
-                                            {item.toFixed(1)}
+                                            {item % 1 === 0 ? item.toString() : item.toFixed(1)}
                                         </Text>
                                     </View>
                                 );
@@ -131,6 +147,9 @@ export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerP
                     <View className="mt-8 flex-row items-center justify-center gap-2 mb-4">
                         <Text className="text-light-muted dark:text-dark-muted text-sm text-center italic">
                             {(() => {
+                                if (selectedValue === 1) return 'Very light';
+                                if (selectedValue === 4) return '8–10 Reps in Reserve';
+                                
                                 const rir = 10 - selectedValue;
                                 if (rir === 0) return 'Maximum Effort (0 RIR)';
                                 if (rir % 1 === 0.5) return `Maybe ${Math.ceil(rir)} Reps in Reserve`;
