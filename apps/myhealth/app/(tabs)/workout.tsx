@@ -35,7 +35,7 @@ function Workout() {
         hasActiveSession,
     } = useActiveWorkout();
 
-    const handleStartEmpty = () => {
+    const handleStartEmpty = (routineId?: string) => {
         if (hasActiveSession) {
             Alert.alert(
                 "Active Workout",
@@ -55,13 +55,13 @@ function Workout() {
                         onPress: () => {
                             cancelWorkout();
                             // Small timeout to ensure state clears before starting new
-                            setTimeout(() => startWorkout([], "Empty Workout"), 100);
+                            setTimeout(() => startWorkout([], "Empty Workout", routineId), 100);
                         }
                     }
                 ]
             );
         } else {
-            startWorkout([], "Empty Workout");
+            startWorkout([], "Empty Workout", routineId);
         }
     };
     const [menuVisible, setMenuVisible] = useState(false);
@@ -296,7 +296,7 @@ function Workout() {
                             <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
                             
                             <TouchableOpacity 
-                                onPress={() => { setMenuVisible(false); handleStartEmpty(); }}
+                                onPress={() => { setMenuVisible(false); handleStartEmpty(activeRoutineObj?.id); }}
                                 className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
                             >
                                 <IconSymbol name="plus" size={20} color={theme.primary} style={{ marginRight: 12 }} />
@@ -315,7 +315,7 @@ function Workout() {
                         <RaisedCard
                             onPress={() => {
                                 // Logic: If routine & today has workout -> Start that. Else -> Empty.
-                                if (activeRoutineObj) {
+                                if (activeRoutineObj && !isDayCompleted) {
                                      const todayItem = timelineDays[0];
                                      
                                      if (todayItem && todayItem.type === 'workout') {
@@ -335,7 +335,7 @@ function Workout() {
                                 }
                                 
                                 // Fallback: Start Empty
-                                handleStartEmpty();
+                                handleStartEmpty(activeRoutineObj?.id);
                             }}
                             className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
                             style={{ borderRadius: 9999 }}
@@ -344,7 +344,7 @@ function Workout() {
                                 <IconSymbol name="play.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
                                 <Text className="text-lg font-bold text-white">
                                     {(() => {
-                                        if (activeRoutineObj) {
+                                        if (activeRoutineObj && !isDayCompleted) {
                                             const todayItem = timelineDays[0];
                                             if (todayItem && todayItem.type === 'workout') {
                                                 if (todayItem.workout && todayItem.workout.name) {
