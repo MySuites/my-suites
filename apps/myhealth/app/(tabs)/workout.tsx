@@ -93,6 +93,19 @@ function Workout() {
     }
 
     function handleStartSavedWorkout(workout: SavedWorkout, routineId?: string) {
+        let exercisesToStart = workout.exercises;
+        let fresh;
+        
+        if (workout.id) {
+            fresh = savedWorkouts.find(w => w.id === workout.id);
+        }
+        if (!fresh && workout.name) {
+            fresh = savedWorkouts.find(w => w.name.trim() === workout.name.trim());
+        }
+        if (fresh && fresh.exercises && fresh.exercises.length > 0) {
+            exercisesToStart = fresh.exercises;
+        }
+
         if (hasActiveSession) {
             Alert.alert(
                 "Active Workout",
@@ -111,13 +124,13 @@ function Workout() {
                         style: "destructive",
                         onPress: () => {
                             cancelWorkout();
-                            setTimeout(() => startWorkout(workout.exercises, workout.name, routineId, workout.id), 100);
+                            setTimeout(() => startWorkout(exercisesToStart, workout.name, routineId, workout.id), 100);
                         }
                     }
                 ]
             );
         } else {
-            startWorkout(workout.exercises, workout.name, routineId, workout.id);
+            startWorkout(exercisesToStart, workout.name, routineId, workout.id);
         }
     }
 
@@ -205,27 +218,8 @@ function Workout() {
                                 dayIndex={dayIndex}
                                 isDayCompleted={isDayCompleted}
                                 onClearRoutine={clearActiveRoutine}
-                                onStartWorkout={(exercises, name, workoutId) => {
-                                    console.log("Workout.tsx: onStartWorkout called. ID:", workoutId);
-                                    
-                                    let exercisesToStart = exercises;
-                                    // Try to find fresh version from saved workouts if ID exists
-                                    let fresh;
-                                    
-                                    if (workoutId) {
-                                        fresh = savedWorkouts.find(w => w.id === workoutId);
-                                    }
-
-                                    // Fallback to name match if ID failed
-                                    if (!fresh && name) {
-                                        fresh = savedWorkouts.find(w => w.name.trim() === name.trim());
-                                    }
-
-                                    if (fresh && fresh.exercises && fresh.exercises.length > 0) {
-                                        exercisesToStart = fresh.exercises;
-                                    }
-
-                                    startWorkout(exercisesToStart, name, activeRoutineObj.id, workoutId);
+                                 onStartWorkout={(exercises, name, workoutId) => {
+                                    handleStartSavedWorkout({ id: workoutId as string, name: name || "", exercises: exercises, createdAt: new Date().toISOString() }, activeRoutineObj.id);
                                 }}
                                 onJumpToDay={setActiveRoutineIndex}
                                 onMenuPress={() => router.push('/routines')}
