@@ -92,7 +92,7 @@ function Workout() {
         router.push({ pathname: '/workouts/details', params: { id: workout.id } });
     }
 
-    function handleStartSavedWorkout(workout: SavedWorkout) {
+    function handleStartSavedWorkout(workout: SavedWorkout, routineId?: string) {
         if (hasActiveSession) {
             Alert.alert(
                 "Active Workout",
@@ -111,13 +111,13 @@ function Workout() {
                         style: "destructive",
                         onPress: () => {
                             cancelWorkout();
-                            setTimeout(() => startWorkout(workout.exercises, workout.name, undefined, workout.id), 100);
+                            setTimeout(() => startWorkout(workout.exercises, workout.name, routineId, workout.id), 100);
                         }
                     }
                 ]
             );
         } else {
-            startWorkout(workout.exercises, workout.name, undefined, workout.id);
+            startWorkout(workout.exercises, workout.name, routineId, workout.id);
         }
     }
 
@@ -320,14 +320,14 @@ function Workout() {
                                      
                                      if (todayItem && todayItem.type === 'workout') {
                                          if (todayItem.workout) {
-                                             handleStartSavedWorkout(todayItem.workout);
+                                             handleStartSavedWorkout(todayItem.workout, activeRoutineObj.id);
                                              return;
                                          }
                                          
                                          if (todayItem.workoutId) {
                                               const workout = savedWorkouts.find(w => w.id === todayItem.workoutId);
                                               if (workout) {
-                                                  handleStartSavedWorkout(workout);
+                                                  handleStartSavedWorkout(workout, activeRoutineObj.id);
                                                   return;
                                               }
                                          }
