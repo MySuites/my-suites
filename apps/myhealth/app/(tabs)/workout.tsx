@@ -162,21 +162,14 @@ function Workout() {
 			>		
                 <View className="px-4 my-6">
                     {/* Saved Workouts Header */}
-                    <View className="flex-row justify-between items-center mb-3">
-                        <Text className="text-lg font-semibold mb-2 text-light dark:text-dark">Saved Workouts</Text>
-                        <View className="flex-row gap-4 h-12">
-                            <RaisedCard 
-                                onPress={() => router.push('/workouts/saved')}
-                                style={{ borderRadius: 9999 }}
-                                className="w-12 p-0 my-0 items-center justify-center"
-                            >
-                                <IconSymbol 
-                                    name="line.3.horizontal" 
-                                    size={24} 
-                                    color={theme.primary} 
-                                />
-                            </RaisedCard>
-                        </View>
+                    <View className="flex-row justify-between items-end mb-3">
+                        <Text className="text-lg font-semibold text-light dark:text-dark">Saved Workouts</Text>
+                        <TouchableOpacity 
+                            onPress={() => router.push('/workouts/saved')}
+                            className="py-1.5 rounded-lg active:opacity-50"
+                        >
+                            <Text className="text-black dark:text-white text-sm">See all</Text>
+                        </TouchableOpacity>
                     </View>
 
                     {savedWorkouts.length === 0 ? (
@@ -209,7 +202,8 @@ function Workout() {
                     )}
                 </View>
                 {/* Active Routine Section */}
-                <View>
+                <View className="px-4">
+                    <Text className="text-lg font-semibold text-light dark:text-dark mb-3">Active Routine</Text>
                     {activeRoutineObj ? (
                         <View className="px-4">
                             <ActiveRoutineCard
