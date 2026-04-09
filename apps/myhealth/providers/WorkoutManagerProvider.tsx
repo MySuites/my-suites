@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Alert } from "react-native";
 import { useAuth } from "@mysuite/auth";
 import {
@@ -72,6 +72,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         setRoutineState
     } = useRoutineManager(routines);
 
+    const isInitialized = useRef(false);
+
     // Initial Load - Local First
     useEffect(() => {
         async function loadData() {
@@ -105,10 +107,30 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                 console.error("Failed to load local data", e);
             } finally {
                 setIsLoading(false);
+                // Mark as initialized in the next tick to ensure state updates have propagated
+                setTimeout(() => {
+                    isInitialized.current = true;
+                }, 0);
             }
         }
         loadData();
     }, [user, setRoutineState]);
+
+    // Persist active routine state changes
+    useEffect(() => {
+        if (!isInitialized.current || isLoading) return;
+        
+        const persistRoutine = async () => {
+            try {
+                const userId = user?.id || 'guest';
+                await ProfileRepository.updateActiveRoutine(userId, activeRoutine);
+            } catch (e) {
+                console.error("Failed to persist active routine", e);
+            }
+        };
+
+        persistRoutine();
+    }, [activeRoutine, user, isLoading]);
 
     const saveWorkout = useCallback(async (
         workoutName: string,

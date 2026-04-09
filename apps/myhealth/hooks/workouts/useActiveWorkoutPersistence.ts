@@ -9,11 +9,13 @@ interface UseActiveWorkoutPersistenceProps {
     isRunning: boolean;
     routineId: string | null;
     sourceWorkoutId: string | null;
+    currentIndex: number;
     setExercises: (exercises: Exercise[]) => void;
     setWorkoutSeconds: (seconds: number) => void;
     setWorkoutName: (name: string) => void;
     setRoutineId: (id: string | null) => void;
     setSourceWorkoutId: (id: string | null) => void;
+    setCurrentIndex: (index: number) => void;
     setRunning: (running: boolean) => void;
     setHasActiveSession: (hasSession: boolean) => void;
     hasActiveSession: boolean;
@@ -26,11 +28,13 @@ export function useActiveWorkoutPersistence({
     isRunning,
     routineId,
     sourceWorkoutId,
+    currentIndex,
     setExercises,
     setWorkoutSeconds,
     setWorkoutName,
     setRoutineId,
     setSourceWorkoutId,
+    setCurrentIndex,
     setRunning,
     setHasActiveSession,
     hasActiveSession,
@@ -50,6 +54,7 @@ export function useActiveWorkoutPersistence({
                     "myhealth_workout_source_id",
                     "myhealth_workout_running",
                     "myhealth_workout_last_tick",
+                    "myhealth_workout_current_index",
                 ];
 
                 const stores = await AsyncStorage.multiGet(keys);
@@ -114,6 +119,10 @@ export function useActiveWorkoutPersistence({
                     setSourceWorkoutId(data["myhealth_workout_source_id"]);
                 }
 
+                if (data["myhealth_workout_current_index"]) {
+                    setCurrentIndex(parseInt(data["myhealth_workout_current_index"], 10));
+                }
+
                 setIsLoaded(true);
             } catch (e) {
                 console.error("Failed to load workout state", e);
@@ -151,6 +160,7 @@ export function useActiveWorkoutPersistence({
                     ["myhealth_workout_name", workoutName],
                     ["myhealth_workout_running", JSON.stringify(isRunning)],
                     ["myhealth_workout_last_tick", Date.now().toString()],
+                    ["myhealth_workout_current_index", currentIndex.toString()],
                 ];
 
                 if (routineId) {
@@ -181,6 +191,7 @@ export function useActiveWorkoutPersistence({
         isRunning,
         routineId,
         sourceWorkoutId,
+        currentIndex,
         hasActiveSession,
         isLoaded,
     ]);
@@ -195,6 +206,7 @@ export function useActiveWorkoutPersistence({
                 "myhealth_workout_source_id",
                 "myhealth_workout_running",
                 "myhealth_workout_last_tick",
+                "myhealth_workout_current_index",
             ];
             await AsyncStorage.multiRemove(keys);
         } catch (e) {
