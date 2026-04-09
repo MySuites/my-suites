@@ -165,6 +165,7 @@ export const initDatabase = async () => {
 
     await safeAddColumn("workout_logs", "deleted_at", "INTEGER");
     await safeAddColumn("exercises", "deleted_at", "INTEGER");
+    await safeAddColumn("workouts", "sort_order", "INTEGER");
 
     // Exercise Progressions
     await safeAddColumn("exercises", "progression_id", "TEXT");

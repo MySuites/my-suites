@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, View, Alert, Text } from 'react-native';
+import { View, Alert, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
@@ -8,12 +8,14 @@ import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
+import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function SavedWorkoutsScreen() {
   const router = useRouter();
   const theme = useUITheme();
   
-  const { savedWorkouts, isLoading, deleteSavedWorkout } = useWorkoutManager();
+  const { savedWorkouts, isLoading, deleteSavedWorkout, reorderSavedWorkouts } = useWorkoutManager();
   const { hasActiveSession, startWorkout, finishWorkout, cancelWorkout } = useActiveWorkout();
   const [activeSwipedCardId, setActiveSwipedCardId] = React.useState<string | null>(null);
   
@@ -52,10 +54,11 @@ function SavedWorkoutsScreen() {
 
 
   return (
-    <View className="flex-1 bg-light dark:bg-dark">
-      <ScreenHeader
-        title="Saved Workouts"
-        leftAction={<BackButton />}
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View className="flex-1 bg-light dark:bg-dark">
+        <ScreenHeader
+          title="Saved Workouts"
+          leftAction={<BackButton />}
         rightAction={
             <RaisedCard 
                 onPress={() => router.push('/workouts/details')}
@@ -92,31 +95,40 @@ function SavedWorkoutsScreen() {
               </HollowedCard>
           </View>
       ) : (
-          <FlatList
+          <DraggableFlatList
             data={savedWorkouts}
             keyExtractor={(item) => item.id}
+            onDragEnd={({ data }) => reorderSavedWorkouts(data)}
             ItemSeparatorComponent={() => <View className="h-3" />}
-            renderItem={({ item }) => (
-                <SavedWorkoutItem
-                    item={item}
-                    onEdit={() => {
-                        router.push({
-                            pathname: '/workouts/details',
-                            params: { id: item.id }
-                        });
-                    }}
-                    onStart={() => handleStart(item.id, item.name, item.exercises)}
-                    onDelete={() => deleteSavedWorkout(item.id, { skipConfirmation: true })}
-                    swipeGroupId={item.id}
-                    activeSwipeId={activeSwipedCardId}
-                    onSwipeStart={setActiveSwipedCardId}
-                />
+            renderItem={({ item, drag, isActive }: RenderItemParams<any>) => (
+                <ScaleDecorator activeScale={1.05}>
+                    <View className={`w-full ${isActive ? 'opacity-80' : ''}`}>
+                        <SavedWorkoutItem
+                            item={item}
+                            onEdit={() => {
+                                router.push({
+                                    pathname: '/workouts/details',
+                                    params: { id: item.id }
+                                });
+                            }}
+                            onStart={() => handleStart(item.id, item.name, item.exercises)}
+                            onDelete={() => deleteSavedWorkout(item.id, { skipConfirmation: true })}
+                            onDrag={drag}
+                            swipeGroupId={item.id}
+                            activeSwipeId={activeSwipedCardId}
+                            onSwipeStart={setActiveSwipedCardId}
+                        />
+                    </View>
+                </ScaleDecorator>
             )}
-            className="flex-1"
-            contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 16, paddingTop: 124 }}
+            style={{ flex: 1 }}
+            containerStyle={{ flex: 1 }}
+            contentContainerStyle={{ paddingBottom: 120, paddingTop: 124 }}
+            activationDistance={20}
           />
       )}
-    </View>
+      </View>
+    </GestureHandlerRootView>
   );
 }
 

@@ -13,20 +13,16 @@ export const DataRepository = {
     // --- Workouts (Templates) ---
     getWorkouts: async (): Promise<any[]> => {
         const db = await getDb();
-        const rows = await db.getAllAsync<any>('SELECT * FROM workouts WHERE deleted_at IS NULL');
+        const rows = await db.getAllAsync<any>('SELECT * FROM workouts WHERE deleted_at IS NULL ORDER BY sort_order ASC, created_at DESC');
         
         return rows.map(row => ({
             ...row,
             exercises: row.exercises ? JSON.parse(row.exercises) : [],
-            // Map snake_case db columns back to camelCase if needed, or keep consistent.
-            // Current code expects camelCase for UI?
-            // Let's check existing types usage. existing code uses `w.id`, `w.name`, `w.exercises`.
-            // DB has `user_id`, `created_at`.
-            // We should map them to be safe.
             userId: row.user_id,
             createdAt: row.created_at,
             updatedAt: row.updated_at,
-            syncStatus: row.sync_status
+            syncStatus: row.sync_status,
+            sortOrder: row.sort_order
         }));
     },
 
@@ -57,8 +53,8 @@ export const DataRepository = {
     saveWorkout: async (workout: any): Promise<void> => {
        const db = await getDb();
        await db.runAsync(`
-            INSERT OR REPLACE INTO workouts (id, user_id, name, exercises, created_at, updated_at, deleted_at, sync_status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT OR REPLACE INTO workouts (id, user_id, name, exercises, created_at, updated_at, deleted_at, sync_status, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
        `, [
            workout.id,
            workout.userId,
@@ -67,8 +63,21 @@ export const DataRepository = {
            workout.createdAt,
            Date.now(), // updatedAt
            null, // deletedAt
-           'pending' // syncStatus
+           'pending', // syncStatus
+           workout.sortOrder !== undefined ? workout.sortOrder : (workout.sort_order || null)
        ]);
+    },
+
+    updateWorkoutSortOrders: async (orders: { id: string, sortOrder: number }[]): Promise<void> => {
+        const db = await getDb();
+        await db.withTransactionAsync(async () => {
+            for (const order of orders) {
+                await db.runAsync(
+                    'UPDATE workouts SET sort_order = ?, updated_at = ?, sync_status = "pending" WHERE id = ?',
+                    [order.sortOrder, Date.now(), order.id]
+                );
+            }
+        });
     },
 
     deleteWorkout: async (id: string): Promise<void> => {

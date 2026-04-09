@@ -8,6 +8,7 @@ interface SavedWorkoutItemProps {
     onEdit: () => void;
     onStart: () => void;
     onDelete: () => void;
+    onDrag?: () => void;
     swipeGroupId?: string;
     activeSwipeId?: string | null;
     onSwipeStart?: (id: string) => void;
@@ -18,6 +19,7 @@ export const SavedWorkoutItem = ({
     onEdit, 
     onStart,
     onDelete,
+    onDrag,
     swipeGroupId,
     activeSwipeId,
     onSwipeStart
@@ -28,6 +30,8 @@ export const SavedWorkoutItem = ({
                 {/* Workout Info Card (Left) */}
                 <RaisedCard 
                     onPress={onEdit}
+                    onLongPress={onDrag}
+                    delayLongPress={200}
                     className="flex-1 justify-center px-4 bg-primary dark:bg-dark-lighter rounded-r-none border-r-1 border-r-black/10 dark:border-r-white/10"
                 >
                     <Text className="font-semibold text-white dark:text-dark text-lg" numberOfLines={2}>{item.name}</Text>

@@ -47,6 +47,7 @@ interface WorkoutManagerContextType {
     lastSyncedAt: Date | null;
     sync: () => Promise<void>;
     isSyncing: boolean;
+    reorderSavedWorkouts: (newWorkouts: any[]) => Promise<void>;
 }
 
 const WorkoutManagerContext = createContext<WorkoutManagerContextType | undefined>(undefined);
@@ -167,6 +168,16 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                 { text: "Cancel", style: "cancel" },
                 { text: "Delete", style: "destructive", onPress: performDelete }
             ]);
+        }
+    }, []);
+
+    const reorderSavedWorkouts = useCallback(async (newWorkouts: any[]) => {
+        setSavedWorkouts(newWorkouts);
+        try {
+            const orders = newWorkouts.map((w, index) => ({ id: w.id, sortOrder: index }));
+            await DataRepository.updateWorkoutSortOrders(orders);
+        } catch (e) {
+            console.error("Failed to persist workout order", e);
         }
     }, []);
 
@@ -361,13 +372,14 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         lastSyncedAt,
         sync,
         isSyncing,
+        reorderSavedWorkouts,
     }), [
         savedWorkouts, routines, activeRoutine, startActiveRoutine, setActiveRoutineIndex,
         markRoutineDayComplete, clearActiveRoutine, isSaving, isLoading, saveWorkout,
         deleteSavedWorkout, updateSavedWorkout, saveRoutineDraft, updateRoutine,
         deleteRoutine, workoutHistory, fetchWorkoutLogDetailsStable, saveCompletedWorkout,
         deleteWorkoutLog, createCustomExercise, deleteCustomExercise, lastSyncedAt,
-        sync, isSyncing
+        sync, isSyncing, reorderSavedWorkouts
     ]);
 
     return <WorkoutManagerContext.Provider value={value}>{children}</WorkoutManagerContext.Provider>;

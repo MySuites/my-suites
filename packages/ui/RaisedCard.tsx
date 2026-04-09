@@ -7,11 +7,13 @@ cssInterop(Pressable, { className: 'style' });
 
 interface CardProps extends ViewProps {
   onPress?: (event: GestureResponderEvent) => void;
+  onLongPress?: (event: GestureResponderEvent) => void;
+  delayLongPress?: number;
   activeOpacity?: number;
   disabled?: boolean;
 }
 
-export function RaisedCard({ children, style, className, onPress, activeOpacity = 0.9, ...props }: CardProps) {
+export function RaisedCard({ children, style, className, onPress, onLongPress, delayLongPress, activeOpacity = 0.9, ...props }: CardProps) {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === 'dark';
   const bottomBorderClass = onPress 
@@ -30,6 +32,8 @@ export function RaisedCard({ children, style, className, onPress, activeOpacity 
         ]} 
         className={baseClassName} 
         onPress={onPress} 
+        onLongPress={onLongPress}
+        delayLongPress={delayLongPress}
         {...(props as PressableProps)}
     >
         {children}
