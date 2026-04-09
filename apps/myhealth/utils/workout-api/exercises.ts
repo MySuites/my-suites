@@ -152,61 +152,62 @@ export async function fetchExerciseStats(
     // Local-First: Calculate from local history for ALL users (guest and auth).
     try {
         const history = await DataRepository.getHistory();
+        const allExercises = await DataRepository.getExercises();
+        const targetExercise = allExercises.find(e => e.id === exerciseId);
+        const targetName = targetExercise?.name?.toLowerCase();
+
         const grouped = new Map();
+        let debugLogStr = `Target: ${targetName || exerciseId}\n`;
 
         history.forEach((h: any) => {
             h.exercises.forEach((e: any) => {
-                // Check if matches by ID or Name (for reliability)
-                if (
-                    e.id === exerciseId ||
-                    e.name === exerciseId /* Fallback if ID is name */
-                ) {
-                    if (e.logs) {
-                        const dateKey = new Date(h.date).toDateString();
+                // Check if matches by ID or Name (robust matching)
+                const logExId = e.id;
+                const logExName = e.name?.toLowerCase();
+                
+                const isIdMatch = logExId === exerciseId;
+                const isNameMatch = targetName && logExName === targetName;
+                
+                if ((isIdMatch || isNameMatch) && e.logs) {
+                    const dateKey = h.date ? new Date(h.date).toDateString() : 'UnknownDate';
+                    debugLogStr += `[Match ${dateKey} logs:${e.logs.length}] `;
 
-                        e.logs.forEach((log: any) => {
-                            let val = 0;
-                            let valid = false;
+                    e.logs.forEach((log: any) => {
+                        let val = 0;
+                        let valid = false;
 
-                            // Handle string/number conversion robustly
-                            if (metric === "weight" && log.weight) {
-                                val = parseFloat(log.weight);
-                                valid = !isNaN(val);
-                            } else if (metric === "reps" && log.reps) {
-                                val = parseFloat(log.reps);
-                                valid = !isNaN(val);
-                            } else if (
-                                metric === "duration" && log.duration
-                            ) {
-                                val = parseFloat(log.duration);
-                                valid = !isNaN(val);
-                            } else if (
-                                metric === "distance" && log.distance
-                            ) {
-                                val = parseFloat(log.distance);
-                                valid = !isNaN(val);
-                            }
+                        // Check weight vs reps
+                        let rawVal = null;
+                        if (metric === "weight") rawVal = log.weight;
+                        else if (metric === "reps") rawVal = log.reps;
+                        else if (metric === "duration") rawVal = log.duration;
+                        else if (metric === "distance") rawVal = log.distance;
 
-                            if (valid) {
-                                if (!grouped.has(dateKey)) {
-                                    grouped.set(dateKey, {
-                                        date: h.date,
-                                        max: val,
-                                        total: val,
-                                        dataPointText: val.toString(),
-                                    });
-                                } else {
-                                    const entry = grouped.get(dateKey);
-                                    if (val > entry.max) {
-                                        entry.max = val;
-                                        entry.dataPointText = val
-                                            .toString();
-                                    }
-                                    entry.total += val;
+                        debugLogStr += `(${rawVal})`;
+
+                        if (rawVal !== undefined && rawVal !== null) {
+                            val = parseFloat(rawVal);
+                            valid = !isNaN(val);
+                        }
+
+                        if (valid) {
+                            if (!grouped.has(dateKey)) {
+                                grouped.set(dateKey, {
+                                    date: h.date,
+                                    max: val,
+                                    total: val,
+                                    dataPointText: val.toString(),
+                                });
+                            } else {
+                                const entry = grouped.get(dateKey);
+                                if (val > entry.max) {
+                                    entry.max = val;
+                                    entry.dataPointText = val.toString();
                                 }
+                                entry.total += val;
                             }
-                        });
-                    }
+                        }
+                    });
                 }
             });
         });
@@ -224,10 +225,10 @@ export async function fetchExerciseStats(
             dataPointText: item.dataPointText,
         }));
 
-        return { data: chartData, error: null };
+        return { data: chartData, error: null, debugLogStr };
     } catch (e) {
         console.error("Local stats error", e);
-        return { data: [], error: e };
+        return { data: [], error: e, debugLogStr: "Error" };
     }
 }
 

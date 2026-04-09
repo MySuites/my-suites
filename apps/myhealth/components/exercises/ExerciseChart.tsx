@@ -96,9 +96,13 @@ export const ExerciseChart = ({
                         yAxisTextStyle={{ color: themeColors.text, fontSize: 10 }}
                         xAxisLabelTextStyle={{ color: themeColors.text, fontSize: 10 }}
                         thickness={3}
-                        hideRules
-                        yAxisColor="transparent"
-                        xAxisColor="transparent"
+                        hideRules={false}
+                        rulesColor="rgba(0,0,0,0.1)"
+                        rulesType="solid"
+                        yAxisColor={themeColors.text}
+                        xAxisColor={themeColors.text}
+                        yAxisThickness={1}
+                        xAxisThickness={1}
                         width={Dimensions.get('window').width - 60} 
                         adjustToWidth={false}
                         isAnimated

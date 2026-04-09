@@ -4,6 +4,7 @@ import { fetchExerciseStats } from "../../providers/WorkoutManagerProvider";
 export const useExerciseStats = (user: any, exercise: any) => {
     const [chartData, setChartData] = useState<any[]>([]);
     const [loadingChart, setLoadingChart] = useState(true);
+    const [debugStr, setDebugStr] = useState<string>("");
     const [selectedMetric, setSelectedMetric] = useState<
         "weight" | "reps" | "duration" | "distance"
     >("weight");
@@ -46,19 +47,20 @@ export const useExerciseStats = (user: any, exercise: any) => {
         let isMounted = true;
         async function loadStats() {
             if (
-                exercise?.id && user && availableMetrics.length > 0 &&
+                exercise?.id && availableMetrics.length > 0 &&
                 availableMetrics.includes(selectedMetric)
             ) {
                 try {
                     // Reset loading state when metric changes to show loading indicator
                     setLoadingChart(true);
-                    const { data } = await fetchExerciseStats(
+                    const response = await fetchExerciseStats(
                         user,
                         exercise.id,
                         selectedMetric,
                     );
-                    if (isMounted && data) {
-                        setChartData(data);
+                    if (isMounted && response.data) {
+                        setChartData(response.data);
+                        setDebugStr(response.debugLogStr || "");
                         setLoadingChart(false);
                     }
                 } catch (e) {
@@ -81,5 +83,6 @@ export const useExerciseStats = (user: any, exercise: any) => {
         selectedMetric,
         setSelectedMetric,
         availableMetrics,
+        debugStr
     };
 };

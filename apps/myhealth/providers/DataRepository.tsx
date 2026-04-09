@@ -98,15 +98,16 @@ export const DataRepository = {
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
         const exercisesDef = await db.getAllAsync<any>('SELECT * FROM exercises');
         
-        const exercisePropsMap = new Map<string, string[]>();
+        const exerciseMetaMap = new Map<string, { properties: string[] }>();
         exercisesDef.forEach(e => {
             if (e.id) {
-                 exercisePropsMap.set(e.id, e.properties ? e.properties.split(',').map((s: string) => s.trim()) : []);
+                 exerciseMetaMap.set(e.id, {
+                     properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : []
+                 });
             }
         });
         
-        // Helper to map DB row to object (duplicate of getHistory logic essentially, 
-        // could refactor to private helper but duplication is safer for now to avoid breaking existing)
+        // Helper to map DB row to object
         return logs.map(log => {
              const sets = setLogs.filter(s => s.workout_log_id === log.id);
              const exercisesMap = new Map<string, Exercise>();
@@ -123,7 +124,7 @@ export const DataRepository = {
                          reps: 0,
                          completedSets: 0,
                          logs: [],
-                         properties: exercisePropsMap.get(exId) || [],
+                         properties: exerciseMetaMap.get(exId)?.properties || [],
                      });
                  }
  
@@ -179,10 +180,12 @@ export const DataRepository = {
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
         const exercisesDef = await db.getAllAsync<any>('SELECT * FROM exercises');
         
-        const exercisePropsMap = new Map<string, string[]>();
+        const exerciseMetaMap = new Map<string, { properties: string[] }>();
         exercisesDef.forEach(e => {
             if (e.id) {
-                 exercisePropsMap.set(e.id, e.properties ? e.properties.split(',').map((s: string) => s.trim()) : []);
+                 exerciseMetaMap.set(e.id, {
+                     properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : []
+                 });
             }
         });
         
@@ -205,7 +208,7 @@ export const DataRepository = {
                         reps: 0,
                         completedSets: 0,
                         logs: [],
-                        properties: exercisePropsMap.get(exId) || [],
+                        properties: exerciseMetaMap.get(exId)?.properties || [],
                     });
                 }
 
