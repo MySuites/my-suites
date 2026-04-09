@@ -8,7 +8,7 @@ import { default as ExercisesScreen } from '../../app/exercises/index';
 import { ExerciseCard } from '../exercises/ExerciseCard';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
-import { formatSeconds } from '../../utils/formatting';
+import { formatSeconds, formatRestTime } from '../../utils/formatting';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 
 function RestTimerBar({ seconds, onSkip, onAdjust }: { seconds: number; onSkip: () => void; onAdjust: (amt: number) => void }) {
@@ -41,7 +41,7 @@ function RestTimerBar({ seconds, onSkip, onAdjust }: { seconds: number; onSkip: 
 
                 <View className="items-center px-2">
                     <Text className="text-light-muted dark:text-dark-muted text-[10px] font-bold uppercase tracking-wider">Resting</Text>
-                    <Text className="text-light dark:text-dark text-xl font-black tabular-nums">{formatSeconds(seconds)}</Text>
+                    <Text className="text-light dark:text-dark text-xl font-black tabular-nums">{formatRestTime(seconds)}</Text>
                 </View>
 
                 <TouchableOpacity 

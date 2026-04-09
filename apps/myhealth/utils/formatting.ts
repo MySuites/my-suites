@@ -8,6 +8,15 @@ export function formatSeconds(s: number) {
     return `${mm}:${ss}`;
 }
 
+export function formatRestTime(s: number): string {
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
+    if (mins > 0) {
+        return `${mins}min ${secs}sec`;
+    }
+    return `${secs}s`;
+}
+
 export function formatCompactNumber(num: number): string {
     if (num >= 1000000) {
         return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";

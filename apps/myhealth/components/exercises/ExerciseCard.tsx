@@ -4,6 +4,7 @@ import { RestTimerPicker } from '../workouts/RestTimerPicker';
 import { Exercise } from '../../providers/WorkoutManagerProvider';
 import { RaisedCard, IconSymbol } from '@mysuite/ui';
 import { SetRow, getExerciseFields } from '../workouts/SetRow';
+import { formatRestTime } from '../../utils/formatting';
 import { RPEPicker } from '../workouts/RPEPicker';
 
 interface ExerciseCardProps {
@@ -71,7 +72,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                         >
                             <IconSymbol name="timer" size={12} color={theme.bgDark === '#000000' ? '#999' : '#666'} />
                             <Text className="ml-1 text-[11px] font-semibold text-light-muted dark:text-dark-muted">
-                                {exercise.restTime ?? 90}s rest
+                                Rest Timer: {formatRestTime(exercise.restTime ?? 90)}
                             </Text>
                         </TouchableOpacity>
                     </TouchableOpacity>

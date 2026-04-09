@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Dimensions, Modal } from 'react-native';
 import { useUITheme as useTheme, IconSymbol, RaisedCard } from '@mysuite/ui';
 import { getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
+import { formatRestTime } from '../../utils/formatting';
 import { RPEPicker } from './RPEPicker';
 import { RestTimerPicker } from './RestTimerPicker';
 
@@ -143,7 +144,7 @@ export const WorkoutDraftExerciseItem = ({
                     >
                         <IconSymbol name="timer" size={12} color={theme.bgDark === '#000000' ? '#999' : '#666'} />
                         <Text className="ml-1 text-[11px] font-semibold text-light-muted dark:text-dark-muted">
-                            {item.restTime ?? 90}s rest
+                            Rest Timer: {formatRestTime(item.restTime ?? 90)}
                         </Text>
                     </TouchableOpacity>
                 </TouchableOpacity>
