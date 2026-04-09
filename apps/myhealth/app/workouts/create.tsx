@@ -34,6 +34,7 @@ export default function CreateWorkoutScreen() {
         removeExercise,
         moveExercise,
         updateSetTarget,
+        updateExerciseRestTime,
         addSet,
         removeSet
     } = useWorkoutDraft([]);
@@ -136,6 +137,7 @@ export default function CreateWorkoutScreen() {
                         onMove={(dir) => moveExercise(index, dir)}
                         onRemove={() => removeExercise(index)}
                         onUpdateSet={(setIndex, field, value) => updateSetTarget(index, setIndex, field, value)}
+                        onUpdateRestTime={(restTime) => updateExerciseRestTime(index, restTime)}
                         onAddSet={() => addSet(index)}
                         onRemoveSet={(setIndex) => removeSet(index, setIndex)}
                         latestBodyWeight={latestBodyWeight}

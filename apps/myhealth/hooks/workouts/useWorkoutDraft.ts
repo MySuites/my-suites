@@ -121,6 +121,14 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
         });
     }
 
+    function updateExerciseRestTime(exerciseIndex: number, restTime: number) {
+        setWorkoutDraftExercises((prev) => {
+            const newArr = [...prev];
+            newArr[exerciseIndex] = { ...newArr[exerciseIndex], restTime };
+            return newArr;
+        });
+    }
+
     return {
         workoutDraftExercises,
         setWorkoutDraftExercises,
@@ -129,6 +137,7 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
         moveExercise,
         reorderExercises,
         updateSetTarget,
+        updateExerciseRestTime,
         addSet,
         removeSet,
     };

@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Dimensions, Modal } from 'reac
 import { useUITheme as useTheme, IconSymbol, RaisedCard } from '@mysuite/ui';
 import { getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
 import { RPEPicker } from './RPEPicker';
+import { RestTimerPicker } from './RestTimerPicker';
 
 export interface WorkoutDraftExerciseItemProps {
     item: any;
@@ -18,6 +19,7 @@ export interface WorkoutDraftExerciseItemProps {
     isEditing: boolean;
     lastSaved?: number;
     onToggleLocalEdit?: (isEditing: boolean) => void;
+    onUpdateRestTime?: (restTime: number) => void;
     onPressName?: () => void;
     onDrag?: () => void;
 }
@@ -38,6 +40,7 @@ export const WorkoutDraftExerciseItem = ({
     isEditing,
     lastSaved,
     onToggleLocalEdit,
+    onUpdateRestTime,
     onPressName,
     onDrag
 }: WorkoutDraftExerciseItemProps) => {
@@ -51,6 +54,9 @@ export const WorkoutDraftExerciseItem = ({
     const [isRPEPickerVisible, setIsRPEPickerVisible] = useState(false);
     const [rpePickerValue, setRPEPickerValue] = useState<string | undefined>(undefined);
     const [rpePickerIndex, setRPEPickerIndex] = useState<number | null>(null);
+    
+    // Rest Timer Picker state
+    const [isRestPickerVisible, setIsRestPickerVisible] = useState(false);
 
     useEffect(() => {
         setIsLocalEditing(false);
@@ -124,9 +130,22 @@ export const WorkoutDraftExerciseItem = ({
                 onPress={onPressName || onToggleExpand}
                 onLongPress={onDrag}
                 delayLongPress={200}
-                className="p-3 flex-1"
+                className="p-3 pb-1 flex-1"
                 style={{ zIndex: menuVisible ? 999 : 1, elevation: menuVisible ? 999 : 1 }}>
                     <Text className="text-base text-light dark:text-dark leading-6 font-semibold">{item.name}</Text>
+                    
+                    <TouchableOpacity 
+                        className="flex-row items-center mt-1 pb-1"
+                        onPress={(e) => {
+                            e.stopPropagation();
+                            setIsRestPickerVisible(true);
+                        }}
+                    >
+                        <IconSymbol name="timer" size={12} color={theme.bgDark === '#000000' ? '#999' : '#666'} />
+                        <Text className="ml-1 text-[11px] font-semibold text-light-muted dark:text-dark-muted">
+                            {item.restTime ?? 90}s rest
+                        </Text>
+                    </TouchableOpacity>
                 </TouchableOpacity>
                 <View className="flex-row items-center relative z-20 pr-1">
                     <TouchableOpacity 
@@ -339,6 +358,16 @@ export const WorkoutDraftExerciseItem = ({
                         onUpdateSet(rpePickerIndex, 'rpe', val.toString());
                     }
                     setIsRPEPickerVisible(false);
+                }}
+            />
+
+            <RestTimerPicker
+                visible={isRestPickerVisible}
+                onClose={() => setIsRestPickerVisible(false)}
+                initialValue={item.restTime ?? 90}
+                onSave={(val) => {
+                    onUpdateRestTime?.(val);
+                    setIsRestPickerVisible(false);
                 }}
             />
         </View>
