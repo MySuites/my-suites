@@ -156,7 +156,7 @@ function Workout() {
 			{/* Dashboard: Routines & Saved Workouts */}
 			<ScrollView 
 				className="flex-1"
-				contentContainerStyle={{paddingBottom: 20, flexGrow: 1, paddingTop: 100}}
+				contentContainerStyle={{paddingBottom: 100 + insets.bottom, paddingTop: 100}}
 				showsVerticalScrollIndicator={false}
 			>		
                 <View className="px-4 my-6">
@@ -230,7 +230,7 @@ function Workout() {
                             </Text>
                         </HollowedCard>
                     )}
-                </View>     
+                </View>
 			</ScrollView>
                 
                 {/* Menu Overlay */}
