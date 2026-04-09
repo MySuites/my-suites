@@ -135,7 +135,12 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 		// Allow empty workouts
 		// if (targetExercises.length === 0) { ... }
         if (exercisesToStart) {
-            setExercises(exercisesToStart);
+            setExercises(exercisesToStart.map(ex => ({
+                ...ex,
+                completedSets: 0,
+                completedIndices: [],
+                logs: [],
+            })));
         }
         if (name) {
             setWorkoutName(name);
@@ -161,7 +166,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         
 		resetTimers();
 		setCurrentIndex(0);
-		setExercises((exs) => exs.map((x) => ({...x, completedSets: 0, logs: []})));
+		setExercises((exs) => exs.map((x) => ({...x, completedSets: 0, completedIndices: [], logs: []})));
 	}, [setRunning, resetTimers]);
 
 
@@ -169,7 +174,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
     const addExercise = useCallback((name: string, sets: string, reps: string, properties?: string[]) => {
         const ex = createExercise(name, sets, reps, properties);
-        setExercises((e) => [...e, { ...ex, completedSets: 0, logs: [] }]);
+        setExercises((e) => [...e, { ...ex, completedSets: 0, completedIndices: [], logs: [] }]);
     }, []);
 
     const nextExercise = useCallback(() => {
@@ -217,50 +222,33 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         });
     }, []);
 
-    const handleCompleteSet = useCallback((targetIndex: number,  setIndex: number, input?: { weight?: number; bodyweight?: number; reps?: number; duration?: number; distance?: number; rpe?: number }) => {
+    const handleToggleSetCompletion = useCallback((targetIndex: number, setIndex: number) => {
         setExercises(currentExercises => {
-            // Need a tiny hack because currentIndex might not be in closure, but we can't reliably read it from state inside setExercises if we depend on it directly
-            // Actually targetIndex is always provided by our UI now, let's rely on it.
-            const indexToComplete = targetIndex; 
-
             return currentExercises.map((ex, idx) => {
-                if (idx === indexToComplete) {
-                    const logs = [...(ex.logs || [])];
+                if (idx === targetIndex) {
+                    const completedIndices = [...(ex.completedIndices || [])];
+                    const exists = completedIndices.indexOf(setIndex);
                     
-                    const weight = input?.weight;
-                    const bodyweight = input?.bodyweight;
-                    const reps = input?.reps; 
-                    const props = ex.properties?.map((p: string) => p.toLowerCase()) || [];
-                    const isDurationOnly = props.includes('duration') && !props.includes('reps');
-                    const finalReps = reps !== undefined ? reps : (isDurationOnly ? undefined : ex.reps);
-                    
-                    const newLog: any = {
-                        id: uuid.v4(),
-                        weight,
-                        bodyweight,
-                        reps: finalReps,
-                        duration: input?.duration,
-                        distance: input?.distance,
-                        rpe: input?.rpe,
-                    };
-
-                    logs[setIndex] = newLog;
-
-                    const completedCount = logs.filter(l => l !== undefined && l !== null).length;
+                    if (exists > -1) {
+                        completedIndices.splice(exists, 1);
+                    } else {
+                        completedIndices.push(setIndex);
+                    }
 
                     return { 
                         ...ex, 
-                        completedSets: completedCount,
-                        logs: logs
+                        completedIndices,
+                        completedSets: completedIndices.length,
                     };
                 }
                 return ex;
             });
         });
 
-        // Trigger rest timer
+        // Trigger rest timer only when checking (not unchecking)
         const exercise = exercises[targetIndex];
-        if (exercise && input) {
+        const currentlyCompleted = exercise?.completedIndices?.includes(setIndex);
+        if (exercise && !currentlyCompleted) {
             const restTime = exercise.restTime ?? 90;
             startRestTimer(restTime);
         }
@@ -271,21 +259,48 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     const { saveCompletedWorkout } = useWorkoutManager();
 
     const handleFinishWorkout = useCallback((note?: string) => {
+        // Generate logs for completed sets before saving
+        const exercisesWithLogs = exercises.map(ex => {
+            const logs: any[] = [];
+            const completedIndices = ex.completedIndices || [];
+            
+            completedIndices.forEach(idx => {
+                const target = ex.setTargets?.[idx];
+                if (target) {
+                    const parseVal = (v: any) => (v === undefined || v === null || v === '') ? undefined : parseFloat(v.toString());
+                    logs[idx] = {
+                        id: uuid.v4(),
+                        weight: parseVal(target.weight),
+                        reps: parseVal(target.reps),
+                        duration: parseVal(target.duration),
+                        distance: parseVal(target.distance),
+                        rpe: parseVal(target.rpe),
+                        bodyweight: target.weight === undefined ? latestBodyWeight : undefined // Simple bodyweight fallback logic if needed
+                    };
+                }
+            });
+
+            return {
+                ...ex,
+                logs
+            };
+        });
+
         // Save the workout
-        saveCompletedWorkout(workoutName, exercises, workoutSeconds, undefined, note, routineId || undefined);
+        saveCompletedWorkout(workoutName, exercisesWithLogs, workoutSeconds, undefined, note, routineId || undefined);
 
         // Reset state
 		setRunning(false);
 		resetTimers();
 		setCurrentIndex(0);
-		setExercises((exs) => exs.map((x) => ({...x, completedSets: 0, logs: []})));
+		setExercises((exs) => exs.map((x) => ({...x, completedSets: 0, completedIndices: [], logs: []})));
         
         setHasActiveSession(false);
         setIsExpanded(false);
 
         // Clear persistence
         clearPersistence();
-    }, [workoutName, exercises, workoutSeconds, saveCompletedWorkout, routineId, setRunning, resetTimers, clearPersistence]);
+    }, [workoutName, exercises, workoutSeconds, saveCompletedWorkout, routineId, setRunning, resetTimers, clearPersistence, latestBodyWeight]);
 
     const handleCancelWorkout = useCallback(() => {
         // Cancel is effectively the same as finish for now (discard/reset)
@@ -293,7 +308,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         setRunning(false);
         resetTimers();
         setCurrentIndex(0);
-        setExercises((exs) => exs.map((x) => ({...x, completedSets: 0, logs: []})));
+        setExercises((exs) => exs.map((x) => ({...x, completedSets: 0, completedIndices: [], logs: []})));
         
         setHasActiveSession(false);
         setIsExpanded(false);
@@ -311,7 +326,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         startWorkout,
         pauseWorkout,
         resetWorkout,
-        completeSet: handleCompleteSet,
+        completeSet: handleToggleSetCompletion,
         nextExercise,
         prevExercise,
         addExercise,
@@ -330,7 +345,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         latestBodyWeight,
     }), [
         exercises, currentIndex, workoutName, startWorkout, pauseWorkout, resetWorkout, 
-        handleCompleteSet, nextExercise, prevExercise, addExercise, updateExercise, 
+        handleToggleSetCompletion, nextExercise, prevExercise, addExercise, updateExercise, 
         removeExercise, reorderExercises, handleFinishWorkout, handleCancelWorkout, isExpanded, hasActiveSession, 
         toggleExpanded, routineId, sourceWorkoutId, latestBodyWeight
     ]);

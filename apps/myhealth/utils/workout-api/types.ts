@@ -14,6 +14,7 @@ export type Exercise = {
     sets: number; // Target sets
     reps: number; // Target reps/duration/distance
     completedSets: number;
+    completedIndices?: number[]; // indices of checked sets
     logs?: SetLog[];
     previousLog?: SetLog[];
     properties?: string[]; // E.g. ["Weighted", "Reps", "Bodyweight"]

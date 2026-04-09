@@ -56,8 +56,7 @@ interface SetRowProps {
 export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onDeleteSet, onPressRPE, theme, latestBodyWeight }: SetRowProps) => {
     const shouldDelete = useRef(false);
     const swipeableRef = useRef<any>(null);
-    const log = exercise.logs?.[index];
-    const isCompleted = !!log;
+    const isCompleted = exercise.completedIndices?.includes(index);
     const isEvenSet = (index + 1) % 2 === 0;
 
     const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(exercise.properties, exercise.id);
@@ -68,23 +67,13 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
         return target.toString();
     };
 
-    const getLogValue = (field: 'weight' | 'reps' | 'duration' | 'distance' | 'rpe') => {
-        const val = log?.[field];
-        if (val === undefined || val === null) return '';
-        return val.toString();
-    };
-
-    const isZeroValue = (val: string) => val === '0' || val === '0.0';
     const getTextColor = (val: string) => (val === '') ? 'text-light-muted dark:text-dark-muted' : 'text-light dark:text-dark';
 
     const handleNumericChange = (text: string, currentVal: string, onUpdate: (v: string) => void) => {
-        if (isZeroValue(currentVal) && text.length > 0) {
-            if (text.length > 1 && text.startsWith('0') && text[1] !== '.') {
-                onUpdate(text.substring(1));
-                return;
-            }
+        // Basic validation: allow numbers and a single decimal point
+        if (text === '' || /^\d*\.?\d*$/.test(text)) {
+             onUpdate(text);
         }
-        onUpdate(text);
     };
 
     const getPreviousDisplay = () => {
@@ -151,8 +140,6 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
         };
     });
 
-
-
     return (
         <Swipeable
             ref={swipeableRef}
@@ -205,165 +192,77 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                       </View>
                   </View>
 
-                 {isCompleted ? (
-                      <>
-                        {showBodyweight && (
-                            <View className="w-[60px] items-center justify-center mx-1">
-                                <Text className="text-sm font-bold text-light-muted dark:text-dark-muted">
-                                    {latestBodyWeight ? `${latestBodyWeight}` : 'BW'}
-                                </Text>
-                            </View>
-                        )}
-                         {showWeight && (
-                              <TextInput 
-                                 className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getLogValue('weight'))}`}
-                                 value={getLogValue('weight')}
-                                 onChangeText={(t: string) => handleNumericChange(t, getLogValue('weight'), (v) => onUpdateLog?.(index, 'weight', v))}
-                                 keyboardType="numeric" 
-                                 placeholder="-"
-                                 placeholderTextColor={theme.placeholder || '#888'}
-                                 textAlignVertical="center"
-                                 selectTextOnFocus
-                             />
-                         )}
-                         {showReps && (
-                             <TextInput 
-                                 className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getLogValue('reps'))}`}
-                                 value={getLogValue('reps')}
-                                 onChangeText={(t: string) => handleNumericChange(t, getLogValue('reps'), (v) => onUpdateLog?.(index, 'reps', v))}
-                                 keyboardType="numeric" 
-                                 placeholder="-"
-                                 placeholderTextColor={theme.placeholder || '#888'}
-                                 textAlignVertical="center"
-                                 selectTextOnFocus
-                             />
-                         )}
-                         {showDuration && (
-                             <TextInput 
-                                 className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getLogValue('duration'))}`}
-                                 value={getLogValue('duration')}
-                                 onChangeText={(t: string) => handleNumericChange(t, getLogValue('duration'), (v) => onUpdateLog?.(index, 'duration', v))}
-                                 keyboardType="numeric" 
-                                 placeholder="-"
-                                 placeholderTextColor={theme.placeholder || '#888'}
-                                 textAlignVertical="center"
-                                 selectTextOnFocus
-                             />
-                         )}
-                          {showDistance && (
-                             <TextInput 
-                                 className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getLogValue('distance'))}`}
-                                 value={getLogValue('distance')}
-                                 onChangeText={(t: string) => handleNumericChange(t, getLogValue('distance'), (v) => onUpdateLog?.(index, 'distance', v))}
-                                 keyboardType="numeric" 
-                                 placeholder="-"
-                                 placeholderTextColor={theme.placeholder || '#888'}
-                                 textAlignVertical="center"
-                                 selectTextOnFocus
-                             />
-                         )}
-                         {showRPE && (
-                            <TouchableOpacity 
-                                className="w-[45px] items-center justify-center mx-0.5"
-                                onPress={() => onPressRPE?.(index, getLogValue('rpe'))}
-                            >
-                                <Text className={`text-sm font-bold ${getTextColor(getLogValue('rpe'))}`}>
-                                    {getLogValue('rpe') || '-'}
-                                </Text>
-                            </TouchableOpacity>
-                         )}
-                        <TouchableOpacity 
-                            className="w-7 h-7 rounded-lg bg-primary dark:bg-primary-dark items-center justify-center ml-1"
-                            onPress={() => onUncompleteSet?.(index)}
-                        >
-                             <IconSymbol name="checkmark" size={16} color="#fff" />
-                        </TouchableOpacity>
-                      </>
-                 ) : (
-                      <>
-                        {showBodyweight && (
-                            <View className="w-[60px] items-center justify-center mx-1">
-                                <Text className="text-sm font-bold text-light-muted dark:text-dark-muted">
-                                    {latestBodyWeight ? `${latestBodyWeight}` : 'BW'}
-                                </Text>
-                            </View>
-                        )}
-                        {showWeight && (
-                            <TextInput 
-                                className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('weight'))}`}
-                                value={getValue('weight')}
-                                onChangeText={(t: string) => handleNumericChange(t, getValue('weight'), (v: string) => onUpdateSetTarget?.(index, 'weight', v))}
-                                placeholder="-" 
-                                keyboardType="numeric" 
-                                placeholderTextColor={theme.placeholder || '#888'}
-                                textAlignVertical="center"
-                                selectTextOnFocus
-                            />
-                        )}
-                        {showReps && (
-                            <TextInput 
-                                className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('reps'))}`}
-                                value={getValue('reps')} 
-                                onChangeText={(t: string) => handleNumericChange(t, getValue('reps'), (v: string) => onUpdateSetTarget?.(index, 'reps', v))}
-                                placeholder="-"
-                                keyboardType="numeric" 
-                                placeholderTextColor={theme.placeholder || '#888'}
-                                textAlignVertical="center"
-                                selectTextOnFocus
-                            />
-                        )}
-                        {showDuration && (
-                            <TextInput 
-                                className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('duration'))}`}
-                                value={getValue('duration')} 
-                                onChangeText={(t: string) => handleNumericChange(t, getValue('duration'), (v: string) => onUpdateSetTarget?.(index, 'duration', v))}
-                                placeholder="-"
-                                keyboardType="numeric" 
-                                placeholderTextColor={theme.placeholder || '#888'}
-                                textAlignVertical="center"
-                                selectTextOnFocus
-                            />
-                        )}
-                        {showDistance && (
-                            <TextInput 
-                                className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('distance'))}`}
-                                value={getValue('distance')} 
-                                onChangeText={(t: string) => handleNumericChange(t, getValue('distance'), (v: string) => onUpdateSetTarget?.(index, 'distance', v))}
-                                placeholder="-"
-                                keyboardType="numeric" 
-                                placeholderTextColor={theme.placeholder}
-                                textAlignVertical="center"
-                                selectTextOnFocus
-                            />
-                        )}
-                         {showRPE && (
-                            <TouchableOpacity 
-                                className="w-[45px] items-center justify-center mx-0.5"
-                                onPress={() => onPressRPE?.(index, getValue('rpe'))}
-                            >
-                                <Text className={`text-sm font-bold ${getTextColor(getValue('rpe'))}`}>
-                                    {getValue('rpe') || '-'}
-                                </Text>
-                            </TouchableOpacity>
-                         )}
-                        <TouchableOpacity 
-                            className={`w-7 h-7 rounded-lg items-center justify-center ml-1 border-2 border-primary dark:border-primary-dark`}
-                            onPress={() => onCompleteSet({ 
-                                weight: showWeight ? getValue('weight') : (showBodyweight ? (latestBodyWeight ?? undefined) : undefined),
-                                bodyweight: showBodyweight ? (latestBodyWeight ?? undefined) : undefined,
-                                reps: showReps ? (getValue('reps') || (exercise.reps || 0).toString()) : undefined,
-                                duration: showDuration ? getValue('duration') : undefined,
-                                distance: showDistance ? getValue('distance') : undefined,
-                                rpe: showRPE ? getValue('rpe') : undefined,
-                            })}
-                        >
-                            <IconSymbol name="checkmark" size={16} color={theme.primary} />
-                        </TouchableOpacity>
-                      </>
-                 )}
-                 
-                 {/* Padding to balance the right side since delete button is gone */}
-
+                  {showBodyweight && (
+                      <View className="w-[60px] items-center justify-center mx-1">
+                          <Text className="text-sm font-bold text-light-muted dark:text-dark-muted">
+                              {latestBodyWeight ? `${latestBodyWeight}` : 'BW'}
+                          </Text>
+                      </View>
+                  )}
+                  {showWeight && (
+                       <TextInput 
+                          className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('weight'))}`}
+                          value={getValue('weight')}
+                          onChangeText={(t: string) => handleNumericChange(t, getValue('weight'), (v) => onUpdateSetTarget?.(index, 'weight', v))}
+                          keyboardType="numeric" 
+                          placeholder="-"
+                          placeholderTextColor={theme.placeholder || '#888'}
+                          textAlignVertical="center"
+                          selectTextOnFocus
+                      />
+                  )}
+                  {showReps && (
+                      <TextInput 
+                          className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('reps'))}`}
+                          value={getValue('reps')}
+                          onChangeText={(t: string) => handleNumericChange(t, getValue('reps'), (v) => onUpdateSetTarget?.(index, 'reps', v))}
+                          keyboardType="numeric" 
+                          placeholder="-"
+                          placeholderTextColor={theme.placeholder || '#888'}
+                          textAlignVertical="center"
+                          selectTextOnFocus
+                      />
+                  )}
+                  {showDuration && (
+                      <TextInput 
+                          className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('duration'))}`}
+                          value={getValue('duration')}
+                          onChangeText={(t: string) => handleNumericChange(t, getValue('duration'), (v) => onUpdateSetTarget?.(index, 'duration', v))}
+                          keyboardType="numeric" 
+                          placeholder="-"
+                          placeholderTextColor={theme.placeholder || '#888'}
+                          textAlignVertical="center"
+                          selectTextOnFocus
+                      />
+                  )}
+                  {showDistance && (
+                      <TextInput 
+                          className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('distance'))}`}
+                          value={getValue('distance')}
+                          onChangeText={(t: string) => handleNumericChange(t, getValue('distance'), (v) => onUpdateSetTarget?.(index, 'distance', v))}
+                          keyboardType="numeric" 
+                          placeholder="-"
+                          placeholderTextColor={theme.placeholder || '#888'}
+                          textAlignVertical="center"
+                          selectTextOnFocus
+                      />
+                  )}
+                  {showRPE && (
+                     <TouchableOpacity 
+                         className="w-[45px] items-center justify-center mx-0.5"
+                         onPress={() => onPressRPE?.(index, getValue('rpe'))}
+                     >
+                         <Text className={`text-sm font-bold ${getTextColor(getValue('rpe'))}`}>
+                             {getValue('rpe') || '-'}
+                         </Text>
+                     </TouchableOpacity>
+                  )}
+                  <TouchableOpacity 
+                      className={`w-7 h-7 rounded-lg items-center justify-center ml-1 ${isCompleted ? 'bg-primary dark:bg-primary-dark' : 'border-2 border-primary dark:border-primary-dark'}`}
+                      onPress={() => onCompleteSet({})}
+                  >
+                       <IconSymbol name="checkmark" size={16} color={isCompleted ? "#fff" : theme.primary} />
+                  </TouchableOpacity>
              </Animated.View>
         </Swipeable>
     );

@@ -9,10 +9,8 @@ import { RPEPicker } from '../workouts/RPEPicker';
 interface ExerciseCardProps {
     exercise: Exercise;
     isCurrent: boolean;
-    onCompleteSet: (setIndex: number, input: { weight?: string | number, bodyweight?: string | number, reps?: string, duration?: string, distance?: string, rpe?: string }) => void;
-    onUncompleteSet?: (index: number) => void;
+    onCompleteSet: (setIndex: number) => void;
     onUpdateSetTarget?: (index: number, key: 'weight' | 'reps' | 'duration' | 'distance' | 'rpe', value: string) => void;
-    onUpdateLog?: (index: number, key: 'weight' | 'reps' | 'duration' | 'distance' | 'rpe', value: string) => void;
     onAddSet: () => void;
     onDeleteSet: (index: number) => void;
     onRemoveExercise?: () => void;
@@ -26,7 +24,7 @@ interface ExerciseCardProps {
     latestBodyWeight?: number | null;
 }
 
-export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, theme, latestBodyWeight }: ExerciseCardProps) {
+export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, theme, latestBodyWeight }: ExerciseCardProps) {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number, right: number } | null>(null);
@@ -166,10 +164,8 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
                         key={i} 
                         index={i}
                         exercise={exercise}
-                        onCompleteSet={(input) => onCompleteSet(i, input)}
-                        onUncompleteSet={onUncompleteSet}
+                        onCompleteSet={() => onCompleteSet(i)}
                         onUpdateSetTarget={onUpdateSetTarget}
-                        onUpdateLog={onUpdateLog}
                         onDeleteSet={onDeleteSet}
                         onPressRPE={(setIdx, val) => {
                             setRPEPickerIndex(setIdx);
@@ -207,12 +203,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUncompleteS
                 initialValue={rpePickerValue}
                 onSave={(val) => {
                     if (rpePickerIndex !== null) {
-                        const isCompleted = !!exercise.logs?.[rpePickerIndex];
-                        if (isCompleted) {
-                            onUpdateLog?.(rpePickerIndex, 'rpe', val.toString());
-                        } else {
-                            onUpdateSetTarget?.(rpePickerIndex, 'rpe', val.toString());
-                        }
+                        onUpdateSetTarget?.(rpePickerIndex, 'rpe', val.toString());
                     }
                     setIsRPEPickerVisible(false);
                 }}

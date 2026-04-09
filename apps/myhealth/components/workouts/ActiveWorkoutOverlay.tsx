@@ -361,68 +361,20 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
             onPressName={onPressName}
             theme={theme}
             latestBodyWeight={latestBodyWeight}
-            onCompleteSet={(setIndex, input) => {
-                const parsedValue = (val: any) => (val !== undefined && val !== null && val !== '') ? parseFloat(val.toString()) : undefined;
-                const parsedInput = {
-                    weight: parsedValue(input?.weight),
-                    bodyweight: parsedValue(input?.bodyweight),
-                    reps: parsedValue(input?.reps),
-                    duration: parsedValue(input?.duration),
-                    distance: parsedValue(input?.distance),
-                    rpe: parsedValue(input?.rpe),
-                };
-                completeSet(index, setIndex, parsedInput);
+            onCompleteSet={(setIndex) => {
+                completeSet(index, setIndex, {});
             }}
             onUpdateRestTime={onUpdateRestTime}
-            onUncompleteSet={(setIndex) => {
-                const currentLogs = exercise.logs || [];
-                const newLogs = [...currentLogs];
-                const logToUncomplete = newLogs[setIndex];
-                newLogs[setIndex] = undefined;
-                const completedCount = newLogs.filter(l => l !== undefined && l !== null).length;
-
-                // Sync log back to targets if it exists to preserve edits made while completed
-                const currentTargets = exercise.setTargets ? [...exercise.setTargets] : [];
-                if (logToUncomplete) {
-                    while (currentTargets.length <= setIndex) {
-                        currentTargets.push({ weight: 0, reps: exercise.reps });
-                    }
-                    currentTargets[setIndex] = {
-                        ...currentTargets[setIndex],
-                        weight: logToUncomplete.weight,
-                        reps: logToUncomplete.reps,
-                        duration: logToUncomplete.duration,
-                        distance: logToUncomplete.distance,
-                        rpe: logToUncomplete.rpe,
-                    };
-                }
-
-                updateExercise(index, { 
-                    logs: newLogs, 
-                    completedSets: completedCount,
-                    setTargets: currentTargets,
-                });
-            }}
             onUpdateSetTarget={(setIndex, key, value) => {
-                const numValue = value === '' ? undefined : parseFloat(value);
                 const currentTargets = exercise.setTargets ? [...exercise.setTargets] : [];
                 while (currentTargets.length <= setIndex) {
                     currentTargets.push({ weight: 0, reps: exercise.reps });
                 }
                 currentTargets[setIndex] = {
                     ...currentTargets[setIndex],
-                    [key]: (value === '' || isNaN(numValue as any)) ? undefined : numValue
+                    [key]: value
                 };
                 updateExercise(index, { setTargets: currentTargets });
-            }}
-            onUpdateLog={(setIndex, key, value) => {
-                const newLogs = [...(exercise.logs || [])];
-                const log = newLogs[setIndex];
-                if (log) {
-                    const numValue = value === '' ? undefined : parseFloat(value);
-                    (newLogs[setIndex] as any)[key] = (value === '' || isNaN(numValue as any)) ? undefined : numValue;
-                    updateExercise(index, { logs: newLogs });
-                }
             }}
             onAddSet={() => {
                 const nextSetIndex = exercise.sets;
@@ -439,21 +391,22 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
                 });
             }}
             onDeleteSet={(setIndex) => {
-                const currentLogs = exercise.logs || [];
                 const currentTarget = exercise.sets;
                 const currentSetTargets = exercise.setTargets ? [...exercise.setTargets] : [];
                 if (setIndex < currentSetTargets.length) {
                     currentSetTargets.splice(setIndex, 1);
                 }
-                const newLogs = [...currentLogs];
-                if (setIndex < newLogs.length) {
-                    newLogs.splice(setIndex, 1);
-                }
-                const completedCount = newLogs.filter(l => l !== undefined && l !== null).length;
+                
+                // Also update completedIndices if the deleted set was completed
+                let newCompletedIndices = [...(exercise.completedIndices || [])];
+                newCompletedIndices = newCompletedIndices
+                    .filter(idx => idx !== setIndex)
+                    .map(idx => idx > setIndex ? idx - 1 : idx);
+
                 updateExercise(index, { 
-                    logs: newLogs, 
                     setTargets: currentSetTargets,
-                    completedSets: completedCount,
+                    completedIndices: newCompletedIndices,
+                    completedSets: newCompletedIndices.length,
                     sets: Math.max(0, currentTarget - 1)
                 });
             }}
