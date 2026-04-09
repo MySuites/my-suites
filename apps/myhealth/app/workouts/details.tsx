@@ -43,10 +43,57 @@ export default function CreateWorkoutScreen() {
     const editingWorkoutId = typeof id === 'string' ? id : null;
     const viewingLogId = typeof logId === 'string' ? logId : null;
     const originalWorkout = savedWorkouts.find(w => w.id === editingWorkoutId);
-    
-    const [isEditing, setIsEditing] = useState(!editingWorkoutId && !viewingLogId);
     const isLogView = !!viewingLogId;
-    const [workoutDraftName, setWorkoutDraftName] = useState("");
+    
+    // Pre-compute initial values synchronously to avoid the loading spinner
+    const initialData = useRef((() => {
+        if (editingWorkoutId) {
+            const workout = savedWorkouts.find(w => w.id === editingWorkoutId);
+            if (workout) {
+                return {
+                    name: workout.name,
+                    exercises: workout.exercises ? JSON.parse(JSON.stringify(workout.exercises)) : [],
+                    isEditing: false,
+                    isLoading: false,
+                    logDate: null as string | null,
+                    logDuration: null as number | null,
+                };
+            }
+        }
+        if (viewingLogId) {
+            const historyItem = workoutHistory.find((h: any) => h.id === viewingLogId) as any;
+            if (historyItem?.exercises) {
+                const historyExercises = historyItem.exercises.map((ex: any) => ({
+                    id: ex.id || '',
+                    name: ex.name,
+                    properties: ex.properties,
+                    setTargets: (ex.logs || []).map((s: any) => ({
+                        id: s.id,
+                        reps: s.reps,
+                        weight: s.weight,
+                        duration: s.duration,
+                        distance: s.distance,
+                        rpe: s.rpe,
+                    }))
+                }));
+                return {
+                    name: historyItem.workoutName || historyItem.name || 'Workout Log',
+                    exercises: historyExercises,
+                    isEditing: false,
+                    isLoading: false,
+                    logDate: (historyItem.workoutDate || historyItem.date || null) as string | null,
+                    logDuration: (historyItem.duration || null) as number | null,
+                };
+            }
+            // Fallback: need async load
+            return { name: '', exercises: [] as any[], isEditing: false, isLoading: true, logDate: null as string | null, logDuration: null as number | null };
+        }
+        // Create new
+        return { name: '', exercises: [] as any[], isEditing: true, isLoading: false, logDate: null as string | null, logDuration: null as number | null };
+    })()).current;
+
+    const [isEditing, setIsEditing] = useState(initialData.isEditing);
+    const [workoutDraftName, setWorkoutDraftName] = useState(initialData.name);
     
     const {
         workoutDraftExercises,
@@ -59,15 +106,15 @@ export default function CreateWorkoutScreen() {
         updateExerciseRestTime,
         addSet,
         removeSet
-    } = useWorkoutDraft([]);
+    } = useWorkoutDraft(initialData.exercises);
 
     const [isSaving, setIsSaving] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(initialData.isLoading);
     const [lastSaved, setLastSaved] = useState(0);
     const [currentlyEditingIndices, setCurrentlyEditingIndices] = useState<Set<number>>(new Set());
     const hasInitializedRef = useRef(false);
-    const [workoutLogDate, setWorkoutLogDate] = useState<string | null>(null);
-    const [workoutLogDuration, setWorkoutLogDuration] = useState<number | null>(null);
+    const [workoutLogDate] = useState<string | null>(initialData.logDate || null);
+    const [workoutLogDuration] = useState<number | null>(initialData.logDuration || null);
 
     const [isAddingExercise, setIsAddingExercise] = useState(false);
     const [activeTab, setActiveTab] = useState<'exercises' | 'performance'>('exercises');
@@ -85,7 +132,6 @@ export default function CreateWorkoutScreen() {
     const normalizeExercises = (exercises: any[]) => {
         return (exercises || []).map(ex => {
             const { isNewlyAdded, ...rest } = ex;
-            // Ensure setTargets are also normalized (no undefined values)
             const normalizedTargets = (ex.setTargets || []).map((t: any) => {
                 const nt = { ...t };
                 Object.keys(nt).forEach(key => {
@@ -109,12 +155,15 @@ export default function CreateWorkoutScreen() {
         return workoutDraftName.trim() !== originalWorkout.name.trim() || currentDraftString !== originalExercisesString;
     })();
 
+    // Fallback async init — only needed if log data wasn't in workoutHistory during first render
     useEffect(() => {
         if (hasInitializedRef.current) return;
+        hasInitializedRef.current = true;
+
+        if (!isLoading) return; // Already initialized synchronously
 
         async function loadLog() {
             if (!viewingLogId) return;
-            setIsLoading(true);
             try {
                 const { data } = await fetchWorkoutLogDetails(viewingLogId);
                 if (data && data.length > 0) {
@@ -131,16 +180,6 @@ export default function CreateWorkoutScreen() {
                             rpe: s.details?.rpe,
                         }))
                     }));
-
-                    const historyItem = workoutHistory.find((h: any) => h.id === viewingLogId) as any;
-                    if (historyItem) {
-                        setWorkoutDraftName(historyItem.workoutName || historyItem.name || 'Workout Log');
-                        setWorkoutLogDate(historyItem.workoutDate || historyItem.date || null);
-                        setWorkoutLogDuration(historyItem.duration || null);
-                    } else {
-                        setWorkoutDraftName('Workout Log');
-                    }
-
                     setWorkoutDraftExercises(historyExercises);
                 }
             } catch (err) {
@@ -150,28 +189,9 @@ export default function CreateWorkoutScreen() {
             }
         }
 
-        hasInitializedRef.current = true;
-
-        if (viewingLogId) {
-            loadLog();
-        } else if (editingWorkoutId) {
-            const workout = savedWorkouts.find(w => w.id === editingWorkoutId);
-            if (workout) {
-                setWorkoutDraftName(workout.name);
-                setWorkoutDraftExercises(workout.exercises ? JSON.parse(JSON.stringify(workout.exercises)) : []);
-                setIsLoading(false);
-                setIsEditing(false);
-            } else if (savedWorkouts.length > 0) {
-                Alert.alert("Error", "Workout not found");
-                router.back();
-                setIsLoading(false);
-            }
-        } else {
-            setIsLoading(false);
-            setIsEditing(true);
-        }
+        loadLog();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [editingWorkoutId, viewingLogId]);
+    }, [viewingLogId]);
 
     function handleStartWorkout() {
         if (hasActiveSession) {
