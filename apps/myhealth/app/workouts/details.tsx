@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Pres
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { useFloatingButton } from '../../providers/FloatingButtonContext';
@@ -16,11 +16,12 @@ import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { WorkoutOverviewChart } from '../../components/workouts/WorkoutOverviewChart';
 import { WorkoutDraftExerciseItem } from '../../components/workouts/WorkoutDraftExerciseItem';
+import { formatRestTime } from '../../utils/formatting';
 
 export default function CreateWorkoutScreen() {
     const theme = useTheme();
     const router = useRouter();
-    const { id } = useLocalSearchParams();
+    const { id, logId } = useLocalSearchParams();
     const { setIsHidden } = useFloatingButton();
     const { latestBodyWeight, startWorkout, hasActiveSession, cancelWorkout } = useActiveWorkout();
     const insets = useSafeAreaInsets();
@@ -32,16 +33,19 @@ export default function CreateWorkoutScreen() {
 
     const { 
         savedWorkouts, 
+        workoutHistory,
         saveWorkout, 
         updateSavedWorkout, 
-        deleteSavedWorkout 
+        deleteSavedWorkout,
+        fetchWorkoutLogDetails
     } = useWorkoutManager();
 
     const editingWorkoutId = typeof id === 'string' ? id : null;
+    const viewingLogId = typeof logId === 'string' ? logId : null;
     const originalWorkout = savedWorkouts.find(w => w.id === editingWorkoutId);
     
-    const [isEditing, setIsEditing] = useState(!editingWorkoutId);
-    console.log("CreateWorkoutScreen params:", { id, editingWorkoutId });
+    const [isEditing, setIsEditing] = useState(!editingWorkoutId && !viewingLogId);
+    const isLogView = !!viewingLogId;
     const [workoutDraftName, setWorkoutDraftName] = useState("");
     
     const {
@@ -61,7 +65,9 @@ export default function CreateWorkoutScreen() {
     const [isLoading, setIsLoading] = useState(true);
     const [lastSaved, setLastSaved] = useState(0);
     const [currentlyEditingIndices, setCurrentlyEditingIndices] = useState<Set<number>>(new Set());
-    const [hasInitialized, setHasInitialized] = useState(false);
+    const hasInitializedRef = useRef(false);
+    const [workoutLogDate, setWorkoutLogDate] = useState<string | null>(null);
+    const [workoutLogDuration, setWorkoutLogDuration] = useState<number | null>(null);
 
     const [isAddingExercise, setIsAddingExercise] = useState(false);
     const [activeTab, setActiveTab] = useState<'exercises' | 'performance'>('exercises');
@@ -104,17 +110,58 @@ export default function CreateWorkoutScreen() {
     })();
 
     useEffect(() => {
-        if (editingWorkoutId) {
+        if (hasInitializedRef.current) return;
+
+        async function loadLog() {
+            if (!viewingLogId) return;
+            setIsLoading(true);
+            try {
+                const { data } = await fetchWorkoutLogDetails(viewingLogId);
+                if (data && data.length > 0) {
+                    const historyExercises = data.map((ex: any) => ({
+                        id: ex.sets[0]?.details?.exercise_id || '',
+                        name: ex.name,
+                        properties: ex.properties,
+                        setTargets: (ex.sets || []).map((s: any) => ({
+                            id: s.details?.id,
+                            reps: s.details?.reps,
+                            weight: s.details?.weight,
+                            duration: s.details?.duration,
+                            distance: s.details?.distance,
+                            rpe: s.details?.rpe,
+                        }))
+                    }));
+
+                    const historyItem = workoutHistory.find((h: any) => h.id === viewingLogId) as any;
+                    if (historyItem) {
+                        setWorkoutDraftName(historyItem.workoutName || historyItem.name || 'Workout Log');
+                        setWorkoutLogDate(historyItem.workoutDate || historyItem.date || null);
+                        setWorkoutLogDuration(historyItem.duration || null);
+                    } else {
+                        setWorkoutDraftName('Workout Log');
+                    }
+
+                    setWorkoutDraftExercises(historyExercises);
+                }
+            } catch (err) {
+                console.error("Failed to load log details", err);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        hasInitializedRef.current = true;
+
+        if (viewingLogId) {
+            loadLog();
+        } else if (editingWorkoutId) {
             const workout = savedWorkouts.find(w => w.id === editingWorkoutId);
             if (workout) {
                 setWorkoutDraftName(workout.name);
                 setWorkoutDraftExercises(workout.exercises ? JSON.parse(JSON.stringify(workout.exercises)) : []);
-                setHasInitialized(true);
                 setIsLoading(false);
                 setIsEditing(false);
-            } else if (savedWorkouts.length > 0 && !hasInitialized) {
-                // If we've loaded workouts but ours isn't there and we haven't initialized yet,
-                // then it's actually missing. If we HAVE initialized, it was probably just deleted.
+            } else if (savedWorkouts.length > 0) {
                 Alert.alert("Error", "Workout not found");
                 router.back();
                 setIsLoading(false);
@@ -123,7 +170,8 @@ export default function CreateWorkoutScreen() {
             setIsLoading(false);
             setIsEditing(true);
         }
-    }, [editingWorkoutId, savedWorkouts, router, setWorkoutDraftExercises, hasInitialized]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editingWorkoutId, viewingLogId]);
 
     function handleStartWorkout() {
         if (hasActiveSession) {
@@ -214,7 +262,6 @@ export default function CreateWorkoutScreen() {
 
     return (
         <View className="flex-1 bg-light dark:bg-dark">
-            <Stack.Screen options={{ headerShown: false }} />
             <ScreenHeader
                 title={isEditing ? (
                     <TextInput 
@@ -228,7 +275,32 @@ export default function CreateWorkoutScreen() {
                         selectTextOnFocus
                     />
                 ) : (
-                    editingWorkoutId ? workoutDraftName || 'Workout Details' : 'Create Workout'
+                    <View className="items-center">
+                        <Text className="text-xl font-bold text-light dark:text-dark">
+                            {editingWorkoutId ? workoutDraftName || 'Workout Details' : isLogView ? workoutDraftName || 'Workout Log' : 'Create Workout'}
+                        </Text>
+                        {isLogView && (workoutLogDate || workoutLogDuration) && (
+                            <View className="flex-row items-center gap-1.5 mt-0.5">
+                                {workoutLogDate && (
+                                    <Text className="text-xs text-light-muted dark:text-dark-muted font-medium">
+                                        {new Date(workoutLogDate).toLocaleDateString(undefined, { 
+                                            month: 'short', 
+                                            day: 'numeric',
+                                            year: 'numeric'
+                                        })}
+                                    </Text>
+                                )}
+                                {workoutLogDate && workoutLogDuration && (
+                                    <Text className="text-xs text-light-muted dark:text-dark-muted font-medium opacity-50">•</Text>
+                                )}
+                                {workoutLogDuration && (
+                                    <Text className="text-xs text-light-muted dark:text-dark-muted font-medium">
+                                        {formatRestTime(workoutLogDuration)}
+                                    </Text>
+                                )}
+                            </View>
+                        )}
+                    </View>
                 )}
                 leftAction={
                     isEditing ? (
@@ -257,7 +329,7 @@ export default function CreateWorkoutScreen() {
                                 <IconSymbol name="checkmark" size={24} color={theme.primary} />
                             )}
                         </RaisedCard>
-                    ) : (
+                    ) : isLogView ? null : (
                         <View ref={headerMenuRef as any}>
                             <RaisedCard 
                                 onPress={(e) => { 
@@ -401,13 +473,15 @@ export default function CreateWorkoutScreen() {
                         {(isEditing || activeTab === 'exercises') && (
                             <View className="flex-row justify-between items-center mb-2 mt-2">
                                 <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Exercises</Text>
-                                <RaisedCard 
-                                    onPress={handleOpenAddExercise}
-                                    className="h-10 active:h-9 px-4 rounded-full items-center justify-center"
-                                    style={{ borderRadius: 9999 }}
-                                >
-                                    <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>
-                                </RaisedCard>
+                                {!isLogView && (
+                                    <RaisedCard 
+                                        onPress={handleOpenAddExercise}
+                                        className="h-10 active:h-9 px-4 rounded-full items-center justify-center"
+                                        style={{ borderRadius: 9999 }}
+                                    >
+                                        <Text className="text-primary dark:text-primary-dark text-sm font-semibold">Add Exercise</Text>
+                                    </RaisedCard>
+                                )}
                             </View>
                         )}
                     </View>
@@ -470,6 +544,7 @@ export default function CreateWorkoutScreen() {
                                     onRemoveSet={(setIndex) => removeSet(index, setIndex)}
                                     latestBodyWeight={latestBodyWeight}
                                     isEditing={isEditing}
+                                    isReadOnly={isLogView}
                                     lastSaved={lastSaved}
                                     onToggleLocalEdit={(isNowEditing) => {
                                         setCurrentlyEditingIndices(prev => {
@@ -504,7 +579,7 @@ export default function CreateWorkoutScreen() {
             )}
 
             {/* Quick Start Style Start/Save Button */}
-            {!isAddingExercise && (() => {
+            {!isAddingExercise && !isLogView && (() => {
                 const isSavingMode = hasUnsavedChanges || currentlyEditingIndices.size > 0 || isEditing;
                 return (
                 <Animated.View 

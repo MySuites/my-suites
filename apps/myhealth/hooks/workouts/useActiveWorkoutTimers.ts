@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // Safely import Audio to avoid crashing on missing native module
 let Audio: any;
@@ -162,7 +162,7 @@ export function useActiveWorkoutTimers() {
         lastRestTickRef.current = null;
     }, []);
 
-    return {
+    return useMemo(() => ({
         isRunning,
         setRunning,
         workoutSeconds,
@@ -170,5 +170,5 @@ export function useActiveWorkoutTimers() {
         restSeconds,
         startRestTimer,
         resetTimers,
-    };
+    }), [isRunning, workoutSeconds, restSeconds, startRestTimer, resetTimers]);
 }

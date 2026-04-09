@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Text, View, FlatList } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
-import { WorkoutDetailsModal } from '../../components/workouts/WorkoutDetailsModal';
 import { ActionCard, HollowedCard, Skeleton } from '@mysuite/ui';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
@@ -22,20 +21,28 @@ const WorkoutHistoryItem = ({ item, onDelete, onPress }: { item: any, onDelete: 
                 {new Date(item.workoutDate).toLocaleDateString()}
             </Text>
             </View>
-            <View className="flex-row items-center">
-            {item.notes && <Text className="text-sm text-gray-500" numberOfLines={1}>{item.notes}</Text>}
+            <View className="flex-col gap-1">
+                {item.notes && (
+                    <Text className="text-sm text-light-muted dark:text-dark-muted" numberOfLines={1}>
+                        {item.notes}
+                    </Text>
+                )}
+                {item.exercises && item.exercises.length > 0 && (
+                    <Text className="text-sm text-light-muted dark:text-dark-muted" numberOfLines={2}>
+                        {item.exercises.map((ex: any) => ex.name).join(', ')}
+                    </Text>
+                )}
             </View>
             <View className="mt-2 items-end">
-                <Text className="text-xs text-primary dark:text-primary-dark">Tap for details</Text>
+                <Text className="text-xs text-primary dark:text-primary-dark font-medium">Tap for details</Text>
             </View>
         </ActionCard>
     );
 };
 
 export default function WorkoutHistoryScreen() {
-
+  const router = useRouter();
   const { workoutHistory, deleteWorkoutLog, isLoading } = useWorkoutManager();
-  const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
 
   return (
     <View className="flex-1 bg-light dark:bg-dark">
@@ -70,7 +77,10 @@ export default function WorkoutHistoryScreen() {
             <WorkoutHistoryItem 
                 item={item} 
                 onDelete={() => deleteWorkoutLog(item.id, { skipConfirmation: true })}
-                onPress={() => setSelectedLogId(item.id)}
+                onPress={() => router.push({
+                    pathname: '/workouts/details' as any,
+                    params: { logId: item.id }
+                })}
             />
         )}
         ListEmptyComponent={
@@ -84,12 +94,6 @@ export default function WorkoutHistoryScreen() {
         }
       />
       )}
-
-      <WorkoutDetailsModal 
-        visible={!!selectedLogId} 
-        onClose={() => setSelectedLogId(null)} 
-        workoutLogId={selectedLogId} 
-      />
     </View>
   );
 }

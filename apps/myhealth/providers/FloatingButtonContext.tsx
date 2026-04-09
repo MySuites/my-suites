@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 
 
 type ButtonId = 'nav' | 'action' | null;
@@ -17,12 +17,18 @@ export function FloatingButtonProvider({ children }: { children: ReactNode }) {
   const [isHidden, setIsHidden] = useState(false);
 
   const setActiveButtonId = useCallback((id: ButtonId) => {
-      console.log('FloatingButtonContext: SET ACTIVE ID:', id);
       setActiveButtonIdState(id);
   }, []);
 
+  const value = useMemo(() => ({
+    activeButtonId,
+    setActiveButtonId,
+    isHidden,
+    setIsHidden,
+  }), [activeButtonId, setActiveButtonId, isHidden]);
+
   return (
-    <FloatingButtonContext.Provider value={{ activeButtonId, setActiveButtonId, isHidden, setIsHidden }}>
+    <FloatingButtonContext.Provider value={value}>
       {children}
     </FloatingButtonContext.Provider>
   );

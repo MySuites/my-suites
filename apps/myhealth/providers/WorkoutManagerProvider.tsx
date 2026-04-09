@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 import { Alert } from "react-native";
 import { useAuth } from "@mysuite/auth";
 import {
@@ -44,7 +44,7 @@ interface WorkoutManagerContextType {
     fetchWorkoutLogDetails: (logId: string) => Promise<{ data: any[], error: any }>;
     saveCompletedWorkout: (name: string, exercises: Exercise[], duration: number, onSuccess?: () => void, note?: string, routineId?: string) => Promise<void>;
     deleteWorkoutLog: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => void;
-    lastSyncedAt: Date | null; // Added
+    lastSyncedAt: Date | null;
     sync: () => Promise<void>;
     isSyncing: boolean;
 }
@@ -60,14 +60,14 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
-    const { lastSyncedAt, sync, isSyncing } = useSyncService(); // Start background sync
+    const { lastSyncedAt, sync, isSyncing } = useSyncService();
 
     const {
         activeRoutine,
-        startActiveRoutine,
-        setActiveRoutineIndex,
+        startActiveRoutine: startActiveRoutineRaw,
+        setActiveRoutineIndex: setActiveRoutineIndexRaw,
         markRoutineDayComplete,
-        clearActiveRoutine,
+        clearActiveRoutine: clearActiveRoutineRaw,
         setRoutineState
     } = useRoutineManager(routines);
 
@@ -76,38 +76,26 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         async function loadData() {
             setIsLoading(true);
             try {
-                // Load Workouts
                 const storedWorkouts = await DataRepository.getWorkouts();
-                console.log("Loaded Workouts:", JSON.stringify(storedWorkouts, null, 2));
                 setSavedWorkouts(storedWorkouts);
 
-                // Load History (Mapped to old WorkoutLog type for UI compatibility if needed, but UI likely needs refactor or flexible type)
-                // For now, assume history UI might break if types mismatch directly?
-                // The UI expects 'WorkoutLog' { id, workoutName, date... }
-                // LocalWorkoutLog handles this but we need to map logical names if they differ.
                 const storedHistory = await DataRepository.getHistory();
-                // Basic mapping:
                 const mappedHistory: WorkoutLog[] = storedHistory.map(h => ({
                     id: h.id,
                     userId: user?.id || 'guest',
-                    workoutDate: h.date, // LocalWorkoutLog uses 'date', API 'workoutDate'
+                    workoutDate: h.date,
                     workoutName: h.name,
-                    createdAt: h.date, // Approximate
+                    createdAt: h.date,
                     notes: h.note,
                     exercises: h.exercises
                 }));
-                // Sort by date desc
                 mappedHistory.sort((a, b) => new Date(b.workoutDate).getTime() - new Date(a.workoutDate).getTime());
                 setWorkoutHistory(mappedHistory);
 
-                // Load Routines
                 const storedRoutines = await DataRepository.getRoutines();
                 setRoutines(storedRoutines);
 
-                // Load Active Routine State
                 const userId = user?.id || 'guest';
-                // Ensure profile exists for guest if needed? 
-                // For now try fetch.
                 const profile = await ProfileRepository.getProfile(userId);
                 if (profile && profile.active_routine) {
                      setRoutineState(profile.active_routine);
@@ -121,18 +109,18 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         loadData();
     }, [user, setRoutineState]);
 
-    async function saveWorkout(
+    const saveWorkout = useCallback(async (
         workoutName: string,
         exercises: Exercise[],
         onSuccess: () => void,
-    ) {
+    ) => {
         if (!workoutName || workoutName.trim() === "") {
             Alert.alert("Name required", "Please enter a name for the workout.");
             return;
         }
 
         const newWorkout = {
-            id: uuid.v4() as string, // Generate ID explicitly
+            id: uuid.v4() as string,
             name: workoutName.trim(),
             exercises,
             createdAt: new Date().toISOString()
@@ -150,9 +138,9 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         } finally {
             setIsSaving(false);
         }
-    }
+    }, [showToast]);
 
-    async function updateSavedWorkout(id: string, name: string, exercises: Exercise[], onSuccess: () => void) {
+    const updateSavedWorkout = useCallback(async (id: string, name: string, exercises: Exercise[], onSuccess: () => void) => {
          setIsSaving(true);
          try {
              const workout = { id, name, exercises };
@@ -163,9 +151,9 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
          } finally {
              setIsSaving(false);
          }
-    }
+    }, []);
 
-    function deleteSavedWorkout(id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) {
+    const deleteSavedWorkout = useCallback((id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => {
         const performDelete = async () => {
             await DataRepository.deleteWorkout(id);
             setSavedWorkouts(prev => prev.filter(w => w.id !== id));
@@ -180,37 +168,36 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                 { text: "Delete", style: "destructive", onPress: performDelete }
             ]);
         }
-    }
+    }, []);
 
-    async function saveCompletedWorkout(
+    const saveCompletedWorkout = useCallback(async (
         name: string,
         exercises: Exercise[],
         duration: number,
         onSuccess?: () => void,
         note?: string,
         routineId?: string
-    ) {
+    ) => {
          setIsSaving(true);
          try {
              await DataRepository.saveLog({
                  userId: user?.id || 'guest',
                  name,
-                 exercises, // These need to contain 'logs'
+                 exercises,
                  duration,
                  date: new Date().toISOString(),
-                 createdAt: new Date().toISOString(), // Added to satisfy type
+                 createdAt: new Date().toISOString(),
                  note: note,
-                 id: undefined as any // Repo generates
+                 id: undefined as any
              });
              
-             // Refresh History
              const storedHistory = await DataRepository.getHistory();
              const mappedHistory = storedHistory.map(h => ({
                     id: h.id,
                     userId: user?.id || 'guest',
-                    workoutDate: h.date, // LocalWorkoutLog uses 'date', API 'workoutDate'
+                    workoutDate: h.date,
                     workoutName: h.name,
-                    createdAt: h.date, // Approximate
+                    createdAt: h.date,
                     notes: h.note,
                     exercises: h.exercises
              }));
@@ -224,16 +211,15 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
          } finally {
              setIsSaving(false);
          }
-    }
+    }, [user, activeRoutine, markRoutineDayComplete]);
 
-    async function saveRoutineDraft(name: string, sequence: any[], onSuccess: () => void) {
+    const saveRoutineDraft = useCallback(async (name: string, sequence: any[], onSuccess: () => void) => {
         setIsSaving(true);
         try {
             const id = uuid.v4() as string;
             const newRoutine = { id, name, sequence, createdAt: new Date().toISOString() };
             
             await DataRepository.saveRoutine(newRoutine);
-            // Refresh
             const updated = await DataRepository.getRoutines();
             setRoutines(updated);
             
@@ -243,17 +229,14 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         } finally {
             setIsSaving(false);
         }
-    }
+    }, []);
     
-    async function updateRoutine(id: string, name: string, sequence: any[], onSuccess: () => void, suppressAlert?: boolean) {
+    const updateRoutine = useCallback(async (id: string, name: string, sequence: any[], onSuccess: () => void, suppressAlert?: boolean) => {
         setIsSaving(true);
         try {
-            // We need to preserve created_at or fetch existing? 
-            // The UI passes ID, Name, Sequence. 
-            // We should ideally fetch first or assume we have it in 'routines' state to merge?
             const existing = routines.find(r => r.id === id);
             const routineToSave = { 
-                ...existing, // keep created_at
+                ...existing,
                 id, name, sequence, 
                 updatedAt: Date.now() 
             };
@@ -268,9 +251,9 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         } finally {
             setIsSaving(false);
         }
-    }
+    }, [routines]);
 
-    function deleteRoutine(id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) {
+    const deleteRoutine = useCallback((id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => {
          const performDelete = async () => {
              setIsSaving(true);
              try {
@@ -292,14 +275,68 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                 { text: "Delete", style: "destructive", onPress: performDelete }
              ]);
          }
-    }
-    
-    // Legacy persistence effect removed
+    }, []);
 
+    const fetchWorkoutLogDetailsStable = useCallback(async (id: string) => {
+        return await fetchWorkoutLogDetails(user, id);
+    }, [user]);
 
+    const deleteWorkoutLog = useCallback((id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => {
+        const performDelete = async () => {
+            try {
+                if (!id) throw new Error("Missing workout ID");
+                await DataRepository.deleteHistory(id);
+                setWorkoutHistory(prev => (prev || []).filter(h => h && h.id !== id));
+                options?.onSuccess?.();
+                showToast({ message: "Workout deleted", type: "success" });
+            } catch (e) {
+                console.error(e);
+                Alert.alert("Error", "Failed to delete workout log.");
+            }
+        };
 
-    // Return Context
-    const value = {
+        if (options?.skipConfirmation) {
+            performDelete();
+        } else {
+            Alert.alert("Delete Workout", "Are you sure?", [
+                { text: "Cancel", style: "cancel" },
+                { text: "Delete", style: "destructive", onPress: performDelete }
+            ]);
+        }
+    }, [showToast]);
+
+    const createCustomExercise = useCallback(async (name: string, type: string, primary?: string, secondary?: string[]) => {
+         const id = uuid.v4() as string;
+         const exerciseForRepo = {
+             id,
+             name,
+             properties: type,
+             muscle_groups: [primary, ...(secondary || [])].filter(Boolean),
+         };
+
+         try {
+            await DataRepository.saveExercises([exerciseForRepo]);
+            return { data: id };
+         } catch (e) {
+             return { error: e };
+         }
+    }, []);
+
+    const deleteCustomExercise = useCallback(async (id: string) => {
+         try {
+             await DataRepository.deleteExercise(id);
+             showToast({ message: "Exercise deleted", type: 'success' });
+         } catch (e) {
+             console.error(e);
+             Alert.alert("Error", "Failed to delete exercise");
+         }
+    }, [showToast]);
+
+    const startActiveRoutine = useCallback((id: string) => startActiveRoutineRaw(id), [startActiveRoutineRaw]);
+    const setActiveRoutineIndex = useCallback((index: number) => setActiveRoutineIndexRaw(index), [setActiveRoutineIndexRaw]);
+    const clearActiveRoutine = useCallback(() => clearActiveRoutineRaw(), [clearActiveRoutineRaw]);
+
+    const value = useMemo(() => ({
         savedWorkouts,
         routines,
         activeRoutine,
@@ -316,92 +353,22 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         updateRoutine,
         deleteRoutine,
         workoutHistory,
-        fetchWorkoutLogDetails: async (id: string) => {
-            return await fetchWorkoutLogDetails(user, id);
-        },
+        fetchWorkoutLogDetails: fetchWorkoutLogDetailsStable,
         saveCompletedWorkout,
-        deleteWorkoutLog: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => {
-            const performDelete = async () => {
-                try {
-                    if (!id) throw new Error("Missing workout ID");
-                    await DataRepository.deleteHistory(id);
-                    setWorkoutHistory(prev => (prev || []).filter(h => h && h.id !== id));
-                    options?.onSuccess?.();
-                    showToast({ message: "Workout deleted", type: "success" });
-                } catch (e) {
-                    console.error(e);
-                    Alert.alert("Error", "Failed to delete workout log.");
-                }
-            };
-
-            if (options?.skipConfirmation) {
-                performDelete();
-            } else {
-                Alert.alert("Delete Workout", "Are you sure?", [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Delete", style: "destructive", onPress: performDelete }
-                ]);
-            }
-        },
-        createCustomExercise: async (name: string, type: string, primary?: string, secondary?: string[]) => {
-             const id = uuid.v4() as string;
-             // const newExercise = {
-             //     id,
-             //     name,
-             //     properties: type,
-             //     muscle_groups: JSON.stringify([
-             //         primary ? { id: primary, name: 'Primary' } : null,
-             //         ...(secondary || []).map(s => ({ id: s, name: 'Secondary' }))
-             //     ].filter(Boolean)), 
-             // };
-             
-             // We need to match the "flat" object expected by saveExercises loop or pass prepared object
-             // DataRepository.saveExercises takes an array of objects and maps them.
-             // It expects: id, name, muscle_groups (array or string?), properties.
-             // And it stringifies muscle_groups. So we should pass the ARRAY.
-             
-             const exerciseForRepo = {
-                 id,
-                 name,
-                 properties: type,
-                 muscle_groups: [primary, ...(secondary || [])].filter(Boolean), // Just IDs or objects?
-                 // The default data has `muscle_group` (singular string).
-                 // My `startDefaultExercises` mapped it to `[ex.muscle_group]`.
-                 // So repo expects array of strings or objects?
-                 // `DataRepository` L544: `JSON.stringify(ex.muscle_groups || ...)`
-                 // So we pass the array.
-             };
-
-             try {
-                await DataRepository.saveExercises([exerciseForRepo]);
-                // Refresh?
-                // `fetchExercises` is a standalone function re-exported.
-                // We might need to manually trigger a re-fetch in the screen or expose a "refresh" method.
-                // But `exercises/index.tsx` fetches on mount.
-                // If we go back, it re-mounts? Yes router.back() usually preserves state?
-                // Stack navigator... might not unmount.
-                // But `exercises/index.tsx` has `useEffect` on `user`.
-                // Ideally we update a local cache or trigger context update.
-                // For now, let's just save.
-                return { data: id };
-             } catch (e) {
-                 return { error: e };
-             }
-        },
-        deleteCustomExercise: async (id: string) => {
-             // Basic implementation, update signature/impl above if needed
-             try {
-                 await DataRepository.deleteExercise(id);
-                 showToast({ message: "Exercise deleted", type: 'success' });
-             } catch (e) {
-                 console.error(e);
-                 Alert.alert("Error", "Failed to delete exercise");
-             }
-        },
+        deleteWorkoutLog,
+        createCustomExercise,
+        deleteCustomExercise,
         lastSyncedAt,
         sync,
         isSyncing,
-    };
+    }), [
+        savedWorkouts, routines, activeRoutine, startActiveRoutine, setActiveRoutineIndex,
+        markRoutineDayComplete, clearActiveRoutine, isSaving, isLoading, saveWorkout,
+        deleteSavedWorkout, updateSavedWorkout, saveRoutineDraft, updateRoutine,
+        deleteRoutine, workoutHistory, fetchWorkoutLogDetailsStable, saveCompletedWorkout,
+        deleteWorkoutLog, createCustomExercise, deleteCustomExercise, lastSyncedAt,
+        sync, isSyncing
+    ]);
 
     return <WorkoutManagerContext.Provider value={value}>{children}</WorkoutManagerContext.Provider>;
 }

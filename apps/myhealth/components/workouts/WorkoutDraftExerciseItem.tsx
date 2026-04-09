@@ -23,6 +23,7 @@ export interface WorkoutDraftExerciseItemProps {
     onUpdateRestTime?: (restTime: number) => void;
     onPressName?: () => void;
     onDrag?: () => void;
+    isReadOnly?: boolean;
 }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -43,7 +44,8 @@ export const WorkoutDraftExerciseItem = ({
     onToggleLocalEdit,
     onUpdateRestTime,
     onPressName,
-    onDrag
+    onDrag,
+    isReadOnly
 }: WorkoutDraftExerciseItemProps) => {
     const theme = useTheme();
     const [menuVisible, setMenuVisible] = useState(false);
@@ -65,7 +67,8 @@ export const WorkoutDraftExerciseItem = ({
 
     useEffect(() => {
         onToggleLocalEdit?.(isLocalEditing);
-    }, [isLocalEditing, onToggleLocalEdit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLocalEditing]);
 
     const _isEditing = isEditing || isLocalEditing;
 
@@ -148,7 +151,8 @@ export const WorkoutDraftExerciseItem = ({
                         </Text>
                     </TouchableOpacity>
                 </TouchableOpacity>
-                <View className="flex-row items-center relative z-20 pr-1">
+                {!isReadOnly && (
+                    <View className="flex-row items-center relative z-20 pr-1">
                     <TouchableOpacity 
                         ref={ellipsisRef as any}
                         onPress={(e) => { 
@@ -206,6 +210,7 @@ export const WorkoutDraftExerciseItem = ({
                         </TouchableOpacity>
                     </Modal>
                 </View>
+                )}
             </View>
             {isExpanded && (
                 <View className="px-2 pb-3 pt-1">
@@ -338,7 +343,7 @@ export const WorkoutDraftExerciseItem = ({
                             </View>
                         </View>
                     ))}
-                    {_isEditing && (
+                    {_isEditing && !isReadOnly && (
                         <TouchableOpacity 
                             onPress={onAddSet}
                             className="flex-row items-center justify-center p-2 mt-1 rounded-lg border border-dashed border-black/10 dark:border-white/10"
