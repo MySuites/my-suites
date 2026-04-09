@@ -37,10 +37,16 @@ export default function CreateExerciseScreen() {
   }, []);
 
   const loadMuscleGroups = async () => {
-    const { data } = await fetchMuscleGroups();
-    if (data) {
-        setMuscleGroups(data);
-        // Default primary to something if available, or keep null
+    try {
+        const { data, error } = await fetchMuscleGroups();
+        if (data) {
+            setMuscleGroups(data);
+        }
+        if (error) {
+            console.error("[CreateExercise] Failed to load muscle groups:", error);
+        }
+    } catch (e) {
+        console.error("[CreateExercise] Unexpected error loading muscle groups:", e);
     }
   };
 

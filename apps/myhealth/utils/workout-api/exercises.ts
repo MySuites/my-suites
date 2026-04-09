@@ -3,6 +3,7 @@ import { supabase } from "@mysuite/auth";
 import ExerciseDefaultData, {
     Groups,
 } from "../../assets/data/default-exercises";
+import { MUSCLE_GROUPS } from "../../assets/data/muscle-groups";
 import { DataRepository } from "../../providers/DataRepository";
 
 export async function fetchExercises(user: any) {
@@ -101,25 +102,45 @@ export async function fetchExercises(user: any) {
 
 // Fetch all available muscle groups
 export async function fetchMuscleGroups() {
-    const { data: remoteData, error } = await supabase
-        .from("muscle_groups")
-        .select("*")
-        .order("name", { ascending: true });
+    let timeoutId: any;
+    try {
+        // Create a promise that rejects after 5 seconds
+        const timeoutPromise = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error('Timeout')), 5000);
+        });
 
-    if (!error && remoteData && remoteData.length > 0) {
-        return { data: remoteData, error: null };
+        const fetchPromise = supabase
+            .from("muscle_groups")
+            .select("*")
+            .order("name", { ascending: true });
+
+        // Race the fetch against the timeout
+        const result: any = await Promise.race([fetchPromise, timeoutPromise]);
+        
+        // If we get here, fetch won the race. Clear the timeout immediately!
+        if (timeoutId) clearTimeout(timeoutId);
+
+        const { data: remoteData, error } = result;
+
+        if (!error && remoteData && remoteData.length > 0) {
+            console.log(`[MuscleGroups] Loaded ${remoteData.length} groups from remote`);
+            return { data: remoteData, error: null };
+        }
+        
+        if (error) console.warn("[MuscleGroups] Remote error:", error.message);
+    } catch (e: any) {
+        if (timeoutId) clearTimeout(timeoutId);
+        console.warn("[MuscleGroups] Remote fetch failed or timed out:", e.message);
     }
 
-    // Fallback to local default data if remote fails or is empty
-    const uniqueGroups = Array.from(
-        new Set(ExerciseDefaultData.map((e: any) => e.muscle_group)),
-    ).filter(Boolean);
-    const localData = uniqueGroups.sort().map((name) => ({
-        id: name,
-        name: name,
-    }));
-
-    return { data: localData, error: null };
+    // Fallback to local default data if remote fails, is empty, or times out
+    try {
+        console.log(`[MuscleGroups] Falling back to ${MUSCLE_GROUPS.length} local groups`);
+        return { data: MUSCLE_GROUPS, error: null };
+    } catch (e: any) {
+        console.error("[MuscleGroups] Fallback failed:", e.message);
+        return { data: [], error: e };
+    }
 }
 
 // Fetch stats for chart
