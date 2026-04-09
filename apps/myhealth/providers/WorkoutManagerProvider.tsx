@@ -323,8 +323,9 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         deleteWorkoutLog: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => {
             const performDelete = async () => {
                 try {
+                    if (!id) throw new Error("Missing workout ID");
                     await DataRepository.deleteHistory(id);
-                    setWorkoutHistory(prev => prev.filter(h => h.id !== id));
+                    setWorkoutHistory(prev => (prev || []).filter(h => h && h.id !== id));
                     options?.onSuccess?.();
                     showToast({ message: "Workout deleted", type: "success" });
                 } catch (e) {

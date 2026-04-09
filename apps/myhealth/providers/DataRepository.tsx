@@ -184,6 +184,7 @@ export const DataRepository = {
             const exercisesMap = new Map<string, Exercise>();
 
             sets.forEach(set => {
+                if (!set) return; // Defensive check
                 const exId = set.exercise_id || 'unknown';
                 const exName = set.exercise_name || 'Unknown Exercise';
 
@@ -234,6 +235,7 @@ export const DataRepository = {
         const db = await getDb();
         await db.withTransactionAsync(async () => {
              for (const l of logs) {
+                 if (!l) continue; // Defensive check
                  // 1. Save Log Header
                  await db.runAsync(`
                     INSERT OR REPLACE INTO workout_logs (id, user_id, workout_date, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status)
@@ -256,6 +258,7 @@ export const DataRepository = {
                      for (const ex of l.exercises) {
                          if (ex.logs) {
                              for (const s of ex.logs) {
+                                 if (!s) continue; // Defensive check
                                  await db.runAsync(`
                                     INSERT OR REPLACE INTO set_logs (id, workout_log_id, exercise_id, exercise_name, weight, reps, distance, duration, bodyweight, rpe, created_at, sync_status)
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -282,6 +285,10 @@ export const DataRepository = {
     },
 
     deleteHistory: async (id: string): Promise<void> => {
+        if (!id) {
+            console.warn("[DataRepository] deleteHistory called with missing id");
+            return;
+        }
         const db = await getDb();
         await db.runAsync(`
             UPDATE workout_logs
@@ -291,6 +298,7 @@ export const DataRepository = {
     },
 
     saveLog: async (log: Omit<LocalWorkoutLog, 'updatedAt' | 'syncStatus' | 'id'> & { id?: string }): Promise<LocalWorkoutLog> => {
+        if (!log) throw new Error("saveLog called with undefined log");
         const id = log.id || (uuid.v4() as string);
         const now = Date.now();
         const timestamp = new Date().toISOString(); 
