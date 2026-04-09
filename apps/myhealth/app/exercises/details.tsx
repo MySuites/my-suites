@@ -236,49 +236,6 @@ export default function ExerciseDetailsScreen() {
              />
 
             <ScrollView style={{ flex: 1, padding: 16, paddingTop: 124 }}>
-                <View style={{ 
-                    backgroundColor: 'transparent',
-                    borderRadius: 16, 
-                    padding: 16, 
-                    marginBottom: 24 
-                }}>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                        {(() => {
-                            const combinedProps = [...(exercise?.muscle_groups || []), ...(exercise?.properties || [])].filter(Boolean);
-                            if (combinedProps.length > 0) {
-                                return combinedProps.map((prop: string, index: number) => (
-                                    <View key={index} style={{ 
-                                        backgroundColor: activeToggleBg, 
-                                        paddingHorizontal: 12, 
-                                        paddingVertical: 6, 
-                                        borderRadius: 16 
-                                    }}>
-                                        <Text style={{ fontSize: 13, color: currentColors.text }}>{String(prop)}</Text>
-                                    </View>
-                                ));
-                            } else {
-                                return (
-                                    <>
-                                        <Text style={{ fontStyle: 'italic', color: currentColors.text, opacity: 0.6 }}>No specific properties</Text>
-                                        {exercise?.rawType && (
-                                            <View style={{ 
-                                                backgroundColor: activeToggleBg, 
-                                                paddingHorizontal: 12, 
-                                                paddingVertical: 6, 
-                                                borderRadius: 16 
-                                            }}>
-                                                <Text style={{ fontSize: 13, color: currentColors.text }}>{String(exercise.rawType)}</Text>
-                                            </View>
-                                        )}
-                                    </>
-                                );
-                            }
-                        })()}
-                    </View>
-                </View>
-
-                {/* Variations button removed */}
-
                 {/* Tabs */}
                 <View style={{
                     flexDirection: 'row',
@@ -361,11 +318,45 @@ export default function ExerciseDetailsScreen() {
                     display: activeTab === 'instructions' ? 'flex' : 'none',
                     backgroundColor: cardBackground,
                     borderRadius: 16, 
-                    padding: 16, 
+                    padding: 4, 
                 }}>
-                    <Text className="text-base leading-6 font-semibold" style={{ marginBottom: 12, color: currentColors.text }}>Instructions</Text>
+                    {/* Tags in Instructions Tab */}
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+                        {(() => {
+                            const combinedProps = [...(exercise?.muscle_groups || []), ...(exercise?.properties || [])].filter(Boolean);
+                            if (combinedProps.length > 0) {
+                                return combinedProps.map((prop: string, index: number) => (
+                                    <View key={index} style={{ 
+                                        backgroundColor: activeToggleBg, 
+                                        paddingHorizontal: 12, 
+                                        paddingVertical: 6, 
+                                        borderRadius: 16 
+                                    }}>
+                                        <Text style={{ fontSize: 13, color: currentColors.text }}>{String(prop)}</Text>
+                                    </View>
+                                ));
+                            } else {
+                                return (
+                                    <>
+                                        <Text style={{ fontStyle: 'italic', color: currentColors.text, opacity: 0.6 }}>No specific properties</Text>
+                                        {exercise?.rawType && (
+                                            <View style={{ 
+                                                backgroundColor: activeToggleBg, 
+                                                paddingHorizontal: 12, 
+                                                paddingVertical: 6, 
+                                                borderRadius: 16 
+                                            }}>
+                                                <Text style={{ fontSize: 13, color: currentColors.text }}>{String(exercise.rawType)}</Text>
+                                            </View>
+                                        )}
+                                    </>
+                                );
+                            }
+                        })()}
+                    </View>
+
                     <Text style={{ color: currentColors.text, opacity: 0.6, lineHeight: 24 }}>
-                        No instructions available for this exercise yet.
+                        {exercise.description || "No instructions available for this exercise yet."}
                     </Text>
                 </View>
 

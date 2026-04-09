@@ -25,7 +25,7 @@ export function ScreenHeader({ title, rightAction, leftAction, className }: Scre
             </View>
         )}
         {typeof title === 'string' ? (
-            <Text className="text-xl font-bold text-light dark:text-dark text-center flex-1 mx-16" numberOfLines={1}>{title}</Text>
+            <Text className="text-xl font-bold text-light dark:text-dark text-center flex-1 mx-16">{title}</Text>
         ) : (
             <View className="flex-1 mx-16 justify-center items-center">{title}</View>
         )}
