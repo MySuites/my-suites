@@ -179,7 +179,7 @@ function Workout() {
                         </HollowedCard>
                     ) : (
                         <FlatList
-                            data={savedWorkouts}
+                            data={savedWorkouts.slice(0, 4)}
                             scrollEnabled={false}
                             keyExtractor={(i) => i.id}
                             style={{ overflow: 'visible' }}
