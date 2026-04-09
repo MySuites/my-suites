@@ -256,9 +256,33 @@ export default function ExercisesScreen({
                 )}
                 <View className="flex-1 mr-4">
                     <Text className="text-base leading-6 font-semibold text-light dark:text-dark">{item.name}</Text>
-                    <Text className="text-xs text-light-muted dark:text-dark-muted">
-                        {item.muscle_groups?.join(', ')} • {item.properties?.join(', ') || item.rawType}
-                    </Text> 
+                    <View className="flex-row items-center mt-0.5">
+                        <Text className="text-xs text-light-muted dark:text-dark-muted">
+                            {item.muscle_groups?.join(', ')}
+                        </Text>
+                        <View className="flex-row items-center ml-2">
+                            {Array.from({ length: 10 }).map((_, i) => {
+                                const difficulty = item.difficulty || 0;
+                                const starValue = i + 1;
+                                let iconName = "star";
+                                if (difficulty >= starValue) {
+                                    iconName = "star.fill";
+                                } else if (difficulty >= starValue - 0.5) {
+                                    iconName = "star.leadinghalf.filled";
+                                }
+                                
+                                return (
+                                    <IconSymbol 
+                                        key={i}
+                                        name={iconName as any} 
+                                        size={9} 
+                                        color={theme.primary} 
+                                        style={{ marginRight: 0.5 }}
+                                    />
+                                );
+                            })}
+                        </View>
+                    </View>
                 </View>
                 {mode === 'select' ? (
                     <TouchableOpacity 
