@@ -269,14 +269,19 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
             completedIndices.forEach(idx => {
                 const target = ex.setTargets?.[idx];
                 if (target) {
-                    const parseVal = (v: any) => (v === undefined || v === null || v === '') ? undefined : parseFloat(v.toString());
+                    const parseVal = (v: any, isRPE: boolean = false) => {
+                        if (v === undefined || v === null || v === '') {
+                            return isRPE ? undefined : 0;
+                        }
+                        return parseFloat(v.toString());
+                    };
                     logs[idx] = {
                         id: uuid.v4(),
                         weight: parseVal(target.weight),
                         reps: parseVal(target.reps),
                         duration: parseVal(target.duration),
                         distance: parseVal(target.distance),
-                        rpe: parseVal(target.rpe),
+                        rpe: parseVal(target.rpe, true),
                         bodyweight: target.weight === undefined ? latestBodyWeight : undefined // Simple bodyweight fallback logic if needed
                     };
                 }

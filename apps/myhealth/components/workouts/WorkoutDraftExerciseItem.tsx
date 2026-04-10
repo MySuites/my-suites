@@ -98,7 +98,7 @@ export const WorkoutDraftExerciseItem = ({
     const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(item.properties, item.id);
     
     // Ensure duration falls back to reps if needed (legacy data fix for display)
-    const rawTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || 0, weight: 0 }));
+    const rawTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || undefined, weight: undefined }));
     const currentTargets = rawTargets.map((t: any) => ({
         ...t,
         weight: t.weight,

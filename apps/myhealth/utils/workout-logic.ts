@@ -29,7 +29,7 @@ export function createExercise(
         reps,
         completedSets: 0,
         properties: properties || [],
-        setTargets: Array.from({ length: sets }, () => ({ reps, weight: 0 })),
+        setTargets: Array.from({ length: sets }, () => ({ reps: Number(repsStr) || undefined, weight: undefined })),
         restTime,
     };
 }
