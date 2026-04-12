@@ -37,6 +37,7 @@ export default function CreateWorkoutScreen() {
         saveWorkout, 
         updateSavedWorkout, 
         deleteSavedWorkout,
+        deleteWorkoutLog,
         fetchWorkoutLogDetails
     } = useWorkoutManager();
 
@@ -247,6 +248,30 @@ export default function CreateWorkoutScreen() {
         setIsAddingExercise(true);
     }
 
+    function handleDeleteHistoryLog() {
+        if (!viewingLogId) return;
+        
+        Alert.alert(
+            "Delete Workout Log",
+            "Are you sure you want to delete this workout from your history? This action cannot be undone.",
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "Delete", 
+                    style: "destructive", 
+                    onPress: () => {
+                         deleteWorkoutLog(viewingLogId, {
+                             skipConfirmation: true,
+                             onSuccess: () => {
+                                 router.back();
+                             }
+                         });
+                    } 
+                }
+            ]
+        );
+    }
+
     function handleAddExercise(exercises: any[]) {
         if (exercises.length > 0) {
             exercises.forEach(exercise => {
@@ -349,7 +374,15 @@ export default function CreateWorkoutScreen() {
                                 <IconSymbol name="checkmark" size={24} color={theme.primary} />
                             )}
                         </RaisedCard>
-                    ) : isLogView ? null : (
+                    ) : isLogView ? (
+                        <RaisedCard 
+                            onPress={handleDeleteHistoryLog} 
+                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
+                            style={{ borderRadius: 9999 }}
+                        >
+                            <IconSymbol name="trash.fill" size={20} color={theme.options?.destructiveColor || "#ff4444"} />
+                        </RaisedCard>
+                    ) : (
                         <View ref={headerMenuRef as any}>
                             <RaisedCard 
                                 onPress={(e) => { 
