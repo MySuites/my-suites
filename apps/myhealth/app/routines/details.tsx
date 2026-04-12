@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Modal, Dimensions } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
@@ -32,7 +33,8 @@ export default function RoutineDetailsScreen() {
 
     const editingRoutineId = typeof id === 'string' ? id : '';
     const [routineDraftName, setRoutineDraftName] = useState("");
-    const [isEditing, setIsEditing] = useState(false);
+    const [editMode, setEditMode] = useState<'none' | 'name' | 'sequence'>('none');
+    const isEditing = editMode !== 'none';
     
     const {
         routineSequence,
@@ -47,6 +49,12 @@ export default function RoutineDetailsScreen() {
 
     // Add Day State
     const [isAddingDay, setIsAddingDay] = useState(false);
+
+    // Header Menu State
+    const [headerMenuVisible, setHeaderMenuVisible] = useState(false);
+    const [headerMenuPos, setHeaderMenuPos] = useState({ top: 0, right: 0 });
+    const headerMenuRef = React.useRef<View>(null);
+    const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
     // Initialize
     useEffect(() => {
@@ -85,7 +93,7 @@ export default function RoutineDetailsScreen() {
         setIsSaving(true);
         const onSuccess = () => {
              setIsSaving(false);
-             setIsEditing(false); // Switch back to view mode on success
+             setEditMode('none'); // Reset edit mode on success
         };
 
         if (editingRoutineId) {
@@ -98,13 +106,15 @@ export default function RoutineDetailsScreen() {
     function handleAddDay(item: any) {
         addDay(item);
         setIsAddingDay(false);
+        setEditMode('sequence'); // Automatically enter sequence editing mode
     }
     
     const renderItem = ({ item, drag, isActive }: RenderItemParams<any>) => {
+        const isEditingSequence = editMode === 'sequence';
         return (
             <ScaleDecorator activeScale={1.05}>
                 <TouchableOpacity
-                    onLongPress={isEditing ? drag : undefined}
+                    onLongPress={isEditingSequence ? drag : undefined}
                     disabled={isActive}
                     activeOpacity={1}
                     className={`bg-light-lighter dark:bg-dark-lighter rounded-xl mb-3 overflow-hidden border p-3 flex-row items-center justify-between ${isActive ? 'border-primary dark:border-primary-dark' : 'border-bg-dark dark:border-bg-dark-dark'}`}
@@ -118,7 +128,7 @@ export default function RoutineDetailsScreen() {
                         </View>
                     </View>
                     
-                    {isEditing && (
+                    {isEditingSequence && (
                         <View className="flex-row items-center">
                             <TouchableOpacity onPressIn={drag} className="p-2 mr-2"> 
                                     <IconSymbol name="line.3.horizontal" size={20} color={theme.icon as string} />
@@ -141,7 +151,7 @@ export default function RoutineDetailsScreen() {
                 setRoutineDraftName(routine.name);
                 setRoutineSequence(routine.sequence ? JSON.parse(JSON.stringify(routine.sequence)) : []);
             }
-            setIsEditing(false);
+            setEditMode('none');
         } else {
             router.back();
         }
@@ -156,15 +166,29 @@ export default function RoutineDetailsScreen() {
     }
 
     return (
-        <View className="flex-1 bg-light dark:bg-dark">
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <View className="flex-1 bg-light dark:bg-dark">
             <Stack.Screen options={{ headerShown: false }} />
              <ScreenHeader
-                title={isEditing ? 'Edit Routine' : 'Routine Details'}
+                title={
+                    editMode === 'name' ? (
+                        <TextInput 
+                            value={routineDraftName} 
+                            onChangeText={setRoutineDraftName} 
+                            className="text-xl font-bold text-light dark:text-dark text-center flex-1"
+                            placeholder="Routine Name"
+                            autoFocus
+                            placeholderTextColor={theme.textMuted}
+                        />
+                    ) : (
+                        routineDraftName
+                    )
+                }
                 leftAction={
                     isEditing ? (
                         <RaisedCard 
                             onPress={handleCancel} 
-                            className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
+                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
                             style={{ borderRadius: 9999 }}
                         >
                              <IconSymbol name="xmark" size={24} color={theme.primary as string} />
@@ -178,7 +202,7 @@ export default function RoutineDetailsScreen() {
                         <RaisedCard 
                             onPress={handleSaveRoutine} 
                             disabled={isSaving} 
-                            className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
+                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
                             style={{ borderRadius: 9999 }}
                         >
                             {isSaving ? (
@@ -188,49 +212,123 @@ export default function RoutineDetailsScreen() {
                             )}
                         </RaisedCard>
                     ) : (
-                        <RaisedCard 
-                            onPress={() => setIsEditing(true)} 
-                            className="w-12 h-12 p-0 rounded-full bg-light dark:bg-dark items-center justify-center" 
-                            style={{ borderRadius: 9999 }}
-                        >
-                            <IconSymbol name="pencil" size={22} color={theme.primary} />
-                        </RaisedCard>
+                        <View ref={headerMenuRef as any}>
+                            <RaisedCard 
+                                onPress={(e) => { 
+                                    headerMenuRef.current?.measure((x, y, width, height, pageX, pageY) => {
+                                        setHeaderMenuPos({ 
+                                            top: pageY + height + 4, 
+                                            right: SCREEN_WIDTH - pageX - width
+                                        });
+                                        setHeaderMenuVisible(true);
+                                    });
+                                }} 
+                                className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
+                                style={{ borderRadius: 9999 }}
+                            >
+                                <IconSymbol name="ellipsis" size={22} color={theme.primary} />
+                            </RaisedCard>
+                        </View>
                     )
                 }
             />
 
+            {/* Header Menu */}
+            <Modal transparent visible={headerMenuVisible} animationType="fade" onRequestClose={() => setHeaderMenuVisible(false)}>
+                <TouchableOpacity 
+                    activeOpacity={1} 
+                    onPress={() => setHeaderMenuVisible(false)}
+                    className="flex-1"
+                    style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
+                >
+                    <RaisedCard 
+                        className="absolute w-48 p-1 origin-top-right rounded-xl bg-lighter dark:bg-dark-lighter"
+                        style={{ 
+                            top: headerMenuPos.top,
+                            right: headerMenuPos.right,
+                            shadowColor: '#000', 
+                            shadowOffset: { width: 0, height: 4 }, 
+                            shadowOpacity: 0.15, 
+                            shadowRadius: 12, 
+                            elevation: 5,
+                        }}
+                    >
+                        <TouchableOpacity 
+                            onPress={(e) => { 
+                                e.stopPropagation(); 
+                                setHeaderMenuVisible(false); 
+                                setEditMode('name'); 
+                            }} 
+                            className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                        >
+                            <IconSymbol name="pencil" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
+                            <Text style={{ color: theme.text as string }} className="font-medium">Edit Routine Name</Text>
+                        </TouchableOpacity>
+                        
+                        <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
+                        
+                        <TouchableOpacity 
+                            onPress={(e) => { 
+                                e.stopPropagation(); 
+                                setHeaderMenuVisible(false); 
+                                Alert.alert('Delete Routine', 'Are you sure?', [
+                                    { text: 'Cancel', style: 'cancel' },
+                                    { 
+                                        text: 'Delete', 
+                                        style: 'destructive', 
+                                        onPress: () => {
+                                             deleteRoutine(editingRoutineId, {
+                                                 skipConfirmation: true,
+                                                 onSuccess: () => {
+                                                     router.back();
+                                                 }
+                                             });
+                                         }
+                                    }
+                                ]);
+                            }} 
+                            className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                        >
+                            <IconSymbol name="trash.fill" size={18} color={theme.options?.destructiveColor || '#ff4444'} style={{ marginRight: 12 }} />
+                            <Text style={{ color: theme.options?.destructiveColor || '#ff4444' }} className="font-medium">Delete</Text>
+                        </TouchableOpacity>
+                    </RaisedCard>
+                </TouchableOpacity>
+            </Modal>
+
             <View className="flex-1">
-                <View className="mt-28 px-4 pt-4">
-                    {isEditing ? (
-                        <TextInput 
-                            placeholder="Routine Name" 
-                            value={routineDraftName} 
-                            onChangeText={setRoutineDraftName} 
-                            className="bg-light-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-base border border-transparent dark:border-highlight-dark mb-6"
-                            placeholderTextColor={theme.textMuted || '#888'}
-                        />
-                    ) : (
-                        <View className="mb-6 px-1">
-                            <Text className="text-3xl font-bold text-light dark:text-dark">{routineDraftName}</Text>
-                        </View>
-                    )}
-                    
+                <View className="mt-32 px-4">
                     <View className="flex-row justify-between items-center mb-6">
                         <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Schedule</Text>
-                        {isEditing && (
-                            <RaisedCard 
-                                onPress={() => setIsAddingDay(true)}
-                                style={{ borderRadius: 9999 }}
-                                className="h-10 px-4 items-center justify-center"
-                            >
-                                <Text className="text-sm text-primary font-semibold">Add Day</Text>
-                            </RaisedCard>
-                        )}
+                        <RaisedCard 
+                            onPress={() => {
+                                if (editMode === 'sequence') {
+                                    handleSaveRoutine();
+                                } else {
+                                    setEditMode('sequence');
+                                }
+                            }}
+                            style={{ borderRadius: 9999 }}
+                            className="h-10 active:h-9 px-4 items-center justify-center"
+                        >
+                            <Text className="text-sm text-primary font-semibold">
+                                {editMode === 'sequence' ? 'Save Routine' : 'Edit Routine'}
+                            </Text>
+                        </RaisedCard>
                     </View>
                 </View>
                 {routineSequence.length === 0 ? (
-                    <View className="items-center opacity-80 px-4">
-                        <Text className="text-lg text-light-muted dark:text-dark-muted">No days added yet</Text>
+                    <View className="items-center opacity-80 px-4 pt-10">
+                        <Text className="text-lg text-light-muted dark:text-dark-muted mb-6">No days added yet</Text>
+                        <TouchableOpacity 
+                            onPress={() => setIsAddingDay(true)}
+                            className="w-full py-4 items-center justify-center border-dashed border-2 border-primary/30 bg-transparent rounded-xl"
+                        >
+                            <View className="flex-row items-center">
+                                <IconSymbol name="plus" size={20} color={theme.primary as string} style={{ marginRight: 8 }} />
+                                <Text className="text-base text-primary font-semibold">Add First Day</Text>
+                            </View>
+                        </TouchableOpacity>
                     </View>
                 ) : (
                     <DraggableFlatList
@@ -241,32 +339,21 @@ export default function RoutineDetailsScreen() {
                         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16, paddingTop: 6 }}
                         containerStyle={{ flex: 1 }}
                         showsVerticalScrollIndicator={false}
+                        activationDistance={20}
+                        ListFooterComponent={
+                            <View className="mt-2 mb-20">
+                                <TouchableOpacity 
+                                    onPress={() => setIsAddingDay(true)}
+                                    className="py-4 items-center justify-center border-dashed border-2 border-primary/30 bg-transparent rounded-xl"
+                                >
+                                    <View className="flex-row items-center">
+                                        <IconSymbol name="plus" size={20} color={theme.primary as string} style={{ marginRight: 8 }} />
+                                        <Text className="text-base text-primary font-semibold">Add Day</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        }
                     />
-                )}
-                
-                {editingRoutineId && isEditing && (
-                    <TouchableOpacity 
-                        onPress={() => {
-                            Alert.alert('Delete Routine', 'Are you sure?', [
-                                { text: 'Cancel', style: 'cancel' },
-                                { 
-                                    text: 'Delete', 
-                                    style: 'destructive', 
-                                    onPress: () => {
-                                         deleteRoutine(editingRoutineId, {
-                                             skipConfirmation: true,
-                                             onSuccess: () => {
-                                                 router.back();
-                                             }
-                                         });
-                                     }
-                                }
-                            ])
-                        }} 
-                        className="py-3 items-center mt-2 mb-6"
-                    >
-                        <Text className="text-danger font-semibold text-base">Delete Routine</Text>
-                    </TouchableOpacity>
                 )}
             </View>
 
@@ -279,5 +366,6 @@ export default function RoutineDetailsScreen() {
                 savedWorkouts={savedWorkouts}
             />
         </View>
+        </GestureHandlerRootView>
     );
 }
