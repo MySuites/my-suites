@@ -34,7 +34,7 @@ export default function EndWorkoutScreen() {
 
     const [notes, setNotes] = React.useState("");
 
-    const areWorkoutsDifferent = (currentArr: typeof exercises, originalArr: typeof exercises) => {
+    const areWorkoutsDifferent = (currentArr: any[], originalArr: any[]) => {
         if (currentArr.length !== originalArr.length) return true;
         
         for (let i = 0; i < currentArr.length; i++) {
@@ -49,21 +49,22 @@ export default function EndWorkoutScreen() {
             const p1 = cur.properties || [];
             const p2 = orig.properties || [];
             if (p1.length !== p2.length) return true;
-            if (p1.some((p, k) => p !== p2[k])) return true;
+            for (let k = 0; k < p1.length; k++) {
+                if (p1[k] !== p2[k]) return true;
+            }
 
             // Compare setTargets
             const t1 = cur.setTargets || [];
             const t2 = orig.setTargets || [];
             
-            // If the user has customized targets (defined) and the original didn't (undefined),
-            // we should consider it a potential change if the counts or values differ.
             if (t1.length !== t2.length) return true;
             
             for (let j = 0; j < t1.length; j++) {
-                if (Number(t1[j].reps || 0) !== Number(t2[j].reps || 0)) return true;
-                if (Number(t1[j].weight || 0) !== Number(t2[j].weight || 0)) return true;
-                if (Number(t1[j].duration || 0) !== Number(t2[j].duration || 0)) return true;
-                if (Number(t1[j].distance || 0) !== Number(t2[j].distance || 0)) return true;
+                const repsMatch = Number(t1[j].reps || 0) === Number(t2[j].reps || 0);
+                const weightMatch = Number(t1[j].weight || 0) === Number(t2[j].weight || 0);
+                const durMatch = Number(t1[j].duration || 0) === Number(t2[j].duration || 0);
+                const distMatch = Number(t1[j].distance || 0) === Number(t2[j].distance || 0);
+                if (!repsMatch || !weightMatch || !durMatch || !distMatch) return true;
             }
         }
         return false;
@@ -86,6 +87,7 @@ export default function EndWorkoutScreen() {
             router.dismiss();
         };
 
+        // Paths are now mutually exclusive to prevent double-prompts
         if (sourceWorkoutId) {
             const original = savedWorkouts.find(w => w.id === sourceWorkoutId);
             if (original && areWorkoutsDifferent(exercises, original.exercises)) {
@@ -103,7 +105,7 @@ export default function EndWorkoutScreen() {
                                 setIsSaving(true);
                                 try {
                                     // Update template first - strip logs and set counts to 0
-                                    const updatedExercises = exercises.map(({ logs, previousLog, completedSets, ...rest }) => ({
+                                    const updatedExercises = exercises.map(({ logs, previousLog, completedSets, ...rest }: any) => ({
                                         ...rest,
                                         completedSets: 0,
                                         logs: []
@@ -113,9 +115,8 @@ export default function EndWorkoutScreen() {
                                         sourceWorkoutId, 
                                         original.name, 
                                         updatedExercises, 
-                                        () => {}
+                                        finalize
                                     );
-                                    finalize();
                                 } catch (e) {
                                     console.error("Failed to update template", e);
                                     finalize();
@@ -131,36 +132,40 @@ export default function EndWorkoutScreen() {
                     ]
                 );
                 return;
+            } else {
+                // Either no changes, or source template was deleted
+                finalize();
+                return;
             }
-        } else if (totalExercises > 0 && !routineId) {
-            // Started from "Empty" or no source template, prompt to save as new template
-            const showTemplateAlert = () => {
-                Alert.alert(
-                    "Save as Template?",
-                    "Would you like to save this workout as a template for future use?",
-                    [
-                        {
-                            text: "History Only",
-                            onPress: finalize
-                        },
-                        {
-                            text: "Save as Template",
-                            onPress: () => {
-                                setPendingName(workoutName || "New Workout");
-                                setShowNamePrompt(true);
-                            }
-                        },
-                        {
-                            text: "Cancel",
-                            style: "cancel"
+        } 
+        
+        // Only prompt for NEW template if there was no SOURCE template and it's not a routine
+        if (totalExercises > 0 && !routineId) {
+            Alert.alert(
+                "Save as Template?",
+                "Would you like to save this workout as a template for future use?",
+                [
+                    {
+                        text: "History Only",
+                        onPress: finalize
+                    },
+                    {
+                        text: "Save as Template",
+                        onPress: () => {
+                            setPendingName(workoutName || "New Workout");
+                            setShowNamePrompt(true);
                         }
-                    ]
-                );
-            };
-            showTemplateAlert();
+                    },
+                    {
+                        text: "Cancel",
+                        style: "cancel"
+                    }
+                ]
+            );
             return;
         }
 
+        // Catch-all for routines or empty workouts with no exercises
         finalize();
     };
 
