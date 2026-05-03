@@ -34,40 +34,50 @@ export default function EndWorkoutScreen() {
 
     const [notes, setNotes] = React.useState("");
 
-    const areWorkoutsDifferent = (currentArr: any[], originalArr: any[]) => {
-        if (currentArr.length !== originalArr.length) return true;
+    const ChangeType = {
+        NONE: 'NONE',
+        VALUE: 'VALUE',
+        STRUCTURE: 'STRUCTURE'
+    };
+    
+    const getWorkoutChangeType = (currentArr: any[], originalArr: any[]) => {
+        if (currentArr.length !== originalArr.length) return ChangeType.STRUCTURE;
+        
+        let hasValueChange = false;
         
         for (let i = 0; i < currentArr.length; i++) {
             const cur = currentArr[i];
             const orig = originalArr[i];
             
-            if (cur.name !== orig.name) return true;
-            if (Number(cur.sets) !== Number(orig.sets)) return true;
-            if (Number(cur.reps) !== Number(orig.reps)) return true;
+            // Structure check: Name, Set count, and Properties
+            if (cur.name !== orig.name) return ChangeType.STRUCTURE;
+            if (Number(cur.sets) !== Number(orig.sets)) return ChangeType.STRUCTURE;
             
-            // Compare properties
             const p1 = cur.properties || [];
             const p2 = orig.properties || [];
-            if (p1.length !== p2.length) return true;
+            if (p1.length !== p2.length) return ChangeType.STRUCTURE;
             for (let k = 0; k < p1.length; k++) {
-                if (p1[k] !== p2[k]) return true;
+                if (p1[k] !== p2[k]) return ChangeType.STRUCTURE;
             }
-
-            // Compare setTargets
+            
+            // Value check (set targets)
             const t1 = cur.setTargets || [];
             const t2 = orig.setTargets || [];
             
-            if (t1.length !== t2.length) return true;
-            
-            for (let j = 0; j < t1.length; j++) {
-                const repsMatch = Number(t1[j].reps || 0) === Number(t2[j].reps || 0);
-                const weightMatch = Number(t1[j].weight || 0) === Number(t2[j].weight || 0);
-                const durMatch = Number(t1[j].duration || 0) === Number(t2[j].duration || 0);
-                const distMatch = Number(t1[j].distance || 0) === Number(t2[j].distance || 0);
-                if (!repsMatch || !weightMatch || !durMatch || !distMatch) return true;
+            for (let j = 0; j < Math.max(t1.length, t2.length); j++) {
+                const v1 = t1[j] || {};
+                const v2 = t2[j] || {};
+                const repsMatch = Number(v1.reps || 0) === Number(v2.reps || 0);
+                const weightMatch = Number(v1.weight || 0) === Number(v2.weight || 0);
+                const durMatch = Number(v1.duration || 0) === Number(v2.duration || 0);
+                const distMatch = Number(v1.distance || 0) === Number(v2.distance || 0);
+                
+                if (!repsMatch || !weightMatch || !durMatch || !distMatch) {
+                    hasValueChange = true;
+                }
             }
         }
-        return false;
+        return hasValueChange ? ChangeType.VALUE : ChangeType.NONE;
     };
 
     const handleSave = async () => {
@@ -90,53 +100,79 @@ export default function EndWorkoutScreen() {
         // Paths are now mutually exclusive to prevent double-prompts
         if (sourceWorkoutId) {
             const original = savedWorkouts.find(w => w.id === sourceWorkoutId);
-            if (original && areWorkoutsDifferent(exercises, original.exercises)) {
-                Alert.alert(
-                    "Update Template?",
-                    "You've made changes to this workout. Do you want to update the saved template?",
-                    [
-                        {
-                            text: "No, History Only",
-                            onPress: finalize
-                        },
-                        {
-                            text: "Yes, Update Template",
-                            onPress: async () => {
-                                setIsSaving(true);
-                                try {
-                                    // Update template first - strip logs and set counts to 0
-                                    const updatedExercises = exercises.map(({ logs, previousLog, completedSets, ...rest }: any) => ({
-                                        ...rest,
-                                        completedSets: 0,
-                                        logs: []
-                                    }));
-                                    
-                                    await updateSavedWorkout(
-                                        sourceWorkoutId, 
-                                        original.name, 
-                                        updatedExercises, 
-                                        finalize
-                                    );
-                                } catch (e) {
-                                    console.error("Failed to update template", e);
-                                    finalize();
-                                } finally {
-                                    setIsSaving(false);
+            if (original) {
+                const changeType = getWorkoutChangeType(exercises, original.exercises);
+                
+                if (changeType === ChangeType.STRUCTURE) {
+                    Alert.alert(
+                        "Update Template?",
+                        "You've made structural changes to this workout. Do you want to update the saved template?",
+                        [
+                            {
+                                text: "No, History Only",
+                                onPress: finalize
+                            },
+                            {
+                                text: "Yes, Update Template",
+                                onPress: async () => {
+                                    setIsSaving(true);
+                                    try {
+                                        const updatedExercises = exercises.map(({ logs, previousLog, completedSets, ...rest }: any) => ({
+                                            ...rest,
+                                            completedSets: 0,
+                                            logs: []
+                                        }));
+                                        
+                                        await updateSavedWorkout(
+                                            sourceWorkoutId, 
+                                            original.name, 
+                                            updatedExercises, 
+                                            finalize
+                                        );
+                                    } catch (e) {
+                                        console.error("Failed to update template", e);
+                                        finalize();
+                                    } finally {
+                                        setIsSaving(false);
+                                    }
                                 }
+                            },
+                            {
+                                text: "Cancel",
+                                style: "cancel"
                             }
-                        },
-                        {
-                            text: "Cancel",
-                            style: "cancel"
-                        }
-                    ]
-                );
-                return;
-            } else {
-                // Either no changes, or source template was deleted
-                finalize();
-                return;
+                        ]
+                    );
+                    return;
+                } else if (changeType === ChangeType.VALUE) {
+                    // Auto-update values in background
+                    setIsSaving(true);
+                    try {
+                        const updatedExercises = exercises.map(({ logs, previousLog, completedSets, ...rest }: any) => ({
+                            ...rest,
+                            completedSets: 0,
+                            logs: []
+                        }));
+                        
+                        await updateSavedWorkout(
+                            sourceWorkoutId, 
+                            original.name, 
+                            updatedExercises, 
+                            finalize
+                        );
+                        return; // finalize is called by updateSavedWorkout
+                    } catch (e) {
+                        console.error("Failed to auto-update template", e);
+                        finalize();
+                    } finally {
+                        setIsSaving(false);
+                    }
+                    return;
+                }
             }
+            
+            finalize();
+            return;
         } 
         
         // Only prompt for NEW template if there was no SOURCE template and it's not a routine
