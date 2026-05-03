@@ -192,13 +192,7 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                       </View>
                   </View>
 
-                  {showBodyweight && (
-                      <View className="w-[60px] items-center justify-center mx-1">
-                          <Text className="text-sm font-bold text-light-muted dark:text-dark-muted">
-                              {latestBodyWeight ? `${latestBodyWeight}` : 'BW'}
-                          </Text>
-                      </View>
-                  )}
+
                   {showWeight && (
                        <TextInput 
                           className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('weight'))}`}
