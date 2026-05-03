@@ -253,7 +253,6 @@ export function ActiveWorkoutOverlay() {
                         latestBodyWeight={latestBodyWeight}
                         onPressName={() => {
                             Keyboard.dismiss();
-                            setExpanded(false);
                             router.push({
                                 pathname: '/exercises/details' as any,
                                 params: { exercise: JSON.stringify(exercise) }
