@@ -186,7 +186,11 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
 
                   <View className="flex-1 items-center justify-center">
                       <View className="px-2 py-0.5 rounded-md min-w-[48px]">
-                          <Text className="text-center text-[10px] font-bold text-light-muted dark:text-dark-muted">
+                          <Text 
+                              numberOfLines={1}
+                              ellipsizeMode="tail"
+                              className="text-center text-[10px] font-bold text-light-muted dark:text-dark-muted"
+                          >
                              {getPreviousDisplay()}
                           </Text>
                       </View>
@@ -195,7 +199,7 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
 
                   {showWeight && (
                        <TextInput 
-                          className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('weight'))}`}
+                          className={`w-[52px] bg-transparent text-center text-sm font-bold mx-0.5 p-0 -mt-[6px] ${getTextColor(getValue('weight'))}`}
                           value={getValue('weight')}
                           onChangeText={(t: string) => handleNumericChange(t, getValue('weight'), (v) => onUpdateSetTarget?.(index, 'weight', v))}
                           keyboardType="numeric" 
@@ -207,7 +211,7 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                   )}
                   {showReps && (
                       <TextInput 
-                          className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('reps'))}`}
+                          className={`w-[52px] bg-transparent text-center text-sm font-bold mx-0.5 p-0 -mt-[6px] ${getTextColor(getValue('reps'))}`}
                           value={getValue('reps')}
                           onChangeText={(t: string) => handleNumericChange(t, getValue('reps'), (v) => onUpdateSetTarget?.(index, 'reps', v))}
                           keyboardType="numeric" 
@@ -219,7 +223,7 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                   )}
                   {showDuration && (
                       <TextInput 
-                          className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('duration'))}`}
+                          className={`w-[52px] bg-transparent text-center text-sm font-bold mx-0.5 p-0 -mt-[6px] ${getTextColor(getValue('duration'))}`}
                           value={getValue('duration')}
                           onChangeText={(t: string) => handleNumericChange(t, getValue('duration'), (v) => onUpdateSetTarget?.(index, 'duration', v))}
                           keyboardType="numeric" 
@@ -231,7 +235,7 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                   )}
                   {showDistance && (
                       <TextInput 
-                          className={`w-[60px] bg-transparent text-center text-sm font-bold mx-1 p-0 -mt-[6px] ${getTextColor(getValue('distance'))}`}
+                          className={`w-[52px] bg-transparent text-center text-sm font-bold mx-0.5 p-0 -mt-[6px] ${getTextColor(getValue('distance'))}`}
                           value={getValue('distance')}
                           onChangeText={(t: string) => handleNumericChange(t, getValue('distance'), (v) => onUpdateSetTarget?.(index, 'distance', v))}
                           keyboardType="numeric" 
@@ -243,7 +247,7 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                   )}
                   {showRPE && (
                      <TouchableOpacity 
-                         className="w-[45px] items-center justify-center mx-0.5"
+                         className="w-[40px] items-center justify-center mx-0.5"
                          onPress={() => onPressRPE?.(index, getValue('rpe'))}
                      >
                          <Text className={`text-sm font-bold ${getTextColor(getValue('rpe'))}`}>
