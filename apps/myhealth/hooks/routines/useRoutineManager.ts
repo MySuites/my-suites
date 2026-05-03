@@ -8,6 +8,7 @@ export function useRoutineManager(routines: any[]) {
         {
             id: string;
             dayIndex: number; // 0-based index in sequence
+            lastUpdatedDate?: string;
             lastCompletedDate?: string;
         } | null
     >(null);
@@ -16,13 +17,14 @@ export function useRoutineManager(routines: any[]) {
         setActiveRoutine({
             id: routineId,
             dayIndex: 0,
+            lastUpdatedDate: new Date().toISOString(),
         });
     }
 
     function setActiveRoutineIndex(index: number) {
         setActiveRoutine((prev) =>
             prev
-                ? { ...prev, dayIndex: index, lastCompletedDate: undefined }
+                ? { ...prev, dayIndex: index, lastUpdatedDate: new Date().toISOString(), lastCompletedDate: undefined }
                 : null
         );
     }
@@ -41,33 +43,41 @@ export function useRoutineManager(routines: any[]) {
         );
     }, [activeRoutine]);
 
-    // Auto-advance routine day if completed on a previous day
+    // Auto-advance routine day if the date has changed
     useEffect(() => {
-        if (activeRoutine && activeRoutine.lastCompletedDate) {
-            const lastDate = new Date(activeRoutine.lastCompletedDate);
-            const today = new Date();
-            // Reset hours to compare only dates
-            lastDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
+        if (!activeRoutine) return;
 
-            if (lastDate.getTime() < today.getTime()) {
-                // It was completed yesterday or before -> Advance!
-                // Find routine to know length for wrapping
-                const routine = routines.find((r) => r.id === activeRoutine.id);
-                const sequenceLength = routine?.sequence?.length || 1;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Use lastUpdatedDate as the source of truth for "when were we last on this dayIndex?"
+        // Fallback for migration: use lastCompletedDate or today if both are missing
+        const lastUpdateStr = activeRoutine.lastUpdatedDate || activeRoutine.lastCompletedDate;
+        const lastDate = lastUpdateStr ? new Date(lastUpdateStr) : new Date();
+        lastDate.setHours(0, 0, 0, 0);
 
-                setActiveRoutine((prev) =>
-                    prev
-                        ? ({
-                            ...prev,
-                            dayIndex: (prev.dayIndex + 1) % sequenceLength,
-                            lastCompletedDate: undefined, // Clear completion so it's fresh for new day
-                        })
-                        : null
-                );
-            }
+        const daysDiff = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (daysDiff > 0) {
+            // Find routine to know length for wrapping
+            const routine = routines.find((r) => r.id === activeRoutine.id);
+            const sequenceLength = routine?.sequence?.length || 1;
+
+            setActiveRoutine((prev) =>
+                prev
+                    ? ({
+                        ...prev,
+                        dayIndex: (prev.dayIndex + daysDiff) % sequenceLength,
+                        lastUpdatedDate: today.toISOString(),
+                        lastCompletedDate: undefined, // Clear completion for the new day
+                    })
+                    : null
+            );
+        } else if (!activeRoutine.lastUpdatedDate) {
+            // If the field is missing (migration), initialize it
+            setActiveRoutine(prev => prev ? { ...prev, lastUpdatedDate: today.toISOString() } : null);
         }
-    }, [activeRoutine, routines]);
+    }, [activeRoutine?.id, activeRoutine?.lastUpdatedDate, routines]);
 
     function clearActiveRoutine() {
         setActiveRoutine(null);
