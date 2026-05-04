@@ -277,14 +277,14 @@ export const DataRepository = {
                                  `, [
                                      s.id || uuid.v4(),
                                      l.id,
-                                     ex.id || null,
-                                     ex.name || null,
-                                     s.weight || null,
-                                     s.reps || null,
-                                     s.distance || null,
-                                     s.duration || null,
+                                     ex.id ?? null,
+                                     ex.name ?? null,
+                                     s.weight ?? null,
+                                     s.reps ?? null,
+                                     s.distance ?? null,
+                                     s.duration ?? null,
                                      s.bodyweight ? 1 : 0,
-                                     s.rpe || null,
+                                     s.rpe ?? null,
                                      l.createdAt || null,
                                      'synced' 
                                  ]);
@@ -343,14 +343,14 @@ export const DataRepository = {
                             `, [
                                 s.id || uuid.v4(),
                                 id,
-                                ex.id || null,
-                                ex.name || null,
-                                s.weight || null,
-                                s.reps || null,
-                                s.distance || null,
-                                s.duration || null,
+                                ex.id ?? null,
+                                ex.name ?? null,
+                                s.weight ?? null,
+                                s.reps ?? null,
+                                s.distance ?? null,
+                                s.duration ?? null,
                                 s.bodyweight ? 1 : 0,
-                                s.rpe || null,
+                                s.rpe ?? null,
                                 timestamp
                             ]);
                         }
