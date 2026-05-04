@@ -1,4 +1,4 @@
-export const EXERCISE_DATA_VERSION = 3;
+export const EXERCISE_DATA_VERSION = 4;
 
 export const BarbellBenchPress = [
     {
@@ -111,6 +111,15 @@ export const ChestFlys = [
         "muscle_group": "Chest",
         "secondary_muscles": ["Shoulders"],
         difficulty: 8.0,
+    },
+    {
+        "id": "machine_chest_fly",
+        "name": "Machine Chest Fly",
+        "type": "Weighted, Reps",
+        "muscle_group": "Chest",
+        "secondary_muscles": ["Shoulders"],
+        difficulty: 4.5,
+        "description": "Seated chest fly using a machine for constant tension and stability."
     },
 ];
 
