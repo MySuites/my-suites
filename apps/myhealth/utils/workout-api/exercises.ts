@@ -153,7 +153,7 @@ export async function fetchMuscleGroups() {
 export async function fetchExerciseStats(
     user: any,
     exerciseId: string,
-    metric: "weight" | "reps" | "duration" | "distance" = "weight",
+    metric: "weight" | "reps" | "duration" | "distance" | "volume" | "max_volume" = "weight",
 ) {
     // Local-First: Calculate from local history for ALL users (guest and auth).
     try {
@@ -188,6 +188,9 @@ export async function fetchExerciseStats(
                         else if (metric === "reps") rawVal = log.reps;
                         else if (metric === "duration") rawVal = log.duration;
                         else if (metric === "distance") rawVal = log.distance;
+                        else if (metric === "volume" || metric === "max_volume") {
+                            rawVal = (parseFloat(log.weight) || 0) * (parseInt(log.reps) || 0);
+                        }
 
                         debugLogStr += `(${rawVal})`;
 
@@ -223,12 +226,14 @@ export async function fetchExerciseStats(
         );
 
         const chartData = sorted.map((item: any) => ({
-            value: item.max,
+            value: metric === "volume" ? item.total : item.max,
             label: new Date(item.date).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
             }),
-            dataPointText: item.dataPointText,
+            dataPointText: metric === "volume" 
+                ? Math.round(item.total).toString() 
+                : (metric === "max_volume" ? Math.round(item.max).toString() : item.dataPointText),
         }));
 
         return { data: chartData, error: null, debugLogStr };

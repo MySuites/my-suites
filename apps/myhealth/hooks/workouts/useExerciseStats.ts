@@ -6,7 +6,7 @@ export const useExerciseStats = (user: any, exercise: any) => {
     const [loadingChart, setLoadingChart] = useState(true);
     const [debugStr, setDebugStr] = useState<string>("");
     const [selectedMetric, setSelectedMetric] = useState<
-        "weight" | "reps" | "duration" | "distance"
+        "weight" | "reps" | "duration" | "distance" | "volume" | "max_volume"
     >("weight");
 
     const availableMetrics = useMemo(() => {
@@ -15,7 +15,7 @@ export const useExerciseStats = (user: any, exercise: any) => {
             (Array.isArray(exercise.rawType)
                 ? exercise.rawType
                 : [exercise.rawType]);
-        const metrics: ("weight" | "reps" | "duration" | "distance")[] = [];
+        const metrics: ("weight" | "reps" | "duration" | "distance" | "volume" | "max_volume")[] = [];
         if (Array.isArray(props)) {
             props.forEach((p: string) => {
                 const lower = String(p).toLowerCase();
@@ -31,6 +31,13 @@ export const useExerciseStats = (user: any, exercise: any) => {
                 if (lower.includes("distance")) metrics.push("distance");
             });
         }
+        
+        // Add volume if both weight and reps are available
+        if (metrics.includes("weight") && metrics.includes("reps")) {
+            metrics.push("volume");
+            metrics.push("max_volume");
+        }
+        
         return Array.from(new Set(metrics));
     }, [exercise]);
 
