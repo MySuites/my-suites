@@ -323,35 +323,60 @@ export default function ExerciseDetailsScreen() {
                     {/* Tags in Instructions Tab */}
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
                         {(() => {
-                            const combinedProps = [...(exercise?.muscle_groups || []), ...(exercise?.properties || [])].filter(Boolean);
-                            if (combinedProps.length > 0) {
-                                return combinedProps.map((prop: string, index: number) => (
-                                    <View key={index} style={{ 
-                                        backgroundColor: activeToggleBg, 
-                                        paddingHorizontal: 12, 
-                                        paddingVertical: 6, 
-                                        borderRadius: 16 
-                                    }}>
-                                        <Text style={{ fontSize: 13, color: currentColors.text }}>{String(prop)}</Text>
-                                    </View>
-                                ));
-                            } else {
-                                return (
-                                    <>
+                            const getMuscleName = (m: any) => {
+                                if (typeof m === 'string') return m;
+                                if (m?.muscle_groups?.name) return m.muscle_groups.name;
+                                if (m?.name) return m.name;
+                                return String(m);
+                            };
+
+                            const rawMuscles = exercise?.muscle_groups || (exercise?.muscle_group ? [exercise.muscle_group] : []);
+                            const muscles = rawMuscles.map(getMuscleName);
+                            const primaryMuscle = muscles.length > 0 ? muscles[0] : null;
+                            const secondaryMuscles = muscles.slice(1);
+                            const properties = exercise?.properties || [];
+
+                            return (
+                                <>
+                                    {primaryMuscle && (
+                                        <View style={{ 
+                                            backgroundColor: theme.primary, 
+                                            paddingHorizontal: 12, 
+                                            paddingVertical: 6, 
+                                            borderRadius: 16 
+                                        }}>
+                                            <Text style={{ fontSize: 13, color: '#FFFFFF', fontWeight: '600' }}>{primaryMuscle}</Text>
+                                        </View>
+                                    )}
+                                    {secondaryMuscles.map((muscle: string, index: number) => (
+                                        <View key={`sec-${index}`} style={{ 
+                                            backgroundColor: (theme.bgLight || 'rgba(0,0,0,0.05)'),
+                                            paddingHorizontal: 12, 
+                                            paddingVertical: 6, 
+                                            borderRadius: 16,
+                                            borderWidth: 1,
+                                            borderColor: theme.primary,
+                                        }}>
+                                            <Text style={{ fontSize: 13, color: theme.primary, fontWeight: '500' }}>{muscle}</Text>
+                                        </View>
+                                    ))}
+                                    {properties.map((prop: string, index: number) => (
+                                        <View key={`prop-${index}`} style={{ 
+                                            backgroundColor: 'rgba(255,255,255,0.1)', 
+                                            paddingHorizontal: 12, 
+                                            paddingVertical: 6, 
+                                            borderRadius: 16,
+                                            borderWidth: 1,
+                                            borderColor: 'rgba(255,255,255,0.2)'
+                                        }}>
+                                            <Text style={{ fontSize: 13, color: currentColors.text }}>{String(prop)}</Text>
+                                        </View>
+                                    ))}
+                                    {(!primaryMuscle && secondaryMuscles.length === 0 && properties.length === 0) && (
                                         <Text style={{ fontStyle: 'italic', color: currentColors.text, opacity: 0.6 }}>No specific properties</Text>
-                                        {exercise?.rawType && (
-                                            <View style={{ 
-                                                backgroundColor: activeToggleBg, 
-                                                paddingHorizontal: 12, 
-                                                paddingVertical: 6, 
-                                                borderRadius: 16 
-                                            }}>
-                                                <Text style={{ fontSize: 13, color: currentColors.text }}>{String(exercise.rawType)}</Text>
-                                            </View>
-                                        )}
-                                    </>
-                                );
-                            }
+                                    )}
+                                </>
+                            );
                         })()}
                     </View>
 

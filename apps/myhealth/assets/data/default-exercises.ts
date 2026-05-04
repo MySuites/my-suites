@@ -1,4 +1,4 @@
-export const EXERCISE_DATA_VERSION = 2;
+export const EXERCISE_DATA_VERSION = 3;
 
 export const BarbellBenchPress = [
     {
@@ -6,6 +6,7 @@ export const BarbellBenchPress = [
         "name": "Flat Barbell Bench Press",
         "type": "Weighted, Reps",
         "muscle_group": "Chest",
+        "secondary_muscles": ["Triceps", "Shoulders"],
         difficulty: 3.0,
         "description":
             "Standard horizontal bench press targeting overall chest volume and strength.",
@@ -100,6 +101,7 @@ export const ChestFlys = [
         "name": "Dumbbell Fly",
         "type": "Weighted, Reps",
         "muscle_group": "Chest",
+        "secondary_muscles": ["Shoulders", "Biceps"],
         difficulty: 5.5,
     },
     {
@@ -107,6 +109,7 @@ export const ChestFlys = [
         "name": "Cable Fly",
         "type": "Weighted, Reps",
         "muscle_group": "Chest",
+        "secondary_muscles": ["Shoulders"],
         difficulty: 8.0,
     },
 ];

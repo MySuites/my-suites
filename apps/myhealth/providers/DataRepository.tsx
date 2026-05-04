@@ -424,7 +424,7 @@ export const DataRepository = {
                     `, [
                         ex.id, 
                         ex.name,
-                        JSON.stringify([ex.muscle_group]), 
+                        JSON.stringify([ex.muscle_group, ...(ex.secondary_muscles || [])].filter(Boolean)), 
                         ex.type,
                         ex.description || null,
                         ex.progressionId || null,

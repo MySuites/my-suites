@@ -28,10 +28,16 @@ export async function fetchExercises(user: any) {
             id: e.id,
             name: e.name,
             properties: e.type,
-            muscle_groups: [{
-                role: "primary",
-                muscle_groups: { name: e.muscle_group },
-            }],
+            muscle_groups: [
+                {
+                    role: "primary",
+                    muscle_groups: { name: e.muscle_group },
+                },
+                ...(e.secondary_muscles || []).map((m: string) => ({
+                    role: "secondary",
+                    muscle_groups: { name: m },
+                })),
+            ],
         }));
     }
 
