@@ -128,7 +128,10 @@ export default function ExercisesScreen({
   };
 
   const sections = React.useMemo(() => {
-    let filtered = processedExercises.filter(ex => ex.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const normalizeSearch = (text: string) => text.toLowerCase().replace(/[-_]/g, ' ');
+    const normalizedQuery = normalizeSearch(searchQuery);
+
+    let filtered = processedExercises.filter(ex => normalizeSearch(ex.name).includes(normalizedQuery));
     
     // Hide non-active variations from the main list unless the user is actively searching
     if (!searchQuery) {
