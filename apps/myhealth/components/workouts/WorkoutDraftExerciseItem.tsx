@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Dimensions, Modal } from 'react-native';
 import { useUITheme as useTheme, IconSymbol, RaisedCard } from '@mysuite/ui';
 import { getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
-import { formatRestTime } from '../../utils/formatting';
+import { formatRestTime, formatSeconds } from '../../utils/formatting';
 import { RPEPicker } from './RPEPicker';
 import { RestTimerPicker } from './RestTimerPicker';
+import { DurationTimerPicker } from './DurationTimerPicker';
 
 export interface WorkoutDraftExerciseItemProps {
     item: any;
@@ -60,6 +61,11 @@ export const WorkoutDraftExerciseItem = ({
     
     // Rest Timer Picker state
     const [isRestPickerVisible, setIsRestPickerVisible] = useState(false);
+    
+    // Duration Timer Picker state
+    const [isDurationPickerVisible, setIsDurationPickerVisible] = useState(false);
+    const [durationPickerIndex, setDurationPickerIndex] = useState<number | null>(null);
+    const [durationPickerValue, setDurationPickerValue] = useState<number>(0);
 
     useEffect(() => {
         setIsLocalEditing(false);
@@ -232,7 +238,7 @@ export const WorkoutDraftExerciseItem = ({
                         {showBodyweight && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">{latestBodyWeight ? 'Lbs' : 'BW'}</Text>}
                         {showWeight && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Lbs</Text>}
                         {showReps && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Reps</Text>}
-                        {showDuration && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Seconds</Text>}
+                        {showDuration && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Time</Text>}
                         {showDistance && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Dist</Text>}
                         {showRPE && <Text className="w-12 text-xs text-gray-500 font-semibold text-center">RPE</Text>}
                         <View className="w-8 ml-2" />
@@ -289,19 +295,34 @@ export const WorkoutDraftExerciseItem = ({
 
                              {showDuration && (
                                 <View className="flex-1 flex-row justify-center">
-                                    {_isEditing ? (
-                                        <TextInput 
-                                            value={set.duration !== undefined && set.duration !== null ? String(set.duration) : ''} 
-                                            keyboardType="numeric"
-                                            onChangeText={(v) => handleNumericChange(v, set.duration, (newVal) => onUpdateSet(setIdx, 'duration', newVal))}
-                                            className={`bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center ${getTextColorClass(set.duration)}`}
-                                            placeholder="-"
-                                            selectTextOnFocus
-                                            editable={_isEditing}
-                                        />
-                                    ) : (
-                                        <Text className={`font-medium ${getTextColorClass(set.duration)}`}>{set.duration !== undefined && set.duration !== null ? set.duration : "-"}</Text>
-                                    )}
+                                    <View className={`flex-row items-center justify-center p-1 ${
+                                        _isEditing ? 'bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded w-20 h-8' : ''
+                                    }`}>
+                                        <TouchableOpacity 
+                                            onPress={() => {
+                                                setDurationPickerIndex(setIdx);
+                                                setDurationPickerValue(parseInt(set.duration) || 0);
+                                                // Note: WorkoutDraftExerciseItem doesn't use autoStart currently, 
+                                                // but we provide the button for consistency.
+                                                setIsDurationPickerVisible(true);
+                                            }}
+                                            className="p-1"
+                                        >
+                                            <IconSymbol name="play.fill" size={12} color={theme.primary} />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity 
+                                            onPress={() => {
+                                                setDurationPickerIndex(setIdx);
+                                                setDurationPickerValue(parseInt(set.duration) || 0);
+                                                setIsDurationPickerVisible(true);
+                                            }}
+                                            className="p-1"
+                                        >
+                                            <Text className={`font-medium ${getTextColorClass(set.duration)}`}>
+                                                {set.duration !== undefined && set.duration !== null && set.duration !== "" ? formatSeconds(parseInt(set.duration) || 0) : "-"}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             )}
 
@@ -388,6 +409,19 @@ export const WorkoutDraftExerciseItem = ({
                     onUpdateRestTime?.(val);
                     setIsRestPickerVisible(false);
                 }}
+            />
+
+            <DurationTimerPicker 
+                visible={isDurationPickerVisible}
+                onClose={() => setIsDurationPickerVisible(false)}
+                initialValue={durationPickerValue}
+                onSave={(val) => {
+                    if (durationPickerIndex !== null) {
+                        onUpdateSet(durationPickerIndex, 'duration', val.toString());
+                    }
+                    setIsDurationPickerVisible(false);
+                }}
+                isActiveWorkout={false}
             />
         </View>
     );

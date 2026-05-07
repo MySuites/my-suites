@@ -15,6 +15,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { IconSymbol } from "@mysuite/ui";
+import { DurationTimerPicker } from './DurationTimerPicker';
+import { formatSeconds } from '../../utils/formatting';
 
 import { getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
 
@@ -51,9 +53,12 @@ interface SetRowProps {
     onPressRPE?: (index: number, currentVal: string) => void;
     theme: any;
     latestBodyWeight?: number | null;
+    isActiveWorkout?: boolean;
 }
 
-export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onDeleteSet, onPressRPE, theme, latestBodyWeight }: SetRowProps) => {
+export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onDeleteSet, onPressRPE, theme, latestBodyWeight, isActiveWorkout = true }: SetRowProps) => {
+    const [isDurationPickerVisible, setIsDurationPickerVisible] = React.useState(false);
+    const [durationAutoStart, setDurationAutoStart] = React.useState(false);
     const shouldDelete = useRef(false);
     const swipeableRef = useRef<any>(null);
     const isCompleted = exercise.completedIndices?.includes(index);
@@ -90,27 +95,28 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
         if (!prev) return "-";
         
         const parts = [];
-        const formatValue = (val: any) => (val !== undefined && val !== null && val !== '') ? val : "-";
+        const formatValue = (val: any, fallback = "0") => (val !== undefined && val !== null && val !== '') ? val : fallback;
 
         // Weight/Bodyweight part
-        if (showBodyweight && showWeight) {
-            const bw = prev.bodyweight ?? (showBodyweight ? latestBodyWeight : undefined);
-            const added = prev.weight;
-            if (bw != null && added != null && added > 0) {
-                parts.push(`${bw}+${added}`);
+        if (showWeight) {
+            if (showBodyweight) {
+                const bw = prev.bodyweight ?? (showBodyweight ? latestBodyWeight : undefined);
+                const added = prev.weight;
+                if (bw != null && added != null && added > 0) {
+                    parts.push(`${bw}+${added}`);
+                } else {
+                    parts.push(formatValue(bw ?? added));
+                }
             } else {
-                parts.push(formatValue(bw ?? added));
+                parts.push(formatValue(prev.weight));
             }
-        } else if (showBodyweight || showWeight) {
-            const val = prev.weight ?? prev.bodyweight ?? (showBodyweight ? latestBodyWeight : undefined);
-            parts.push(formatValue(val));
         }
 
         if (showReps) {
             parts.push(formatValue(prev.reps));
         }
         if (showDuration) {
-            parts.push(formatValue(prev.duration));
+            parts.push(prev.duration ? formatSeconds(parseInt(prev.duration) || 0) : "00:00");
         }
         if (showDistance) {
             parts.push(formatValue(prev.distance));
@@ -120,6 +126,7 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
         if (showRPE && prev.rpe) {
             display += ` @ ${prev.rpe}`;
         }
+        console.log(`Exercise: ${exercise.name}, showWeight: ${showWeight}, showReps: ${showReps}, parts:`, parts);
         return display.length > 0 ? display : "-";
     };
 
@@ -198,7 +205,7 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                           <Text 
                               numberOfLines={1}
                               ellipsizeMode="tail"
-                              className="text-center text-[10px] font-bold text-light-muted dark:text-dark-muted"
+                              className="text-center text-[10px] font-medium text-light-muted dark:text-dark-muted"
                           >
                              {getPreviousDisplay()}
                           </Text>
@@ -231,16 +238,28 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                       />
                   )}
                   {showDuration && (
-                      <TextInput 
-                          className={`w-[52px] bg-transparent text-center text-sm font-bold mx-0.5 p-0 -mt-[6px] ${getTextColor(getValue('duration'))}`}
-                          value={getValue('duration')}
-                          onChangeText={(t: string) => handleNumericChange(t, getValue('duration'), (v) => onUpdateSetTarget?.(index, 'duration', v))}
-                          keyboardType="numeric" 
-                          placeholder="-"
-                          placeholderTextColor={theme.placeholder || '#888'}
-                          textAlignVertical="center"
-                          selectTextOnFocus
-                      />
+                      <View className="w-[52px] flex-row items-center justify-center mx-0.5 h-11">
+                          <TouchableOpacity 
+                              onPress={() => {
+                                  setDurationAutoStart(true);
+                                  setIsDurationPickerVisible(true);
+                              }}
+                              className="p-1 mr-1"
+                          >
+                              <IconSymbol name="play.fill" size={14} color={theme.primary} />
+                          </TouchableOpacity>
+                          <TouchableOpacity 
+                              onPress={() => {
+                                  setDurationAutoStart(false);
+                                  setIsDurationPickerVisible(true);
+                              }}
+                              className="p-1"
+                          >
+                              <Text className={`text-sm font-bold ${getTextColor(getValue('duration'))}`}>
+                                  {getValue('duration') !== '' ? formatSeconds(parseInt(getValue('duration')) || 0) : '-'}
+                              </Text>
+                          </TouchableOpacity>
+                      </View>
                   )}
                   {showDistance && (
                       <TextInput 
@@ -256,7 +275,7 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                   )}
                   {showRPE && (
                      <TouchableOpacity 
-                         className="w-[40px] items-center justify-center mx-0.5"
+                         className="w-[40px] items-center justify-center ml-2 mr-0.5"
                          onPress={() => onPressRPE?.(index, getValue('rpe'))}
                      >
                          <Text className={`text-sm font-bold ${getTextColor(getValue('rpe'))}`}>
@@ -271,6 +290,18 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                        <IconSymbol name="checkmark" size={16} color={isCompleted ? "#fff" : theme.primary} />
                   </TouchableOpacity>
              </Animated.View>
+
+             <DurationTimerPicker 
+                  visible={isDurationPickerVisible}
+                  onClose={() => {
+                      setIsDurationPickerVisible(false);
+                      setDurationAutoStart(false);
+                  }}
+                  initialValue={parseInt(getValue('duration')) || 0}
+                  onSave={(val) => onUpdateSetTarget?.(index, 'duration', val.toString())}
+                  isActiveWorkout={isActiveWorkout}
+                  autoStart={durationAutoStart}
+              />
         </Swipeable>
     );
 };
