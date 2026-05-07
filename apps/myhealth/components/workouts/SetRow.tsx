@@ -36,7 +36,7 @@ export const getExerciseFields = (properties?: string[], exerciseId?: string) =>
         showReps: lowerProps.includes('reps'),
         showDuration: lowerProps.includes('duration'),
         showDistance: lowerProps.includes('distance'),
-        showRPE: lowerProps.includes('weighted') || lowerProps.includes('reps') || lowerProps.includes('rpe')
+        showRPE: lowerProps.includes('weighted') || lowerProps.includes('reps') || lowerProps.includes('duration') || lowerProps.includes('distance') || lowerProps.includes('rpe')
     };
 };
 
@@ -62,9 +62,18 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
     const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(exercise.properties, exercise.id);
 
     const getValue = (field: 'weight' | 'reps' | 'duration' | 'distance' | 'rpe') => {
-        const target = exercise.setTargets?.[index]?.[field];
-        if (target === undefined || target === null) return '';
-        return target.toString();
+        let val = exercise.setTargets?.[index]?.[field];
+        
+        // Fallback for legacy data where reps might hold duration/distance
+        if ((val === undefined || val === null || val === '') && field === 'duration' && !showReps) {
+            val = exercise.setTargets?.[index]?.reps;
+        }
+        if ((val === undefined || val === null || val === '') && field === 'distance' && !showReps && !showDuration) {
+            val = exercise.setTargets?.[index]?.reps;
+        }
+
+        if (val === undefined || val === null) return '';
+        return val.toString();
     };
 
     const getTextColor = (val: string) => (val === '') ? 'text-light-muted dark:text-dark-muted' : 'text-light dark:text-dark';

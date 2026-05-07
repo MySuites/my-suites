@@ -153,7 +153,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
 
                     {showWeight && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">LBS</Text>}
                     {showReps && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">REPS</Text>}
-                    {showDuration && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">TIME</Text>}
+                    {showDuration && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">SECS</Text>}
                     {showDistance && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">DIST</Text>}
                     {showRPE && <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[40px] mx-0.5 text-light-muted dark:text-dark-muted">RPE</Text>}
                     <View className="w-[30px] items-center" />

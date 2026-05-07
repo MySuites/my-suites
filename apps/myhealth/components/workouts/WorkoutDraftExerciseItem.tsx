@@ -91,7 +91,7 @@ export const WorkoutDraftExerciseItem = ({
             showReps: lowerProps.includes('reps'),
             showDuration: lowerProps.includes('duration'),
             showDistance: lowerProps.includes('distance'),
-            showRPE: lowerProps.includes('weighted') || lowerProps.includes('reps') || lowerProps.includes('rpe')
+            showRPE: lowerProps.includes('weighted') || lowerProps.includes('reps') || lowerProps.includes('duration') || lowerProps.includes('distance') || lowerProps.includes('rpe')
         };
     };
 
@@ -99,14 +99,27 @@ export const WorkoutDraftExerciseItem = ({
     
     // Ensure duration falls back to reps if needed (legacy data fix for display)
     const rawTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || undefined, weight: undefined }));
-    const currentTargets = rawTargets.map((t: any) => ({
-        ...t,
-        weight: t.weight,
-        reps: t.reps,
-        duration: t.duration,
-        distance: t.distance,
-        rpe: t.rpe
-    }));
+    const currentTargets = rawTargets.map((t: any) => {
+        let duration = t.duration;
+        let distance = t.distance;
+        
+        // Fallback for legacy data
+        if ((duration === undefined || duration === null || duration === '') && showDuration && !showReps) {
+            duration = t.reps;
+        }
+        if ((distance === undefined || distance === null || distance === '') && showDistance && !showReps && !showDuration) {
+            distance = t.reps;
+        }
+
+        return {
+            ...t,
+            weight: t.weight,
+            reps: t.reps,
+            duration,
+            distance,
+            rpe: t.rpe
+        };
+    });
 
     const isZeroValue = (val: any) => val === 0 || val === '0' || val === '0.0';
     const getTextColorClass = (val: any, defaultClass = "text-light dark:text-dark") => 
@@ -219,7 +232,7 @@ export const WorkoutDraftExerciseItem = ({
                         {showBodyweight && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">{latestBodyWeight ? 'Lbs' : 'BW'}</Text>}
                         {showWeight && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Lbs</Text>}
                         {showReps && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Reps</Text>}
-                        {showDuration && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Time</Text>}
+                        {showDuration && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Seconds</Text>}
                         {showDistance && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Dist</Text>}
                         {showRPE && <Text className="w-12 text-xs text-gray-500 font-semibold text-center">RPE</Text>}
                         <View className="w-8 ml-2" />

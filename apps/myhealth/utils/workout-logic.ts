@@ -29,7 +29,18 @@ export function createExercise(
         reps,
         completedSets: 0,
         properties: properties || [],
-        setTargets: Array.from({ length: sets }, () => ({ reps: Number(repsStr) || undefined, weight: undefined })),
+        setTargets: Array.from({ length: sets }, () => {
+            const lowerProps = (properties || []).map(p => p.toLowerCase());
+            const target: any = { weight: undefined };
+            if (lowerProps.includes('duration')) {
+                target.duration = Number(repsStr) || undefined;
+            } else if (lowerProps.includes('distance')) {
+                target.distance = Number(repsStr) || undefined;
+            } else {
+                target.reps = Number(repsStr) || undefined;
+            }
+            return target;
+        }),
         restTime,
     };
 }

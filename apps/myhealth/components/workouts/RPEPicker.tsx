@@ -148,12 +148,12 @@ export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerP
                         <Text className="text-light-muted dark:text-dark-muted text-sm text-center italic">
                             {(() => {
                                 if (selectedValue === 1) return 'Very light';
-                                if (selectedValue === 4) return '8–10 Reps in Reserve';
+                                if (selectedValue === 4) return '8–10 Reps/Secs in Reserve';
                                 
                                 const rir = 10 - selectedValue;
                                 if (rir === 0) return 'Maximum Effort (0 RIR)';
-                                if (rir % 1 === 0.5) return `Maybe ${Math.ceil(rir)} Reps in Reserve`;
-                                return `${rir} ${rir === 1 ? 'Rep' : 'Reps'} in Reserve`;
+                                if (rir % 1 === 0.5) return `Maybe ${Math.ceil(rir)} Reps/Secs in Reserve`;
+                                return `${rir} ${rir === 1 ? 'Rep/Sec' : 'Reps/Secs'} in Reserve`;
                             })()}
                         </Text>
                     </View>
