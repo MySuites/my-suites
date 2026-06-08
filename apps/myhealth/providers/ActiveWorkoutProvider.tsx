@@ -6,6 +6,8 @@ import { useActiveWorkoutTimers } from '../hooks/workouts/useActiveWorkoutTimers
 import { useActiveWorkoutPersistence } from '../hooks/workouts/useActiveWorkoutPersistence';
 import { useLatestBodyWeight } from '../hooks/workouts/useLatestBodyWeight';
 import uuid from 'react-native-uuid';
+import { Alert } from 'react-native';
+import { router } from 'expo-router';
 
 // Define the shape of our context
 interface ActiveWorkoutContextType {
@@ -59,6 +61,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     const [hasActiveSession, setHasActiveSession] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [hasPromptedCompletion, setHasPromptedCompletion] = useState(false);
 
     // Hooks
     const timerState = useActiveWorkoutTimers();
@@ -132,8 +135,39 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         return () => { isMounted = false; };
     }, [user, hasActiveSession, exerciseIdsSerialized, exercises]); // Re-run when user changes, session starts, or exercise list changes
 
+    // Auto-prompt when all sets are completed
+    useEffect(() => {
+        if (!hasActiveSession || exercises.length === 0) {
+            setHasPromptedCompletion(false);
+            return;
+        }
+
+        const allCompleted = exercises.every(ex => {
+            const targetSets = typeof ex.sets === 'string' ? parseInt(ex.sets, 10) : (typeof ex.sets === 'number' ? ex.sets : 0);
+            return (ex.completedSets || 0) >= targetSets;
+        });
+
+        if (allCompleted) {
+            if (!hasPromptedCompletion) {
+                setHasPromptedCompletion(true);
+                Alert.alert(
+                    "Workout Complete!",
+                    "You've finished all sets and exercises. Ready to end the workout?",
+                    [
+                        { text: "Not Yet", style: "cancel" },
+                        { text: "Yes!", onPress: () => router.push('/workouts/end') }
+                    ]
+                );
+            }
+        } else {
+            if (hasPromptedCompletion) {
+                setHasPromptedCompletion(false);
+            }
+        }
+    }, [exercises, hasActiveSession, hasPromptedCompletion]);
+
     // Actions
-    const startWorkout = useCallback((exercisesToStart?: Exercise[], name?: string, routineId?: string, sourceWorkoutId?: string) => {
+    const startWorkout = useCallback((exercisesToStart?: Exercise[], name?: string, newRoutineId?: string, newSourceWorkoutId?: string) => {
 		// Allow empty workouts
 		// if (targetExercises.length === 0) { ... }
         if (exercisesToStart) {
@@ -143,14 +177,16 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                 completedIndices: [],
                 logs: [],
             })));
-        }
-        if (name) {
-            setWorkoutName(name);
+            setWorkoutName(name || "Current Workout");
+            setRoutineId(newRoutineId || null);
+            setSourceWorkoutId(newSourceWorkoutId || null);
         } else {
-             setWorkoutName("Current Workout");
+            // We are resuming
+            if (name !== undefined) setWorkoutName(name);
+            if (newRoutineId !== undefined) setRoutineId(newRoutineId || null);
+            if (newSourceWorkoutId !== undefined) setSourceWorkoutId(newSourceWorkoutId || null);
         }
-        setRoutineId(routineId || null);
-        setSourceWorkoutId(sourceWorkoutId || null);
+        
 		setRunning(true);
         setHasActiveSession(true);
         setIsExpanded(true);
