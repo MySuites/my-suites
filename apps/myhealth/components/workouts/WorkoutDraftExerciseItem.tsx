@@ -78,7 +78,6 @@ export const WorkoutDraftExerciseItem = ({
 
     const _isEditing = isEditing || isLocalEditing;
 
-    // Helper to determine which columns to show
     const getExerciseFields = (properties?: string[], exerciseId?: string) => {
         let props = properties || [];
         
@@ -92,7 +91,6 @@ export const WorkoutDraftExerciseItem = ({
 
         const lowerProps = props.map(p => p.toLowerCase());
         return { 
-            showBodyweight: lowerProps.includes('bodyweight'),
             showWeight: lowerProps.includes('weighted'),
             showReps: lowerProps.includes('reps'),
             showDuration: lowerProps.includes('duration'),
@@ -101,7 +99,7 @@ export const WorkoutDraftExerciseItem = ({
         };
     };
 
-    const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(item.properties, item.id);
+    const { showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(item.properties, item.id);
     
     // Ensure duration falls back to reps if needed (legacy data fix for display)
     const rawTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || undefined, weight: undefined }));
@@ -235,7 +233,6 @@ export const WorkoutDraftExerciseItem = ({
                 <View className="px-2 pb-3 pt-1">
                     <View className="flex-row mb-2">
                         <Text className="w-12 text-xs text-gray-500 font-semibold text-center">Set</Text>
-                        {showBodyweight && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">{latestBodyWeight ? 'Lbs' : 'BW'}</Text>}
                         {showWeight && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Lbs</Text>}
                         {showReps && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Reps</Text>}
                         {showDuration && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Time</Text>}
@@ -249,14 +246,6 @@ export const WorkoutDraftExerciseItem = ({
                                 <Text className="text-light dark:text-dark font-medium">{setIdx + 1}</Text>
                             </View>
                             
-                            {showBodyweight && (
-                                <View className="flex-1 items-center justify-center">
-                                    <Text className="text-sm font-bold text-black/50 dark:text-white/50">
-                                        {latestBodyWeight ? `${latestBodyWeight}` : 'BW'}
-                                    </Text>
-                                </View>
-                            )}
-
                              {showWeight && (
                                 <View className="flex-1 flex-row justify-center">
                                     {_isEditing ? (
