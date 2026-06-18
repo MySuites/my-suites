@@ -295,3 +295,76 @@ FROM public.exercises e
 JOIN public.muscle_groups mg ON lower(mg.name) = 'traps'
 WHERE e.exercise_name IN ('Dumbbell Shrug', 'Barbell Shrug')
 ON CONFLICT DO NOTHING;
+
+-- Chest secondary: Shoulders and Triceps
+INSERT INTO public.exercise_muscle_groups (exercise_id, muscle_group_id, role)
+SELECT e.exercise_id, mg.id, 'secondary'
+FROM public.exercises e
+JOIN public.muscle_groups mg ON lower(mg.name) IN ('shoulders', 'triceps')
+WHERE e.exercise_name IN (
+  'Bench Press', 'Incline Bench Press', 'Flat Bench Press', 'Decline Bench Press',
+  'Incline Smith Machine Bench Press', 'Flat Smith Machine Bench Press', 'Decline Smith Machine Bench Press',
+  'Dumbbell Flys', 'Cable Flys', 'Incline Dumbbell Bench Press', 'Flat Dumbbell Bench Press', 'Decline Dumbbell Bench Press',
+  'Push-up', 'Incline Push-up', 'Decline Push-up', 'Diamond Push-up', 'Close Push-up', 'Wide Push-up', 'Pike Push-up',
+  'Weighted Push-up', 'Weighted Dips'
+)
+ON CONFLICT DO NOTHING;
+
+-- Lats secondary: Biceps and Shoulders
+INSERT INTO public.exercise_muscle_groups (exercise_id, muscle_group_id, role)
+SELECT e.exercise_id, mg.id, 'secondary'
+FROM public.exercises e
+JOIN public.muscle_groups mg ON lower(mg.name) IN ('biceps', 'shoulders')
+WHERE e.exercise_name IN (
+  'Pull-up', 'Weighted Pull-up', 'Chin-up', 'Weighted Chin-up', 'Dumbbell Row', 'Lat Pulldown', 'Seated Cable Row',
+  'Bodyweight Rows', 'Weighted Rows', 'Front Lever', 'Back Lever'
+)
+ON CONFLICT DO NOTHING;
+
+-- Shoulders secondary: Triceps and Chest
+INSERT INTO public.exercise_muscle_groups (exercise_id, muscle_group_id, role)
+SELECT e.exercise_id, mg.id, 'secondary'
+FROM public.exercises e
+JOIN public.muscle_groups mg ON lower(mg.name) IN ('triceps', 'chest')
+WHERE e.exercise_name IN (
+  'Overhead Press', 'Face Pull', 'Lateral Raise', 'Front Raise', 'Arnold Press',
+  'Handstand Push-up', 'Wall Handstand Push-up', 'Pike Handstand Press', 'Straddle Handstand Press', 'Handstand Press',
+  'Planche Push-up', 'Maltese', 'Planche', 'Handstand'
+)
+ON CONFLICT DO NOTHING;
+
+-- Quadriceps secondary: Hamstrings and Calves
+INSERT INTO public.exercise_muscle_groups (exercise_id, muscle_group_id, role)
+SELECT e.exercise_id, mg.id, 'secondary'
+FROM public.exercises e
+JOIN public.muscle_groups mg ON lower(mg.name) IN ('hamstrings', 'calves')
+WHERE e.exercise_name IN (
+  'Bodyweight Squat', 'Weighted Squat', 'Barbell Squat', 'Smith Machine Squat',
+  'Lunges', 'Weighted Lunges', 'Leg Press', 'Bulgarian Split Squat', 'Leg Extension',
+  'Pistol Squats', 'Sissy Squats', 'Split Squats', 'Shrimp Squats', 'Dragon Squats'
+)
+ON CONFLICT DO NOTHING;
+
+-- Hamstrings secondary: Lower Back and Calves
+INSERT INTO public.exercise_muscle_groups (exercise_id, muscle_group_id, role)
+SELECT e.exercise_id, mg.id, 'secondary'
+FROM public.exercises e
+JOIN public.muscle_groups mg ON lower(mg.name) IN ('lower back', 'calves')
+WHERE e.exercise_name IN ('Romanian Deadlift', 'Leg Curl')
+ON CONFLICT DO NOTHING;
+
+-- Deadlift secondary: Hamstrings and Quadriceps
+INSERT INTO public.exercise_muscle_groups (exercise_id, muscle_group_id, role)
+SELECT e.exercise_id, mg.id, 'secondary'
+FROM public.exercises e
+JOIN public.muscle_groups mg ON lower(mg.name) IN ('hamstrings', 'quadriceps')
+WHERE e.exercise_name IN ('Deadlift')
+ON CONFLICT DO NOTHING;
+
+-- Traps secondary: Shoulders
+INSERT INTO public.exercise_muscle_groups (exercise_id, muscle_group_id, role)
+SELECT e.exercise_id, mg.id, 'secondary'
+FROM public.exercises e
+JOIN public.muscle_groups mg ON lower(mg.name) IN ('shoulders')
+WHERE e.exercise_name IN ('Dumbbell Shrug', 'Barbell Shrug')
+ON CONFLICT DO NOTHING;
