@@ -14,6 +14,7 @@ export const MUSCLE_GROUPS = [
     { id: "Quadriceps", name: "Quadriceps" },
     { id: "Shoulders", name: "Shoulders" },
     { id: "Tibialis", name: "Tibialis" },
+    { id: "Traps", name: "Traps" },
     { id: "Triceps", name: "Triceps" },
 ];
 

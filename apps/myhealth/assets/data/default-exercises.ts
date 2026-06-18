@@ -1,4 +1,4 @@
-export const EXERCISE_DATA_VERSION = 4;
+export const EXERCISE_DATA_VERSION = 5;
 
 export const BarbellBenchPress = [
     {
@@ -1363,6 +1363,25 @@ export const TibialisExercises = [
     },
 ];
 
+export const Shrugs = [
+    {
+        "id": "dumbbell_shrug",
+        "name": "Dumbbell Shrug",
+        "type": "Weighted, Reps",
+        "muscle_group": "Traps",
+        difficulty: 2.0,
+        "description": "Dumbbell shrug targeting the upper trapezius muscles.",
+    },
+    {
+        "id": "barbell_shrug",
+        "name": "Barbell Shrug",
+        "type": "Weighted, Reps",
+        "muscle_group": "Traps",
+        difficulty: 3.5,
+        "description": "Barbell shrug for upper trapezius development.",
+    },
+];
+
 export const CardioExercises = [
     {
         "id": "treadmill",
@@ -1478,6 +1497,7 @@ export default [
     ...BackLeverExercises,
     ...WristExercises,
     ...TibialisExercises,
+    ...Shrugs,
     ...CardioExercises,
 ];
 
@@ -1523,5 +1543,6 @@ export const Groups = {
     "Back Lever Exercises": BackLeverExercises,
     "Wrist Exercises": WristExercises,
     "Tibialis Exercises": TibialisExercises,
+    "Shrugs": Shrugs,
     "Cardio Exercises": CardioExercises,
 };

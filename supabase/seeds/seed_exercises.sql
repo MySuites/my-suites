@@ -176,6 +176,8 @@ FROM demo, (
     ('Cycling', 'Distance, Duration', 'Cycling.'),
     ('Swimming', 'Distance, Duration', 'Swimming.'),
     ('Rowing', 'Distance, Duration', 'Rowing.'),
+    ('Dumbbell Shrug', 'Weighted, Reps', 'Dumbbell shrug targeting the upper trapezius muscles.'),
+    ('Barbell Shrug', 'Weighted, Reps', 'Barbell shrug for upper trapezius development.'),
 
     ('Farmers Walk', 'Weighted, Distance', 'Farmers walk for grip strength.')
 
@@ -284,4 +286,11 @@ SELECT e.exercise_id, mg.id, 'primary'
 FROM public.exercises e
 JOIN public.muscle_groups mg ON lower(mg.name) = 'calves'
 WHERE e.exercise_name IN ('Calf Raise', 'Calf Raises')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO public.exercise_muscle_groups (exercise_id, muscle_group_id, role)
+SELECT e.exercise_id, mg.id, 'primary'
+FROM public.exercises e
+JOIN public.muscle_groups mg ON lower(mg.name) = 'traps'
+WHERE e.exercise_name IN ('Dumbbell Shrug', 'Barbell Shrug')
 ON CONFLICT DO NOTHING;
