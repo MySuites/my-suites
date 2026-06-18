@@ -36,6 +36,7 @@ FROM demo, (
     -- Weights: Back
     ('Lat Pulldown', 'Weighted, Reps', 'Cable lat pulldown.'),
     ('Seated Cable Row', 'Weighted, Reps', 'Seated cable row for back thickness.'),
+    ('Dumbbell Row', 'Weighted, Reps', 'One-arm dumbbell row targeting the lats and upper back.'),
 
     -- Weights: Shoulders
     ('Face Pull', 'Weighted, Reps', 'Cable face pull for rear delts.'),

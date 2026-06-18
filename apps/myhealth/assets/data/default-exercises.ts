@@ -1,4 +1,4 @@
-export const EXERCISE_DATA_VERSION = 5;
+export const EXERCISE_DATA_VERSION = 6;
 
 export const BarbellBenchPress = [
     {
@@ -945,6 +945,17 @@ export const Rows = [
     },
 ];
 
+export const DumbbellRows = [
+    {
+        "id": "dumbbell_row",
+        "name": "Dumbbell Row",
+        "type": "Weighted, Reps",
+        "muscle_group": "Lats",
+        difficulty: 3.5,
+        "description": "One-arm dumbbell row targeting the lats and upper back.",
+    },
+];
+
 export const Planks = [
     {
         "id": "plank",
@@ -1487,6 +1498,7 @@ export default [
     ...PushUps,
     ...PullUps,
     ...Rows,
+    ...DumbbellRows,
     ...Planks,
     ...RussianTwists,
     ...Dips,
@@ -1533,6 +1545,7 @@ export const Groups = {
     "Push Ups": PushUps,
     "Pull Ups": PullUps,
     "Rows": Rows,
+    "Dumbbell Rows": DumbbellRows,
     "Planks": Planks,
     "Russian Twists": RussianTwists,
     "Dips": Dips,
