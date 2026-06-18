@@ -315,10 +315,9 @@ export default function CreateWorkoutScreen() {
                 title={isEditing ? (
                     <TextInput 
                         placeholder="Workout Name" 
-                        value={workoutDraftName} 
+                        defaultValue={workoutDraftName} 
                         onChangeText={setWorkoutDraftName} 
-                        className="text-xl font-bold text-light dark:text-dark text-center"
-                        style={{ paddingVertical: 0 }}
+                        className="text-[20px] font-bold text-light dark:text-dark text-center"
                         placeholderTextColor={theme.textMuted || '#888'}
                         autoFocus
                         selectTextOnFocus

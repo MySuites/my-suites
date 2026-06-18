@@ -117,9 +117,8 @@ export default function CreateRoutineScreen() {
                 <View className="mt-28 px-4 pt-4">
                     <TextInput 
                         placeholder="Routine Name" 
-                        value={routineDraftName} 
                         onChangeText={setRoutineDraftName} 
-                        className="bg-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-base border border-transparent dark:border-highlight-dark mb-6"
+                        className="bg-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-[16px] border border-transparent dark:border-highlight-dark mb-6"
                         placeholderTextColor={theme.textMuted || '#888'}
                     />
                     

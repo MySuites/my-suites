@@ -102,10 +102,8 @@ export default function CreateWorkoutScreen() {
                         <View className="bg-lighter dark:bg-dark-lighter h-16 px-4 rounded-xl border border-transparent dark:border-highlight-dark mb-6 justify-center">
                             <TextInput 
                                 placeholder="Workout Name" 
-                                value={workoutDraftName} 
                                 onChangeText={setWorkoutDraftName} 
-                                className="text-light dark:text-dark"
-                                style={{ fontSize: 16, paddingVertical: 0, flex: 1 }}
+                                className="text-[16px] text-light dark:text-dark flex-1"
                                 placeholderTextColor={theme.textMuted || '#888'}
                             />
                         </View>

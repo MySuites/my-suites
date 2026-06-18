@@ -41,13 +41,9 @@ export function WorkoutNamePrompt({
                         <Text className="text-sm text-gray-500 dark:text-gray-400 mb-6 text-center">Give your workout template a name.</Text>
 
                         <TextInput
-                            className="px-4 border border-light dark:border-white/10 rounded-xl text-xl text-light dark:text-dark bg-white dark:bg-black/20 mb-6"
-                            style={{ 
-                                height: 50, 
-                                textAlignVertical: 'center',
-                                paddingBottom: 8,
-                            }}
-                            value={name}
+                            key={visible ? 'open' : 'closed'}
+                            className="px-4 py-3 border border-light dark:border-white/10 rounded-xl text-[20px] text-light dark:text-dark bg-white dark:bg-black/20 mb-6"
+                            defaultValue={initialName}
                             onChangeText={setName}
                             placeholder="Workout Name"
                             placeholderTextColor={theme.icon || "#9ca3af"}

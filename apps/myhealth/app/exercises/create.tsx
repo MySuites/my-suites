@@ -124,10 +124,9 @@ export default function CreateExerciseScreen() {
         <View className="mt-28 mb-6">
             <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Name</Text>
             <TextInput 
-                className="bg-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-base border border-transparent dark:border-highlight-dark"
+                className="bg-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-[16px] border border-transparent dark:border-highlight-dark"
                 placeholder="e.g. Bench Press" 
                 placeholderTextColor={theme.textMuted || '#888'}
-                value={name}
                 onChangeText={setName}
             />
         </View>

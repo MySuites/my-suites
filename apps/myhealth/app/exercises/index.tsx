@@ -27,7 +27,16 @@ export default function ExercisesScreen({
   const { user } = useAuth();
   const [exercises, setExercises] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [inputText, setInputText] = useState('');
+  const searchInputRef = React.useRef<TextInput>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+      const timeoutId = setTimeout(() => {
+          setSearchQuery(inputText);
+      }, 50);
+      return () => clearTimeout(timeoutId);
+  }, [inputText]);
   const { showToast } = useToast();
 
   useFocusEffect(
@@ -62,6 +71,8 @@ export default function ExercisesScreen({
       }
       setSelectedIds(new Set());
       setSearchQuery("");
+      setInputText("");
+      searchInputRef.current?.clear();
       if (onClose) {
           onClose();
       }
@@ -395,18 +406,23 @@ export default function ExercisesScreen({
             <View className="flex-1 flex-row items-center rounded-full px-4 h-12 border border-white/10 dark:border-highlight-dark shadow-xl bg-lighter dark:bg-dark-lighter">
                 <IconSymbol name="magnifyingglass" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
                 <TextInput
-                    className="flex-1 ml-2 text-base h-full text-light dark:text-dark"
+                    ref={searchInputRef}
+                    className="flex-1 ml-2 text-[16px] text-light dark:text-dark"
                     placeholder="Search exercises..."
                     placeholderTextColor={theme.textMuted}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
+                    onChangeText={setInputText}
                     autoCorrect={false}
                 />
-                {searchQuery.length > 0 && (
-                    <TouchableOpacity onPress={() => setSearchQuery('')}>
-                        <IconSymbol name="xmark.circle.fill" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
-                    </TouchableOpacity>
-                )}
+                <View className="w-6 items-center justify-center">
+                    {inputText.length > 0 && (
+                        <TouchableOpacity onPress={() => {
+                            setInputText('');
+                            searchInputRef.current?.clear();
+                        }}>
+                            <IconSymbol name="xmark.circle.fill" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
+                        </TouchableOpacity>
+                    )}
+                </View>
             </View>
             <TouchableOpacity 
                 activeOpacity={0.7}

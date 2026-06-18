@@ -263,7 +263,7 @@ export const WorkoutDraftExerciseItem = ({
                                             editable={_isEditing}
                                         />
                                     ) : (
-                                        <Text className={`font-medium ${getTextColorClass(set.weight)}`}>{set.weight !== undefined && set.weight !== null ? set.weight : "-"}</Text>
+                                        <Text className={`border border-transparent rounded px-2 py-1 w-16 text-center font-medium ${getTextColorClass(set.weight)}`}>{set.weight !== undefined && set.weight !== null ? set.weight : "-"}</Text>
                                     )}
                                 </View>
                             )}
@@ -298,7 +298,7 @@ export const WorkoutDraftExerciseItem = ({
                                             const r = set.reps_right !== undefined && set.reps_right !== null ? set.reps_right : (set.reps !== undefined && set.reps !== null ? set.reps : "-");
                                             const displayText = (set.reps_left !== undefined || set.reps_right !== undefined) ? `${l}L/${r}R` : `${set.reps ?? "-"}`;
                                             return (
-                                                <Text className={`font-medium ${getTextColorClass(set.reps_left !== undefined || set.reps_right !== undefined ? 'has-val' : set.reps)}`}>
+                                                <Text className={`border border-transparent rounded px-2 py-1 w-20 text-center font-medium ${getTextColorClass(set.reps_left !== undefined || set.reps_right !== undefined ? 'has-val' : set.reps)}`}>
                                                     {displayText}
                                                 </Text>
                                             );
@@ -315,7 +315,7 @@ export const WorkoutDraftExerciseItem = ({
                                                 editable={_isEditing}
                                             />
                                         ) : (
-                                            <Text className={`font-medium ${getTextColorClass(set.reps)}`}>{set.reps !== undefined && set.reps !== null ? set.reps : "-"}</Text>
+                                            <Text className={`border border-transparent rounded px-2 py-1 w-16 text-center font-medium ${getTextColorClass(set.reps)}`}>{set.reps !== undefined && set.reps !== null ? set.reps : "-"}</Text>
                                         )
                                     )}
                                 </View>
@@ -323,8 +323,8 @@ export const WorkoutDraftExerciseItem = ({
 
                              {showDuration && (
                                 <View className="flex-1 flex-row justify-center">
-                                    <View className={`flex-row items-center justify-center p-1 ${
-                                        _isEditing ? 'bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded w-20 h-8' : ''
+                                    <View className={`flex-row items-center justify-center p-1 rounded w-20 h-8 border ${
+                                        _isEditing ? 'bg-light dark:bg-dark border-black/10 dark:border-white/10' : 'border-transparent'
                                     }`}>
                                         <TouchableOpacity 
                                             onPress={() => {
@@ -367,7 +367,7 @@ export const WorkoutDraftExerciseItem = ({
                                             editable={_isEditing}
                                         />
                                     ) : (
-                                        <Text className={`font-medium ${getTextColorClass(set.distance)}`}>{set.distance !== undefined && set.distance !== null ? set.distance : "-"}</Text>
+                                        <Text className={`border border-transparent rounded px-2 py-1 w-16 text-center font-medium ${getTextColorClass(set.distance)}`}>{set.distance !== undefined && set.distance !== null ? set.distance : "-"}</Text>
                                     )}
                                 </View>
                             )}
@@ -382,8 +382,8 @@ export const WorkoutDraftExerciseItem = ({
                                                 setIsRPEPickerVisible(true);
                                             }
                                         }}
-                                        className={`items-center justify-center p-1 ${
-                                            _isEditing ? 'bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded w-10 h-8' : ''
+                                        className={`items-center justify-center p-1 rounded w-10 h-8 border ${
+                                            _isEditing ? 'bg-light dark:bg-dark border-black/10 dark:border-white/10' : 'border-transparent'
                                         }`}
                                     >
                                         <Text className={`font-semibold ${getTextColorClass(set.rpe)}`}>

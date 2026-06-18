@@ -173,9 +173,9 @@ export default function RoutineDetailsScreen() {
                 title={
                     editMode === 'name' ? (
                         <TextInput 
-                            value={routineDraftName} 
+                            defaultValue={routineDraftName} 
                             onChangeText={setRoutineDraftName} 
-                            className="text-xl font-bold text-light dark:text-dark text-center flex-1"
+                            className="text-[20px] font-bold text-light dark:text-dark text-center flex-1"
                             placeholder="Routine Name"
                             autoFocus
                             placeholderTextColor={theme.textMuted}
