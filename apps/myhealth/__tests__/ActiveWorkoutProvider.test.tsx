@@ -3,6 +3,8 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { ActiveWorkoutProvider, useActiveWorkout, useActiveWorkoutTimer } from '../providers/ActiveWorkoutProvider';
 import { Button, Text, View, Alert } from 'react-native';
 
+const mockReact = React;
+
 // Simple component to consume context for testing
 const TestComponent = () => {
     const { 
@@ -40,12 +42,23 @@ jest.mock('../providers/WorkoutManagerProvider', () => ({
     })
 }));
 
-jest.mock('../hooks/workouts/useActiveWorkoutPersistence', () => ({
-    useActiveWorkoutPersistence: () => ({
-        isLoaded: true,
-        clearPersistence: jest.fn(),
-    })
-}));
+jest.mock('../hooks/workouts/useActiveWorkoutPersistence', () => {
+    return {
+        useActiveWorkoutPersistence: ({ setExercises }: any) => {
+            mockReact.useEffect(() => {
+                setExercises([
+                    { id: '1', name: 'Push Ups', sets: 3, reps: 10, completedSets: 0, completedIndices: [] },
+                    { id: '2', name: 'Squats', sets: 3, reps: 10, completedSets: 0, completedIndices: [] },
+                    { id: '3', name: 'Pull Ups', sets: 3, reps: 10, completedSets: 0, completedIndices: [] },
+                ]);
+            }, [setExercises]);
+            return {
+                isLoaded: true,
+                clearPersistence: jest.fn(),
+            };
+        }
+    };
+});
 
 describe('ActiveWorkoutProvider', () => {
     // Mock Alert

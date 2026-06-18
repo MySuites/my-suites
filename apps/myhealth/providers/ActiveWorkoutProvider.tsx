@@ -311,14 +311,24 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                         }
                         return parseFloat(v.toString());
                     };
+                    const left = target.reps_left !== undefined && target.reps_left !== null && (target.reps_left as any) !== '' ? parseInt(target.reps_left.toString(), 10) : undefined;
+                    const right = target.reps_right !== undefined && target.reps_right !== null && (target.reps_right as any) !== '' ? parseInt(target.reps_right.toString(), 10) : undefined;
+                    
+                    let repsVal = parseVal(target.reps);
+                    if ((repsVal === 0 || repsVal === undefined || repsVal === null) && (left !== undefined || right !== undefined)) {
+                        repsVal = Math.max(left ?? 0, right ?? 0);
+                    }
+
                     logs[idx] = {
                         id: uuid.v4(),
                         weight: parseVal(target.weight),
-                        reps: parseVal(target.reps),
+                        reps: repsVal,
+                        reps_left: left,
+                        reps_right: right,
                         duration: parseVal(target.duration),
                         distance: parseVal(target.distance),
                         rpe: parseVal(target.rpe, true),
-                        bodyweight: target.weight === undefined ? latestBodyWeight : undefined // Simple bodyweight fallback logic if needed
+                        bodyweight: target.weight === undefined ? latestBodyWeight : undefined
                     };
                 }
             });

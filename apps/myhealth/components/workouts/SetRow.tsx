@@ -17,6 +17,7 @@ import * as Haptics from 'expo-haptics';
 import { IconSymbol } from "@mysuite/ui";
 import { DurationTimerPicker } from './DurationTimerPicker';
 import { formatSeconds } from '../../utils/formatting';
+import { isUnilateralExercise } from '../../utils/workout-logic';
 
 import { getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
 
@@ -47,7 +48,7 @@ interface SetRowProps {
     exercise: any;
     onCompleteSet: (input: { weight?: string | number, bodyweight?: string | number, reps?: string, duration?: string, distance?: string, rpe?: string }) => void;
     onUncompleteSet?: (index: number) => void;
-    onUpdateSetTarget?: (index: number, key: 'weight' | 'reps' | 'duration' | 'distance' | 'rpe', value: string) => void;
+    onUpdateSetTarget?: (index: number, key: 'weight' | 'reps' | 'reps_left' | 'reps_right' | 'duration' | 'distance' | 'rpe', value: string) => void;
     onUpdateLog?: (index: number, key: 'weight' | 'reps' | 'duration' | 'distance' | 'rpe', value: string) => void;
     onDeleteSet: (index: number) => void;
     onPressRPE?: (index: number, currentVal: string) => void;
@@ -66,7 +67,9 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
 
     const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(exercise.properties, exercise.id);
 
-    const getValue = (field: 'weight' | 'reps' | 'duration' | 'distance' | 'rpe') => {
+    const isUnilateral = isUnilateralExercise(exercise.name);
+
+    const getValue = (field: 'weight' | 'reps' | 'reps_left' | 'reps_right' | 'duration' | 'distance' | 'rpe') => {
         let val = exercise.setTargets?.[index]?.[field];
         
         // Fallback for legacy data where reps might hold duration/distance
@@ -113,7 +116,13 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
         }
 
         if (showReps) {
-            parts.push(formatValue(prev.reps));
+            if (isUnilateral && (prev.reps_left !== undefined || prev.reps_right !== undefined)) {
+                const l = prev.reps_left ?? prev.reps ?? "0";
+                const r = prev.reps_right ?? prev.reps ?? "0";
+                parts.push(`${l}L/${r}R`);
+            } else {
+                parts.push(formatValue(prev.reps));
+            }
         }
         if (showDuration) {
             parts.push(prev.duration ? formatSeconds(parseInt(prev.duration) || 0) : "00:00");
@@ -126,7 +135,6 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
         if (showRPE && prev.rpe) {
             display += ` @ ${prev.rpe}`;
         }
-        console.log(`Exercise: ${exercise.name}, showWeight: ${showWeight}, showReps: ${showReps}, parts:`, parts);
         return display.length > 0 ? display : "-";
     };
 
@@ -226,16 +234,42 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                       />
                   )}
                   {showReps && (
-                      <TextInput 
-                          className={`w-[52px] bg-transparent text-center text-sm font-bold mx-0.5 p-0 -mt-[6px] ${getTextColor(getValue('reps'))}`}
-                          value={getValue('reps')}
-                          onChangeText={(t: string) => handleNumericChange(t, getValue('reps'), (v) => onUpdateSetTarget?.(index, 'reps', v))}
-                          keyboardType="numeric" 
-                          placeholder="-"
-                          placeholderTextColor={theme.placeholder || '#888'}
-                          textAlignVertical="center"
-                          selectTextOnFocus
-                      />
+                      isUnilateral ? (
+                          <View className="flex-row items-center w-[54px] mx-0.5 gap-0.5 -mt-[6px]">
+                              <TextInput 
+                                  className={`flex-1 bg-transparent text-center text-xs font-bold p-0 ${getTextColor(getValue('reps_left'))}`}
+                                  value={getValue('reps_left')}
+                                  onChangeText={(t: string) => handleNumericChange(t, getValue('reps_left'), (v) => onUpdateSetTarget?.(index, 'reps_left', v))}
+                                  keyboardType="numeric" 
+                                  placeholder="L"
+                                  placeholderTextColor={theme.placeholder || '#888'}
+                                  textAlignVertical="center"
+                                  selectTextOnFocus
+                              />
+                              <Text className="text-light-muted dark:text-dark-muted text-[10px] font-bold">/</Text>
+                              <TextInput 
+                                  className={`flex-1 bg-transparent text-center text-xs font-bold p-0 ${getTextColor(getValue('reps_right'))}`}
+                                  value={getValue('reps_right')}
+                                  onChangeText={(t: string) => handleNumericChange(t, getValue('reps_right'), (v) => onUpdateSetTarget?.(index, 'reps_right', v))}
+                                  keyboardType="numeric" 
+                                  placeholder="R"
+                                  placeholderTextColor={theme.placeholder || '#888'}
+                                  textAlignVertical="center"
+                                  selectTextOnFocus
+                              />
+                          </View>
+                      ) : (
+                          <TextInput 
+                              className={`w-[52px] bg-transparent text-center text-sm font-bold mx-0.5 p-0 -mt-[6px] ${getTextColor(getValue('reps'))}`}
+                              value={getValue('reps')}
+                              onChangeText={(t: string) => handleNumericChange(t, getValue('reps'), (v) => onUpdateSetTarget?.(index, 'reps', v))}
+                              keyboardType="numeric" 
+                              placeholder="-"
+                              placeholderTextColor={theme.placeholder || '#888'}
+                              textAlignVertical="center"
+                              selectTextOnFocus
+                          />
+                      )
                   )}
                   {showDuration && (
                       <View className="w-[52px] flex-row items-center justify-center mx-0.5 h-11">

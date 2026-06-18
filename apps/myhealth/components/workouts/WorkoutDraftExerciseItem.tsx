@@ -6,6 +6,7 @@ import { formatRestTime, formatSeconds } from '../../utils/formatting';
 import { RPEPicker } from './RPEPicker';
 import { RestTimerPicker } from './RestTimerPicker';
 import { DurationTimerPicker } from './DurationTimerPicker';
+import { isUnilateralExercise } from '../../utils/workout-logic';
 
 export interface WorkoutDraftExerciseItemProps {
     item: any;
@@ -14,7 +15,7 @@ export interface WorkoutDraftExerciseItemProps {
     onToggleExpand: () => void;
     onMove: (dir: -1 | 1) => void;
     onRemove: () => void;
-    onUpdateSet: (setIndex: number, field: 'reps' | 'weight' | 'duration' | 'distance' | 'rpe', value: string) => void;
+    onUpdateSet: (setIndex: number, field: 'reps' | 'reps_left' | 'reps_right' | 'weight' | 'duration' | 'distance' | 'rpe', value: string) => void;
     onAddSet: () => void;
     onRemoveSet: (setIndex: number) => void;
     latestBodyWeight?: number | null;
@@ -100,6 +101,7 @@ export const WorkoutDraftExerciseItem = ({
     };
 
     const { showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(item.properties, item.id);
+    const isUnilateral = isUnilateralExercise(item.name);
     
     // Ensure duration falls back to reps if needed (legacy data fix for display)
     const rawTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || undefined, weight: undefined }));
@@ -119,6 +121,8 @@ export const WorkoutDraftExerciseItem = ({
             ...t,
             weight: t.weight,
             reps: t.reps,
+            reps_left: t.reps_left,
+            reps_right: t.reps_right,
             duration,
             distance,
             rpe: t.rpe
@@ -234,7 +238,7 @@ export const WorkoutDraftExerciseItem = ({
                     <View className="flex-row mb-2">
                         <Text className="w-12 text-xs text-gray-500 font-semibold text-center">Set</Text>
                         {showWeight && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Lbs</Text>}
-                        {showReps && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Reps</Text>}
+                        {showReps && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">{isUnilateral ? "L / R" : "Reps"}</Text>}
                         {showDuration && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Time</Text>}
                         {showDistance && <Text className="flex-1 text-xs text-gray-500 font-semibold text-center">Dist</Text>}
                         {showRPE && <Text className="w-12 text-xs text-gray-500 font-semibold text-center">RPE</Text>}
@@ -266,18 +270,53 @@ export const WorkoutDraftExerciseItem = ({
 
                              {showReps && (
                                 <View className="flex-1 flex-row justify-center">
-                                    {_isEditing ? (
-                                        <TextInput 
-                                            value={set.reps !== undefined && set.reps !== null ? String(set.reps) : ''} 
-                                            keyboardType="numeric"
-                                            onChangeText={(v) => handleNumericChange(v, set.reps, (newVal) => onUpdateSet(setIdx, 'reps', newVal))}
-                                            className={`bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center ${getTextColorClass(set.reps)}`}
-                                            placeholder="-"
-                                            selectTextOnFocus
-                                            editable={_isEditing}
-                                        />
+                                    {isUnilateral ? (
+                                        _isEditing ? (
+                                            <View className="flex-row items-center w-20 gap-0.5">
+                                                <TextInput 
+                                                    value={set.reps_left !== undefined && set.reps_left !== null ? String(set.reps_left) : ''} 
+                                                    keyboardType="numeric"
+                                                    onChangeText={(v) => handleNumericChange(v, set.reps_left, (newVal) => onUpdateSet(setIdx, 'reps_left', newVal))}
+                                                    className={`flex-1 bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded p-1 text-center text-xs ${getTextColorClass(set.reps_left)}`}
+                                                    placeholder="L"
+                                                    selectTextOnFocus
+                                                    editable={_isEditing}
+                                                />
+                                                <Text className="text-light-muted dark:text-dark-muted text-[10px] font-bold">/</Text>
+                                                <TextInput 
+                                                    value={set.reps_right !== undefined && set.reps_right !== null ? String(set.reps_right) : ''} 
+                                                    keyboardType="numeric"
+                                                    onChangeText={(v) => handleNumericChange(v, set.reps_right, (newVal) => onUpdateSet(setIdx, 'reps_right', newVal))}
+                                                    className={`flex-1 bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded p-1 text-center text-xs ${getTextColorClass(set.reps_right)}`}
+                                                    placeholder="R"
+                                                    selectTextOnFocus
+                                                    editable={_isEditing}
+                                                />
+                                            </View>
+                                        ) : (() => {
+                                            const l = set.reps_left !== undefined && set.reps_left !== null ? set.reps_left : (set.reps !== undefined && set.reps !== null ? set.reps : "-");
+                                            const r = set.reps_right !== undefined && set.reps_right !== null ? set.reps_right : (set.reps !== undefined && set.reps !== null ? set.reps : "-");
+                                            const displayText = (set.reps_left !== undefined || set.reps_right !== undefined) ? `${l}L/${r}R` : `${set.reps ?? "-"}`;
+                                            return (
+                                                <Text className={`font-medium ${getTextColorClass(set.reps_left !== undefined || set.reps_right !== undefined ? 'has-val' : set.reps)}`}>
+                                                    {displayText}
+                                                </Text>
+                                            );
+                                        })()
                                     ) : (
-                                        <Text className={`font-medium ${getTextColorClass(set.reps)}`}>{set.reps !== undefined && set.reps !== null ? set.reps : "-"}</Text>
+                                        _isEditing ? (
+                                            <TextInput 
+                                                value={set.reps !== undefined && set.reps !== null ? String(set.reps) : ''} 
+                                                keyboardType="numeric"
+                                                onChangeText={(v) => handleNumericChange(v, set.reps, (newVal) => onUpdateSet(setIdx, 'reps', newVal))}
+                                                className={`bg-light dark:bg-dark border border-black/10 dark:border-white/10 rounded px-2 py-1 w-16 text-center ${getTextColorClass(set.reps)}`}
+                                                placeholder="-"
+                                                selectTextOnFocus
+                                                editable={_isEditing}
+                                            />
+                                        ) : (
+                                            <Text className={`font-medium ${getTextColorClass(set.reps)}`}>{set.reps !== undefined && set.reps !== null ? set.reps : "-"}</Text>
+                                        )
                                     )}
                                 </View>
                             )}

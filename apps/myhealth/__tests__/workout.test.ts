@@ -3,6 +3,7 @@ import {
     createExercise,
     Exercise,
     reorderSequence,
+    isUnilateralExercise,
 } from "../utils/workout-logic";
 
 describe("Workout Logic", () => {
@@ -81,6 +82,23 @@ describe("Workout Logic", () => {
         it("should do nothing if moving out of bounds", () => {
             const result = reorderSequence(sequence, 0, -1);
             expect(result).toEqual(["A", "B", "C"]);
+        });
+    });
+
+    describe("isUnilateralExercise", () => {
+        it("should detect single arm/leg and unilateral keywords", () => {
+            expect(isUnilateralExercise("Single Arm Bicep Curl")).toBe(true);
+            expect(isUnilateralExercise("One-Arm Dumbbell Row")).toBe(true);
+            expect(isUnilateralExercise("Dumbbell Row")).toBe(true);
+            expect(isUnilateralExercise("Bulgarian Split Squat")).toBe(true);
+            expect(isUnilateralExercise("Weighted Lunges")).toBe(true);
+        });
+
+        it("should return false for bilateral exercises", () => {
+            expect(isUnilateralExercise("Bench Press")).toBe(false);
+            expect(isUnilateralExercise("Squats")).toBe(false);
+            expect(isUnilateralExercise("Push Ups")).toBe(false);
+            expect(isUnilateralExercise("Bicep Curl")).toBe(false);
         });
     });
 });

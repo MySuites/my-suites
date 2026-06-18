@@ -71,6 +71,8 @@ export default function CreateWorkoutScreen() {
                     setTargets: (ex.logs || []).map((s: any) => ({
                         id: s.id,
                         reps: s.reps,
+                        reps_left: s.reps_left,
+                        reps_right: s.reps_right,
                         weight: s.weight,
                         duration: s.duration,
                         distance: s.distance,
@@ -175,6 +177,8 @@ export default function CreateWorkoutScreen() {
                         setTargets: (ex.sets || []).map((s: any) => ({
                             id: s.details?.id,
                             reps: s.details?.reps,
+                            reps_left: s.details?.reps_left,
+                            reps_right: s.details?.reps_right,
                             weight: s.details?.weight,
                             duration: s.details?.duration,
                             distance: s.details?.distance,

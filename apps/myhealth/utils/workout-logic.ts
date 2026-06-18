@@ -104,3 +104,18 @@ export function generateSummary(workoutSeconds: number, exercises: Exercise[]) {
         2,
     );
 }
+
+export function isUnilateralExercise(name: string): boolean {
+    if (!name) return false;
+    const lower = name.toLowerCase();
+    return lower.includes('single') || 
+           lower.includes('one-arm') || 
+           lower.includes('one arm') || 
+           lower.includes('one-leg') || 
+           lower.includes('one leg') || 
+           lower.includes('unilateral') || 
+           lower.includes('dumbbell row') || 
+           lower.includes('lunges') || 
+           lower.includes('lunge') || 
+           lower.includes('split squat');
+}

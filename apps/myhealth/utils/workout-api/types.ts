@@ -3,6 +3,8 @@ export type SetLog = {
     weight?: number; // lbs
     bodyweight?: number; // lbs
     reps?: number;
+    reps_left?: number;
+    reps_right?: number;
     duration?: number; // seconds
     distance?: number; // meters or user unit
     rpe?: number;
@@ -19,8 +21,10 @@ export type Exercise = {
     previousLog?: SetLog[];
     properties?: string[]; // E.g. ["Weighted", "Reps", "Bodyweight"]
     setTargets?: {
-        reps: number;
-        weight: number;
+        reps?: number;
+        reps_left?: number;
+        reps_right?: number;
+        weight?: number;
         duration?: number;
         distance?: number;
         rpe?: number;

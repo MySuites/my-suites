@@ -47,7 +47,7 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
     function updateSetTarget(
         exerciseIndex: number,
         setIndex: number,
-        field: "reps" | "weight" | "duration" | "distance" | "rpe",
+        field: "reps" | "reps_left" | "reps_right" | "weight" | "duration" | "distance" | "rpe",
         value: string,
     ) {
         setWorkoutDraftExercises((prev) => {
@@ -70,6 +70,11 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
             // Sync top level properties for the first set (legacy behavior/UI summary)
             if (setIndex === 0) {
                 if (field === "reps") ex.reps = (value === '' || isNaN(numValue as any)) ? undefined : numValue;
+                if (field === "reps_left" || field === "reps_right") {
+                    const leftVal = field === "reps_left" ? numValue : newTargets[setIndex].reps_left;
+                    const rightVal = field === "reps_right" ? numValue : newTargets[setIndex].reps_right;
+                    ex.reps = Math.max(leftVal ?? 0, rightVal ?? 0);
+                }
             }
             newArr[exerciseIndex] = ex;
             return newArr;

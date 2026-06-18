@@ -52,6 +52,8 @@ export const initDatabase = async () => {
                 exercise_name TEXT,
                 weight REAL,
                 reps INTEGER,
+                reps_left INTEGER,
+                reps_right INTEGER,
                 distance REAL,
                 duration INTEGER,
                 bodyweight BOOLEAN,
@@ -180,6 +182,8 @@ export const initDatabase = async () => {
     await safeAddColumn("exercises", "next_variations", "TEXT"); // JSON string array of IDs
 
     await safeAddColumn("set_logs", "rpe", "REAL");
+    await safeAddColumn("set_logs", "reps_left", "INTEGER");
+    await safeAddColumn("set_logs", "reps_right", "INTEGER");
 
     await safeRenameColumn("workout_logs", "workout_time", "workout_date");
 

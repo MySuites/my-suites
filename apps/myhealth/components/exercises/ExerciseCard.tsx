@@ -6,12 +6,13 @@ import { RaisedCard, IconSymbol } from '@mysuite/ui';
 import { SetRow, getExerciseFields } from '../workouts/SetRow';
 import { formatRestTime } from '../../utils/formatting';
 import { RPEPicker } from '../workouts/RPEPicker';
+import { isUnilateralExercise } from '../../utils/workout-logic';
 
 interface ExerciseCardProps {
     exercise: Exercise;
     isCurrent: boolean;
     onCompleteSet: (setIndex: number) => void;
-    onUpdateSetTarget?: (index: number, key: 'weight' | 'reps' | 'duration' | 'distance' | 'rpe', value: string) => void;
+    onUpdateSetTarget?: (index: number, key: 'weight' | 'reps' | 'reps_left' | 'reps_right' | 'duration' | 'distance' | 'rpe', value: string) => void;
     onAddSet: () => void;
     onDeleteSet: (index: number) => void;
     onRemoveExercise?: () => void;
@@ -40,7 +41,8 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
     const completedSets = exercise.completedSets || 0;
     const isFinished = completedSets >= exercise.sets;
 
-    const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(exercise.properties, exercise.id);
+    const { showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(exercise.properties, exercise.id);
+    const isUnilateral = isUnilateralExercise(exercise.name);
 
     const handleOpenMenu = () => {
         menuButtonRef.current?.measure((_x: number, _y: number, _width: number, height: number, _pageX: number, pageY: number) => {
@@ -152,7 +154,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                     <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted flex-1">PREVIOUS</Text>
 
                     {showWeight && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">LBS</Text>}
-                    {showReps && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">REPS</Text>}
+                    {showReps && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">{isUnilateral ? 'L / R' : 'REPS'}</Text>}
                     {showDuration && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">TIME</Text>}
                     {showDistance && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">DIST</Text>}
                     {showRPE && <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[40px] ml-2 mr-0.5 text-light-muted dark:text-dark-muted">RPE</Text>}
