@@ -128,7 +128,7 @@ export default function ExercisesScreen({
   };
 
   const sections = React.useMemo(() => {
-    const normalizeSearch = (text: string) => text.toLowerCase().replace(/[-_]/g, ' ');
+    const normalizeSearch = (text: string) => text.toLowerCase().replace(/[-_\s]+/g, ' ').trim();
     const normalizedQuery = normalizeSearch(searchQuery);
 
     let filtered = processedExercises.filter(ex => normalizeSearch(ex.name).includes(normalizedQuery));

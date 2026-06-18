@@ -20,11 +20,18 @@ jest.mock('../../providers/ActiveWorkoutProvider', () => ({
     useActiveWorkout: jest.fn()
 }));
 
-jest.mock('expo-router', () => ({
-    useRouter: jest.fn(),
-    useLocalSearchParams: jest.fn(),
-    usePathname: jest.fn()
-}));
+jest.mock('expo-router', () => {
+    const React = require('react');
+    const mockStack = ({ children }: any) => <>{children}</>;
+    mockStack.Screen = () => null;
+    return {
+        useRouter: jest.fn(),
+        useLocalSearchParams: jest.fn(),
+        usePathname: jest.fn(),
+        useFocusEffect: (callback: any) => React.useEffect(callback, []),
+        Stack: mockStack
+    };
+});
 
 jest.mock('@mysuite/auth', () => ({
     useAuth: () => ({ user: { id: 'test-user' } })
@@ -110,6 +117,30 @@ describe('Exercise Management Integration', () => {
             
             expect(getByText('Bench Press')).toBeTruthy();
             expect(queryByText('Squat')).toBeNull();
+        });
+
+        it('normalizes spaces, dashes, and underscores in search filter', async () => {
+            (fetchExercises as jest.Mock).mockResolvedValue({ data: [
+                { id: '3', name: 'Push-up', category: 'Chest', properties: ['Bodyweight', 'Reps'] }
+            ] });
+
+            const { getByText, getByPlaceholderText } = render(<ExercisesScreen />);
+            
+            await waitFor(() => {
+                expect(getByText('Push-up')).toBeTruthy();
+            });
+
+            // Search by "push up"
+            fireEvent.changeText(getByPlaceholderText('Search exercises...'), 'push up');
+            expect(getByText('Push-up')).toBeTruthy();
+
+            // Search by "push_up"
+            fireEvent.changeText(getByPlaceholderText('Search exercises...'), 'push_up');
+            expect(getByText('Push-up')).toBeTruthy();
+
+            // Search by "push-up"
+            fireEvent.changeText(getByPlaceholderText('Search exercises...'), 'push-up');
+            expect(getByText('Push-up')).toBeTruthy();
         });
 
         it('navigates to create when pencil clicked', async () => {
