@@ -77,3 +77,23 @@ jest.mock("@mysuite/ui", () => ({
     HollowedCard: ({ children }: any) => children || null,
     ThemeToggle: () => null,
 }));
+
+import 'react-native-gesture-handler/jestSetup';
+
+jest.mock('react-native-safe-area-context', () => {
+    const inset = { top: 0, right: 0, bottom: 0, left: 0 };
+    const SafeAreaProvider = ({ children }: any) => children;
+    SafeAreaProvider.displayName = 'SafeAreaProvider';
+    const SafeAreaView = ({ children }: any) => children;
+    SafeAreaView.displayName = 'SafeAreaView';
+    return {
+        SafeAreaProvider,
+        SafeAreaView,
+        useSafeAreaInsets: () => inset,
+        useSafeAreaFrame: () => ({ x: 0, y: 0, width: 390, height: 844 }),
+        initialWindowMetrics: {
+            frame: { x: 0, y: 0, width: 0, height: 0 },
+            insets: inset,
+        },
+    };
+});

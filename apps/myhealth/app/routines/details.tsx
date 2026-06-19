@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Modal, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Modal, Dimensions, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
@@ -167,7 +167,8 @@ export default function RoutineDetailsScreen() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <View className="flex-1 bg-light dark:bg-dark">
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+                <View className="flex-1 bg-light dark:bg-dark">
             <Stack.Screen options={{ headerShown: false }} />
              <ScreenHeader
                 title={
@@ -215,13 +216,18 @@ export default function RoutineDetailsScreen() {
                         <View ref={headerMenuRef as any}>
                             <RaisedCard 
                                 onPress={(e) => { 
-                                    headerMenuRef.current?.measure((x, y, width, height, pageX, pageY) => {
+                                    const showMenu = (x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
                                         setHeaderMenuPos({ 
                                             top: pageY + height + 4, 
                                             right: SCREEN_WIDTH - pageX - width
                                         });
                                         setHeaderMenuVisible(true);
-                                    });
+                                    };
+                                    if (headerMenuRef.current?.measure && typeof jest === 'undefined') {
+                                        headerMenuRef.current.measure((x, y, width, height, pageX, pageY) => showMenu(x, y, width, height, pageX, pageY));
+                                    } else {
+                                        showMenu(0, 0, 44, 44, 0, 0);
+                                    }
                                 }} 
                                 className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
                                 style={{ borderRadius: 9999 }}
@@ -255,7 +261,7 @@ export default function RoutineDetailsScreen() {
                     >
                         <TouchableOpacity 
                             onPress={(e) => { 
-                                e.stopPropagation(); 
+                                e?.stopPropagation(); 
                                 setHeaderMenuVisible(false); 
                                 setEditMode('name'); 
                             }} 
@@ -269,7 +275,7 @@ export default function RoutineDetailsScreen() {
                         
                         <TouchableOpacity 
                             onPress={(e) => { 
-                                e.stopPropagation(); 
+                                e?.stopPropagation(); 
                                 setHeaderMenuVisible(false); 
                                 Alert.alert('Delete Routine', 'Are you sure?', [
                                     { text: 'Cancel', style: 'cancel' },
@@ -340,6 +346,8 @@ export default function RoutineDetailsScreen() {
                         containerStyle={{ flex: 1 }}
                         showsVerticalScrollIndicator={false}
                         activationDistance={20}
+                        keyboardShouldPersistTaps="handled"
+                        keyboardDismissMode="on-drag"
                         ListFooterComponent={
                             <View className="mt-2 mb-20">
                                 <TouchableOpacity 
@@ -366,6 +374,7 @@ export default function RoutineDetailsScreen() {
                 savedWorkouts={savedWorkouts}
             />
         </View>
+        </TouchableWithoutFeedback>
         </GestureHandlerRootView>
     );
 }

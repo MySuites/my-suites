@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextInput, Alert, KeyboardAvoidingView, Platform, View, Text, ActivityIndicator } from 'react-native';
+import { TextInput, Alert, KeyboardAvoidingView, Platform, View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { SelectionModal } from '../../components/ui/SelectionModal';
@@ -121,63 +121,66 @@ export default function CreateExerciseScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1 p-6"
       >
-        <View className="mt-28 mb-6">
-            <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Name</Text>
-            <TextInput 
-                className="bg-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-[16px] border border-transparent dark:border-highlight-dark"
-                placeholder="e.g. Bench Press" 
-                placeholderTextColor={theme.textMuted || '#888'}
-                onChangeText={setName}
-            />
-        </View>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View className="flex-1">
+            <View className="mt-28 mb-6">
+                <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Name</Text>
+                <TextInput 
+                    className="bg-lighter dark:bg-dark-lighter text-light dark:text-dark p-4 rounded-xl text-[16px] border border-transparent dark:border-highlight-dark"
+                    placeholder="e.g. Bench Press" 
+                    placeholderTextColor={theme.textMuted || '#888'}
+                    onChangeText={setName}
+                />
+            </View>
 
-        <View className="mb-6">
-            <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Properties</Text>
-            <RaisedCard 
-                onPress={() => setShowTypeModal(true)}
-                className="p-4 rounded-xl bg-lighter dark:bg-dark-lighter"
-            >
-                <View className="flex-row items-center justify-between">
-                    <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">
-                        {properties.length > 0 
-                            ? properties.map(p => p.label).join(', ') 
-                            : 'Select Properties'}
-                    </Text>
-                    <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
-                </View>
-            </RaisedCard>
-        </View>
+            <View className="mb-6">
+                <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Properties</Text>
+                <RaisedCard 
+                    onPress={() => setShowTypeModal(true)}
+                    className="p-4 rounded-xl bg-lighter dark:bg-dark-lighter"
+                >
+                    <View className="flex-row items-center justify-between">
+                        <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">
+                            {properties.length > 0 
+                                ? properties.map(p => p.label).join(', ') 
+                                : 'Select Properties'}
+                        </Text>
+                        <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
+                    </View>
+                </RaisedCard>
+            </View>
 
-        <View className="mb-6">
-            <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Primary Muscle Group</Text>
-            <RaisedCard 
-                onPress={() => setShowPrimaryModal(true)}
-                className="p-4 rounded-xl bg-lighter dark:bg-dark-lighter"
-            >
-                <View className="flex-row items-center justify-between">
-                    <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">{primaryMuscle ? primaryMuscle.name : 'Select Primary Muscle'}</Text>
-                    <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
-                </View>
-            </RaisedCard>
-        </View>
+            <View className="mb-6">
+                <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Primary Muscle Group</Text>
+                <RaisedCard 
+                    onPress={() => setShowPrimaryModal(true)}
+                    className="p-4 rounded-xl bg-lighter dark:bg-dark-lighter"
+                >
+                    <View className="flex-row items-center justify-between">
+                        <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">{primaryMuscle ? primaryMuscle.name : 'Select Primary Muscle'}</Text>
+                        <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
+                    </View>
+                </RaisedCard>
+            </View>
 
-        <View className="mb-6">
-            <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Secondary Muscle Groups</Text>
-            <RaisedCard 
-                onPress={() => setShowSecondaryModal(true)}
-                className="p-4 rounded-xl bg-lighter dark:bg-dark-lighter"
-            >
-                <View className="flex-row items-center justify-between">
-                    <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">
-                        {secondaryMuscles.length > 0 
-                            ? secondaryMuscles.map(m => m.name).join(', ') 
-                            : 'Select Secondary Muscles (Optional)'}
-                    </Text>
-                    <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
-                </View>
-            </RaisedCard>
-        </View>
-
+            <View className="mb-6">
+                <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Secondary Muscle Groups</Text>
+                <RaisedCard 
+                    onPress={() => setShowSecondaryModal(true)}
+                    className="p-4 rounded-xl bg-lighter dark:bg-dark-lighter"
+                >
+                    <View className="flex-row items-center justify-between">
+                        <Text numberOfLines={1} className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">
+                            {secondaryMuscles.length > 0 
+                                ? secondaryMuscles.map(m => m.name).join(', ') 
+                                : 'Select Secondary Muscles (Optional)'}
+                        </Text>
+                        <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
+                    </View>
+                </RaisedCard>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
 
       {/* Modals */}

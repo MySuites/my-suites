@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Modal, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Modal, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Keyboard, Pressable } from "react-native";
 import { useUITheme } from "@mysuite/ui";
 
 interface WorkoutNamePromptProps {
@@ -31,7 +31,7 @@ export function WorkoutNamePrompt({
             transparent={true}
             onRequestClose={onClose}
         >
-            <View className="flex-1 justify-center items-center bg-black/50 p-6">
+            <Pressable onPress={Keyboard.dismiss} className="flex-1 justify-center items-center bg-black/50 p-6">
                 <KeyboardAvoidingView
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
                     className="w-full max-w-[320px]"
@@ -70,7 +70,7 @@ export function WorkoutNamePrompt({
                         </View>
                     </View>
                 </KeyboardAvoidingView>
-            </View>
+            </Pressable>
         </Modal>
     );
 }

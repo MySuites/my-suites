@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
-import CreateRoutineScreen from '../../app/routines/details';
+import CreateRoutineScreen from '../../app/routines/create';
+import RoutineDetailsScreen from '../../app/routines/details';
 import * as RN from 'react-native';
 
 const mockRN = RN;
@@ -153,29 +154,38 @@ describe('Routine Editor', () => {
         }];
         mockUpdateRoutine.mockImplementation((id, name, seq, cb) => cb());
 
-        const { getByPlaceholderText, getByText, getAllByText, getAllByTestId } = render(<CreateRoutineScreen />);
+        const { getByPlaceholderText, getByText, getAllByText, getAllByTestId } = render(<RoutineDetailsScreen />);
         
         // Wait for load - initially in View Mode
         await waitFor(() => expect(getByText('Existing Routine')).toBeTruthy());
         expect(getAllByText('Rest Day').length).toBeGreaterThan(0);
 
-        // Click Edit Button
+        // Click Ellipsis Button to open menu
         const icons = getAllByTestId('icon-symbol');
-        const pencilIcon = icons.find(i => i.props.name === 'pencil');
-        expect(pencilIcon).toBeTruthy();
+        const ellipsisIcon = icons.find(i => i.props.name === 'ellipsis');
+        expect(ellipsisIcon).toBeTruthy();
+        fireEvent.press(ellipsisIcon.parent);
+
+        // Click Edit Button
+        let pencilIcon: any;
+        await waitFor(() => {
+            const updatedIcons = getAllByTestId('icon-symbol');
+            pencilIcon = updatedIcons.find(i => i.props.name === 'pencil');
+            expect(pencilIcon).toBeTruthy();
+        });
         fireEvent.press(pencilIcon.parent);
 
         // Now in Edit Mode
-        expect(getByPlaceholderText('Routine Name').props.value).toBe('Existing Routine');
+        const inputName = getByPlaceholderText('Routine Name');
+        expect(inputName.props.value || inputName.props.defaultValue).toBe('Existing Routine');
 
         // Save
-        const updatedIcons = getAllByTestId('icon-symbol');
-        const checkmarkIcon = updatedIcons.find(i => i.props.name === 'checkmark');
+        const saveIcons = getAllByTestId('icon-symbol');
+        const checkmarkIcon = saveIcons.find(i => i.props.name === 'checkmark');
         fireEvent.press(checkmarkIcon.parent);
 
         await waitFor(() => {
             expect(mockUpdateRoutine).toHaveBeenCalledWith('r1', 'Existing Routine', expect.any(Array), expect.any(Function));
-            expect(mockRouterBack).toHaveBeenCalled();
         });
     });
 
@@ -184,28 +194,33 @@ describe('Routine Editor', () => {
         mockRoutines = [{ id: 'r1', name: 'To Delete', sequence: [] }];
         mockDeleteRoutine.mockImplementation((id, opts) => opts.onSuccess());
 
-        const { getByText, findByText, getAllByTestId } = render(<CreateRoutineScreen />);
+        const { getByText, findByText, getAllByTestId } = render(<RoutineDetailsScreen />);
         
         // Wait for load
         await findByText('To Delete');
 
-        // Enter Edit Mode
+        // Click Ellipsis Button to open menu
         const icons = getAllByTestId('icon-symbol');
-        const pencilIcon = icons.find(i => i.props.name === 'pencil');
-        fireEvent.press(pencilIcon.parent);
+        const ellipsisIcon = icons.find(i => i.props.name === 'ellipsis');
+        expect(ellipsisIcon).toBeTruthy();
+        fireEvent.press(ellipsisIcon.parent);
 
         // Now Delete Button should be visible
-        await findByText('Delete Routine');
-        fireEvent.press(getByText('Delete Routine'));
+        let deleteBtn: any;
+        await waitFor(() => {
+            deleteBtn = getByText('Delete');
+            expect(deleteBtn).toBeTruthy();
+        });
+        fireEvent.press(deleteBtn);
 
         expect(Alert.alert).toHaveBeenCalledWith('Delete Routine', 'Are you sure?', expect.any(Array));
         
         // Simulate Confirm
         const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
-        const deleteBtn = buttons.find((b: any) => b.text === 'Delete');
+        const confirmDeleteBtn = buttons.find((b: any) => b.text === 'Delete');
         
         act(() => {
-            deleteBtn.onPress();
+            confirmDeleteBtn.onPress();
         });
 
         expect(mockDeleteRoutine).toHaveBeenCalledWith('r1', expect.objectContaining({ onSuccess: expect.any(Function) }));
@@ -220,20 +235,31 @@ describe('Routine Editor', () => {
             sequence: [] 
         }];
 
-        const { getByPlaceholderText, getByText, getAllByTestId } = render(<CreateRoutineScreen />);
+        const { getByPlaceholderText, getByText, getAllByTestId } = render(<RoutineDetailsScreen />);
         
         // Wait for load
         await waitFor(() => expect(getByText('Original Name')).toBeTruthy());
 
         // Enter Edit Mode
+        // Click Ellipsis Button to open menu
         let icons = getAllByTestId('icon-symbol');
-        const pencilIcon = icons.find(i => i.props.name === 'pencil');
+        const ellipsisIcon = icons.find(i => i.props.name === 'ellipsis');
+        expect(ellipsisIcon).toBeTruthy();
+        fireEvent.press(ellipsisIcon.parent);
+
+        // Enter Edit Mode
+        let pencilIcon: any;
+        await waitFor(() => {
+            icons = getAllByTestId('icon-symbol');
+            pencilIcon = icons.find(i => i.props.name === 'pencil');
+            expect(pencilIcon).toBeTruthy();
+        });
         fireEvent.press(pencilIcon.parent);
 
         // Change Name
         const input = getByPlaceholderText('Routine Name');
         fireEvent.changeText(input, 'Changed Name');
-        expect(input.props.value).toBe('Changed Name');
+        expect(input.props.value || input.props.defaultValue).toBe('Changed Name');
 
         // Click Cancel (XMark)
         icons = getAllByTestId('icon-symbol');

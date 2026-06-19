@@ -81,6 +81,7 @@ describe('Exercise Management Integration', () => {
     const mockRouter = { push: jest.fn(), back: jest.fn() };
     
     beforeEach(() => {
+        jest.useRealTimers();
         jest.clearAllMocks();
         (useRouter as jest.Mock).mockReturnValue(mockRouter);
         (useLocalSearchParams as jest.Mock).mockReturnValue({});
@@ -115,8 +116,10 @@ describe('Exercise Management Integration', () => {
 
             fireEvent.changeText(getByPlaceholderText('Search exercises...'), 'Bench');
             
-            expect(getByText('Bench Press')).toBeTruthy();
-            expect(queryByText('Squat')).toBeNull();
+            await waitFor(() => {
+                expect(getByText('Bench Press')).toBeTruthy();
+                expect(queryByText('Squat')).toBeNull();
+            });
         });
 
         it('normalizes spaces, dashes, and underscores in search filter', async () => {

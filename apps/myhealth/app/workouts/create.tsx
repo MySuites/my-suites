@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, ActivityIndicator, Alert, FlatList } from 'react-native';
+import { View, Text, TextInput, ActivityIndicator, Alert, FlatList, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useRouter, Stack } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
@@ -70,7 +70,8 @@ export default function CreateWorkoutScreen() {
     }
 
     return (
-        <View className="flex-1 bg-light dark:bg-dark">
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <View className="flex-1 bg-light dark:bg-dark">
             <Stack.Screen options={{ headerShown: false }} />
             <ScreenHeader
                 title="Create Workout"
@@ -97,6 +98,8 @@ export default function CreateWorkoutScreen() {
                 className="flex-1 mt-28"
                 contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
                 showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
                 ListHeaderComponent={
                     <View>
                         <View className="bg-lighter dark:bg-dark-lighter h-16 px-4 rounded-xl border border-transparent dark:border-highlight-dark mb-6 justify-center">
@@ -159,5 +162,6 @@ export default function CreateWorkoutScreen() {
                 </Animated.View>
             )}
         </View>
+        </TouchableWithoutFeedback>
     );
 }

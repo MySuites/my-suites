@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { SectionList, TouchableOpacity, View, TextInput, Text, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'; 
+import { SectionList, TouchableOpacity, View, TextInput, Text, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native'; 
 import { useRouter, useFocusEffect } from 'expo-router';
 
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, useToast, IconSymbol } from '@mysuite/ui';
@@ -184,7 +184,8 @@ export default function ExercisesScreen({
   }, [processedExercises, searchQuery, selectedCategories]);
 
   return (
-    <View className="flex-1 bg-light dark:bg-dark">
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View className="flex-1 bg-light dark:bg-dark">
         <ScreenHeader
             title={mode === 'select' ? "Add Exercise" : "Exercises"}
             leftAction={mode === 'select' ? <BackButton onPress={onClose} /> : <BackButton />}
@@ -219,6 +220,8 @@ export default function ExercisesScreen({
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 150 }}
             keyExtractor={(item) => item.id}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             ListHeaderComponent={
                 <View>
                     <View className="h-32" />
@@ -439,5 +442,6 @@ export default function ExercisesScreen({
 
       </KeyboardAvoidingView>
     </View>
+    </TouchableWithoutFeedback>
   );
 }

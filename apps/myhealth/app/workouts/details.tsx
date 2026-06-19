@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Pressable, Modal, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Pressable, Modal, Dimensions, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -310,7 +310,8 @@ export default function CreateWorkoutScreen() {
     }
 
     return (
-        <View className="flex-1 bg-light dark:bg-dark">
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <View className="flex-1 bg-light dark:bg-dark">
             <ScreenHeader
                 title={isEditing ? (
                     <TextInput 
@@ -672,6 +673,7 @@ export default function CreateWorkoutScreen() {
                 );
             })()}
         </View>
+        </TouchableWithoutFeedback>
     );
 }
 

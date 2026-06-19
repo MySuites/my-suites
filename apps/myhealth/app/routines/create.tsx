@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useRouter, Stack } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
@@ -92,7 +92,8 @@ export default function CreateRoutineScreen() {
     };
 
     return (
-        <View className="flex-1 bg-light dark:bg-dark">
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <View className="flex-1 bg-light dark:bg-dark">
             <Stack.Screen options={{ headerShown: false }} />
              <ScreenHeader
                 title="Create Routine"
@@ -146,6 +147,8 @@ export default function CreateRoutineScreen() {
                         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16, paddingTop: 6 }}
                         containerStyle={{ flex: 1 }}
                         showsVerticalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
+                        keyboardDismissMode="on-drag"
                     />
                 )}
             </View>
@@ -159,5 +162,6 @@ export default function CreateRoutineScreen() {
                 savedWorkouts={savedWorkouts}
             />
         </View>
+        </TouchableWithoutFeedback>
     );
 }

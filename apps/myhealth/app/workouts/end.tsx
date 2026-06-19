@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useRouter } from 'expo-router';
 import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 
@@ -269,7 +269,8 @@ export default function EndWorkoutScreen() {
     };
 
     return (
-        <View className="flex-1 bg-light dark:bg-dark">
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <View className="flex-1 bg-light dark:bg-dark">
             <ScreenHeader 
                 title="Workout Summary" 
                 leftAction={<BackButton />} 
@@ -288,6 +289,8 @@ export default function EndWorkoutScreen() {
             <ScrollView 
                 className="flex-1" 
                 contentContainerStyle={{ paddingTop: 124, paddingHorizontal: 16, paddingBottom: 32 }}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
             >
                 <RaisedCard className="p-6 mb-6 items-center">
                     <Text className="text-2xl font-bold text-light dark:text-dark mb-2">{workoutName}</Text>
@@ -348,5 +351,6 @@ export default function EndWorkoutScreen() {
                 initialName={pendingName}
             />
         </View>
+        </TouchableWithoutFeedback>
     );
 }
