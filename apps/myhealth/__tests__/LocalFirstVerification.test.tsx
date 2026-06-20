@@ -1,5 +1,6 @@
 import { DataRepository } from '../providers/DataRepository';
 import { openDatabaseAsync } from 'expo-sqlite';
+import { initDatabase } from '../utils/db/database';
 // Mock dependencies
 jest.mock('expo-sqlite');
 
@@ -24,7 +25,6 @@ describe('Local-First Architecture Verification', () => {
 
     describe('Scenario A: Database Initialization', () => {
         it('should initialize schema and run migrations', async () => {
-            const { initDatabase } = require('../utils/db/database');
             await initDatabase();
             
             // Should create tables
@@ -54,6 +54,7 @@ describe('Local-First Architecture Verification', () => {
                     expect.anything(), // Updated At
                     null, // deleted_at
                     'pending', // Sync Status
+                    null, // sort_order
                 ]
             );
         });

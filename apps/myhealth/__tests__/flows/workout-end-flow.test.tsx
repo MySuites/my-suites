@@ -32,14 +32,11 @@ jest.mock('../../providers/WorkoutManagerProvider', () => ({
 }));
 
 jest.mock('@mysuite/ui', () => {
-    const MockIcon = (props: any) => <mockRN.View {...props} testID="icon-symbol" />;
     return {
-
         useUITheme: () => ({ primary: 'blue', textMuted: 'gray', danger: 'red', bg: 'white' }),
         IconSymbol: () => null,
         RaisedCard: (props: any) => { 
-            const { TouchableOpacity } = require('react-native');
-            return <TouchableOpacity {...props} />;
+            return <mockRN.TouchableOpacity {...props} />;
         },
     };
 });
@@ -81,7 +78,7 @@ describe('End Workout Flow', () => {
 
         mockWorkoutManagerState = {
             savedWorkouts: [],
-            updateSavedWorkout: mockUpdateSavedWorkout,
+            updateSavedWorkout: mockUpdateSavedWorkout.mockImplementation((id, name, exercises, cb) => cb && cb()),
             saveWorkout: mockSaveWorkout,
         };
 

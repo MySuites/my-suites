@@ -1,10 +1,22 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import WorkoutHistoryScreen from '../../app/workouts/history';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import * as RN from 'react-native';
 
 const mockRN = RN;
+
+const mockRouterPush = jest.fn();
+jest.mock('expo-router', () => {
+    const mockStack = ({ children }: any) => <>{children}</>;
+    const Screen = () => null;
+    Screen.displayName = 'Screen';
+    mockStack.Screen = Screen;
+    return {
+        useRouter: () => ({ push: mockRouterPush }),
+        Stack: mockStack
+    };
+});
 
 // Mocks
 jest.mock('../../providers/WorkoutManagerProvider', () => ({
@@ -16,8 +28,7 @@ jest.mock('@mysuite/ui', () => {
         useUITheme: () => ({ primary: 'blue' }),
 
         RaisedCard: (props: any) => { 
-            const { TouchableOpacity } = require('react-native');
-            return <TouchableOpacity {...props} />;
+            return <mockRN.TouchableOpacity {...props} />;
         },
         ActionCard: ({ children, onPress, onDelete, className }: any) => (
             <mockRN.View className={className}>
@@ -60,16 +71,7 @@ describe('Workout History Integration', () => {
         { id: 'log2', workoutName: 'Push Day', workoutDate: new Date().toISOString() }
     ];
 
-    const mockDetails = [
-        { 
-            name: 'Squat', 
-            properties: ['Weighted', 'Reps'],
-            sets: [
-                { setNumber: 1, details: { weight: 100, reps: 5 } },
-                { setNumber: 2, details: { weight: 100, reps: 5 } }
-            ]
-        }
-    ];
+
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -94,27 +96,16 @@ describe('Workout History Integration', () => {
         expect(mockDeleteWorkoutLog).toHaveBeenCalledWith('log1', { skipConfirmation: true });
     });
 
-    it('opens details modal and displays set info', async () => {
-        mockFetchWorkoutLogDetails.mockResolvedValue({ data: mockDetails, error: null });
-        
-        const { getByText, findByText, findAllByText, queryByText } = render(<WorkoutHistoryScreen />);
+    it('navigates to details view on press', () => {
+        const { getByText } = render(<WorkoutHistoryScreen />);
         
         // Tap Leg Day
         fireEvent.press(getByText('Leg Day'));
         
-        // Modal should open and call fetch
-        expect(mockFetchWorkoutLogDetails).toHaveBeenCalledWith('log1');
-        
-        // Check details content
-        expect(await findByText('Workout Details')).toBeTruthy();
-        expect(await findByText('Squat')).toBeTruthy();
-        expect((await findAllByText(/100 lbs/)).length).toBe(2);
-        expect((await findAllByText(/5 reps/)).length).toBe(2);
-        
-        // Close modal
-        fireEvent.press(getByText('Close'));
-        await waitFor(() => {
-            expect(queryByText('Workout Details')).toBeNull();
+        // Router push should be called with correct path and params
+        expect(mockRouterPush).toHaveBeenCalledWith({
+            pathname: '/workouts/details',
+            params: { logId: 'log1' }
         });
     });
 

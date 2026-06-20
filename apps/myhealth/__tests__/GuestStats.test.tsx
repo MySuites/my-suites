@@ -13,6 +13,9 @@ jest.mock('@mysuite/auth', () => ({
 jest.mock('../providers/DataRepository', () => ({
   DataRepository: {
     getHistory: jest.fn(),
+    getExercises: jest.fn(() => Promise.resolve([
+      { id: 'ex-1', name: 'Pushups' }
+    ])),
   },
 }));
 

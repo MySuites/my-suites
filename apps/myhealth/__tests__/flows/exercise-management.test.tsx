@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import ExercisesScreen from '../../app/exercises/index';
 import CreateExerciseScreen from '../../app/exercises/create';
 import { useWorkoutManager, fetchExercises, fetchMuscleGroups } from '../../providers/WorkoutManagerProvider';
@@ -21,14 +21,20 @@ jest.mock('../../providers/ActiveWorkoutProvider', () => ({
 }));
 
 jest.mock('expo-router', () => {
-    const React = require('react');
+    const React = jest.requireActual('react');
     const mockStack = ({ children }: any) => <>{children}</>;
-    mockStack.Screen = () => null;
+    const Screen = () => null;
+    Screen.displayName = 'Screen';
+    mockStack.Screen = Screen;
     return {
         useRouter: jest.fn(),
         useLocalSearchParams: jest.fn(),
         usePathname: jest.fn(),
-        useFocusEffect: (callback: any) => React.useEffect(callback, []),
+        useFocusEffect: (callback: any) => {
+            React.useEffect(() => {
+                callback();
+            }, [callback]);
+        },
         Stack: mockStack
     };
 });
@@ -42,8 +48,7 @@ jest.mock('@mysuite/ui', () => {
         useUITheme: () => ({ primary: 'blue', textMuted: 'gray' }),
 
         RaisedCard: (props: any) => {
-            const { TouchableOpacity } = require('react-native');
-            return <TouchableOpacity {...props} />;
+            return <mockRN.TouchableOpacity {...props} />;
         },
 
         HollowedCard: ({ children }: any) => <mockRN.View>{children}</mockRN.View>,
@@ -104,11 +109,10 @@ describe('Exercise Management Integration', () => {
 
     describe('ExercisesScreen', () => {
         it('renders list and filters by search', async () => {
+            jest.useFakeTimers();
             const { getByText, getByPlaceholderText, queryByText } = render(<ExercisesScreen />);
             
-            // Wait for initial load
-            await waitFor(() => expect(fetchExercises).toHaveBeenCalled());
-            
+            // Wait for initial load to finish and render the exercises
             await waitFor(() => {
                 expect(getByText('Bench Press')).toBeTruthy();
                 expect(getByText('Squat')).toBeTruthy();
@@ -116,38 +120,64 @@ describe('Exercise Management Integration', () => {
 
             fireEvent.changeText(getByPlaceholderText('Search exercises...'), 'Bench');
             
+            act(() => {
+                jest.advanceTimersByTime(50);
+            });
+            
             await waitFor(() => {
                 expect(getByText('Bench Press')).toBeTruthy();
                 expect(queryByText('Squat')).toBeNull();
             });
+            
+            jest.useRealTimers();
         });
 
         it('normalizes spaces, dashes, and underscores in search filter', async () => {
             (fetchExercises as jest.Mock).mockResolvedValue({ data: [
-                { id: '3', name: 'Push-up', category: 'Chest', properties: ['Bodyweight', 'Reps'] }
+                { id: '3', name: 'Push-up', category: 'Chest', properties: ['Bodyweight', 'Reps'] },
+                { id: '2', name: 'Squat', category: 'Legs', properties: ['Weighted', 'Reps'] }
             ] });
 
-            const { getByText, getByPlaceholderText } = render(<ExercisesScreen />);
+            jest.useFakeTimers();
+            const { getByText, getByPlaceholderText, queryByText } = render(<ExercisesScreen />);
             
             await waitFor(() => {
                 expect(getByText('Push-up')).toBeTruthy();
+                expect(getByText('Squat')).toBeTruthy();
             });
 
             // Search by "push up"
             fireEvent.changeText(getByPlaceholderText('Search exercises...'), 'push up');
+            act(() => {
+                jest.advanceTimersByTime(50);
+            });
             expect(getByText('Push-up')).toBeTruthy();
+            expect(queryByText('Squat')).toBeNull();
 
             // Search by "push_up"
             fireEvent.changeText(getByPlaceholderText('Search exercises...'), 'push_up');
+            act(() => {
+                jest.advanceTimersByTime(50);
+            });
             expect(getByText('Push-up')).toBeTruthy();
+            expect(queryByText('Squat')).toBeNull();
 
             // Search by "push-up"
             fireEvent.changeText(getByPlaceholderText('Search exercises...'), 'push-up');
+            act(() => {
+                jest.advanceTimersByTime(50);
+            });
             expect(getByText('Push-up')).toBeTruthy();
+            expect(queryByText('Squat')).toBeNull();
+            
+            jest.useRealTimers();
         });
 
         it('navigates to create when pencil clicked', async () => {
              const { getByText } = render(<ExercisesScreen />);
+             await waitFor(() => {
+                 expect(getByText('Bench Press')).toBeTruthy();
+             });
              fireEvent.press(getByText('Icon:square.and.pencil'));
              expect(mockRouter.push).toHaveBeenCalledWith('/exercises/create');
         });
@@ -166,12 +196,12 @@ describe('Exercise Management Integration', () => {
             fireEvent.changeText(getByPlaceholderText('e.g. Bench Press'), 'Custom Pushup');
             
             // 2. Select primary muscle
-            // Wait for muscle groups to load (fetched in useEffect)
-            await waitFor(() => expect(fetchMuscleGroups).toHaveBeenCalled());
-            
             fireEvent.press(getByText('Select Primary Muscle'));
             
-            await waitFor(() => expect(queryByTestId('selection-modal')).toBeTruthy());
+            await waitFor(() => {
+                expect(queryByTestId('selection-modal')).toBeTruthy();
+                expect(getByText('Chest')).toBeTruthy();
+            });
             fireEvent.press(getByText('Chest'));
             
             await waitFor(() => {

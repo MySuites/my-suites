@@ -89,6 +89,13 @@ export function ActiveWorkoutOverlay() {
     
     const [isAddingExercise, setIsAddingExercise] = React.useState(false);
 
+    const totalSets = exercises.reduce((acc, ex) => {
+        const setsNum = typeof ex.sets === 'string' ? parseInt(ex.sets, 10) : (typeof ex.sets === 'number' ? ex.sets : 0);
+        return acc + (isNaN(setsNum) ? 0 : setsNum);
+    }, 0);
+    const completedSets = exercises.reduce((acc, ex) => acc + (ex.completedSets || 0), 0);
+    const progressPercent = totalSets > 0 ? (completedSets / totalSets) * 100 : 0;
+
     if (!hasActiveSession) {
         return null;
     }
@@ -118,10 +125,28 @@ export function ActiveWorkoutOverlay() {
                             >
                                 {workoutName || "Current Workout"}
                             </Text>
-                            <View className="flex-row items-center gap-2 mt-1">
-                                <View className={`w-2 h-2 rounded-full ${isRunning ? 'bg-primary dark:bg-primary-dark' : 'bg-gray-400'}`} />
-                                <Text className="text-sm font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
+                            <View className="flex-row items-center gap-3 mt-1">
+                                <View className="flex-row items-center gap-1.5">
+                                    <View className={`w-2 h-2 rounded-full ${isRunning ? 'bg-primary dark:bg-primary-dark' : 'bg-gray-400'}`} />
+                                    <Text className="text-sm font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
+                                </View>
+                                {totalSets > 0 && (
+                                    <>
+                                        <Text className="text-xs text-light-muted dark:text-dark-muted">•</Text>
+                                        <Text className="text-xs font-semibold text-light-muted dark:text-dark-muted">
+                                            {completedSets}/{totalSets} sets ({Math.round(progressPercent)}%)
+                                        </Text>
+                                    </>
+                                )}
                             </View>
+                            {totalSets > 0 && (
+                                <View className="w-32 h-1.5 bg-black/10 dark:bg-white/10 rounded-full mt-2 overflow-hidden">
+                                    <View 
+                                        className="h-full bg-primary" 
+                                        style={{ width: `${progressPercent}%` }} 
+                                    />
+                                </View>
+                            )}
                         </View>
                     }
                     leftAction={
@@ -174,15 +199,23 @@ export function ActiveWorkoutOverlay() {
             >
                 <RaisedCard
                     onPress={toggleExpanded}
-                    className="flex-row items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
+                    className="flex-col items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0 overflow-hidden"
                     style={{ borderRadius: 9999 }}
                 >
-                     <View className="flex-row items-center gap-2">
-                         <View className={`w-2.5 h-2.5 rounded-full ${isRunning ? 'bg-white animate-pulse' : 'bg-white/50'}`} />
-                         <Text className="text-lg font-bold tabular-nums text-white">
-                            {formatSeconds(workoutSeconds)}
-                         </Text>
+                     <View className="flex-row items-center gap-2 mb-1">
+                          <View className={`w-2.5 h-2.5 rounded-full ${isRunning ? 'bg-white animate-pulse' : 'bg-white/50'}`} />
+                          <Text className="text-lg font-bold tabular-nums text-white">
+                             {formatSeconds(workoutSeconds)}
+                          </Text>
                      </View>
+                     {totalSets > 0 && (
+                          <View className="w-24 h-1 bg-white/20 rounded-full overflow-hidden">
+                               <View 
+                                   className="h-full bg-white" 
+                                   style={{ width: `${progressPercent}%` }} 
+                               />
+                          </View>
+                     )}
                 </RaisedCard>
             </Animated.View>
         );

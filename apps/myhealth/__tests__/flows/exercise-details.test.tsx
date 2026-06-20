@@ -37,8 +37,7 @@ jest.mock('@mysuite/ui', () => ({
     useUITheme: () => ({ primary: 'blue', text: 'black' }),
     IconSymbol: () => null,
     RaisedCard: (props: any) => { 
-        const { TouchableOpacity } = require('react-native');
-        return <TouchableOpacity {...props} />;
+        return <mockRN.TouchableOpacity {...props} />;
     },
 }));
 

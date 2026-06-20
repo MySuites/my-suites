@@ -38,6 +38,7 @@ describe('useRoutineManager', () => {
         expect(result.current.activeRoutine).toEqual({
             id: 'routine-1',
             dayIndex: 0,
+            lastUpdatedDate: '2024-01-01T12:00:00.000Z',
         });
     });
 

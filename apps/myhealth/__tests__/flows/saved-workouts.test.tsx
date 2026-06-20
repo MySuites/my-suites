@@ -39,8 +39,7 @@ jest.mock('@mysuite/ui', () => {
         useUITheme: () => ({ primary: 'blue', textMuted: 'gray', danger: 'red', bg: 'white' }),
 
         RaisedCard: (props: any) => {
-            const { TouchableOpacity } = require('react-native');
-            return <TouchableOpacity {...props} />;
+            return <mockRN.TouchableOpacity {...props} />;
         },
 
         HollowedCard: ({ children }: any) => <mockRN.View>{children}</mockRN.View>,
@@ -63,14 +62,22 @@ jest.mock('../../components/ui/BackButton', () => {
     };
 });
 
-// Mock ExerciseSelector
-jest.mock('../../components/workouts/ExerciseSelector', () => {
+// Mock WorkoutOverviewChart to avoid rendering ESM-dependent charting libraries in tests
+jest.mock('../../components/workouts/WorkoutOverviewChart', () => {
     return {
-        ExerciseSelector: ({ visible, onSelect }: any) => visible ? (
-            <mockRN.TouchableOpacity onPress={() => onSelect({ id: 'ex-1', name: 'Mock Exercise' })}>
+        WorkoutOverviewChart: () => null
+    };
+});
+
+// Mock ExercisesScreen
+jest.mock('../../app/exercises/index', () => {
+    return {
+        __esModule: true,
+        default: ({ onSelect }: any) => (
+            <mockRN.TouchableOpacity onPress={() => onSelect([{ id: 'ex-1', name: 'Mock Exercise' }])}>
                 <mockRN.Text>Select Mock Exercise</mockRN.Text>
             </mockRN.TouchableOpacity>
-        ) : null
+        )
     };
 });
 
@@ -89,6 +96,9 @@ describe('Saved Workouts & Template Editor', () => {
     
     beforeEach(() => {
         jest.clearAllMocks();
+        if (RN.View && RN.View.prototype) {
+            RN.View.prototype.measure = jest.fn((cb) => cb(0, 0, 100, 50, 200, 100));
+        }
         (useRouter as jest.Mock).mockReturnValue(mockRouter);
         (useActiveWorkout as jest.Mock).mockReturnValue({
             hasActiveSession: false,
@@ -134,7 +144,7 @@ describe('Saved Workouts & Template Editor', () => {
             const { getByText } = render(<SavedWorkoutsScreen />);
             // Header button with pencil
             fireEvent.press(getByText('Icon:square.and.pencil'));
-            expect(mockRouter.push).toHaveBeenCalledWith('/workouts/editor');
+            expect(mockRouter.push).toHaveBeenCalledWith('/workouts/details');
         });
     });
 
@@ -169,9 +179,9 @@ describe('Saved Workouts & Template Editor', () => {
 
         it('renders create mode and validates name', () => {
             const spyAlert = jest.spyOn(Alert, 'alert');
-            const { getByText } = render(<CreateWorkoutScreen />);
+            const { getByPlaceholderText, getByText } = render(<CreateWorkoutScreen />);
             
-            expect(getByText('Create Workout')).toBeTruthy();
+            expect(getByPlaceholderText('Workout Name')).toBeTruthy();
             
             // Try to save with empty name (Icon:checkmark)
             fireEvent.press(getByText('Icon:checkmark'));
@@ -198,19 +208,36 @@ describe('Saved Workouts & Template Editor', () => {
                 savedWorkouts: [{ id: 'w1', name: 'Existing Routine', exercises: [] }],
                 saveWorkout: mockSaveWorkout,
                 deleteSavedWorkout: mockDeleteSavedWorkout,
-                 updateSavedWorkout: mockUpdateSavedWorkout
+                updateSavedWorkout: mockUpdateSavedWorkout
+            });
+
+            // Mock Alert.alert to auto-click "Delete"
+            jest.spyOn(Alert, 'alert').mockImplementation((title, message, buttons) => {
+                const deleteBtn = buttons?.find((b: any) => b.text === 'Delete');
+                if (deleteBtn?.onPress) {
+                    deleteBtn.onPress();
+                }
             });
 
             const { getByText, getByPlaceholderText } = render(<CreateWorkoutScreen />);
             
-            expect(getByText('Edit Workout')).toBeTruthy();
-            expect(getByPlaceholderText('Workout Name').props.value).toBe('Existing Routine');
+            // Should show the workout template title
+            expect(getByText('Existing Routine')).toBeTruthy();
             
-            // Delete
+            // Click menu ellipsis to open options
+            fireEvent.press(getByText('Icon:ellipsis'));
+            
+            // Click Edit Workout option
+            fireEvent.press(getByText('Edit Workout'), { stopPropagation: jest.fn() });
+
+            // Workout name TextInput should now be visible and populated
+            expect(getByPlaceholderText('Workout Name').props.defaultValue).toBe('Existing Routine');
+            
+            // Press Delete Workout from the footer
             fireEvent.press(getByText('Delete Workout'));
-            // Alert appears. We can't easily click alert buttons in standard Jest without mocking Alert.alert implementation to auto-click.
-            // But we can check if deleteSavedWorkout is NOT called yet (waiting for confirm)
-            // Or better, mock Alert.alert to execute the destructive callback immediately.
+            
+            // Should call deleteSavedWorkout
+            expect(mockDeleteSavedWorkout).toHaveBeenCalledWith('w1', expect.any(Object));
         });
     });
 });

@@ -3,7 +3,7 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { ThemedCard } from '../../../../packages/ui/examples/ThemedCard';
 
-jest.mock('../../../../packages/ui/theme', () => ({
+jest.mock('../../../../packages/ui', () => ({
     useUITheme: () => ({
         bgLight: 'white',
         'border-dark': 'black',

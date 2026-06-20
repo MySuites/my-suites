@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import { ActiveWorkoutProvider, useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
+import { ActiveWorkoutProvider, useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import { Button, Text, View } from 'react-native';
 
 // Mock dependencies
@@ -17,6 +17,7 @@ jest.mock('../../providers/WorkoutManagerProvider', () => ({
 jest.mock('../../hooks/workouts/useActiveWorkoutPersistence', () => ({
     useActiveWorkoutPersistence: () => ({
         clearPersistence: jest.fn(),
+        isLoaded: true,
     })
 }));
 
@@ -24,7 +25,6 @@ jest.mock('../../hooks/workouts/useActiveWorkoutPersistence', () => ({
 const WorkoutFlowTestComponent = () => {
     const { 
         startWorkout, 
-        isRunning, 
         addExercise, 
         completeSet, 
         exercises,
@@ -32,6 +32,8 @@ const WorkoutFlowTestComponent = () => {
         hasActiveSession,
         workoutName
     } = useActiveWorkout();
+
+    const { isRunning } = useActiveWorkoutTimer();
 
     return (
         <View>
@@ -56,14 +58,16 @@ const WorkoutFlowTestComponent = () => {
 
 describe('Workout Flow Integration', () => {
     it('successfully completes a full workout lifecycle', async () => {
-        const { getByText, getByTestId, queryByText } = render(
+        const { getByText, getByTestId } = render(
             <ActiveWorkoutProvider>
                 <WorkoutFlowTestComponent />
             </ActiveWorkoutProvider>
         );
 
         // 1. Initial State
-        expect(getByTestId('status').children[0]).toBe('Inactive');
+        await waitFor(() => {
+            expect(getByTestId('status').children[0]).toBe('Inactive');
+        });
 
         // 2. Start Workout
         fireEvent.press(getByText('Start New Workout'));

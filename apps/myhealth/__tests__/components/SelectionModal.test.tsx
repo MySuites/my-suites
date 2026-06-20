@@ -7,8 +7,11 @@ const mockRN = RN;
 
 jest.mock('@mysuite/ui', () => ({
     useUITheme: () => ({ primary: 'blue' }),
-    IconSymbol: () => {
-        return <mockRN.Text testID="checkmark">Check</mockRN.Text>;
+    IconSymbol: ({ name }: any) => {
+        return name === 'checkmark' ? <mockRN.Text testID="checkmark">Check</mockRN.Text> : <mockRN.Text>Icon:{name}</mockRN.Text>;
+    },
+    RaisedCard: (props: any) => {
+        return <mockRN.TouchableOpacity {...props} />;
     }
 }));
 

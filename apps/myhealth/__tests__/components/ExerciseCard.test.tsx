@@ -11,12 +11,10 @@ const mockRN = RN;
 jest.mock('@mysuite/ui', () => {
     return {
         RaisedCard: (props: any) => { 
-            const { TouchableOpacity } = require('react-native');
-            return <TouchableOpacity {...props} />;
+            return <mockRN.TouchableOpacity {...props} />;
         },
         HollowedCard: (props: any) => {
-            const { TouchableOpacity } = require('react-native');
-            return <TouchableOpacity {...props} />;
+            return <mockRN.TouchableOpacity {...props} />;
         },
 
         IconSymbol: () => null,
@@ -89,7 +87,7 @@ describe('ExerciseCard', () => {
 
     it('should render Add Set button and call onAddSet', () => {
         const { getByText } = render(<ExerciseCard {...defaultProps} />);
-        const addSetBtn = getByText(/\+ Add Set/i);
+        const addSetBtn = getByText(/Add Set/i);
         fireEvent.press(addSetBtn);
         expect(mockOnAddSet).toHaveBeenCalled();
     });
@@ -100,7 +98,7 @@ describe('ExerciseCard', () => {
         const setRow1 = getByTestId('set-row-1');
         fireEvent.press(setRow1);
         
-        // Expect onCompleteSet to be called with (index, input)
-        expect(mockOnCompleteSet).toHaveBeenCalledWith(1, { weight: "100", reps: "10" });
+        // Expect onCompleteSet to be called with (index)
+        expect(mockOnCompleteSet).toHaveBeenCalledWith(1);
     });
 });

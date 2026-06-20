@@ -38,8 +38,8 @@ export const SelectionModal = ({
                     
                     <Text className="text-xl font-bold text-light dark:text-dark">{title}</Text>
                     
-                    <TouchableOpacity onPress={onClose} className="p-2">
-                        <IconSymbol name="checkmark" size={24} color={theme.primary as string} />
+                    <TouchableOpacity onPress={onClose} className="px-3 py-1">
+                        <Text style={{ color: theme.primary }} className="font-semibold text-base">Done</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -53,6 +53,9 @@ export const SelectionModal = ({
                             <RaisedCard 
                                 onPress={() => {
                                     onSelect(item);
+                                    if (!multiSelect) {
+                                        onClose();
+                                    }
                                 }}
                                 className={`flex-row items-center justify-between p-4 mb-3 rounded-2xl ${
                                     selected 
@@ -63,6 +66,9 @@ export const SelectionModal = ({
                                 <Text className={`text-base font-semibold ${selected ? 'text-primary dark:text-primary-dark' : 'text-light dark:text-dark'}`}>
                                     {item.label || item.name}
                                 </Text>
+                                {selected && (
+                                    <IconSymbol name="checkmark" size={20} color={theme.primary} />
+                                )}
                             </RaisedCard>
                         );
                     }}
