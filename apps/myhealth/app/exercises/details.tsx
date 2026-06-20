@@ -22,7 +22,7 @@ export default function ExerciseDetailsScreen() {
     const { deleteCustomExercise } = useWorkoutManager();
     
     const [freshExercise, setFreshExercise] = useState<Exercise | null>(null);
-    const [activeTab, setActiveTab] = useState<'instructions' | 'performance' | 'variations'>('performance');
+    const [activeTab, setActiveTab] = useState<'details' | 'performance' | 'variations'>('performance');
     const [variations, setVariations] = useState<Exercise[]>([]);
     const [selectedVariation, setSelectedVariation] = useState<Exercise | null>(null);
 
@@ -245,20 +245,20 @@ export default function ExerciseDetailsScreen() {
                     marginBottom: 24
                 }}>
                     <Pressable
-                        onPress={() => setActiveTab('instructions')}
+                        onPress={() => setActiveTab('details')}
                         style={{
                             flex: 1,
                             paddingVertical: 8,
                             alignItems: 'center',
-                            backgroundColor: activeTab === 'instructions' ? activeToggleBg : 'transparent',
+                            backgroundColor: activeTab === 'details' ? activeToggleBg : 'transparent',
                             borderRadius: 6,
                         }}
                     >
                         <Text style={{
-                            color: activeTab === 'instructions' ? activeToggleText : currentColors.text,
-                            fontWeight: activeTab === 'instructions' ? '600' : '400',
-                            opacity: activeTab === 'instructions' ? 1 : 0.7
-                        }}>Instructions</Text>
+                            color: activeTab === 'details' ? activeToggleText : currentColors.text,
+                            fontWeight: activeTab === 'details' ? '600' : '400',
+                            opacity: activeTab === 'details' ? 1 : 0.7
+                        }}>Details</Text>
                     </Pressable>
                     <Pressable
                         onPress={() => setActiveTab('performance')}
@@ -315,12 +315,12 @@ export default function ExerciseDetailsScreen() {
                 </View>
 
                 <View style={{ 
-                    display: activeTab === 'instructions' ? 'flex' : 'none',
+                    display: activeTab === 'details' ? 'flex' : 'none',
                     backgroundColor: cardBackground,
                     borderRadius: 16, 
                     padding: 4, 
                 }}>
-                    {/* Tags in Instructions Tab */}
+                    {/* Tags in Details Tab */}
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
                         {(() => {
                             const getMuscleName = (m: any) => {
@@ -380,9 +380,58 @@ export default function ExerciseDetailsScreen() {
                         })()}
                     </View>
 
-                    <Text style={{ color: currentColors.text, opacity: 0.6, lineHeight: 24 }}>
+                    <Text style={{ color: currentColors.text, opacity: 0.7, lineHeight: 24, fontSize: 15, marginBottom: 24 }}>
                         {exercise.description || "No instructions available for this exercise yet."}
                     </Text>
+
+                    {/* Tips Section */}
+                    <View style={{ marginTop: 8 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                            <IconSymbol name="lightbulb.fill" size={18} color={theme.primary} />
+                            <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700' }}>
+                                Training Tips
+                            </Text>
+                        </View>
+                        {exercise.tips && exercise.tips.length > 0 ? (
+                            <View style={{ gap: 10 }}>
+                                {exercise.tips.map((tip: string, index: number) => (
+                                    <View 
+                                        key={index} 
+                                        style={{ 
+                                            flexDirection: 'row', 
+                                            gap: 10, 
+                                            backgroundColor: 'rgba(255,255,255,0.03)', 
+                                            padding: 12, 
+                                            borderRadius: 12,
+                                            borderLeftWidth: 3,
+                                            borderLeftColor: theme.primary
+                                        }}
+                                    >
+                                        <Text style={{ color: theme.primary, fontWeight: '700', fontSize: 14, marginTop: 1 }}>
+                                            {index + 1}
+                                        </Text>
+                                        <Text style={{ flex: 1, color: currentColors.text, opacity: 0.85, fontSize: 14, lineHeight: 20 }}>
+                                            {tip}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
+                        ) : (
+                            <View style={{ 
+                                padding: 16, 
+                                backgroundColor: 'rgba(255,255,255,0.02)', 
+                                borderRadius: 12, 
+                                borderStyle: 'dashed', 
+                                borderWidth: 1, 
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                alignItems: 'center'
+                            }}>
+                                <Text style={{ color: currentColors.text, opacity: 0.5, fontSize: 14 }}>
+                                    Focus on controlled execution and steady breathing.
+                                </Text>
+                            </View>
+                        )}
+                    </View>
                 </View>
 
                 {variations.length > 0 && (

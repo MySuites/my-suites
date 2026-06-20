@@ -115,6 +115,7 @@ export const initDatabase = async () => {
                 difficulty REAL,
                 is_active_progression INTEGER,
                 next_variations TEXT,
+                tips TEXT,
                 created_at TEXT,
                 updated_at INTEGER,
                 deleted_at INTEGER,
@@ -180,6 +181,7 @@ export const initDatabase = async () => {
 
     // Exercise Directed Graph Links
     await safeAddColumn("exercises", "next_variations", "TEXT"); // JSON string array of IDs
+    await safeAddColumn("exercises", "tips", "TEXT"); // JSON string array of tips
 
     await safeAddColumn("set_logs", "rpe", "REAL");
     await safeAddColumn("set_logs", "reps_left", "INTEGER");

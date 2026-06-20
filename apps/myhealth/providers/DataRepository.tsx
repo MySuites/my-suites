@@ -427,8 +427,8 @@ export const DataRepository = {
                 for (const exData of chunk) {
                     const ex = exData as any;
                     await db.runAsync(`
-                        INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, created_at, updated_at, sync_status)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
+                        INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, tips, created_at, updated_at, sync_status)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
                     `, [
                         ex.id, 
                         ex.name,
@@ -439,6 +439,7 @@ export const DataRepository = {
                         ex.difficulty !== undefined ? ex.difficulty : (ex.progressionLevel || null),
                         ex.isActiveProgression ? 1 : 0,
                         ex.nextVariations ? JSON.stringify(ex.nextVariations) : JSON.stringify([]),
+                        ex.tips ? JSON.stringify(ex.tips) : null,
                         new Date().toISOString(),
                         Date.now()
                     ]);
@@ -601,6 +602,7 @@ export const DataRepository = {
             properties: row.properties ? row.properties.split(',').map((s: string) => s.trim()) : [],
             description: row.description, // Added description
             nextVariations: row.next_variations ? JSON.parse(row.next_variations) : [],
+            tips: row.tips ? JSON.parse(row.tips) : [],
             // Legacy schema support for graceful fallback
             progressionId: row.progression_id,
             difficulty: row.difficulty || row.progression_level,
@@ -626,8 +628,8 @@ export const DataRepository = {
         await db.withTransactionAsync(async () => {
             for (const ex of exercises) {
                 await db.runAsync(`
-                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, created_at, updated_at, sync_status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
+                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, tips, created_at, updated_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
                 `, [
                     ex.id || ex.exercise_id, 
                     ex.name || ex.exercise_name,
@@ -638,6 +640,7 @@ export const DataRepository = {
                     ex.difficulty || null,
                     ex.isActiveProgression ? 1 : 0,
                     ex.nextVariations ? JSON.stringify(ex.nextVariations) : JSON.stringify([]),
+                    ex.tips ? JSON.stringify(ex.tips) : null,
                     new Date().toISOString(),
                     now
                 ]);
