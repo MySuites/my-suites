@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Modal, FlatList, TouchableOpacity, NativeScrollEvent, NativeSyntheticEvent, Vibration, StyleSheet } from 'react-native';
+import { View, Text, Modal, FlatList, TouchableOpacity, NativeScrollEvent, NativeSyntheticEvent, Vibration } from 'react-native';
 import { IconSymbol, useUITheme, RaisedCard } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
+import { useTimerSettings } from '../../providers/TimerSettingsProvider';
 
 const ITEM_HEIGHT = 50;
 const VISIBLE_ITEMS = 5;
@@ -21,6 +22,7 @@ interface DurationTimerPickerProps {
 
 export function DurationTimerPicker({ visible, onClose, initialValue, onSave, isActiveWorkout = false, autoStart = false }: DurationTimerPickerProps) {
     const theme = useUITheme();
+    const { prepCountdown, setPrepCountdown } = useTimerSettings();
     
     const [selectedMin, setSelectedMin] = useState(Math.floor(initialValue / 60));
     const [selectedSec, setSelectedSec] = useState(initialValue % 60);
@@ -28,7 +30,7 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
     // Timer state
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [remainingSeconds, setRemainingSeconds] = useState(initialValue);
-    const [prepTime, setPrepTime] = useState(0);
+    const [prepTime, setPrepTime] = useState(prepCountdown);
     const [isPrepping, setIsPrepping] = useState(false);
     const [prepRemaining, setPrepRemaining] = useState(0);
     const timerIntervalRef = useRef<any>(null);
@@ -49,6 +51,7 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
             setRemainingSeconds(initialValue);
             setIsTimerRunning(false);
             setIsPrepping(false);
+            setPrepTime(prepCountdown);
             
             // Scroll after delay
             setTimeout(() => {
@@ -69,18 +72,20 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                 }
             }, 100);
         }
-    }, [visible, initialValue]);
+    }, [visible, initialValue, prepCountdown]);
 
     useEffect(() => {
         if (visible && autoStart && initialValue > 0) {
-            handleStartTimer();
+            handleStartTimer(prepCountdown);
         }
-    }, [visible, autoStart, initialValue]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [visible, autoStart, initialValue, prepCountdown]);
 
-    const handleStartTimer = () => {
-        if (prepTime > 0) {
+    const handleStartTimer = (customPrepTime?: number) => {
+        const actualPrepTime = customPrepTime !== undefined ? customPrepTime : prepTime;
+        if (actualPrepTime > 0) {
             setIsPrepping(true);
-            setPrepRemaining(prepTime);
+            setPrepRemaining(actualPrepTime);
         } else {
             setIsPrepping(false);
         }
@@ -266,7 +271,10 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                                         {[0, 3, 5, 10].map((s) => (
                                             <TouchableOpacity 
                                                 key={s}
-                                                onPress={() => setPrepTime(s)}
+                                                onPress={() => {
+                                                    setPrepTime(s);
+                                                    setPrepCountdown(s);
+                                                }}
                                                 className={`px-4 py-2 rounded-lg ${prepTime === s ? 'bg-white dark:bg-black/20' : 'bg-transparent'}`}
                                             >
                                                 <Text className={`text-sm font-bold ${prepTime === s ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted'}`}>

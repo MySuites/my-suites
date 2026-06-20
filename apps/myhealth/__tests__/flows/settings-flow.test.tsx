@@ -35,6 +35,11 @@ jest.mock('../../providers/AppThemeProvider', () => ({
     useThemePreference: () => ({ preference: 'system', setPreference: jest.fn() })
 }));
 
+jest.mock('../../providers/TimerSettingsProvider', () => ({
+    useTimerSettings: () => ({ prepCountdown: 0, setPrepCountdown: jest.fn() }),
+    TimerSettingsProvider: ({ children }: any) => children
+}));
+
 // Mock UI
 jest.mock('@mysuite/ui', () => ({
     useUITheme: () => ({ primary: 'blue', textMuted: 'gray', danger: 'red', bg: 'white' }),
@@ -57,10 +62,10 @@ jest.mock('../../components/ui/BackButton', () => ({
 jest.mock('../../components/ui/ProfileButton', () => ({
     ProfileButton: () => null
 }));
-jest.mock('../../components/profile/BodyWeightCard', () => ({
+jest.mock('../../components/bodyweight/BodyWeightCard', () => ({
     BodyWeightCard: () => null
 }));
-jest.mock('../../components/profile/WeightLogModal', () => ({
+jest.mock('../../components/bodyweight/WeightLogModal', () => ({
     WeightLogModal: () => null
 }));
 

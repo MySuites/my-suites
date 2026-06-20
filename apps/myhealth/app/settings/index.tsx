@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, Alert, ScrollView, Switch, InteractionManager } from 'react-native';
+import { View, Text, Alert, ScrollView, Switch, InteractionManager, TouchableOpacity } from 'react-native';
 import { useUITheme, ThemeToggle, IconSymbol, useToast, RaisedCard } from '@mysuite/ui';
 
 import { DataRepository } from '../../providers/DataRepository';
 import { useThemePreference } from '../../providers/AppThemeProvider';
+import { useTimerSettings } from '../../providers/TimerSettingsProvider';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { BodyWeightService } from '../../services/BodyWeightService';
@@ -17,6 +18,7 @@ export default function SettingsScreen() {
   const theme = useUITheme();
   const { preference, setPreference } = useThemePreference();
   const { showToast } = useToast();
+  const { prepCountdown, setPrepCountdown } = useTimerSettings();
 
   const handleDeleteData = () => {
     Alert.alert(
@@ -103,6 +105,26 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
+          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Workout Timers</Text>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+            <Text className="text-base text-light dark:text-dark">Prep Countdown</Text>
+            <View className="flex-row bg-black/5 dark:bg-white/5 rounded-xl p-1">
+              {[0, 3, 5, 10].map((s) => (
+                <TouchableOpacity 
+                  key={s}
+                  onPress={() => setPrepCountdown(s)}
+                  className={`px-3 py-1.5 rounded-lg ${prepCountdown === s ? 'bg-white dark:bg-black/20' : 'bg-transparent'}`}
+                >
+                  <Text className={`text-xs font-bold ${prepCountdown === s ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted'}`}>
+                    {s === 0 ? 'None' : `${s}s`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Legal</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Privacy Policy</Text>
@@ -162,7 +184,7 @@ export default function SettingsScreen() {
           </View>
         </View>
         
-        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.1.2</Text>
+        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.1.3</Text>
       </ScrollView>
     </View>
   );
