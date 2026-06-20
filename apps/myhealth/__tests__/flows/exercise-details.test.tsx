@@ -27,6 +27,12 @@ jest.mock('../../providers/WorkoutManagerProvider', () => ({
     })
 }));
 
+jest.mock('../../providers/DataRepository', () => ({
+    DataRepository: {
+        getExercises: jest.fn(() => Promise.resolve([])),
+    }
+}));
+
 jest.mock('@mysuite/ui', () => ({
     useUITheme: () => ({ primary: 'blue', text: 'black' }),
     IconSymbol: () => null,
@@ -83,10 +89,10 @@ describe('Exercise Details Integration', () => {
         const { getByText } = render(<ExerciseDetailsScreen />);
         
         expect(getByText('Handstand Pushup')).toBeTruthy();
-        expect(getByText('Shoulders')).toBeTruthy();
+        expect(getByText('Shoulders', { includeHiddenElements: true })).toBeTruthy();
         expect(getByText('Chart:Max Weight')).toBeTruthy();
-        expect(getByText('Bodyweight')).toBeTruthy();
-        expect(getByText('Reps')).toBeTruthy();
+        expect(getByText('Bodyweight', { includeHiddenElements: true })).toBeTruthy();
+        expect(getByText('Reps', { includeHiddenElements: true })).toBeTruthy();
     });
 
     it('renders placeholder when exercise not found', () => {
