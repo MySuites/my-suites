@@ -29,7 +29,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const theme = useUITheme();
   const translateY = useSharedValue(-100);
   const opacity = useSharedValue(0);
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const timerRef = React.useRef<any>(null);
 
   const hideToast = React.useCallback(() => {
     translateY.value = withTiming(-100, { duration: 300 });

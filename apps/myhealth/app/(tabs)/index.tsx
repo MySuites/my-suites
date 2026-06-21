@@ -9,6 +9,8 @@ import { BodyWeightCard } from '../../components/bodyweight/BodyWeightCard';
 import { WeightLogModal } from '../../components/bodyweight/WeightLogModal';
 import { BodyWeightService, BodyWeightEntry } from '../../services/BodyWeightService';
 import { DateRange } from '../../components/ui/TimeSeriesChart';
+import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
+import { VolumeTrendCard } from '../../components/workouts/VolumeTrendCard';
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -21,6 +23,8 @@ export default function HomeScreen() {
   const [isWeightModalVisible, setIsWeightModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedRange, setSelectedRange] = useState<DateRange>('Week');
+  const { workoutHistory } = useWorkoutManager();
+  const [selectedVolumeRange, setSelectedVolumeRange] = useState<DateRange>('Week');
 
   const fetchLatestWeight = useCallback(async () => {
     const weight = await BodyWeightService.getLatestWeight(user?.id || null);
@@ -167,6 +171,62 @@ export default function HomeScreen() {
     return { weightHistory: result, rangeAverage: avg };
   }, [allWeightHistory, selectedRange]);
 
+  // Memoized workout volume history & summary stats
+  const { volumeHistoryData, rangeAverageVolume, rangeTotalVolume, rangeWorkoutCount } = useMemo(() => {
+    if (!workoutHistory || workoutHistory.length === 0) {
+      return { volumeHistoryData: [], rangeAverageVolume: null, rangeTotalVolume: null, rangeWorkoutCount: 0 };
+    }
+
+    const rawVolumeLogs = workoutHistory.map(log => {
+      let totalVolume = 0;
+      if (log.exercises) {
+        log.exercises.forEach(ex => {
+          if (ex.logs) {
+            ex.logs.forEach(set => {
+              const weight = parseFloat(set.weight as any) || 0;
+              const reps = parseInt(set.reps as any) || 0;
+              totalVolume += (weight * reps);
+            });
+          }
+        });
+      }
+      return {
+        value: totalVolume,
+        date: log.workoutDate,
+      };
+    });
+
+    const now = new Date();
+    let startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+
+    if (selectedVolumeRange === 'Week') {
+      startDate.setDate(now.getDate() - 6);
+    } else if (selectedVolumeRange === 'Month') {
+      startDate.setDate(now.getDate() - 30);
+    } else if (selectedVolumeRange === '6Month') {
+      startDate.setDate(now.getDate() - 180);
+    } else if (selectedVolumeRange === 'Year') {
+      startDate.setDate(now.getDate() - 365);
+    }
+
+    const filtered = rawVolumeLogs.filter(item => {
+      const itemDate = new Date(item.date);
+      return itemDate >= startDate;
+    });
+
+    const total = filtered.reduce((sum, item) => sum + item.value, 0);
+    const count = filtered.length;
+    const avg = count > 0 ? total / count : 0;
+
+    return {
+      volumeHistoryData: rawVolumeLogs,
+      rangeAverageVolume: count > 0 ? avg : null,
+      rangeTotalVolume: count > 0 ? total : null,
+      rangeWorkoutCount: count,
+    };
+  }, [workoutHistory, selectedVolumeRange]);
+
      useEffect(() => {
         const task = InteractionManager.runAfterInteractions(() => {
             fetchLatestWeight();
@@ -217,6 +277,21 @@ export default function HomeScreen() {
                 textColor={theme.textMuted}
                 isLoading={isLoading}
              />
+        </View>
+        <View className="mb-6 flex-row">
+             <View className="w-1/2 pr-2">
+                  <VolumeTrendCard
+                     history={volumeHistoryData}
+                     selectedRange={selectedVolumeRange}
+                     onRangeChange={setSelectedVolumeRange}
+                     rangeAverage={rangeAverageVolume}
+                     rangeTotal={rangeTotalVolume}
+                     workoutCount={rangeWorkoutCount}
+                     primaryColor={theme.primary}
+                     textColor={theme.textMuted}
+                     isLoading={isLoading}
+                  />
+             </View>
         </View>
       </ScrollView>
 
