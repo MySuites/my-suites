@@ -64,6 +64,7 @@ const MAPPING = {
   'star.leadinghalf.filled': 'star-half',
   'info.circle': 'info-outline',
   'lightbulb.fill': 'lightbulb',
+  'list.bullet': 'list',
 } as const;
 
 

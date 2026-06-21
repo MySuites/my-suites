@@ -381,8 +381,56 @@ export default function ExerciseDetailsScreen() {
                     </View>
 
                     <Text style={{ color: currentColors.text, opacity: 0.7, lineHeight: 24, fontSize: 15, marginBottom: 24 }}>
-                        {exercise.description || "No instructions available for this exercise yet."}
+                        {exercise.description || "No description available for this exercise yet."}
                     </Text>
+
+                    {/* Instructions Section */}
+                    <View style={{ marginBottom: 24 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                            <IconSymbol name="list.bullet" size={18} color={theme.primary} />
+                            <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700' }}>
+                                Instructions
+                            </Text>
+                        </View>
+                        {exercise.instructions && exercise.instructions.length > 0 ? (
+                            <View style={{ gap: 12 }}>
+                                {exercise.instructions.map((step: string, index: number) => (
+                                    <View key={index} style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+                                        <View style={{
+                                            width: 22,
+                                            height: 22,
+                                            borderRadius: 11,
+                                            backgroundColor: (theme.bgLight || 'rgba(0,0,0,0.05)'),
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginTop: 1
+                                        }}>
+                                            <Text style={{ color: currentColors.text, fontSize: 11, fontWeight: '700', opacity: 0.8 }}>
+                                                {index + 1}
+                                            </Text>
+                                        </View>
+                                        <Text style={{ flex: 1, color: currentColors.text, opacity: 0.8, fontSize: 14, lineHeight: 20 }}>
+                                            {step}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
+                        ) : (
+                            <View style={{ 
+                                padding: 16, 
+                                backgroundColor: 'rgba(255,255,255,0.02)', 
+                                borderRadius: 12, 
+                                borderStyle: 'dashed', 
+                                borderWidth: 1, 
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                alignItems: 'center'
+                            }}>
+                                <Text style={{ color: currentColors.text, opacity: 0.5, fontSize: 14 }}>
+                                    No step-by-step instructions available for this exercise yet.
+                                </Text>
+                            </View>
+                        )}
+                    </View>
 
                     {/* Tips Section */}
                     <View style={{ marginTop: 8 }}>

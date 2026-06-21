@@ -30,6 +30,7 @@ export type Exercise = {
         rpe?: number;
     }[];
     description?: string;
+    instructions?: string[];
     tips?: string[];
     nextVariations?: string[];
     difficulty?: number;

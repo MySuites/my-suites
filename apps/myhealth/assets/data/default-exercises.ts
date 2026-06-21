@@ -1,4 +1,4 @@
-export const EXERCISE_DATA_VERSION = 8;
+export const EXERCISE_DATA_VERSION = 9;
 
 export const BarbellBenchPress = [
     {
@@ -10,6 +10,13 @@ export const BarbellBenchPress = [
         difficulty: 3.0,
         "description":
             "Standard horizontal bench press targeting overall chest volume and strength.",
+        "instructions": [
+            "Lie flat on the bench with your feet flat on the floor.",
+            "Grip the barbell with hands slightly wider than shoulder-width apart.",
+            "Unrack the bar and hold it straight over your chest.",
+            "Lower the bar slowly to your chest while inhaling.",
+            "Push the bar back up to the starting position while exhaling."
+        ],
         "tips": [
             "Keep your feet flat on the floor for maximum stability.",
             "Retract your scapula (shoulder blades) and pin them to the bench.",
@@ -373,6 +380,13 @@ export const Squats = [
         "type": "Bodyweight, Reps",
         "muscle_group": "Quadriceps",
         difficulty: 3.0,
+        "instructions": [
+            "Stand with your feet shoulder-width apart and toes pointing slightly outward.",
+            "Place your hands on your hips, behind your head, or straight out in front.",
+            "Lower your hips as if sitting back into a chair, keeping your knees behind your toes.",
+            "Keep your chest up and core engaged.",
+            "Return to the standing position by driving through your heels."
+        ],
         "tips": [
             "Keep your heels firmly on the ground throughout the movement.",
             "Push your knees outwards to track inline with your toes.",

@@ -8,6 +8,186 @@ import ExerciseDefaultData from '../assets/data/default-exercises';
 // We keep these for now if other sections need them during transition, 
 // but we will implement specific SQL methods for Workouts.
 
+function generateDefaultInstructions(name: string, description: string, muscleGroups: string[]): string[] {
+    const n = name.toLowerCase();
+    
+    if (n.includes('bench press') || n.includes('chest press') || n.includes('push press')) {
+        return [
+            "Position yourself securely on the bench or seat.",
+            "Grip the bar or handles firmly, slightly wider than shoulder-width.",
+            "Lower the weight in a controlled motion towards your chest.",
+            "Press the weight back up to the starting position, exhaling at the top."
+        ];
+    }
+    if (n.includes('fly')) {
+        return [
+            "Sit or lie down, holding the weights with arms slightly bent.",
+            "Open your arms wide in a smooth arc until you feel a stretch in your chest.",
+            "Bring the weights back together by contracting your chest muscles.",
+            "Avoid bending or locking your elbows during the movement."
+        ];
+    }
+    if (n.includes('pulldown')) {
+        return [
+            "Sit at the pulldown machine and adjust the knee pad.",
+            "Grip the bar slightly wider than shoulder-width with palms facing forward.",
+            "Pull the bar down to your upper chest while leaning back slightly.",
+            "Slowly return the bar to the starting position, maintaining tension."
+        ];
+    }
+    if (n.includes('row')) {
+        return [
+            "Set up with a straight spine and grip the handle or bar.",
+            "Pull the weight toward your lower chest or abdomen, squeezing your shoulder blades.",
+            "Keep your elbows close to your body throughout the movement.",
+            "Extend your arms fully back to the starting position under control."
+        ];
+    }
+    if (n.includes('lateral raise') || n.includes('front raise') || n.includes('delt raise')) {
+        return [
+            "Stand tall with weights held at your sides or front.",
+            "With a slight bend in your elbows, raise the weights to shoulder height.",
+            "Pause briefly at the top of the movement.",
+            "Lower the weights slowly back to the starting position."
+        ];
+    }
+    if (n.includes('shoulder press') || n.includes('overhead press') || n.includes('arnold press') || n.includes('military press')) {
+        return [
+            "Sit or stand upright, holding the weights at shoulder height.",
+            "Press the weights directly overhead until your arms are fully extended.",
+            "Keep your core engaged to stabilize your lower back.",
+            "Lower the weights slowly back to shoulder height."
+        ];
+    }
+    if (n.includes('deadlift')) {
+        return [
+            "Stand with feet hip-width apart, shins close to the barbell.",
+            "Hinge at your hips and bend your knees to grip the bar with a flat back.",
+            "Drive through your heels, pushing hips forward to stand upright.",
+            "Hinge at the hips again and lower the bar back to the floor under control."
+        ];
+    }
+    if (n.includes('squat')) {
+        return [
+            "Stand with your feet shoulder-width apart, toes pointed slightly out.",
+            "Lower your hips back and down as if sitting in a chair.",
+            "Descend until your thighs are parallel to the ground or lower.",
+            "Drive through your heels to return to a standing position."
+        ];
+    }
+    if (n.includes('lunge') || n.includes('split squat')) {
+        return [
+            "Stand tall with feet hip-width apart.",
+            "Step forward (or place one foot behind you) and lower your hips.",
+            "Descend until your back knee is just above the floor.",
+            "Push back up to the starting position, driving through your front heel."
+        ];
+    }
+    if (n.includes('leg extension')) {
+        return [
+            "Sit in the machine and align your knees with the pivot point.",
+            "Place your shins behind the padded roller.",
+            "Extend your legs fully by contracting your quadriceps.",
+            "Slowly lower the weights back to the starting position."
+        ];
+    }
+    if (n.includes('leg curl')) {
+        return [
+            "Position yourself in the machine with the pad resting just below your calves.",
+            "Curl your legs down and back as far as possible.",
+            "Squeeze your hamstrings at the peak of the contraction.",
+            "Return the weight slowly to the starting position."
+        ];
+    }
+    if (n.includes('calf raise')) {
+        return [
+            "Place the balls of your feet on the edge of a step or platform.",
+            "Lower your heels below the platform to stretch the calf muscles.",
+            "Press up onto the balls of your feet as high as possible.",
+            "Lower back down slowly to the starting stretch position."
+        ];
+    }
+    if (n.includes('curl')) {
+        return [
+            "Hold the weights or bar with an underhand grip, arms fully extended.",
+            "Keep your elbows pinned close to your sides.",
+            "Curl the weight up toward your shoulders, contracting your biceps.",
+            "Lower the weight back down slowly to the starting position."
+        ];
+    }
+    if (n.includes('pushdown') || n.includes('kickback') || n.includes('skullcrusher') || n.includes('tricep extension')) {
+        return [
+            "Grip the handle or weights, keeping your upper arms pinned to your torso.",
+            "Extend your arms fully to contract your triceps.",
+            "Pause and squeeze your triceps at the point of full extension.",
+            "Slowly return to the starting position, keeping elbows stationary."
+        ];
+    }
+    if (n.includes('plank')) {
+        return [
+            "Support your bodyweight on your forearms and toes, elbows under shoulders.",
+            "Keep your body in a straight line from head to heels.",
+            "Engage your core, glutes, and thighs to maintain the position.",
+            "Breathe steadily and hold for the targeted duration."
+        ];
+    }
+    if (n.includes('crunch') || n.includes('situp') || n.includes('sit-up') || n.includes('leg raise') || n.includes('twist') || n.includes('toe touch')) {
+        return [
+            "Lie or sit in position, engaging your abdominal muscles.",
+            "Perform the movement with control, avoiding momentum.",
+            "Exhale on the exertion/contraction phase.",
+            "Return slowly to the starting position, keeping tension on the abs."
+        ];
+    }
+    if (n.includes('push-up') || n.includes('pushup') || n.includes('dip')) {
+        return [
+            "Position your hands shoulder-width apart, core tight.",
+            "Lower your body by bending your elbows until chest is close to the floor/bar.",
+            "Keep your elbows tucked at roughly 45 degrees.",
+            "Press yourself back up to the starting position."
+        ];
+    }
+    if (n.includes('pull-up') || n.includes('pullup') || n.includes('chin-up') || n.includes('chinup')) {
+        return [
+            "Hang from the bar with your arms fully extended.",
+            "Pull your body up by driving your elbows down toward your ribs.",
+            "Clear the bar with your chin and squeeze your upper back.",
+            "Lower your body under control back to a dead hang."
+        ];
+    }
+    
+    // Muscle-group based heuristics
+    if (muscleGroups && muscleGroups.length > 0) {
+        const mg = muscleGroups[0].toLowerCase();
+        if (mg === 'cardio') {
+            return [
+                "Position yourself correctly on the cardio equipment or floor.",
+                "Start the movement at a moderate, sustainable pace.",
+                "Maintain a steady breathing pattern and monitor your heart rate.",
+                "Continue for the targeted duration or distance."
+            ];
+        }
+    }
+
+    // Fallback: split description by sentences if available
+    if (description && description.trim().length > 10) {
+        const sentences = description
+            .split(/[.!?]+/)
+            .map(s => s.trim())
+            .filter(s => s.length > 5);
+        if (sentences.length >= 2) {
+            return sentences.map(s => s.endsWith('.') ? s : s + '.');
+        }
+    }
+    
+    return [
+        "Set up the equipment or position yourself with proper posture.",
+        "Perform the exercise with a slow and controlled range of motion.",
+        "Focus on contracting the target muscle group.",
+        "Maintain regular, steady breathing throughout the set."
+    ];
+}
+
 export const DataRepository = {
     
     // --- Workouts (Templates) ---
@@ -427,8 +607,8 @@ export const DataRepository = {
                 for (const exData of chunk) {
                     const ex = exData as any;
                     await db.runAsync(`
-                        INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, tips, created_at, updated_at, sync_status)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
+                        INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, tips, instructions, created_at, updated_at, sync_status)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
                     `, [
                         ex.id, 
                         ex.name,
@@ -440,6 +620,7 @@ export const DataRepository = {
                         ex.isActiveProgression ? 1 : 0,
                         ex.nextVariations ? JSON.stringify(ex.nextVariations) : JSON.stringify([]),
                         ex.tips ? JSON.stringify(ex.tips) : null,
+                        ex.instructions ? JSON.stringify(ex.instructions) : null,
                         new Date().toISOString(),
                         Date.now()
                     ]);
@@ -603,6 +784,14 @@ export const DataRepository = {
             description: row.description, // Added description
             nextVariations: row.next_variations ? JSON.parse(row.next_variations) : [],
             tips: row.tips ? JSON.parse(row.tips) : [],
+            instructions: (() => {
+                try {
+                    const parsed = row.instructions ? JSON.parse(row.instructions) : [];
+                    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                } catch {}
+                const muscleGroups = row.muscle_groups ? JSON.parse(row.muscle_groups) : [];
+                return generateDefaultInstructions(row.name, row.description || '', muscleGroups);
+            })(),
             // Legacy schema support for graceful fallback
             progressionId: row.progression_id,
             difficulty: row.difficulty || row.progression_level,
@@ -628,8 +817,8 @@ export const DataRepository = {
         await db.withTransactionAsync(async () => {
             for (const ex of exercises) {
                 await db.runAsync(`
-                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, tips, created_at, updated_at, sync_status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
+                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, tips, instructions, created_at, updated_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
                 `, [
                     ex.id || ex.exercise_id, 
                     ex.name || ex.exercise_name,
@@ -641,6 +830,7 @@ export const DataRepository = {
                     ex.isActiveProgression ? 1 : 0,
                     ex.nextVariations ? JSON.stringify(ex.nextVariations) : JSON.stringify([]),
                     ex.tips ? JSON.stringify(ex.tips) : null,
+                    ex.instructions ? JSON.stringify(ex.instructions) : null,
                     new Date().toISOString(),
                     now
                 ]);
