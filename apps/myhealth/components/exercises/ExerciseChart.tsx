@@ -38,7 +38,7 @@ export const ExerciseChart = ({
             marginBottom: 24,
             overflow: 'hidden'
         }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 20 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 20 }}>
                 {availableMetrics.length > 0 && (
                     <View style={{ 
                         flexDirection: 'row', 
