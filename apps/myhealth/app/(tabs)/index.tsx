@@ -303,7 +303,8 @@ export default function HomeScreen() {
             </RaisedCard>} 
       />
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 140 }}>
-        <View className="mb-6">
+        <View className="flex-row flex-wrap">
+          <View className="w-1/2 pr-2 mb-6">
              <BodyWeightCard 
                 weight={latestWeight} 
                 history={weightHistory}
@@ -315,33 +316,32 @@ export default function HomeScreen() {
                 textColor={theme.textMuted}
                 isLoading={isLoading}
              />
+          </View>
+          <View className="w-1/2 pl-2 mb-6">
+               <VolumeTrendCard
+                  history={volumeHistoryData}
+                  selectedRange={selectedVolumeRange}
+                  onRangeChange={setSelectedVolumeRange}
+                  rangeAverage={rangeAverageVolume}
+                  rangeTotal={rangeTotalVolume}
+                  workoutCount={rangeWorkoutCount}
+                  primaryColor={theme.primary}
+                  textColor={theme.textMuted}
+                  isLoading={isLoading}
+               />
+          </View>
+          <View className="w-1/2 pr-2 mb-6">
+               <TotalWorkoutsCard
+                  history={workoutsHistoryData}
+                  selectedRange={selectedWorkoutsRange}
+                  onRangeChange={setSelectedWorkoutsRange}
+                  workoutCount={totalWorkoutCount}
+                  primaryColor={theme.primary}
+                  textColor={theme.textMuted}
+                  isLoading={isLoading}
+               />
+          </View>
         </View>
-         <View className="mb-6 flex-row">
-              <View className="w-1/2 pr-2">
-                   <VolumeTrendCard
-                      history={volumeHistoryData}
-                      selectedRange={selectedVolumeRange}
-                      onRangeChange={setSelectedVolumeRange}
-                      rangeAverage={rangeAverageVolume}
-                      rangeTotal={rangeTotalVolume}
-                      workoutCount={rangeWorkoutCount}
-                      primaryColor={theme.primary}
-                      textColor={theme.textMuted}
-                      isLoading={isLoading}
-                   />
-              </View>
-              <View className="w-1/2 pl-2">
-                   <TotalWorkoutsCard
-                      history={workoutsHistoryData}
-                      selectedRange={selectedWorkoutsRange}
-                      onRangeChange={setSelectedWorkoutsRange}
-                      workoutCount={totalWorkoutCount}
-                      primaryColor={theme.primary}
-                      textColor={theme.textMuted}
-                      isLoading={isLoading}
-                   />
-              </View>
-         </View>
       </ScrollView>
 
       <WeightLogModal

@@ -1,11 +1,8 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Modal, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
 import { BodyWeightChart } from './BodyWeightChart';
 import { SegmentedControl, SegmentedControlOption } from '../ui/SegmentedControl';
 import { HollowedCard, useUITheme, Skeleton, IconSymbol, RaisedCard } from '@mysuite/ui';
-
-// Defined locally to avoid circular dependencies if any
-// Update: Importing from TimeSeriesChart to ensure consistency
 import { DateRange } from '../ui/TimeSeriesChart';
 
 const RANGE_OPTIONS: SegmentedControlOption<DateRange>[] = [
@@ -40,11 +37,12 @@ export function BodyWeightCard({
   isLoading,
 }: BodyWeightCardProps) {
   const theme = useUITheme();
+  const [modalVisible, setModalVisible] = React.useState(false);
   const [selectedPoint, setSelectedPoint] = React.useState<{ value: number; date: string } | null>(null);
 
   React.useEffect(() => {
     setSelectedPoint(null);
-  }, [selectedRange]);
+  }, [selectedRange, modalVisible]);
 
   const displayWeight = selectedPoint ? selectedPoint.value : (rangeAverage || weight);
 
@@ -90,108 +88,206 @@ export function BodyWeightCard({
 
   return (
     <View className="mb-4">
-      <View className="flex-row justify-between items-center mb-2">
-        <View className="flex-row items-center">
-            <Text className="font-semibold text-base text-light dark:text-dark">Body Weight</Text>
+      {/* Widget Layout on Home Screen */}
+      <RaisedCard 
+        className="p-4 active:opacity-95"
+        style={{ borderRadius: 16 }}
+      >
+        <View className="flex-col gap-2">
+          {/* Top Row: Icon, range, chevron */}
+          <View className="flex-row justify-between items-center">
+            <TouchableOpacity
+              testID="bodyweight-widget-btn"
+              onPress={() => setModalVisible(true)}
+              activeOpacity={0.7}
+            >
+              <View 
+                className="w-8 h-8 items-center justify-center rounded-xl"
+                style={{ backgroundColor: (primaryColor || theme.primary) + '15' }} // ~8% opacity tint
+              >
+                <IconSymbol name="scalemass.fill" size={16} color={primaryColor || theme.primary} />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              testID="bodyweight-widget-header-right-btn"
+              onPress={() => setModalVisible(true)}
+              activeOpacity={0.7}
+              className="flex-row items-center gap-1"
+            >
+              <Text className="text-[10px] text-light-muted dark:text-dark-muted font-semibold bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded">
+                {selectedRange === 'Week' ? 'Week' : selectedRange === 'Month' ? 'Month' : selectedRange === '6Month' ? '6M' : selectedRange === 'Year' ? 'Year' : selectedRange === 'Day' ? 'Day' : selectedRange}
+              </Text>
+              <IconSymbol name="chevron.right" size={12} color={textColor || theme.textMuted} />
+            </TouchableOpacity>
+          </View>
+          
+          {/* Bottom Row: Stats on left, Quick Log Action on right */}
+          <View className="flex-row justify-between items-end w-full">
+            {/* Main Info (taps open details) */}
+            <TouchableOpacity
+              testID="bodyweight-widget-info-btn"
+              onPress={() => setModalVisible(true)}
+              activeOpacity={0.7}
+              className="flex-1 mr-2"
+            >
+              <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5" numberOfLines={1}>
+                Body Weight
+              </Text>
+              <View className="flex-row items-baseline">
+                <Text className="text-lg font-bold text-light dark:text-dark" numberOfLines={1}>
+                  {weight ? weight.toLocaleString() : '--'}
+                </Text>
+                <Text className="text-[10px] text-light-muted dark:text-dark-muted ml-0.5">lbs</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              testID="quick-log-weight-btn" 
+              onPress={onLogWeight}
+              activeOpacity={0.7}
+              className="w-8 h-8 items-center justify-center bg-black/5 dark:bg-white/5 rounded-lg active:scale-95"
+            >
+              <IconSymbol name="plus" size={18} color={primaryColor || theme.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
-        <RaisedCard 
-            onPress={onLogWeight}
-            className="w-10 h-10 p-0 items-center justify-center active:h-9"
-            style={{ borderRadius: 20 }}
-        >
-          <IconSymbol name="plus" size={24} color={primaryColor || theme.primary} />
-        </RaisedCard>
-      </View>
-      
-      <View className="mt-2">
-        {displayWeight ? (
-            <View className="w-full">
+      </RaisedCard>
+
+      {/* Chart Overlay Modal Window */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View className="flex-1 justify-center items-center bg-black/50 p-4">
+          <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+            <View className="absolute inset-0" />
+          </TouchableWithoutFeedback>
+
+          <View className="w-full bg-light dark:bg-dark-lighter rounded-2xl overflow-hidden p-6" style={{ maxHeight: '90%' }}>
+            {/* Header */}
+            <View className="flex-row justify-between items-center mb-6">
+              <View className="flex-row items-center gap-2">
+                <IconSymbol name="scalemass.fill" size={20} color={primaryColor || theme.primary} />
+                <Text className="text-lg font-bold text-light dark:text-dark">Body Weight Trends</Text>
+              </View>
+              
+              <View className="flex-row items-center gap-2">
+                <RaisedCard 
+                  testID="modal-log-weight-btn"
+                  onPress={onLogWeight}
+                  style={{ borderRadius: 9999 }}
+                  className="w-10 h-10 p-0 items-center justify-center active:h-9"
+                >
+                  <IconSymbol name="plus" size={20} color={theme.primary} />
+                </RaisedCard>
+                
+                <RaisedCard 
+                  testID="close-modal-btn"
+                  onPress={() => setModalVisible(false)} 
+                  style={{ borderRadius: 9999 }}
+                  className="w-10 h-10 p-0 items-center justify-center active:h-9"
+                >
+                  <IconSymbol name="xmark" size={20} color={theme.primary} />
+                </RaisedCard>
+              </View>
+            </View>
+
+            {/* Modal Body */}
+            {displayWeight ? (
+              <View className="w-full">
                 <View className="mb-4">
-                    <View className="flex-row justify-between items-center mb-1">
-                        <SegmentedControl
-                            options={RANGE_OPTIONS}
-                            value={selectedRange}
-                            onChange={onRangeChange}
-                        />
+                  <View className="flex-row justify-between items-center mb-2">
+                    <SegmentedControl
+                      options={RANGE_OPTIONS}
+                      value={selectedRange}
+                      onChange={onRangeChange}
+                    />
+                  </View>
+                  <View className="flex-row items-baseline flex-wrap mt-2">
+                    <Text 
+                      className="text-3xl font-bold mr-1 text-light dark:text-dark shrink"
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.5}
+                    >
+                      {displayWeight.toLocaleString()}
+                    </Text>
+                    <Text className="text-light-muted dark:text-dark-muted text-base mr-3">lbs</Text>
+                    
+                    <View className="flex-col justify-center">
+                      <Text 
+                        className="text-[11px] font-semibold text-light-muted dark:text-dark-muted"
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {getSelectionLabel()}
+                      </Text>
                     </View>
-                    <View className="flex-row items-baseline">
-                        <Text 
-                            className="text-3xl font-bold mr-1 text-light dark:text-dark shrink"
-                            numberOfLines={1}
-                            adjustsFontSizeToFit
-                            minimumFontScale={0.5}
-                        >
-                            {displayWeight.toLocaleString()}
-                        </Text>
-                        <Text className="text-light-muted dark:text-dark-muted text-base">lbs</Text>
-                        <Text 
-                            className="ml-2 text-[11px] font-medium text-light-muted dark:text-dark-muted"
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                        >
-                            {getSelectionLabel()}
-                        </Text>
-                    </View>
+                  </View>
                 </View>
                 {isLoading ? (
-                    <View className="h-40 items-center justify-center bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
-                        <Skeleton height="70%" width="90%" borderRadius={4} />
-                    </View>
+                  <View className="h-40 items-center justify-center bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
+                    <Skeleton height="70%" width="90%" borderRadius={4} />
+                  </View>
                 ) : history.length > 0 ? (
-                    <BodyWeightChart 
-                        data={history} 
-                        color={primaryColor}
-                        textColor={textColor}
-                        maxPoints={
-                            selectedRange === 'Day' ? 8 :
-                            selectedRange === 'Week' ? 7 : 
-                            selectedRange === 'Month' ? 31 : 
-                            selectedRange === '6Month' ? 26 : 
-                            12
-                        }
-                        selectedRange={selectedRange}
-                        aggregation="avg"
-                        onPointSelect={(point) => {
-                            // If the same point is clicked again, reset to average
-                            if (point && selectedPoint && point.date === selectedPoint.date) {
-                                setSelectedPoint(null);
-                            } else {
-                                setSelectedPoint(point);
-                            }
-                        }}
-                    />
+                  <BodyWeightChart 
+                    data={history} 
+                    color={primaryColor}
+                    textColor={textColor}
+                    maxPoints={
+                      selectedRange === 'Day' ? 8 :
+                      selectedRange === 'Week' ? 7 : 
+                      selectedRange === 'Month' ? 31 : 
+                      selectedRange === '6Month' ? 26 : 
+                      12
+                    }
+                    selectedRange={selectedRange}
+                    aggregation="avg"
+                    onPointSelect={(point) => {
+                      if (point && selectedPoint && point.date === selectedPoint.date) {
+                        setSelectedPoint(null);
+                      } else {
+                        setSelectedPoint(point);
+                      }
+                    }}
+                  />
                 ) : (
-                    <View className="py-8 bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
-                        <Text className="text-light-muted dark:text-dark-muted text-center italic text-sm">
-                            No data for {selectedRange === 'Day' ? 'today' : selectedRange === '6Month' ? 'this period' : selectedRange === 'Week' ? 'this week' : selectedRange === 'Month' ? 'this month' : 'this year'}.
-                        </Text>
-                    </View>
+                  <View className="py-8 bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
+                    <Text className="text-light-muted dark:text-dark-muted text-center italic text-sm">
+                      No data for {selectedRange === 'Day' ? 'today' : selectedRange === '6Month' ? 'this period' : selectedRange === 'Week' ? 'this week' : selectedRange === 'Month' ? 'this month' : 'this year'}.
+                    </Text>
+                  </View>
                 )}
-            </View>
-        ) : isLoading ? (
-            <View>
+              </View>
+            ) : isLoading ? (
+              <View>
                 <View className="mb-4">
-                    <View className="flex-row justify-between items-center mb-1">
-                        <View className="flex-row items-baseline">
-                            <Skeleton height={32} width={60} className="mr-2" />
-                            <Skeleton height={14} width={20} />
-                        </View>
-                        <Skeleton height={32} width={120} borderRadius={16} />
+                  <View className="flex-row justify-between items-center mb-1">
+                    <View className="flex-row items-baseline">
+                      <Skeleton height={32} width={60} className="mr-2" />
+                      <Skeleton height={14} width={20} />
                     </View>
-                    <Skeleton height={12} width={100} />
+                    <Skeleton height={32} width={120} borderRadius={16} />
+                  </View>
+                  <Skeleton height={12} width={100} />
                 </View>
                 <View className="h-40 items-center justify-center bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
-                    <Skeleton height="70%" width="90%" borderRadius={4} />
+                  <Skeleton height="70%" width="90%" borderRadius={4} />
                 </View>
-            </View>
-        ) : (
-            <HollowedCard className="p-8">
+              </View>
+            ) : (
+              <HollowedCard className="p-8">
                 <Text className="text-light-muted dark:text-dark-muted text-center italic">
-                    No weight metrics found. Log your first weight to see your progress!
+                  No weight metrics found. Log your first weight to see your progress!
                 </Text>
-            </HollowedCard>
-        )}
-      </View>
+              </HollowedCard>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
