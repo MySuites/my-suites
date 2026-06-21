@@ -11,6 +11,7 @@ import { BodyWeightService, BodyWeightEntry } from '../../services/BodyWeightSer
 import { DateRange } from '../../components/ui/TimeSeriesChart';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { VolumeTrendCard } from '../../components/workouts/VolumeTrendCard';
+import { TotalWorkoutsCard } from '../../components/workouts/TotalWorkoutsCard';
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -25,6 +26,7 @@ export default function HomeScreen() {
   const [selectedRange, setSelectedRange] = useState<DateRange>('Week');
   const { workoutHistory } = useWorkoutManager();
   const [selectedVolumeRange, setSelectedVolumeRange] = useState<DateRange>('Week');
+  const [selectedWorkoutsRange, setSelectedWorkoutsRange] = useState<DateRange>('Week');
 
   const fetchLatestWeight = useCallback(async () => {
     const weight = await BodyWeightService.getLatestWeight(user?.id || null);
@@ -227,6 +229,42 @@ export default function HomeScreen() {
     };
   }, [workoutHistory, selectedVolumeRange]);
 
+  // Memoized workout count history & summary stats
+  const { workoutsHistoryData, totalWorkoutCount } = useMemo(() => {
+    if (!workoutHistory || workoutHistory.length === 0) {
+      return { workoutsHistoryData: [], totalWorkoutCount: 0 };
+    }
+
+    const rawWorkoutsCount = workoutHistory.map(log => ({
+      value: 1,
+      date: log.workoutDate,
+    }));
+
+    const now = new Date();
+    let startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+
+    if (selectedWorkoutsRange === 'Week') {
+      startDate.setDate(now.getDate() - 6);
+    } else if (selectedWorkoutsRange === 'Month') {
+      startDate.setDate(now.getDate() - 30);
+    } else if (selectedWorkoutsRange === '6Month') {
+      startDate.setDate(now.getDate() - 180);
+    } else if (selectedWorkoutsRange === 'Year') {
+      startDate.setDate(now.getDate() - 365);
+    }
+
+    const filtered = rawWorkoutsCount.filter(item => {
+      const itemDate = new Date(item.date);
+      return itemDate >= startDate;
+    });
+
+    return {
+      workoutsHistoryData: rawWorkoutsCount,
+      totalWorkoutCount: filtered.length,
+    };
+  }, [workoutHistory, selectedWorkoutsRange]);
+
      useEffect(() => {
         const task = InteractionManager.runAfterInteractions(() => {
             fetchLatestWeight();
@@ -278,21 +316,32 @@ export default function HomeScreen() {
                 isLoading={isLoading}
              />
         </View>
-        <View className="mb-6 flex-row">
-             <View className="w-1/2 pr-2">
-                  <VolumeTrendCard
-                     history={volumeHistoryData}
-                     selectedRange={selectedVolumeRange}
-                     onRangeChange={setSelectedVolumeRange}
-                     rangeAverage={rangeAverageVolume}
-                     rangeTotal={rangeTotalVolume}
-                     workoutCount={rangeWorkoutCount}
-                     primaryColor={theme.primary}
-                     textColor={theme.textMuted}
-                     isLoading={isLoading}
-                  />
-             </View>
-        </View>
+         <View className="mb-6 flex-row">
+              <View className="w-1/2 pr-2">
+                   <VolumeTrendCard
+                      history={volumeHistoryData}
+                      selectedRange={selectedVolumeRange}
+                      onRangeChange={setSelectedVolumeRange}
+                      rangeAverage={rangeAverageVolume}
+                      rangeTotal={rangeTotalVolume}
+                      workoutCount={rangeWorkoutCount}
+                      primaryColor={theme.primary}
+                      textColor={theme.textMuted}
+                      isLoading={isLoading}
+                   />
+              </View>
+              <View className="w-1/2 pl-2">
+                   <TotalWorkoutsCard
+                      history={workoutsHistoryData}
+                      selectedRange={selectedWorkoutsRange}
+                      onRangeChange={setSelectedWorkoutsRange}
+                      workoutCount={totalWorkoutCount}
+                      primaryColor={theme.primary}
+                      textColor={theme.textMuted}
+                      isLoading={isLoading}
+                   />
+              </View>
+         </View>
       </ScrollView>
 
       <WeightLogModal

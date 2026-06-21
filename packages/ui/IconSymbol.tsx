@@ -26,6 +26,7 @@ const MAPPING = {
   'chevron.down': 'keyboard-arrow-down',
   'chevron.up': 'keyboard-arrow-up',
   'bolt.fill': 'flash-on',
+  'flame.fill': 'whatshot',
   'plus': 'add',
   'pencil': 'edit',
   'list.bullet.clipboard': 'list',
