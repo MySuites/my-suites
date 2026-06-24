@@ -75,12 +75,20 @@ function generateDefaultInstructions(name: string, description: string, muscleGr
             "Drive through your heels to return to a standing position."
         ];
     }
-    if (n.includes('lunge') || n.includes('split squat')) {
+    if (n.includes('lunge')) {
         return [
             "Stand tall with feet hip-width apart.",
-            "Step forward (or place one foot behind you) and lower your hips.",
+            "Step forward and lower your hips.",
             "Descend until your back knee is just above the floor.",
             "Push back up to the starting position, driving through your front heel."
+        ];
+    }
+    if (n.includes('split squat') || n.includes('bulgarian')) {
+        return [
+            "Stand with one foot forward and the other foot back in a staggered stance.",
+            "Lower your hips by bending both knees to roughly 90 degrees.",
+            "Descend until your back knee is just above the floor.",
+            "Drive through your front heel to return to the starting position without moving your feet."
         ];
     }
     if (n.includes('leg extension')) {
@@ -109,10 +117,10 @@ function generateDefaultInstructions(name: string, description: string, muscleGr
     }
     if (n.includes('curl')) {
         return [
-            "Hold the weights or bar with an underhand grip, arms fully extended.",
-            "Keep your elbows pinned close to your sides.",
-            "Curl the weight up toward your shoulders, contracting your biceps.",
-            "Lower the weight back down slowly to the starting position."
+            "Hold the weight with an underhand grip, arms fully extended.",
+            "Curl the weight up towards your shoulders by flexing your biceps.",
+            "Keep your elbows stationary and close to your torso.",
+            "Lower the weight slowly back to the starting position."
         ];
     }
     if (n.includes('pushdown') || n.includes('kickback') || n.includes('skullcrusher') || n.includes('tricep extension')) {
@@ -186,6 +194,45 @@ function generateDefaultInstructions(name: string, description: string, muscleGr
         "Focus on contracting the target muscle group.",
         "Maintain regular, steady breathing throughout the set."
     ];
+}
+
+export function inferEquipment(name: string): string {
+    const n = name.toLowerCase();
+    if (n.includes('dumbbell')) return 'dumbbell';
+    if (n.includes('barbell')) return 'barbell';
+    if (n.includes('cable')) return 'cable';
+    if (n.includes('smith') || n.includes('machine') || n.includes('leg press') || n.includes('leg extension') || n.includes('leg curl') || n.includes('lat pulldown') || n.includes('seated row') || n.includes('chest press') || n.includes('pec deck')) return 'machine';
+    if (n.includes('push-up') || n.includes('pushup') || n.includes('pull-up') || n.includes('pullup') || n.includes('dip') || n.includes('bodyweight') || n.includes('handstand') || n.includes('planche') || n.includes('lever') || n.includes('plank') || n.includes('crunch') || n.includes('situp') || n.includes('squat')) return 'bodyweight';
+    return 'other';
+}
+
+export function inferMovementType(name: string, equipment: string): string {
+    const n = name.toLowerCase();
+    if (n.includes('single') || n.includes('unilateral') || n.includes('one-arm') || n.includes('one arm') || n.includes('single-arm') || n.includes('single arm') || n.includes('single-leg') || n.includes('single leg') || n.includes('pistol') || n.includes('shrimp') || n.includes('dragon') || n.includes('lunge') || n.includes('split squat') || n.includes('bulgarian') || n.includes('kickback') || n.includes('alternate')) {
+        return 'unilateral';
+    }
+    if (equipment === 'dumbbell') {
+        return 'unilateral';
+    }
+    return 'uniform';
+}
+
+export function inferAngle(name: string): string {
+    const n = name.toLowerCase();
+    if (n.includes('incline')) return 'incline';
+    if (n.includes('decline')) return 'decline';
+    return 'flat';
+}
+
+export function inferAttachment(name: string): string {
+    const n = name.toLowerCase();
+    if (n.includes('neutral-grip') || n.includes('neutral grip')) return 'Neutral-Grip Handles';
+    if (n.includes('close-grip') || n.includes('close grip')) return 'Close-Grip V-Bar';
+    if (n.includes('wide-grip') || n.includes('wide grip')) return 'Wide-Grip Bar';
+    if (n.includes('straight bar')) return 'Straight Bar';
+    if (n.includes('lat bar') || n.includes('lat_pulldown') || n.includes('pulldown')) return 'Lat Bar';
+    if (n === 'seated cable row' || n.includes('seated row')) return 'Close-Grip V-Bar';
+    return '';
 }
 
 export const DataRepository = {
@@ -362,11 +409,13 @@ export const DataRepository = {
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
         const exercisesDef = await db.getAllAsync<any>('SELECT * FROM exercises');
         
-        const exerciseMetaMap = new Map<string, { properties: string[] }>();
+        const exerciseMetaMap = new Map<string, { properties: string[], equipment?: string, attachment?: string }>();
         exercisesDef.forEach(e => {
             if (e.id) {
                  exerciseMetaMap.set(e.id, {
-                     properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : []
+                     properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : [],
+                     equipment: e.equipment || undefined,
+                     attachment: e.attachment || undefined,
                  });
             }
         });
@@ -383,6 +432,7 @@ export const DataRepository = {
                 const exName = set.exercise_name || 'Unknown Exercise';
 
                 if (!exercisesMap.has(exId)) {
+                    const meta = exerciseMetaMap.get(exId);
                     exercisesMap.set(exId, {
                         id: exId,
                         name: exName,
@@ -390,7 +440,9 @@ export const DataRepository = {
                         reps: 0,
                         completedSets: 0,
                         logs: [],
-                        properties: exerciseMetaMap.get(exId)?.properties || [],
+                        properties: meta?.properties || [],
+                        equipment: set.equipment || meta?.equipment || inferEquipment(exName),
+                        attachment: set.attachment || meta?.attachment || inferAttachment(exName),
                     });
                 }
 
@@ -456,8 +508,8 @@ export const DataRepository = {
                              for (const s of ex.logs) {
                                  if (!s) continue; // Defensive check
                                  await db.runAsync(`
-                                    INSERT OR REPLACE INTO set_logs (id, workout_log_id, exercise_id, exercise_name, weight, reps, reps_left, reps_right, distance, duration, bodyweight, rpe, created_at, sync_status)
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    INSERT OR REPLACE INTO set_logs (id, workout_log_id, exercise_id, exercise_name, weight, reps, reps_left, reps_right, distance, duration, bodyweight, rpe, equipment, attachment, created_at, sync_status)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                  `, [
                                      s.id || uuid.v4(),
                                      l.id,
@@ -471,6 +523,8 @@ export const DataRepository = {
                                      s.duration ?? null,
                                      s.bodyweight ? 1 : 0,
                                      s.rpe ?? null,
+                                     ex.equipment ?? null,
+                                     ex.attachment ?? null,
                                      l.createdAt || null,
                                      'synced' 
                                  ]);
@@ -524,8 +578,8 @@ export const DataRepository = {
                     if (ex.logs) {
                         for (const s of ex.logs) {
                             await db.runAsync(`
-                                INSERT INTO set_logs (id, workout_log_id, exercise_id, exercise_name, weight, reps, reps_left, reps_right, distance, duration, bodyweight, rpe, created_at, sync_status)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+                                INSERT INTO set_logs (id, workout_log_id, exercise_id, exercise_name, weight, reps, reps_left, reps_right, distance, duration, bodyweight, rpe, equipment, attachment, created_at, sync_status)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
                             `, [
                                 s.id || uuid.v4(),
                                 id,
@@ -539,6 +593,8 @@ export const DataRepository = {
                                 s.duration ?? null,
                                 s.bodyweight ? 1 : 0,
                                 s.rpe ?? null,
+                                ex.equipment ?? null,
+                                ex.attachment ?? null,
                                 timestamp
                             ]);
                         }
@@ -607,8 +663,8 @@ export const DataRepository = {
                 for (const exData of chunk) {
                     const ex = exData as any;
                     await db.runAsync(`
-                        INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, tips, instructions, created_at, updated_at, sync_status)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
+                        INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, tips, instructions, equipment, movement_type, attachment, created_at, updated_at, sync_status)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
                     `, [
                         ex.id, 
                         ex.name,
@@ -621,6 +677,9 @@ export const DataRepository = {
                         ex.nextVariations ? JSON.stringify(ex.nextVariations) : JSON.stringify([]),
                         ex.tips ? JSON.stringify(ex.tips) : null,
                         ex.instructions ? JSON.stringify(ex.instructions) : null,
+                        ex.equipment ? (Array.isArray(ex.equipment) ? JSON.stringify(ex.equipment) : JSON.stringify([ex.equipment])) : null,
+                        ex.movementType || null,
+                        ex.attachment || null,
                         new Date().toISOString(),
                         Date.now()
                     ]);
@@ -775,28 +834,49 @@ export const DataRepository = {
     getExercises: async (): Promise<any[]> => {
         const db = await getDb();
         const result = await db.getAllAsync<any>('SELECT * FROM exercises WHERE deleted_at IS NULL ORDER BY name ASC');
-        return result.map(row => ({
-            ...row,
-            id: row.id,
-            name: row.name,
-            muscle_groups: row.muscle_groups ? JSON.parse(row.muscle_groups) : [],
-            properties: row.properties ? row.properties.split(',').map((s: string) => s.trim()) : [],
-            description: row.description, // Added description
-            nextVariations: row.next_variations ? JSON.parse(row.next_variations) : [],
-            tips: row.tips ? JSON.parse(row.tips) : [],
-            instructions: (() => {
+        return result.map(row => {
+            let eq = row.equipment;
+            if (eq && typeof eq === 'string' && eq.startsWith('[')) {
                 try {
-                    const parsed = row.instructions ? JSON.parse(row.instructions) : [];
-                    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                    eq = JSON.parse(eq);
                 } catch {}
-                const muscleGroups = row.muscle_groups ? JSON.parse(row.muscle_groups) : [];
-                return generateDefaultInstructions(row.name, row.description || '', muscleGroups);
-            })(),
-            // Legacy schema support for graceful fallback
-            progressionId: row.progression_id,
-            difficulty: row.difficulty || row.progression_level,
-            isActiveProgression: row.is_active_progression === 1
-        }));
+            }
+            if (eq && !Array.isArray(eq)) {
+                eq = [eq];
+            }
+            if (!eq) {
+                eq = [inferEquipment(row.name)];
+            }
+            const mov = row.movement_type || inferMovementType(row.name, Array.isArray(eq) ? eq[0] : eq);
+            const ang = row.angle || inferAngle(row.name);
+            const att = row.attachment || inferAttachment(row.name);
+            return {
+                ...row,
+                id: row.id,
+                name: row.name,
+                muscle_groups: row.muscle_groups ? JSON.parse(row.muscle_groups) : [],
+                properties: row.properties ? row.properties.split(',').map((s: string) => s.trim()) : [],
+                description: row.description, // Added description
+                nextVariations: row.next_variations ? JSON.parse(row.next_variations) : [],
+                tips: row.tips ? JSON.parse(row.tips) : [],
+                instructions: (() => {
+                    try {
+                        const parsed = row.instructions ? JSON.parse(row.instructions) : [];
+                        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                    } catch {}
+                    const muscleGroups = row.muscle_groups ? JSON.parse(row.muscle_groups) : [];
+                    return generateDefaultInstructions(row.name, row.description || '', muscleGroups);
+                })(),
+                // Legacy schema support for graceful fallback
+                progressionId: row.progression_id,
+                difficulty: row.difficulty || row.progression_level,
+                isActiveProgression: row.is_active_progression === 1,
+                equipment: eq,
+                movementType: mov,
+                angle: ang,
+                attachment: att
+            };
+        });
     },
 
     deleteExercise: async (id: string): Promise<void> => {
@@ -817,8 +897,8 @@ export const DataRepository = {
         await db.withTransactionAsync(async () => {
             for (const ex of exercises) {
                 await db.runAsync(`
-                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, tips, instructions, created_at, updated_at, sync_status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
+                    INSERT OR REPLACE INTO exercises (id, name, muscle_groups, properties, description, progression_id, difficulty, is_active_progression, next_variations, tips, instructions, equipment, movement_type, attachment, created_at, updated_at, sync_status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')
                 `, [
                     ex.id || ex.exercise_id, 
                     ex.name || ex.exercise_name,
@@ -831,6 +911,9 @@ export const DataRepository = {
                     ex.nextVariations ? JSON.stringify(ex.nextVariations) : JSON.stringify([]),
                     ex.tips ? JSON.stringify(ex.tips) : null,
                     ex.instructions ? JSON.stringify(ex.instructions) : null,
+                    ex.equipment || null,
+                    ex.movementType || null,
+                    ex.attachment || null,
                     new Date().toISOString(),
                     now
                 ]);

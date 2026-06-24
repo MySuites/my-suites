@@ -15,6 +15,8 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
             properties: exercise.properties, // Copy properties
             type: exercise.rawType,
             isNewlyAdded: exercise.isNewlyAdded,
+            attachment: exercise.attachment, // Copy attachment
+            equipment: Array.isArray(exercise.equipment) ? exercise.equipment[0] : exercise.equipment,   // Copy equipment
             setTargets: Array.from(
                 { length: 3 },
                 () => ({ reps: 10, weight: 0, duration: 0, distance: 0 }),
@@ -134,6 +136,22 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
         });
     }
 
+    function updateExerciseAttachment(exerciseIndex: number, attachment: string) {
+        setWorkoutDraftExercises((prev) => {
+            const newArr = [...prev];
+            newArr[exerciseIndex] = { ...newArr[exerciseIndex], attachment };
+            return newArr;
+        });
+    }
+
+    function updateExerciseEquipment(exerciseIndex: number, equipment: string) {
+        setWorkoutDraftExercises((prev) => {
+            const newArr = [...prev];
+            newArr[exerciseIndex] = { ...newArr[exerciseIndex], equipment };
+            return newArr;
+        });
+    }
+
     return {
         workoutDraftExercises,
         setWorkoutDraftExercises,
@@ -143,6 +161,8 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
         reorderExercises,
         updateSetTarget,
         updateExerciseRestTime,
+        updateExerciseAttachment,
+        updateExerciseEquipment,
         addSet,
         removeSet,
     };

@@ -5,10 +5,157 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, useToast, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
 import { fetchExercises } from '../../providers/WorkoutManagerProvider';
-import DefaultExercises, { Groups } from '../../assets/data/default-exercises';
+import DefaultExercises from '../../assets/data/default-exercises';
+import ExerciseDetailsScreen from './details';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
+
+function getCollapsedGroupDetails(comp: any[]) {
+    const ids = comp.map(e => e.id);
+    
+    if (ids.some(id => id.includes('split_squat') || id.includes('bulgarian'))) {
+        return {
+            name: "Split Squat",
+            representativeId: "split_squat",
+            subtitle: `${comp.length} variations (Bodyweight, Bulgarian...)`
+        };
+    }
+    if (ids.some(id => id.includes('lunge'))) {
+        return {
+            name: "Lunge",
+            representativeId: "lunges",
+            subtitle: `${comp.length} variations (Bodyweight, Weighted...)`
+        };
+    }
+    if (ids.includes('push_up') || ids.includes('pushup')) {
+        return {
+            name: "Push-up",
+            representativeId: "push_up",
+            subtitle: `${comp.length} variations (Wall, Incline, Knee, Decline...)`
+        };
+    }
+    if (ids.some(id => id === 'weighted_squat' || id === 'barbell_squat')) {
+        return {
+            name: "Weighted Squat",
+            representativeId: "weighted_squat",
+            subtitle: `${comp.length} variations (Goblet, Barbell, Hack, Pendulum...)`
+        };
+    }
+    if (ids.some(id => id.includes('squat'))) {
+        return {
+            name: "Squat",
+            representativeId: "bodyweight_squat",
+            subtitle: `${comp.length} variations (Bodyweight, Sissy, Shrimp, Pistol...)`
+        };
+    }
+    if (ids.some(id => id.includes('tricep') || id.includes('skullcrusher'))) {
+        return {
+            name: "Tricep Extension / Pushdown",
+            representativeId: "cable_tricep_pushdown",
+            subtitle: `${comp.length} variations (Cable, Dumbbell, Overhead, Kickbacks...)`
+        };
+    }
+    if (ids.some(id => id.includes('lateral_raise') || id.includes('delt_raise'))) {
+        return {
+            name: "Lateral Raise",
+            representativeId: "lateral_raise",
+            subtitle: `${comp.length} variations (Dumbbell, Cable, Machine...)`
+        };
+    }
+    if (ids.some(id => id.includes('shoulder_press') || id.includes('overhead_press') || id.includes('arnold_press'))) {
+        return {
+            name: "Shoulder Press",
+            representativeId: "shoulder_press",
+            subtitle: `${comp.length} variations (Dumbbell, Barbell, Machine, Arnold...)`
+        };
+    }
+    if (ids.some(id => id.includes('deadlift'))) {
+        return {
+            name: "Deadlift",
+            representativeId: "deadlift",
+            subtitle: `${comp.length} variations (Standard, Romanian...)`
+        };
+    }
+    if (ids.some(id => id.includes('calf_raise'))) {
+        return {
+            name: "Calf Raise",
+            representativeId: "calf_raise",
+            subtitle: `${comp.length} variations (Bodyweight, Dumbbell, Machine...)`
+        };
+    }
+    if (ids.some(id => id.includes('leg_curl'))) {
+        return {
+            name: "Leg Curl",
+            representativeId: "seated_leg_curl",
+            subtitle: `${comp.length} variations (Seated, Lying...)`
+        };
+    }
+    if (ids.some(id => id.includes('leg_press'))) {
+        return {
+            name: "Leg Press",
+            representativeId: "leg_press",
+            subtitle: `${comp.length} variations (Standard, Horizontal...)`
+        };
+    }
+    if (ids.some(id => id.includes('plank'))) {
+        return {
+            name: "Plank",
+            representativeId: "plank",
+            subtitle: `${comp.length} variations (Standard, Side, Weighted...)`
+        };
+    }
+    if (ids.includes('pull_up') || ids.includes('pullup')) {
+        return {
+            name: "Pull-up",
+            representativeId: "pull_up",
+            subtitle: `${comp.length} variations (Standard, Weighted...)`
+        };
+    }
+    if (ids.includes('chin_up') || ids.includes('chinup')) {
+        return {
+            name: "Chin-up",
+            representativeId: "chin_up",
+            subtitle: `${comp.length} variations (Standard, Weighted...)`
+        };
+    }
+    if (ids.some(id => id.includes('handstand') || id.includes('crow_pose') || id.includes('frog_stand'))) {
+        return {
+            name: "Handstand / Balance",
+            representativeId: "handstand",
+            subtitle: `${comp.length} variations (Frog Stand, Crow, Wall, Freestanding...)`
+        };
+    }
+    if (ids.some(id => id.includes('planche'))) {
+        return {
+            name: "Planche",
+            representativeId: "tuck_planche",
+            subtitle: `${comp.length} variations (Pseudo Planche, Tuck, Straddle, Full...)`
+        };
+    }
+    if (ids.some(id => id.includes('front_lever'))) {
+        return {
+            name: "Front Lever",
+            representativeId: "tuck_front_lever",
+            subtitle: `${comp.length} variations (Tuck, Straddle, Full...)`
+        };
+    }
+    if (ids.some(id => id.includes('back_lever'))) {
+        return {
+            name: "Back Lever",
+            representativeId: "tuck_back_lever",
+            subtitle: `${comp.length} variations (Tuck, Straddle, Full...)`
+        };
+    }
+
+    const sorted = [...comp].sort((a, b) => (a.difficulty || 0) - (b.difficulty || 0));
+    const rep = sorted[0];
+    return {
+        name: rep.name,
+        representativeId: rep.id,
+        subtitle: `${comp.length} variations`
+    };
+}
 
 export interface ExercisesScreenProps {
   mode?: 'browse' | 'select';
@@ -30,6 +177,8 @@ export default function ExercisesScreen({
   const [inputText, setInputText] = useState('');
   const searchInputRef = React.useRef<TextInput>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [detailsExercise, setDetailsExercise] = useState<any | null>(null);
+
 
   React.useEffect(() => {
       const timeoutId = setTimeout(() => {
@@ -78,46 +227,68 @@ export default function ExercisesScreen({
       }
   };
 
-  // Filter out non-active progression exercises
+  // Filter out non-active progression exercises and combine similar ones
   const processedExercises = React.useMemo(() => {
-      const progressionMap = new Map<string, any[]>();
-      const singles: any[] = [];
-
-      exercises.forEach(e => {
-        if (e.progressionId) {
-          if (!progressionMap.has(e.progressionId)) progressionMap.set(e.progressionId, []);
-          progressionMap.get(e.progressionId)?.push(e);
-        } else {
-          singles.push(e);
-        }
-      });
-      
-      
-      const progressionRepresentatives: any[] = [];
-      progressionMap.forEach((group, progressionId) => {
-        let representative = group.find(e => e.isActiveProgression);
-        
-        if (!representative) {
-          const sorted = group.sort((a, b) => (a.difficulty || 0) - (b.difficulty || 0));
-          if (sorted.length > 0) representative = sorted[0];
-        }
-
-        if (representative) {
-            // Extract the base object name directly from its progression ID (e.g. barbell_bench_press_progression -> Barbell Bench Press)
-            const baseId = progressionId.replace('_progression', '');
-            const progressionName = baseId
-                .split('_')
-                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-                .join(' ');
-
-            progressionRepresentatives.push({
-                ...representative,
-                name: progressionName
-            });
-        }
+      // 1. Build undirected adjacency maps for default exercises to find connected components
+      const adj = new Map<string, Set<string>>();
+      exercises.forEach(ex => {
+          if (!adj.has(ex.id)) adj.set(ex.id, new Set());
+          (ex.nextVariations || []).forEach((childId: string) => {
+              if (!adj.has(childId)) adj.set(childId, new Set());
+              adj.get(ex.id)!.add(childId);
+              adj.get(childId)!.add(ex.id);
+          });
       });
 
-      return [...singles, ...progressionRepresentatives];
+      // 2. Find connected components (groups)
+      const visited = new Set<string>();
+      const resultList: any[] = [];
+
+      const defaultExs = exercises.filter(ex => DefaultExercises.some(d => d.id === ex.id));
+      const customExs = exercises.filter(ex => !DefaultExercises.some(d => d.id === ex.id));
+
+      defaultExs.forEach(ex => {
+          if (!visited.has(ex.id)) {
+              const comp: any[] = [];
+              const queue = [ex.id];
+              visited.add(ex.id);
+
+              while (queue.length > 0) {
+                  const currId = queue.shift()!;
+                  const currEx = defaultExs.find(e => e.id === currId);
+                  if (currEx) {
+                      comp.push(currEx);
+                  }
+                  const neighbors = adj.get(currId) || new Set();
+                  neighbors.forEach(neighId => {
+                      if (!visited.has(neighId)) {
+                          visited.add(neighId);
+                          queue.push(neighId);
+                      }
+                  });
+              }
+
+              if (comp.length > 1) {
+                  const details = getCollapsedGroupDetails(comp);
+                  const representative = comp.find(e => e.id === details.representativeId) || comp[0];
+                  resultList.push({
+                      isGroup: true,
+                      id: `group_${details.name.replace(/\s+/g, '_').toLowerCase()}`,
+                      name: details.name,
+                      subtitle: details.subtitle,
+                      variations: comp,
+                      representative: representative,
+                      muscle_groups: Array.from(new Set(comp.flatMap(e => e.muscle_groups || []))).filter(Boolean),
+                      difficulty: representative.difficulty || 0,
+                      group: representative.group || "Other"
+                  });
+              } else if (comp.length === 1) {
+                  resultList.push(comp[0]);
+              }
+          }
+      });
+
+      return [...resultList, ...customExs];
   }, [exercises]);
 
   const uniqueMuscleGroups = React.useMemo(() => ["All", ...Array.from(new Set(processedExercises.flatMap(e => e.muscle_groups || []))).filter(Boolean).sort()], [processedExercises]);
@@ -142,12 +313,14 @@ export default function ExercisesScreen({
     const normalizeSearch = (text: string) => text.toLowerCase().replace(/[-_\s]+/g, ' ').trim();
     const normalizedQuery = normalizeSearch(searchQuery);
 
-    let filtered = processedExercises.filter(ex => normalizeSearch(ex.name).includes(normalizedQuery));
-    
-    // Hide non-active variations from the main list unless the user is actively searching
-    if (!searchQuery) {
-        filtered = filtered.filter(ex => !ex.progressionId || ex.isActiveProgression);
-    }
+    let filtered = processedExercises.filter(ex => {
+        if (ex.isGroup) {
+            const matchesGroupName = normalizeSearch(ex.name).includes(normalizedQuery);
+            const matchesVariationName = ex.variations.some((v: any) => normalizeSearch(v.name).includes(normalizedQuery));
+            return matchesGroupName || matchesVariationName;
+        }
+        return normalizeSearch(ex.name).includes(normalizedQuery);
+    });
     
     if (selectedCategories.size > 0) {
         filtered = filtered.filter(ex => 
@@ -159,29 +332,48 @@ export default function ExercisesScreen({
     const result: { title: string, data: any[] }[] = [];
     
     // 1. Custom Exercises
-    const custom = filtered.filter(ex => !DefaultExercises.some(d => d.id === ex.id));
+    const custom = filtered.filter(ex => !ex.isGroup && !DefaultExercises.some(d => d.id === ex.id));
     if (custom.length > 0) {
         result.push({ title: 'Custom Exercises', data: custom });
     }
 
-    // 2. Grouped Default Exercises
-    // Iterate over Groups to preserve order
-    Object.entries(Groups).forEach(([groupName, groupExercises]) => {
-        const groupIds = new Set(groupExercises.map(e => e.id));
-        const exercisesInGroup = filtered.filter(ex => groupIds.has(ex.id));
-        
-        if (exercisesInGroup.length > 0) {
-            result.push({ title: groupName, data: exercisesInGroup });
-        }
+    // 2. Default Exercises & Groups sorted by dynamic Muscle Group
+    const defaultFiltered = filtered.filter(ex => ex.isGroup || DefaultExercises.some(d => d.id === ex.id));
+    const muscleGroupMap = new Map<string, any[]>();
+    defaultFiltered.forEach(ex => {
+        const primary = ex.muscle_groups && ex.muscle_groups.length > 0 ? ex.muscle_groups[0] : "Other";
+        if (!muscleGroupMap.has(primary)) muscleGroupMap.set(primary, []);
+        muscleGroupMap.get(primary)!.push(ex);
     });
 
-    // Optional: catch-all for defaults that didn't match a group (shouldn't happen with correct data)
-    // const caughtIds = new Set(result.flatMap(s => s.data.map(e => e.id)));
-    // const uncaughtDefaults = filtered.filter(ex => DefaultExercises.some(d => d.id === ex.id) && !caughtIds.has(ex.id));
-    // if (uncaughtDefaults.length > 0) { ... }
+    const sortedMuscleGroups = Array.from(muscleGroupMap.keys()).sort((a, b) => {
+        if (a === "Other") return 1;
+        if (b === "Other") return -1;
+        return a.localeCompare(b);
+    });
+
+    sortedMuscleGroups.forEach(mg => {
+        result.push({ title: mg, data: muscleGroupMap.get(mg)! });
+    });
     
     return result;
   }, [processedExercises, searchQuery, selectedCategories]);
+
+  if (detailsExercise) {
+      return (
+          <ExerciseDetailsScreen
+              exercise={detailsExercise}
+              mode={mode}
+              onSelect={(selectedEx) => {
+                  if (onSelect) onSelect([selectedEx]);
+                  setSelectedIds(new Set());
+                  setDetailsExercise(null);
+                  if (onClose) onClose();
+              }}
+              onBack={() => setDetailsExercise(null)}
+          />
+      );
+  }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -248,6 +440,32 @@ export default function ExercisesScreen({
             )}
             renderItem={({ item }) => {
             const isSelected = selectedIds.has(item.id);
+            
+            if (item.isGroup) {
+                return (
+                    <TouchableOpacity 
+                        className="flex-row items-center justify-between py-4 pr-6 bg-light dark:bg-dark"
+                        style={{ paddingLeft: 24 }}
+                        onPress={() => {
+                            if (mode === 'select') {
+                                setDetailsExercise(item.representative);
+                            } else {
+                                router.push({
+                                    pathname: '/exercises/details',
+                                    params: { exercise: JSON.stringify(item.representative) }
+                                });
+                            }
+                        }}
+                    >
+                        <View className="flex-1 mr-4">
+                            <Text className="text-base leading-6 font-bold text-light dark:text-dark">{item.name}</Text>
+                            <Text className="text-xs text-light-muted dark:text-dark-muted mt-0.5">{item.subtitle}</Text>
+                        </View>
+                        <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
+                    </TouchableOpacity>
+                );
+            }
+
             return (
             <TouchableOpacity 
                 className="flex-row items-center justify-between py-4 pr-6 bg-light dark:bg-dark"
@@ -277,38 +495,37 @@ export default function ExercisesScreen({
                         <Text className="text-xs text-light-muted dark:text-dark-muted">
                             {item.muscle_groups?.join(', ')}
                         </Text>
-                        <View className="flex-row items-center ml-2">
-                            {Array.from({ length: 10 }).map((_, i) => {
-                                const difficulty = item.difficulty || 0;
-                                const starValue = i + 1;
-                                let iconName = "star";
-                                if (difficulty >= starValue) {
-                                    iconName = "star.fill";
-                                } else if (difficulty >= starValue - 0.5) {
-                                    iconName = "star.leadinghalf.filled";
-                                }
-                                
-                                return (
-                                    <IconSymbol 
-                                        key={i}
-                                        name={iconName as any} 
-                                        size={9} 
-                                        color={theme.primary} 
-                                        style={{ marginRight: 0.5 }}
-                                    />
-                                );
-                            })}
-                        </View>
+                        {item.difficulty !== undefined && item.properties?.includes('Bodyweight') && (
+                            <View className="flex-row items-center ml-2">
+                                {Array.from({ length: 10 }).map((_, i) => {
+                                    const difficulty = item.difficulty || 0;
+                                    const starValue = i + 1;
+                                    let iconName = "star";
+                                    if (difficulty >= starValue) {
+                                        iconName = "star.fill";
+                                    } else if (difficulty >= starValue - 0.5) {
+                                        iconName = "star.leadinghalf.filled";
+                                    }
+                                    
+                                    return (
+                                        <IconSymbol 
+                                            key={i}
+                                            name={iconName as any} 
+                                            size={9} 
+                                            color={theme.primary} 
+                                            style={{ marginRight: 0.5 }}
+                                        />
+                                    );
+                                })}
+                            </View>
+                        )}
                     </View>
                 </View>
                 {mode === 'select' ? (
                     <TouchableOpacity 
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                         onPress={() => {
-                            router.push({
-                                pathname: '/exercises/details',
-                                params: { exercise: JSON.stringify(item) }
-                            });
+                            setDetailsExercise(item);
                         }}
                     >
                         <IconSymbol name={"info.circle" as any} size={22} color={theme.textMuted || '#888'} />

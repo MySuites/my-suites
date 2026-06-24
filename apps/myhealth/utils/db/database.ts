@@ -58,6 +58,8 @@ export const initDatabase = async () => {
                 duration INTEGER,
                 bodyweight BOOLEAN,
                 rpe REAL,
+                equipment TEXT,
+                attachment TEXT,
                 created_at TEXT,
                 sync_status TEXT DEFAULT 'pending',
                 FOREIGN KEY(workout_log_id) REFERENCES workout_logs(id)
@@ -117,6 +119,9 @@ export const initDatabase = async () => {
                 next_variations TEXT,
                 tips TEXT,
                 instructions TEXT,
+                equipment TEXT,
+                movement_type TEXT,
+                attachment TEXT,
                 created_at TEXT,
                 updated_at INTEGER,
                 deleted_at INTEGER,
@@ -184,10 +189,15 @@ export const initDatabase = async () => {
     await safeAddColumn("exercises", "next_variations", "TEXT"); // JSON string array of IDs
     await safeAddColumn("exercises", "tips", "TEXT"); // JSON string array of tips
     await safeAddColumn("exercises", "instructions", "TEXT"); // JSON string array of steps
-
+    await safeAddColumn("exercises", "equipment", "TEXT");
+    await safeAddColumn("exercises", "movement_type", "TEXT");
+    await safeAddColumn("exercises", "attachment", "TEXT");
+ 
     await safeAddColumn("set_logs", "rpe", "REAL");
     await safeAddColumn("set_logs", "reps_left", "INTEGER");
     await safeAddColumn("set_logs", "reps_right", "INTEGER");
+    await safeAddColumn("set_logs", "equipment", "TEXT");
+    await safeAddColumn("set_logs", "attachment", "TEXT");
 
     await safeRenameColumn("workout_logs", "workout_time", "workout_date");
 
@@ -201,6 +211,492 @@ export const initDatabase = async () => {
         console.log("[DB] Cleanup of ghost data complete");
     } catch (e) {
         console.error("[DB] Failed to cleanup ghost data", e);
+    }
+
+    // Migration for consolidated exercises
+    try {
+        console.log("[DB] Running consolidation migrations...");
+        await database.withTransactionAsync(async () => {
+            // 1. Update set_logs
+            // Flat Bench Press
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'bench_press', exercise_name = 'Bench Press', equipment = 'barbell', attachment = 'None' 
+                WHERE exercise_id = 'flat_barbell_bench_press'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'bench_press', exercise_name = 'Bench Press', equipment = 'machine', attachment = 'None' 
+                WHERE exercise_id = 'flat_smith_machine_bench_press'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'bench_press', exercise_name = 'Bench Press', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'flat_dumbbell_bench_press'
+            `);
+
+            // Incline Bench Press
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'incline_bench_press', exercise_name = 'Incline Bench Press', equipment = 'barbell', attachment = 'None' 
+                WHERE exercise_id = 'incline_barbell_bench_press'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'incline_bench_press', exercise_name = 'Incline Bench Press', equipment = 'machine', attachment = 'None' 
+                WHERE exercise_id = 'incline_smith_machine_bench_press'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'incline_bench_press', exercise_name = 'Incline Bench Press', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'incline_dumbbell_bench_press'
+            `);
+
+            // Decline Bench Press
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'decline_bench_press', exercise_name = 'Decline Bench Press', equipment = 'barbell', attachment = 'None' 
+                WHERE exercise_id = 'decline_barbell_bench_press'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'decline_bench_press', exercise_name = 'Decline Bench Press', equipment = 'machine', attachment = 'None' 
+                WHERE exercise_id = 'decline_smith_machine_bench_press'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'decline_bench_press', exercise_name = 'Decline Bench Press', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'decline_dumbbell_bench_press'
+            `);
+
+            // Lat Pulldowns
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'lat_pulldown', exercise_name = 'Lat Pulldown', equipment = 'cable', attachment = 'Wide-Grip Bar' 
+                WHERE exercise_id = 'wide_grip_lat_pulldown'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'lat_pulldown', exercise_name = 'Lat Pulldown', equipment = 'cable', attachment = 'Close-Grip V-Bar' 
+                WHERE exercise_id = 'close_grip_lat_pulldown'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'lat_pulldown', exercise_name = 'Lat Pulldown', equipment = 'cable', attachment = 'Neutral-Grip Handles' 
+                WHERE exercise_id = 'reverse_grip_lat_pulldown'
+            `);
+
+            // Seated Cable Rows
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'seated_cable_row', exercise_name = 'Seated Cable Row', equipment = 'cable', attachment = 'Wide-Grip Bar' 
+                WHERE exercise_id = 'seated_cable_row_wide_grip'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'seated_cable_row', exercise_name = 'Seated Cable Row', equipment = 'cable', attachment = 'Close-Grip V-Bar' 
+                WHERE exercise_id = 'seated_cable_row_close_grip'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'seated_cable_row', exercise_name = 'Seated Cable Row', equipment = 'cable', attachment = 'Neutral-Grip Handles' 
+                WHERE exercise_id = 'seated_cable_row_reverse_grip'
+            `);
+
+            // Bicep Curls
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'bicep_curl', exercise_name = 'Bicep Curl', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'dumbbell_curl'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'bicep_curl', exercise_name = 'Bicep Curl', equipment = 'barbell', attachment = 'None' 
+                WHERE exercise_id = 'barbell_curl'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'bicep_curl', exercise_name = 'Bicep Curl', equipment = 'cable', attachment = 'None' 
+                WHERE exercise_id = 'cable_curl'
+            `);
+
+            // Preacher Curls
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'preacher_curl', exercise_name = 'Preacher Curl', equipment = 'barbell', attachment = 'None' 
+                WHERE exercise_id = 'barbell_preacher_curl'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'preacher_curl', exercise_name = 'Preacher Curl', equipment = 'machine', attachment = 'None' 
+                WHERE exercise_id = 'machine_preacher_curl'
+            `);
+
+            // Hammer Curls
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'hammer_curl', exercise_name = 'Hammer Curl', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'hammer_dumbbell_curl'
+            `);
+
+            // Incline Curls
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'incline_curl', exercise_name = 'Incline Curl', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'incline_dumbbell_curl'
+            `);
+
+            // Reverse Curls
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'reverse_curl', exercise_name = 'Reverse Curl', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'reverse_dumbbell_curl'
+            `);
+
+            // Chest Flys
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'chest_fly', exercise_name = 'Chest Fly', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'dumbbell_fly'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'chest_fly', exercise_name = 'Chest Fly', equipment = 'machine', attachment = 'None' 
+                WHERE exercise_id = 'machine_chest_fly'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'chest_fly', exercise_name = 'Chest Fly', equipment = 'cable', attachment = 'None' 
+                WHERE exercise_id = 'cable_fly'
+            `);
+
+            // Reverse Wrist Curls
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'reverse_wrist_curl', exercise_name = 'Reverse Wrist Curl', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'dumbbell_reverse_wrist_curl'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'reverse_wrist_curl', exercise_name = 'Reverse Wrist Curl', equipment = 'barbell', attachment = 'None' 
+                WHERE exercise_id = 'barbell_reverse_wrist_curl'
+            `);
+
+            // Wrist Curls
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'wrist_curl', exercise_name = 'Wrist Curl', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'dumbbell_wrist_curl'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'wrist_curl', exercise_name = 'Wrist Curl', equipment = 'barbell', attachment = 'None' 
+                WHERE exercise_id = 'barbell_wrist_curl'
+            `);
+
+            // Overhead Tricep Extensions
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'overhead_tricep_extension', exercise_name = 'Overhead Tricep Extension', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'overhead_dumbbell_tricep_extension'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'overhead_tricep_extension', exercise_name = 'Overhead Tricep Extension', equipment = 'cable', attachment = 'None' 
+                WHERE exercise_id = 'overhead_cable_tricep_extension'
+            `);
+
+            // Shrugs
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'shrug', exercise_name = 'Shrug', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'dumbbell_shrug'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'shrug', exercise_name = 'Shrug', equipment = 'barbell', attachment = 'None' 
+                WHERE exercise_id = 'barbell_shrug'
+            `);
+
+            // Calf Raises
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'weighted_calf_raise', exercise_name = 'Weighted Calf Raise', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'dumbbell_calf_raise'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'weighted_calf_raise', exercise_name = 'Weighted Calf Raise', equipment = 'machine', attachment = 'None' 
+                WHERE exercise_id = 'machine_calf_raise'
+            `);
+
+            // Weighted Squats
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'weighted_squat', exercise_name = 'Weighted Squat', equipment = 'barbell', attachment = 'None' 
+                WHERE exercise_id = 'barbell_squat'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'weighted_squat', exercise_name = 'Weighted Squat', equipment = 'smith machine', attachment = 'None' 
+                WHERE exercise_id = 'smith_machine_squat'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'weighted_squat', exercise_name = 'Weighted Squat', equipment = 'hack machine', attachment = 'None' 
+                WHERE exercise_id = 'hack_squat'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'weighted_squat', exercise_name = 'Weighted Squat', equipment = 'pendulum machine', attachment = 'None' 
+                WHERE exercise_id = 'pendulum_squat'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'weighted_squat', exercise_name = 'Weighted Squat', equipment = 'barbell', attachment = 'None' 
+                WHERE exercise_id = 'goblet_squat'
+            `);
+
+            // Lateral Raises
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'lateral_raise', exercise_name = 'Lateral Raise', equipment = 'cable', attachment = 'None' 
+                WHERE exercise_id = 'cable_lateral_raise'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'lateral_raise', exercise_name = 'Lateral Raise', equipment = 'cable', attachment = 'None' 
+                WHERE exercise_id = 'single_arm_cable_lateral_raise'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'lateral_raise', exercise_name = 'Lateral Raise', equipment = 'machine', attachment = 'None' 
+                WHERE exercise_id = 'machine_lateral_raise'
+            `);
+
+            // Shoulder Press
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'shoulder_press', exercise_name = 'Shoulder Press', equipment = 'barbell', attachment = 'None' 
+                WHERE exercise_id = 'overhead_press'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'shoulder_press', exercise_name = 'Shoulder Press', equipment = 'machine', attachment = 'None' 
+                WHERE exercise_id = 'machine_shoulder_press'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'shoulder_press', exercise_name = 'Shoulder Press', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'arnold_press'
+            `);
+
+            // Skullcrushers
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'skullcrusher', exercise_name = 'Skullcrusher', equipment = 'barbell', attachment = 'None' 
+                WHERE exercise_id = 'barbell_skullcrusher'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs 
+                SET exercise_id = 'skullcrusher', exercise_name = 'Skullcrusher', equipment = 'dumbbell', attachment = 'None' 
+                WHERE exercise_id = 'dumbbell_skullcrusher'
+            `);
+
+            // 2. Delete deprecated entries from exercises table
+            await database.runAsync(`
+                DELETE FROM exercises 
+                WHERE id IN (
+                    'flat_barbell_bench_press', 'incline_barbell_bench_press', 'decline_barbell_bench_press',
+                    'flat_smith_machine_bench_press', 'incline_smith_machine_bench_press', 'decline_smith_machine_bench_press',
+                    'flat_dumbbell_bench_press', 'incline_dumbbell_bench_press', 'decline_dumbbell_bench_press',
+                    'wide_grip_lat_pulldown', 'close_grip_lat_pulldown', 'reverse_grip_lat_pulldown',
+                    'seated_cable_row_wide_grip', 'seated_cable_row_close_grip', 'seated_cable_row_reverse_grip',
+                    'dumbbell_curl', 'barbell_curl', 'cable_curl',
+                    'barbell_preacher_curl', 'machine_preacher_curl',
+                    'hammer_dumbbell_curl', 'incline_dumbbell_curl', 'reverse_dumbbell_curl',
+                    'dumbbell_fly', 'machine_chest_fly', 'cable_fly',
+                    'dumbbell_reverse_wrist_curl', 'barbell_reverse_wrist_curl',
+                    'dumbbell_wrist_curl', 'barbell_wrist_curl',
+                    'overhead_dumbbell_tricep_extension', 'overhead_cable_tricep_extension',
+                    'dumbbell_shrug', 'barbell_shrug',
+                    'dumbbell_calf_raise', 'machine_calf_raise',
+                    'barbell_squat', 'smith_machine_squat', 'hack_squat', 'pendulum_squat', 'goblet_squat',
+                    'cable_lateral_raise', 'single_arm_cable_lateral_raise', 'machine_lateral_raise',
+                    'overhead_press', 'machine_shoulder_press', 'arnold_press',
+                    'barbell_skullcrusher', 'dumbbell_skullcrusher'
+                )
+            `);
+        });
+        console.log("[DB] Consolidation migrations for set_logs and exercises completed.");
+    } catch (e) {
+        console.error("[DB] Failed running consolidation migrations for set_logs:", e);
+    }
+
+    // 3. Update workouts table JSON templates
+    try {
+        const workouts = await database.getAllAsync<any>('SELECT id, exercises FROM workouts');
+        for (const w of workouts) {
+            if (!w.exercises) continue;
+            let exercisesList: any[] = [];
+            try {
+                exercisesList = JSON.parse(w.exercises);
+            } catch {
+                continue;
+            }
+            let modified = false;
+            for (const ex of exercisesList) {
+                const oldId = ex.id;
+                // Check and map Bench Press
+                if (oldId === 'flat_barbell_bench_press') {
+                    ex.id = 'bench_press'; ex.name = 'Bench Press'; ex.equipment = 'barbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'flat_smith_machine_bench_press') {
+                    ex.id = 'bench_press'; ex.name = 'Bench Press'; ex.equipment = 'machine'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'flat_dumbbell_bench_press') {
+                    ex.id = 'bench_press'; ex.name = 'Bench Press'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                }
+                // Incline
+                else if (oldId === 'incline_barbell_bench_press') {
+                    ex.id = 'incline_bench_press'; ex.name = 'Incline Bench Press'; ex.equipment = 'barbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'incline_smith_machine_bench_press') {
+                    ex.id = 'incline_bench_press'; ex.name = 'Incline Bench Press'; ex.equipment = 'machine'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'incline_dumbbell_bench_press') {
+                    ex.id = 'incline_bench_press'; ex.name = 'Incline Bench Press'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                }
+                // Decline
+                else if (oldId === 'decline_barbell_bench_press') {
+                    ex.id = 'decline_bench_press'; ex.name = 'Decline Bench Press'; ex.equipment = 'barbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'decline_smith_machine_bench_press') {
+                    ex.id = 'decline_bench_press'; ex.name = 'Decline Bench Press'; ex.equipment = 'machine'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'decline_dumbbell_bench_press') {
+                    ex.id = 'decline_bench_press'; ex.name = 'Decline Bench Press'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                }
+                // Lat Pulldowns
+                else if (oldId === 'wide_grip_lat_pulldown') {
+                    ex.id = 'lat_pulldown'; ex.name = 'Lat Pulldown'; ex.equipment = 'cable'; ex.attachment = 'Wide-Grip Bar'; modified = true;
+                } else if (oldId === 'close_grip_lat_pulldown') {
+                    ex.id = 'lat_pulldown'; ex.name = 'Lat Pulldown'; ex.equipment = 'cable'; ex.attachment = 'Close-Grip V-Bar'; modified = true;
+                } else if (oldId === 'reverse_grip_lat_pulldown') {
+                    ex.id = 'lat_pulldown'; ex.name = 'Lat Pulldown'; ex.equipment = 'cable'; ex.attachment = 'Neutral-Grip Handles'; modified = true;
+                }
+                // Seated Cable Rows
+                else if (oldId === 'seated_cable_row_wide_grip') {
+                    ex.id = 'seated_cable_row'; ex.name = 'Seated Cable Row'; ex.equipment = 'cable'; ex.attachment = 'Wide-Grip Bar'; modified = true;
+                } else if (oldId === 'seated_cable_row_close_grip') {
+                    ex.id = 'seated_cable_row'; ex.name = 'Seated Cable Row'; ex.equipment = 'cable'; ex.attachment = 'Close-Grip V-Bar'; modified = true;
+                } else if (oldId === 'seated_cable_row_reverse_grip') {
+                    ex.id = 'seated_cable_row'; ex.name = 'Seated Cable Row'; ex.equipment = 'cable'; ex.attachment = 'Neutral-Grip Handles'; modified = true;
+                }
+                // Bicep Curls
+                else if (oldId === 'dumbbell_curl') {
+                    ex.id = 'bicep_curl'; ex.name = 'Bicep Curl'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'barbell_curl') {
+                    ex.id = 'bicep_curl'; ex.name = 'Bicep Curl'; ex.equipment = 'barbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'cable_curl') {
+                    ex.id = 'bicep_curl'; ex.name = 'Bicep Curl'; ex.equipment = 'cable'; ex.attachment = 'None'; modified = true;
+                }
+                // Preacher Curls
+                else if (oldId === 'barbell_preacher_curl') {
+                    ex.id = 'preacher_curl'; ex.name = 'Preacher Curl'; ex.equipment = 'barbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'machine_preacher_curl') {
+                    ex.id = 'preacher_curl'; ex.name = 'Preacher Curl'; ex.equipment = 'machine'; ex.attachment = 'None'; modified = true;
+                }
+                // Hammer Curls
+                else if (oldId === 'hammer_dumbbell_curl') {
+                    ex.id = 'hammer_curl'; ex.name = 'Hammer Curl'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                }
+                // Incline Curls
+                else if (oldId === 'incline_dumbbell_curl') {
+                    ex.id = 'incline_curl'; ex.name = 'Incline Curl'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                }
+                // Reverse Curls
+                else if (oldId === 'reverse_dumbbell_curl') {
+                    ex.id = 'reverse_curl'; ex.name = 'Reverse Curl'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                }
+                // Chest Flys
+                else if (oldId === 'dumbbell_fly') {
+                    ex.id = 'chest_fly'; ex.name = 'Chest Fly'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'machine_chest_fly') {
+                    ex.id = 'chest_fly'; ex.name = 'Chest Fly'; ex.equipment = 'machine'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'cable_fly') {
+                    ex.id = 'chest_fly'; ex.name = 'Chest Fly'; ex.equipment = 'cable'; ex.attachment = 'None'; modified = true;
+                }
+                // Reverse Wrist Curls
+                else if (oldId === 'dumbbell_reverse_wrist_curl') {
+                    ex.id = 'reverse_wrist_curl'; ex.name = 'Reverse Wrist Curl'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'barbell_reverse_wrist_curl') {
+                    ex.id = 'reverse_wrist_curl'; ex.name = 'Reverse Wrist Curl'; ex.equipment = 'barbell'; ex.attachment = 'None'; modified = true;
+                }
+                // Wrist Curls
+                else if (oldId === 'dumbbell_wrist_curl') {
+                    ex.id = 'wrist_curl'; ex.name = 'Wrist Curl'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'barbell_wrist_curl') {
+                    ex.id = 'wrist_curl'; ex.name = 'Wrist Curl'; ex.equipment = 'barbell'; ex.attachment = 'None'; modified = true;
+                }
+                // Overhead Tricep Extensions
+                else if (oldId === 'overhead_dumbbell_tricep_extension') {
+                    ex.id = 'overhead_tricep_extension'; ex.name = 'Overhead Tricep Extension'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'overhead_cable_tricep_extension') {
+                    ex.id = 'overhead_tricep_extension'; ex.name = 'Overhead Tricep Extension'; ex.equipment = 'cable'; ex.attachment = 'None'; modified = true;
+                }
+                // Shrugs
+                else if (oldId === 'dumbbell_shrug') {
+                    ex.id = 'shrug'; ex.name = 'Shrug'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'barbell_shrug') {
+                    ex.id = 'shrug'; ex.name = 'Shrug'; ex.equipment = 'barbell'; ex.attachment = 'None'; modified = true;
+                }
+                // Calf Raises
+                else if (oldId === 'dumbbell_calf_raise') {
+                    ex.id = 'weighted_calf_raise'; ex.name = 'Weighted Calf Raise'; ex.equipment = 'dumbbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'machine_calf_raise') {
+                    ex.id = 'weighted_calf_raise'; ex.name = 'Weighted Calf Raise'; ex.equipment = 'machine'; ex.attachment = 'None'; modified = true;
+                }
+                // Weighted Squats
+                else if (oldId === 'barbell_squat') {
+                    ex.id = 'weighted_squat'; ex.name = 'Weighted Squat'; ex.equipment = 'barbell'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'smith_machine_squat') {
+                    ex.id = 'weighted_squat'; ex.name = 'Weighted Squat'; ex.equipment = 'smith machine'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'hack_squat') {
+                    ex.id = 'weighted_squat'; ex.name = 'Weighted Squat'; ex.equipment = 'hack machine'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'pendulum_squat') {
+                    ex.id = 'weighted_squat'; ex.name = 'Weighted Squat'; ex.equipment = 'pendulum machine'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'goblet_squat') {
+                    ex.id = 'weighted_squat'; ex.name = 'Weighted Squat'; ex.equipment = 'barbell'; ex.attachment = 'None'; modified = true;
+                }
+                // Lateral Raises
+                else if (oldId === 'cable_lateral_raise') {
+                    ex.id = 'lateral_raise'; ex.name = 'Lateral Raise'; ex.equipment = 'cable'; ex.movementType = 'uniform'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'single_arm_cable_lateral_raise') {
+                    ex.id = 'lateral_raise'; ex.name = 'Lateral Raise'; ex.equipment = 'cable'; ex.movementType = 'unilateral'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'machine_lateral_raise') {
+                    ex.id = 'lateral_raise'; ex.name = 'Lateral Raise'; ex.equipment = 'machine'; ex.movementType = 'uniform'; ex.attachment = 'None'; modified = true;
+                }
+                // Shoulder Press
+                else if (oldId === 'overhead_press') {
+                    ex.id = 'shoulder_press'; ex.name = 'Shoulder Press'; ex.equipment = 'barbell'; ex.movementType = 'uniform'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'machine_shoulder_press') {
+                    ex.id = 'shoulder_press'; ex.name = 'Shoulder Press'; ex.equipment = 'machine'; ex.movementType = 'uniform'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'arnold_press') {
+                    ex.id = 'shoulder_press'; ex.name = 'Shoulder Press'; ex.equipment = 'dumbbell'; ex.movementType = 'uniform'; ex.attachment = 'None'; modified = true;
+                }
+                // Skullcrushers
+                else if (oldId === 'barbell_skullcrusher') {
+                    ex.id = 'skullcrusher'; ex.name = 'Skullcrusher'; ex.equipment = 'barbell'; ex.movementType = 'uniform'; ex.attachment = 'None'; modified = true;
+                } else if (oldId === 'dumbbell_skullcrusher') {
+                    ex.id = 'skullcrusher'; ex.name = 'Skullcrusher'; ex.equipment = 'dumbbell'; ex.movementType = 'uniform'; ex.attachment = 'None'; modified = true;
+                }
+            }
+
+            if (modified) {
+                await database.runAsync(
+                    'UPDATE workouts SET exercises = ?, sync_status = "pending", updated_at = ? WHERE id = ?',
+                    [JSON.stringify(exercisesList), Date.now(), w.id]
+                );
+            }
+        }
+        console.log("[DB] Consolidation migrations for workout templates completed.");
+    } catch (e) {
+        console.error("[DB] Failed running consolidation migrations for workouts:", e);
     }
 
     console.log("Database initialized successfully");

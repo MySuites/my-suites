@@ -101,4 +101,13 @@ describe('ExerciseCard', () => {
         // Expect onCompleteSet to be called with (index)
         expect(mockOnCompleteSet).toHaveBeenCalledWith(1);
     });
+
+    it('should render equipment tag by resolving name if not set', () => {
+        const dumbbellExercise = {
+            ...mockExercise,
+            name: 'Dumbbell Curl',
+        };
+        const { getByText } = render(<ExerciseCard {...defaultProps} exercise={dumbbellExercise} />);
+        expect(getByText('Dumbbell')).toBeTruthy();
+    });
 });

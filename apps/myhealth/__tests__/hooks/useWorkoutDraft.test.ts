@@ -125,4 +125,24 @@ describe("useWorkoutDraft", () => {
         expect(result.current.workoutDraftExercises[0].setTargets[1].weight)
             .toBe(50);
     });
+
+    it("updates exercise attachment correctly", () => {
+        const { result } = renderHook(() => useWorkoutDraft());
+        act(() => {
+            result.current.addExercise({
+                id: "lat_pulldown",
+                name: "Lat Pulldown",
+                rawType: "reps",
+                attachment: "Lat Bar"
+            });
+        });
+
+        expect(result.current.workoutDraftExercises[0].attachment).toBe("Lat Bar");
+
+        act(() => {
+            result.current.updateExerciseAttachment(0, "Close-Grip V-Bar");
+        });
+
+        expect(result.current.workoutDraftExercises[0].attachment).toBe("Close-Grip V-Bar");
+    });
 });

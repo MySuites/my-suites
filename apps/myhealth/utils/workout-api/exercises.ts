@@ -4,7 +4,7 @@ import ExerciseDefaultData, {
     Groups,
 } from "../../assets/data/default-exercises";
 import { MUSCLE_GROUPS } from "../../assets/data/muscle-groups";
-import { DataRepository } from "../../providers/DataRepository";
+import { DataRepository, inferAngle, inferAttachment } from "../../providers/DataRepository";
 
 export async function fetchExercises(user: any) {
     let data;
@@ -38,6 +38,17 @@ export async function fetchExercises(user: any) {
                     muscle_groups: { name: m },
                 })),
             ],
+            nextVariations: e.nextVariations || [],
+            progressionId: e.progressionId,
+            difficulty: e.difficulty,
+            isActiveProgression: e.isActiveProgression,
+            equipment: e.equipment,
+            movementType: e.movementType,
+            angle: e.angle || inferAngle(e.name),
+            attachment: e.attachment || inferAttachment(e.name),
+            description: e.description,
+            instructions: e.instructions,
+            tips: e.tips
         }));
     }
 
@@ -100,6 +111,13 @@ export async function fetchExercises(user: any) {
             progressionId: e.progressionId,
             difficulty: e.difficulty,
             isActiveProgression: e.isActiveProgression,
+            nextVariations: e.nextVariations || [],
+            equipment: e.equipment,
+            movementType: e.movementType,
+            description: e.description,
+            instructions: e.instructions,
+            tips: e.tips,
+            attachment: e.attachment
         };
     });
 

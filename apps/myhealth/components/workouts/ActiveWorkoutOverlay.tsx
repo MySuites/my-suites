@@ -107,7 +107,8 @@ export function ActiveWorkoutOverlay() {
 
     function handleAddExercise(newExercises: any[]) {
         newExercises.forEach(exercise => {
-            addExercise(exercise.name, "3", "10", exercise.properties);
+            const singleEquipment = Array.isArray(exercise.equipment) ? exercise.equipment[0] : exercise.equipment;
+            addExercise(exercise.name, "3", "10", exercise.properties, exercise.id, exercise.attachment, singleEquipment);
         });
         setIsAddingExercise(false);
     }
@@ -283,6 +284,8 @@ export function ActiveWorkoutOverlay() {
                         onMoveUp={index > 0 ? () => reorderExercises(index, index - 1) : undefined}
                         onMoveDown={index < exercises.length - 1 ? () => reorderExercises(index, index + 1) : undefined}
                         onUpdateRestTime={(newRestTime) => updateExercise(index, { restTime: newRestTime })}
+                        onUpdateAttachment={(newAttachment) => updateExercise(index, { attachment: newAttachment })}
+                        onUpdateEquipment={(newEquipment) => updateExercise(index, { equipment: newEquipment })}
                         latestBodyWeight={latestBodyWeight}
                         onPressName={() => {
                             Keyboard.dismiss();
@@ -366,6 +369,8 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     latestBodyWeight,
     onPressName,
     onUpdateRestTime,
+    onUpdateAttachment,
+    onUpdateEquipment,
 }: {
     exercise: any;
     index: number;
@@ -379,6 +384,8 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     latestBodyWeight: number | null;
     onPressName?: () => void;
     onUpdateRestTime?: (restTime: number) => void;
+    onUpdateAttachment?: (attachment: string) => void;
+    onUpdateEquipment?: (equipment: string) => void;
 }) {
     const theme = useUITheme();
 
@@ -397,6 +404,8 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
                 completeSet(index, setIndex, {});
             }}
             onUpdateRestTime={onUpdateRestTime}
+            onUpdateAttachment={onUpdateAttachment}
+            onUpdateEquipment={onUpdateEquipment}
             onUpdateSetTarget={(setIndex, key, value) => {
                 const currentTargets = exercise.setTargets ? [...exercise.setTargets] : [];
                 while (currentTargets.length <= setIndex) {

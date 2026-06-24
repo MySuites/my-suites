@@ -35,6 +35,10 @@ export type Exercise = {
     nextVariations?: string[];
     difficulty?: number;
     restTime?: number; // seconds
+    equipment?: string;
+    movementType?: string;
+    angle?: string;
+    attachment?: string;
 };
 
 export type WorkoutLog = {

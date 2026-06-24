@@ -68,6 +68,8 @@ export default function CreateWorkoutScreen() {
                     id: ex.id || '',
                     name: ex.name,
                     properties: ex.properties,
+                    attachment: ex.attachment,
+                    equipment: ex.equipment,
                     setTargets: (ex.logs || []).map((s: any) => ({
                         id: s.id,
                         reps: s.reps,
@@ -107,6 +109,8 @@ export default function CreateWorkoutScreen() {
         reorderExercises,
         updateSetTarget,
         updateExerciseRestTime,
+        updateExerciseAttachment,
+        updateExerciseEquipment,
         addSet,
         removeSet
     } = useWorkoutDraft(initialData.exercises);
@@ -174,6 +178,8 @@ export default function CreateWorkoutScreen() {
                         id: ex.sets[0]?.details?.exercise_id || '',
                         name: ex.name,
                         properties: ex.properties,
+                        attachment: ex.attachment,
+                        equipment: ex.equipment,
                         setTargets: (ex.sets || []).map((s: any) => ({
                             id: s.details?.id,
                             reps: s.details?.reps,
@@ -597,6 +603,8 @@ export default function CreateWorkoutScreen() {
                                     onRemove={() => removeExercise(index)}
                                     onUpdateSet={(setIndex, field, value) => updateSetTarget(index, setIndex, field, value)}
                                     onUpdateRestTime={(restTime) => updateExerciseRestTime(index, restTime)}
+                                    onUpdateAttachment={(attachment) => updateExerciseAttachment(index, attachment)}
+                                    onUpdateEquipment={(equipment) => updateExerciseEquipment(index, equipment)}
                                     onAddSet={() => addSet(index)}
                                     onRemoveSet={(setIndex) => removeSet(index, setIndex)}
                                     latestBodyWeight={latestBodyWeight}

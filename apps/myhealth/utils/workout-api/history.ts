@@ -145,6 +145,8 @@ export async function fetchWorkoutLogDetails(user: any, logId: string) {
         const mappedData = log.exercises.map((ex, index) => ({
             name: ex.name,
             position: index,
+            attachment: ex.attachment,
+            equipment: ex.equipment,
             sets: ex.logs?.map((setLog, setIndex) => ({
                 setNumber: setIndex + 1,
                 details: {

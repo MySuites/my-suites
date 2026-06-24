@@ -14,7 +14,19 @@ import { DataRepository } from '../../providers/DataRepository';
 import { Exercise } from '../../utils/workout-api/types';
 import { VariationTree } from '../../components/exercises/VariationTree';
 
-export default function ExerciseDetailsScreen() {
+interface ExerciseDetailsScreenProps {
+    exercise?: Exercise;
+    mode?: 'browse' | 'select';
+    onSelect?: (exercise: Exercise) => void;
+    onBack?: () => void;
+}
+
+export default function ExerciseDetailsScreen({
+    exercise: propExercise,
+    mode: propMode = 'browse',
+    onSelect,
+    onBack
+}: ExerciseDetailsScreenProps = {}) {
     const router = useRouter();
     const params = useLocalSearchParams();
     const theme = useUITheme();
@@ -25,9 +37,17 @@ export default function ExerciseDetailsScreen() {
     const [activeTab, setActiveTab] = useState<'details' | 'performance' | 'variations'>('performance');
     const [variations, setVariations] = useState<Exercise[]>([]);
     const [selectedVariation, setSelectedVariation] = useState<Exercise | null>(null);
+    const [selectedMovement, setSelectedMovement] = useState<string>('All');
+    const [selectedAttachment, setSelectedAttachment] = useState<string>('All');
+    const [selectedAttachmentVal, setSelectedAttachmentVal] = useState<string>('');
+    const [selectedEquipmentVal, setSelectedEquipmentVal] = useState<string>('');
+
+    // Resolve mode
+    const isSelectMode = propMode === 'select' || params.mode === 'select';
 
     // Initial load from params, but act as fallback/skeleton
     const initialExercise = useMemo(() => {
+        if (propExercise) return propExercise;
         try {
             if (typeof params.exercise === 'string') {
                 return JSON.parse(params.exercise);
@@ -36,10 +56,23 @@ export default function ExerciseDetailsScreen() {
         } catch {
             return null;
         }
-    }, [params.exercise]);
+    }, [propExercise, params.exercise]);
 
     // effective exercise is fresh, or initial
     const exercise = freshExercise || initialExercise;
+
+    useEffect(() => {
+        setSelectedAttachmentVal(exercise?.attachment || '');
+        if (exercise?.equipment) {
+            if (Array.isArray(exercise.equipment)) {
+                setSelectedEquipmentVal(exercise.equipment[0] || '');
+            } else {
+                setSelectedEquipmentVal(exercise.equipment);
+            }
+        } else {
+            setSelectedEquipmentVal('');
+        }
+    }, [exercise?.id, exercise?.attachment, exercise?.equipment]);
 
     useEffect(() => {
         let isMounted = true;
@@ -91,32 +124,21 @@ export default function ExerciseDetailsScreen() {
                     });
                 });
 
-                // Find all nodes in the direct lineage (ancestors + descendants) of `exercise.id`
+                // Find all nodes in the direct lineage (undirected connected component search) of `exercise.id`
                 const relevantNodes = new Set<string>();
                 relevantNodes.add(exercise.id);
 
-                // Find Descendants
                 let queue = [exercise.id];
                 while (queue.length > 0) {
                     const curr = queue.shift()!;
-                    const children = forwardAdj.get(curr) || new Set();
-                    for (const child of children) {
-                        if (!relevantNodes.has(child)) {
-                            relevantNodes.add(child);
-                            queue.push(child);
-                        }
-                    }
-                }
-
-                // Find Ancestors
-                queue = [exercise.id];
-                while (queue.length > 0) {
-                    const curr = queue.shift()!;
-                    const parents = backwardAdj.get(curr) || new Set();
-                    for (const parent of parents) {
-                        if (!relevantNodes.has(parent)) {
-                            relevantNodes.add(parent);
-                            queue.push(parent);
+                    const neighbors = new Set<string>();
+                    (forwardAdj.get(curr) || []).forEach(n => neighbors.add(n));
+                    (backwardAdj.get(curr) || []).forEach(n => neighbors.add(n));
+                    
+                    for (const neighbor of neighbors) {
+                        if (!relevantNodes.has(neighbor)) {
+                            relevantNodes.add(neighbor);
+                            queue.push(neighbor);
                         }
                     }
                 }
@@ -133,6 +155,19 @@ export default function ExerciseDetailsScreen() {
     }, [exercise?.id]);
 
     // Removed handleSetActiveVariation because isActiveProgression is deprecated.
+
+    const uniqueAttachments = useMemo(() => {
+        const attachments = variations.map(v => (v as any).attachment).filter(Boolean);
+        return ['All', ...Array.from(new Set(attachments))];
+    }, [variations]);
+
+    const filteredVariations = useMemo(() => {
+        return variations.filter(ex => {
+            const matchesMovement = selectedMovement === 'All' || (ex as any).movementType === selectedMovement.toLowerCase();
+            const matchesAttachment = selectedAttachment === 'All' || (ex as any).attachment === selectedAttachment;
+            return matchesMovement && matchesAttachment;
+        });
+    }, [variations, selectedMovement, selectedAttachment]);
 
     const handleSelectVariation = useCallback((ex: Exercise) => {
          setSelectedVariation(ex);
@@ -219,7 +254,7 @@ export default function ExerciseDetailsScreen() {
              {/* Header */}
              <ScreenHeader 
                 title={displayTitle} 
-                leftAction={<BackButton />} 
+                leftAction={<BackButton onPress={onBack} />} 
                 rightAction={!isDefault ? (
                     <RaisedCard 
                         onPress={handleDelete}
@@ -372,13 +407,128 @@ export default function ExerciseDetailsScreen() {
                                             <Text style={{ fontSize: 13, color: currentColors.text }}>{String(prop)}</Text>
                                         </View>
                                     ))}
-                                    {(!primaryMuscle && secondaryMuscles.length === 0 && properties.length === 0) && (
+                                    {exercise?.angle && (
+                                         <View style={{ 
+                                             backgroundColor: 'rgba(255,255,255,0.1)', 
+                                             paddingHorizontal: 12, 
+                                             paddingVertical: 6, 
+                                             borderRadius: 16,
+                                             borderWidth: 1,
+                                             borderColor: 'rgba(255,255,255,0.2)'
+                                         }}>
+                                             <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{String(exercise.angle)}</Text>
+                                         </View>
+                                    )}
+                                    {selectedAttachmentVal && (
+                                         <View style={{ 
+                                             backgroundColor: 'rgba(255,255,255,0.1)', 
+                                             paddingHorizontal: 12, 
+                                             paddingVertical: 6, 
+                                             borderRadius: 16,
+                                             borderWidth: 1,
+                                             borderColor: 'rgba(255,255,255,0.2)'
+                                         }}>
+                                             <Text style={{ fontSize: 13, color: currentColors.text }}>{selectedAttachmentVal}</Text>
+                                         </View>
+                                    )}
+                                    {selectedEquipmentVal && (
+                                         <View style={{ 
+                                             backgroundColor: 'rgba(255,255,255,0.1)', 
+                                             paddingHorizontal: 12, 
+                                             paddingVertical: 6, 
+                                             borderRadius: 16,
+                                             borderWidth: 1,
+                                             borderColor: 'rgba(255,255,255,0.2)'
+                                         }}>
+                                             <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{selectedEquipmentVal}</Text>
+                                         </View>
+                                    )}
+                                    {(!primaryMuscle && secondaryMuscles.length === 0 && properties.length === 0 && !exercise?.angle && !exercise?.attachment) && (
                                         <Text style={{ fontStyle: 'italic', color: currentColors.text, opacity: 0.6 }}>No specific properties</Text>
                                     )}
                                 </>
                             );
                         })()}
                     </View>
+
+                    {/* Attachment Selection Section for Lat Pulldown / Seated Cable Row */}
+                    {exercise && (exercise.id === 'lat_pulldown' || exercise.id === 'seated_cable_row') && (
+                        <View style={{ marginBottom: 24 }}>
+                            <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700', marginBottom: 12 }}>
+                                Select Attachment
+                            </Text>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                                {(exercise.id === 'lat_pulldown' 
+                                    ? ["Lat Bar", "Wide-Grip Bar", "Close-Grip V-Bar", "Neutral-Grip Handles"] 
+                                    : ["Close-Grip V-Bar", "Wide-Grip Bar", "Neutral-Grip Handles", "Straight Bar"]
+                                ).map((att) => {
+                                    const isSelected = selectedAttachmentVal === att;
+                                    return (
+                                        <Pressable
+                                            key={att}
+                                            onPress={() => setSelectedAttachmentVal(att)}
+                                            style={{
+                                                backgroundColor: isSelected ? theme.primary : 'rgba(255,255,255,0.05)',
+                                                paddingHorizontal: 16,
+                                                paddingVertical: 10,
+                                                borderRadius: 20,
+                                                borderWidth: 1,
+                                                borderColor: isSelected ? 'transparent' : 'rgba(255,255,255,0.1)',
+                                            }}
+                                        >
+                                            <Text style={{
+                                                color: isSelected ? '#FFFFFF' : currentColors.text,
+                                                fontSize: 14,
+                                                fontWeight: '600',
+                                            }}>
+                                                {att}
+                                            </Text>
+                                        </Pressable>
+                                    );
+                                })}
+                            </View>
+                        </View>
+                    )}
+
+                    {/* Equipment Selection Section */}
+                    {exercise && Array.isArray(exercise.equipment) && exercise.equipment.length > 1 && (
+                        <View style={{ marginBottom: 24 }}>
+                            <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700', marginBottom: 12 }}>
+                                Select Equipment
+                            </Text>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                                {exercise.equipment.map((eqName: string) => {
+                                    const value = eqName;
+                                    const label = eqName.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                                    return { value, label };
+                                }).map((opt: any) => {
+                                    const isSelected = selectedEquipmentVal === opt.value;
+                                    return (
+                                        <Pressable
+                                            key={opt.value}
+                                            onPress={() => setSelectedEquipmentVal(opt.value)}
+                                            style={{
+                                                backgroundColor: isSelected ? theme.primary : 'rgba(255,255,255,0.05)',
+                                                paddingHorizontal: 16,
+                                                paddingVertical: 10,
+                                                borderRadius: 20,
+                                                borderWidth: 1,
+                                                borderColor: isSelected ? 'transparent' : 'rgba(255,255,255,0.1)',
+                                            }}
+                                        >
+                                            <Text style={{
+                                                color: isSelected ? '#FFFFFF' : currentColors.text,
+                                                fontSize: 14,
+                                                fontWeight: '600',
+                                            }}>
+                                                {opt.label}
+                                            </Text>
+                                        </Pressable>
+                                    );
+                                })}
+                            </View>
+                        </View>
+                    )}
 
                     <Text style={{ color: currentColors.text, opacity: 0.7, lineHeight: 24, fontSize: 15, marginBottom: 24 }}>
                         {exercise.description || "No description available for this exercise yet."}
@@ -484,9 +634,92 @@ export default function ExerciseDetailsScreen() {
 
                 {variations.length > 0 && (
                     <View style={{ display: activeTab === 'variations' ? 'flex' : 'none' }}>
-                        {variations.length === 0 ? (
-                            <View style={{ padding: 16, alignItems: 'center' }}>
-                                <Text style={{ color: currentColors.text }}>Loading variations...</Text>
+
+                        {/* Attachment Filter Capsules */}
+                        {uniqueAttachments.length > 1 && (
+                            <View style={{ marginBottom: 20 }}>
+                                <Text style={{ color: currentColors.text, fontSize: 14, fontWeight: '600', marginBottom: 8, opacity: 0.8 }}>
+                                    Attachment
+                                </Text>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                                    {uniqueAttachments.map((att) => {
+                                        const isSelected = selectedAttachment === att;
+                                        return (
+                                            <Pressable
+                                                key={att}
+                                                onPress={() => setSelectedAttachment(att)}
+                                                style={{
+                                                    paddingHorizontal: 16,
+                                                    paddingVertical: 8,
+                                                    borderRadius: 20,
+                                                    backgroundColor: isSelected ? theme.primary : (theme.bgLight || 'rgba(255,255,255,0.05)'),
+                                                    borderWidth: 1,
+                                                    borderColor: isSelected ? theme.primary : 'rgba(255,255,255,0.1)',
+                                                    alignItems: 'center',
+                                                }}
+                                            >
+                                                <Text style={{
+                                                    color: isSelected ? '#FFFFFF' : currentColors.text,
+                                                    fontWeight: isSelected ? '600' : '400',
+                                                    fontSize: 13,
+                                                }}>
+                                                    {att}
+                                                </Text>
+                                            </Pressable>
+                                        );
+                                    })}
+                                </ScrollView>
+                            </View>
+                        )}
+
+                        {/* Movement Type Filter Capsules */}
+                        <View style={{ marginBottom: 20 }}>
+                            <Text style={{ color: currentColors.text, fontSize: 14, fontWeight: '600', marginBottom: 8, opacity: 0.8 }}>
+                                Movement Type
+                            </Text>
+                            <View style={{ flexDirection: 'row', gap: 8 }}>
+                                {['All', 'Unilateral', 'Uniform'].map((mov) => {
+                                    const isSelected = selectedMovement === mov;
+                                    return (
+                                        <Pressable
+                                            key={mov}
+                                            onPress={() => setSelectedMovement(mov)}
+                                            style={{
+                                                flex: 1,
+                                                paddingVertical: 8,
+                                                borderRadius: 20,
+                                                backgroundColor: isSelected ? theme.primary : (theme.bgLight || 'rgba(255,255,255,0.05)'),
+                                                borderWidth: 1,
+                                                borderColor: isSelected ? theme.primary : 'rgba(255,255,255,0.1)',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <Text style={{
+                                                color: isSelected ? '#FFFFFF' : currentColors.text,
+                                                fontWeight: isSelected ? '600' : '400',
+                                                fontSize: 13,
+                                            }}>
+                                                {mov}
+                                            </Text>
+                                        </Pressable>
+                                    );
+                                })}
+                            </View>
+                        </View>
+
+                        {filteredVariations.length === 0 ? (
+                            <View style={{ 
+                                padding: 32, 
+                                backgroundColor: 'rgba(255,255,255,0.02)', 
+                                borderRadius: 16, 
+                                borderStyle: 'dashed', 
+                                borderWidth: 1, 
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                alignItems: 'center' 
+                            }}>
+                                <Text style={{ color: currentColors.text, opacity: 0.5, fontSize: 14, textAlign: 'center' }}>
+                                    No variations match the selected movement and attachment filters.
+                                </Text>
                             </View>
                         ) : (
                             <>
@@ -496,8 +729,9 @@ export default function ExerciseDetailsScreen() {
                                     </Text>
                                 </View>
                                 <VariationTree 
-                                    exercises={variations} 
+                                    exercises={filteredVariations} 
                                     onSelect={handleSelectVariation}
+                                    activeId={exercise.id}
                                 />
                             </>
                         )}
@@ -505,8 +739,44 @@ export default function ExerciseDetailsScreen() {
                 )}
 
                 {/* Spacer to ensure content is fully scrollable above floating elements */}
-                <View style={{ height: 120 }} />
+                <View style={{ height: 160 }} />
             </ScrollView>
+
+            {isSelectMode && (
+                <View style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    backgroundColor: currentColors.card,
+                    padding: 16,
+                    borderTopWidth: 1,
+                    borderTopColor: currentColors.border,
+                    zIndex: 999
+                }}>
+                    <Pressable
+                        onPress={() => {
+                            if (onSelect) {
+                                let res = { ...exercise };
+                                if (selectedAttachmentVal) res.attachment = selectedAttachmentVal;
+                                if (selectedEquipmentVal) res.equipment = selectedEquipmentVal;
+                                onSelect(res);
+                            }
+                        }}
+                        style={({pressed}: {pressed: boolean}) => ({
+                            backgroundColor: theme.primary,
+                            padding: 16,
+                            borderRadius: 12,
+                            alignItems: 'center',
+                            opacity: pressed ? 0.8 : 1
+                        })}
+                    >
+                        <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' }}>
+                            Select {exercise.name}
+                        </Text>
+                    </Pressable>
+                </View>
+            )}
 
             {/* Variation Action Modal */}
             <Modal transparent visible={!!selectedVariation} animationType="fade">
@@ -539,7 +809,7 @@ export default function ExerciseDetailsScreen() {
                                 {selectedVariation.name}
                             </Text>
 
-                            {selectedVariation.difficulty !== undefined && (() => {
+                            {selectedVariation.difficulty !== undefined && selectedVariation.properties?.includes('Bodyweight') && (() => {
                                 const diff = Number(selectedVariation.difficulty);
                                 const maxStars = 10;
                                 const fullStars = Math.floor(diff);
@@ -581,6 +851,89 @@ export default function ExerciseDetailsScreen() {
                                     </View>
                                 );
                             })()}
+
+                            {(selectedVariation.equipment || selectedVariation.movementType || selectedVariation.angle || selectedVariation.attachment) ? (
+                                <View style={{ flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                                    {selectedVariation.equipment && (
+                                        <View style={{
+                                            backgroundColor: 'rgba(255,255,255,0.08)',
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 5,
+                                            borderRadius: 12,
+                                            borderWidth: 1,
+                                            borderColor: 'rgba(255,255,255,0.12)'
+                                        }}>
+                                            <Text style={{ color: currentColors.text, fontSize: 12, textTransform: 'capitalize', fontWeight: '500' }}>
+                                                {selectedVariation.equipment}
+                                            </Text>
+                                        </View>
+                                    )}
+                                    {selectedVariation.angle && (
+                                        <View style={{
+                                            backgroundColor: 'rgba(255,255,255,0.08)',
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 5,
+                                            borderRadius: 12,
+                                            borderWidth: 1,
+                                            borderColor: 'rgba(255,255,255,0.12)'
+                                        }}>
+                                            <Text style={{ color: currentColors.text, fontSize: 12, textTransform: 'capitalize', fontWeight: '500' }}>
+                                                {selectedVariation.angle}
+                                            </Text>
+                                        </View>
+                                    )}
+                                    {selectedVariation.attachment && (
+                                        <View style={{
+                                            backgroundColor: 'rgba(255,255,255,0.08)',
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 5,
+                                            borderRadius: 12,
+                                            borderWidth: 1,
+                                            borderColor: 'rgba(255,255,255,0.12)'
+                                        }}>
+                                            <Text style={{ color: currentColors.text, fontSize: 12, fontWeight: '500' }}>
+                                                {selectedVariation.attachment}
+                                            </Text>
+                                        </View>
+                                    )}
+                                    {selectedVariation.movementType && (
+                                        <View style={{
+                                            backgroundColor: 'rgba(255,255,255,0.08)',
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 5,
+                                            borderRadius: 12,
+                                            borderWidth: 1,
+                                            borderColor: 'rgba(255,255,255,0.12)'
+                                        }}>
+                                            <Text style={{ color: currentColors.text, fontSize: 12, textTransform: 'capitalize', fontWeight: '500' }}>
+                                                {selectedVariation.movementType}
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                            ) : null}
+
+                            {isSelectMode && (
+                                <Pressable
+                                    onPress={() => {
+                                        if (onSelect) {
+                                            onSelect(selectedVariation);
+                                        }
+                                    }}
+                                    style={({pressed}: {pressed: boolean}) => ({
+                                        backgroundColor: theme.primary,
+                                        padding: 16,
+                                        borderRadius: 12,
+                                        alignItems: 'center',
+                                        opacity: pressed ? 0.8 : 1,
+                                        marginBottom: 12,
+                                    })}
+                                >
+                                    <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' }}>
+                                        Select {selectedVariation.name}
+                                    </Text>
+                                </Pressable>
+                            )}
 
                             {selectedVariation.description ? (
                                 <Text style={{ color: currentColors.text, fontSize: 15, opacity: 0.8, marginBottom: 24, textAlign: 'center', lineHeight: 22 }}>

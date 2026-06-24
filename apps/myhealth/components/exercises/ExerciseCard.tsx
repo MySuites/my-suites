@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { AttachmentPicker } from '../workouts/AttachmentPicker';
+import { EquipmentPicker } from '../workouts/EquipmentPicker';
 import { RestTimerPicker } from '../workouts/RestTimerPicker';
 import { Exercise } from '../../providers/WorkoutManagerProvider';
 import { RaisedCard, IconSymbol } from '@mysuite/ui';
@@ -7,6 +9,7 @@ import { SetRow, getExerciseFields } from '../workouts/SetRow';
 import { formatRestTime } from '../../utils/formatting';
 import { RPEPicker } from '../workouts/RPEPicker';
 import { isUnilateralExercise } from '../../utils/workout-logic';
+import { inferEquipment } from '../../providers/DataRepository';
 
 interface ExerciseCardProps {
     exercise: Exercise;
@@ -20,18 +23,26 @@ interface ExerciseCardProps {
     onMoveDown?: () => void;
     onPressName?: () => void;
     onUpdateRestTime?: (restTime: number) => void;
+    onUpdateAttachment?: (attachment: string) => void;
+    onUpdateEquipment?: (equipment: string) => void;
     onDrag?: () => void;
 
     theme: any;
     latestBodyWeight?: number | null;
 }
 
-export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, theme, latestBodyWeight }: ExerciseCardProps) {
+export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdateAttachment, onUpdateEquipment, theme, latestBodyWeight }: ExerciseCardProps) {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number, right: number } | null>(null);
     const menuButtonRef = useRef<View>(null);
     
+    // Attachment Picker state
+    const [isAttachmentPickerVisible, setIsAttachmentPickerVisible] = useState(false);
+
+    // Equipment Picker state
+    const [isEquipmentPickerVisible, setIsEquipmentPickerVisible] = useState(false);
+
     // RPE Picker state
     const [isRPEPickerVisible, setIsRPEPickerVisible] = useState(false);
     const [rpePickerValue, setRPEPickerValue] = useState<string | undefined>(undefined);
@@ -43,6 +54,11 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
 
     const { showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(exercise.properties, exercise.id);
     const isUnilateral = isUnilateralExercise(exercise.name);
+    
+    const isAttachmentSupported = exercise.id === 'lat_pulldown' || exercise.id === 'seated_cable_row';
+    const defaultAttachment = exercise.id === 'lat_pulldown' ? 'Lat Bar' : exercise.id === 'seated_cable_row' ? 'Close-Grip V-Bar' : undefined;
+    const attachment = exercise.attachment || defaultAttachment;
+    const equipment = exercise.equipment || inferEquipment(exercise.name);
 
     const handleOpenMenu = () => {
         menuButtonRef.current?.measure((_x: number, _y: number, _width: number, height: number, _pageX: number, pageY: number) => {
@@ -66,7 +82,69 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                         delayLongPress={200}
                         disabled={!onPressName && !onDrag}
                     >
-                        <Text className="text-lg font-bold text-light dark:text-dark">{exercise.name}</Text>
+                        <Text className="text-lg font-bold text-light dark:text-dark">
+                            {exercise.name}
+                        </Text>
+                        
+                        {isAttachmentSupported && attachment && (
+                            <View style={{ flexDirection: 'row', marginTop: 4, marginBottom: 2 }}>
+                                <TouchableOpacity
+                                    onPress={(e) => {
+                                        e.stopPropagation();
+                                        setIsAttachmentPickerVisible(true);
+                                    }}
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                                        paddingHorizontal: 8,
+                                        paddingVertical: 3,
+                                        borderRadius: 4,
+                                    }}
+                                >
+                                    <IconSymbol name="gearshape.fill" size={10} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
+                                    <Text style={{
+                                        marginLeft: 4,
+                                        fontSize: 10,
+                                        fontWeight: '600',
+                                        color: theme.bgDark === '#000000' ? '#ccc' : '#444'
+                                    }}>
+                                        {attachment}
+                                    </Text>
+                                    <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        {equipment && (
+                            <View style={{ flexDirection: 'row', marginTop: isAttachmentSupported && attachment ? 2 : 4, marginBottom: 2 }}>
+                                <TouchableOpacity
+                                    onPress={(e) => {
+                                        e.stopPropagation();
+                                        setIsEquipmentPickerVisible(true);
+                                    }}
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                                        paddingHorizontal: 8,
+                                        paddingVertical: 3,
+                                        borderRadius: 4,
+                                    }}
+                                >
+                                    <IconSymbol name="dumbbell.fill" size={10} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
+                                    <Text style={{
+                                        marginLeft: 4,
+                                        fontSize: 10,
+                                        fontWeight: '600',
+                                        color: theme.bgDark === '#000000' ? '#ccc' : '#444'
+                                    }}>
+                                        {equipment.charAt(0).toUpperCase() + equipment.slice(1)}
+                                    </Text>
+                                    <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
+                                </TouchableOpacity>
+                            </View>
+                        )}
                         
                         <TouchableOpacity 
                             className="flex-row items-center mt-1"
@@ -209,6 +287,26 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                         onUpdateSetTarget?.(rpePickerIndex, 'rpe', val.toString());
                     }
                     setIsRPEPickerVisible(false);
+                }}
+            />
+
+            <AttachmentPicker
+                visible={isAttachmentPickerVisible}
+                exerciseId={exercise.id}
+                currentAttachment={attachment}
+                onClose={() => setIsAttachmentPickerVisible(false)}
+                onSelect={(newAttachment) => {
+                    onUpdateAttachment?.(newAttachment);
+                }}
+            />
+
+            <EquipmentPicker
+                visible={isEquipmentPickerVisible}
+                exerciseId={exercise.id}
+                currentEquipment={equipment}
+                onClose={() => setIsEquipmentPickerVisible(false)}
+                onSelect={(newEquipment) => {
+                    onUpdateEquipment?.(newEquipment);
                 }}
             />
         </>

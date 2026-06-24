@@ -7,6 +7,7 @@ import { Exercise } from '../../utils/workout-api/types';
 interface VariationTreeProps {
     exercises: Exercise[];
     onSelect: (exercise: Exercise) => void;
+    activeId?: string;
 }
 
 interface ProcessedNode {
@@ -15,7 +16,7 @@ interface ProcessedNode {
     y: number;
 }
 
-export const VariationTree = React.memo(function VariationTree({ exercises, onSelect }: VariationTreeProps) {
+export const VariationTree = React.memo(function VariationTree({ exercises, onSelect, activeId }: VariationTreeProps) {
     const theme = useUITheme();
     const horizontalScrollRef = useRef<ScrollView>(null);
 
@@ -205,7 +206,7 @@ export const VariationTree = React.memo(function VariationTree({ exercises, onSe
 
                     {/* Nodes */}
                     {nodes.map((node) => {
-                        const isActive = false;
+                        const isActive = node.exercise.id === activeId;
                         
                         // The circle will replace the image in the future, for now placeholder is neutral
                         return (

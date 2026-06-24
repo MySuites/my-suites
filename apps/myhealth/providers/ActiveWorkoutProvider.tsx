@@ -23,7 +23,7 @@ interface ActiveWorkoutContextType {
     completeSet: (index: number, setIndex: number, input?: { weight?: number; bodyweight?: number; reps?: number; duration?: number; distance?: number; rpe?: number }) => void;
     nextExercise: () => void;
     prevExercise: () => void;
-    addExercise: (name: string, sets: string, reps: string, properties?: string[]) => void;
+    addExercise: (name: string, sets: string, reps: string, properties?: string[], id?: string, attachment?: string, equipment?: string) => void;
     updateExercise: (index: number, updates: Partial<Exercise>) => void;
     removeExercise: (index: number) => void;
     reorderExercises: (from: number, to: number) => void;
@@ -210,9 +210,17 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
 
 
-    const addExercise = useCallback((name: string, sets: string, reps: string, properties?: string[]) => {
+    const addExercise = useCallback((name: string, sets: string, reps: string, properties?: string[], id?: string, attachment?: string, equipment?: string) => {
         const ex = createExercise(name, sets, reps, properties);
-        setExercises((e) => [...e, { ...ex, completedSets: 0, completedIndices: [], logs: [] }]);
+        setExercises((e) => [...e, { 
+            ...ex, 
+            id: id || ex.id, 
+            attachment: attachment || undefined,
+            equipment: equipment || undefined,
+            completedSets: 0, 
+            completedIndices: [], 
+            logs: [] 
+        }]);
     }, []);
 
     const nextExercise = useCallback(() => {

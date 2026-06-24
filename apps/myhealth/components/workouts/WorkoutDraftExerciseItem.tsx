@@ -6,7 +6,10 @@ import { formatRestTime, formatSeconds } from '../../utils/formatting';
 import { RPEPicker } from './RPEPicker';
 import { RestTimerPicker } from './RestTimerPicker';
 import { DurationTimerPicker } from './DurationTimerPicker';
+import { AttachmentPicker } from './AttachmentPicker';
+import { EquipmentPicker } from './EquipmentPicker';
 import { isUnilateralExercise } from '../../utils/workout-logic';
+import { inferEquipment } from '../../providers/DataRepository';
 
 export interface WorkoutDraftExerciseItemProps {
     item: any;
@@ -26,7 +29,10 @@ export interface WorkoutDraftExerciseItemProps {
     onPressName?: () => void;
     onDrag?: () => void;
     isReadOnly?: boolean;
+    onUpdateAttachment?: (attachment: string) => void;
+    onUpdateEquipment?: (equipment: string) => void;
 }
+
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -47,7 +53,9 @@ export const WorkoutDraftExerciseItem = ({
     onUpdateRestTime,
     onPressName,
     onDrag,
-    isReadOnly
+    isReadOnly,
+    onUpdateAttachment,
+    onUpdateEquipment
 }: WorkoutDraftExerciseItemProps) => {
     const theme = useTheme();
     const [menuVisible, setMenuVisible] = useState(false);
@@ -67,6 +75,12 @@ export const WorkoutDraftExerciseItem = ({
     const [isDurationPickerVisible, setIsDurationPickerVisible] = useState(false);
     const [durationPickerIndex, setDurationPickerIndex] = useState<number | null>(null);
     const [durationPickerValue, setDurationPickerValue] = useState<number>(0);
+
+    // Attachment Picker state
+    const [isAttachmentPickerVisible, setIsAttachmentPickerVisible] = useState(false);
+
+    // Equipment Picker state
+    const [isEquipmentPickerVisible, setIsEquipmentPickerVisible] = useState(false);
 
     useEffect(() => {
         setIsLocalEditing(false);
@@ -102,6 +116,11 @@ export const WorkoutDraftExerciseItem = ({
 
     const { showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(item.properties, item.id);
     const isUnilateral = isUnilateralExercise(item.name);
+    
+    const isAttachmentSupported = item.id === 'lat_pulldown' || item.id === 'seated_cable_row';
+    const defaultAttachment = item.id === 'lat_pulldown' ? 'Lat Bar' : item.id === 'seated_cable_row' ? 'Close-Grip V-Bar' : undefined;
+    const attachment = item.attachment || defaultAttachment;
+    const equipment = item.equipment || inferEquipment(item.name);
     
     // Ensure duration falls back to reps if needed (legacy data fix for display)
     const rawTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || undefined, weight: undefined }));
@@ -157,7 +176,75 @@ export const WorkoutDraftExerciseItem = ({
                 delayLongPress={200}
                 className="p-3 pb-1 flex-1"
                 style={{ zIndex: menuVisible ? 999 : 1, elevation: menuVisible ? 999 : 1 }}>
-                    <Text className="text-base text-light dark:text-dark leading-6 font-semibold">{item.name}</Text>
+                    <Text className="text-base text-light dark:text-dark leading-6 font-semibold">
+                        {item.name}
+                    </Text>
+                    
+                    {isAttachmentSupported && attachment && (
+                        <View style={{ flexDirection: 'row', marginTop: 4, marginBottom: 2 }}>
+                            <TouchableOpacity
+                                disabled={isReadOnly}
+                                onPress={(e) => {
+                                    e.stopPropagation();
+                                    setIsAttachmentPickerVisible(true);
+                                }}
+                                style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                                    paddingHorizontal: 8,
+                                    paddingVertical: 3,
+                                    borderRadius: 4,
+                                }}
+                            >
+                                <IconSymbol name="gearshape.fill" size={10} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
+                                <Text style={{
+                                    marginLeft: 4,
+                                    fontSize: 10,
+                                    fontWeight: '600',
+                                    color: theme.bgDark === '#000000' ? '#ccc' : '#444'
+                                }}>
+                                    {attachment}
+                                </Text>
+                                {!isReadOnly && (
+                                    <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
+                    {equipment && (
+                        <View style={{ flexDirection: 'row', marginTop: isAttachmentSupported && attachment ? 2 : 4, marginBottom: 2 }}>
+                            <TouchableOpacity
+                                disabled={isReadOnly}
+                                onPress={(e) => {
+                                    e.stopPropagation();
+                                    setIsEquipmentPickerVisible(true);
+                                }}
+                                style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                                    paddingHorizontal: 8,
+                                    paddingVertical: 3,
+                                    borderRadius: 4,
+                                }}
+                            >
+                                <IconSymbol name="dumbbell.fill" size={10} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
+                                <Text style={{
+                                    marginLeft: 4,
+                                    fontSize: 10,
+                                    fontWeight: '600',
+                                    color: theme.bgDark === '#000000' ? '#ccc' : '#444'
+                                }}>
+                                    {equipment.charAt(0).toUpperCase() + equipment.slice(1)}
+                                </Text>
+                                {!isReadOnly && (
+                                    <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    )}
                     
                     <TouchableOpacity 
                         className="flex-row items-center mt-1 pb-1"
@@ -450,6 +537,22 @@ export const WorkoutDraftExerciseItem = ({
                     setIsDurationPickerVisible(false);
                 }}
                 isActiveWorkout={false}
+            />
+
+            <AttachmentPicker
+                visible={isAttachmentPickerVisible}
+                exerciseId={item.id}
+                currentAttachment={attachment}
+                onClose={() => setIsAttachmentPickerVisible(false)}
+                onSelect={(opt) => onUpdateAttachment?.(opt)}
+            />
+
+            <EquipmentPicker
+                visible={isEquipmentPickerVisible}
+                exerciseId={item.id}
+                currentEquipment={equipment}
+                onClose={() => setIsEquipmentPickerVisible(false)}
+                onSelect={(opt) => onUpdateEquipment?.(opt)}
             />
         </View>
     );
