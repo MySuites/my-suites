@@ -70,6 +70,7 @@ export default function CreateWorkoutScreen() {
                     properties: ex.properties,
                     attachment: ex.attachment,
                     equipment: ex.equipment,
+                    movementType: ex.movementType,
                     setTargets: (ex.logs || []).map((s: any) => ({
                         id: s.id,
                         reps: s.reps,
@@ -111,6 +112,7 @@ export default function CreateWorkoutScreen() {
         updateExerciseRestTime,
         updateExerciseAttachment,
         updateExerciseEquipment,
+        updateExerciseMovementType,
         addSet,
         removeSet
     } = useWorkoutDraft(initialData.exercises);
@@ -180,6 +182,7 @@ export default function CreateWorkoutScreen() {
                         properties: ex.properties,
                         attachment: ex.attachment,
                         equipment: ex.equipment,
+                        movementType: ex.movementType,
                         setTargets: (ex.sets || []).map((s: any) => ({
                             id: s.details?.id,
                             reps: s.details?.reps,
@@ -605,6 +608,7 @@ export default function CreateWorkoutScreen() {
                                     onUpdateRestTime={(restTime) => updateExerciseRestTime(index, restTime)}
                                     onUpdateAttachment={(attachment) => updateExerciseAttachment(index, attachment)}
                                     onUpdateEquipment={(equipment) => updateExerciseEquipment(index, equipment)}
+                                    onUpdateMovementType={(movementType) => updateExerciseMovementType(index, movementType)}
                                     onAddSet={() => addSet(index)}
                                     onRemoveSet={(setIndex) => removeSet(index, setIndex)}
                                     latestBodyWeight={latestBodyWeight}

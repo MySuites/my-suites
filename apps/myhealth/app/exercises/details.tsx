@@ -37,7 +37,6 @@ export default function ExerciseDetailsScreen({
     const [activeTab, setActiveTab] = useState<'details' | 'performance' | 'variations'>('performance');
     const [variations, setVariations] = useState<Exercise[]>([]);
     const [selectedVariation, setSelectedVariation] = useState<Exercise | null>(null);
-    const [selectedMovement, setSelectedMovement] = useState<string>('All');
     const [selectedAttachment, setSelectedAttachment] = useState<string>('All');
     const [selectedAttachmentVal, setSelectedAttachmentVal] = useState<string>('');
     const [selectedEquipmentVal, setSelectedEquipmentVal] = useState<string>('');
@@ -163,11 +162,10 @@ export default function ExerciseDetailsScreen({
 
     const filteredVariations = useMemo(() => {
         return variations.filter(ex => {
-            const matchesMovement = selectedMovement === 'All' || (ex as any).movementType === selectedMovement.toLowerCase();
             const matchesAttachment = selectedAttachment === 'All' || (ex as any).attachment === selectedAttachment;
-            return matchesMovement && matchesAttachment;
+            return matchesAttachment;
         });
-    }, [variations, selectedMovement, selectedAttachment]);
+    }, [variations, selectedAttachment]);
 
     const handleSelectVariation = useCallback((ex: Exercise) => {
          setSelectedVariation(ex);
@@ -443,7 +441,19 @@ export default function ExerciseDetailsScreen({
                                              <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{selectedEquipmentVal}</Text>
                                          </View>
                                     )}
-                                    {(!primaryMuscle && secondaryMuscles.length === 0 && properties.length === 0 && !exercise?.angle && !exercise?.attachment) && (
+                                    {exercise?.movementType && (
+                                         <View style={{ 
+                                              backgroundColor: 'rgba(255,255,255,0.1)', 
+                                              paddingHorizontal: 12, 
+                                              paddingVertical: 6, 
+                                              borderRadius: 16,
+                                              borderWidth: 1,
+                                              borderColor: 'rgba(255,255,255,0.2)'
+                                          }}>
+                                              <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{String(exercise.movementType)}</Text>
+                                         </View>
+                                    )}
+                                    {(!primaryMuscle && secondaryMuscles.length === 0 && properties.length === 0 && !exercise?.angle && !exercise?.attachment && !exercise?.movementType) && (
                                         <Text style={{ fontStyle: 'italic', color: currentColors.text, opacity: 0.6 }}>No specific properties</Text>
                                     )}
                                 </>
@@ -672,40 +682,6 @@ export default function ExerciseDetailsScreen({
                             </View>
                         )}
 
-                        {/* Movement Type Filter Capsules */}
-                        <View style={{ marginBottom: 20 }}>
-                            <Text style={{ color: currentColors.text, fontSize: 14, fontWeight: '600', marginBottom: 8, opacity: 0.8 }}>
-                                Movement Type
-                            </Text>
-                            <View style={{ flexDirection: 'row', gap: 8 }}>
-                                {['All', 'Unilateral', 'Uniform'].map((mov) => {
-                                    const isSelected = selectedMovement === mov;
-                                    return (
-                                        <Pressable
-                                            key={mov}
-                                            onPress={() => setSelectedMovement(mov)}
-                                            style={{
-                                                flex: 1,
-                                                paddingVertical: 8,
-                                                borderRadius: 20,
-                                                backgroundColor: isSelected ? theme.primary : (theme.bgLight || 'rgba(255,255,255,0.05)'),
-                                                borderWidth: 1,
-                                                borderColor: isSelected ? theme.primary : 'rgba(255,255,255,0.1)',
-                                                alignItems: 'center',
-                                            }}
-                                        >
-                                            <Text style={{
-                                                color: isSelected ? '#FFFFFF' : currentColors.text,
-                                                fontWeight: isSelected ? '600' : '400',
-                                                fontSize: 13,
-                                            }}>
-                                                {mov}
-                                            </Text>
-                                        </Pressable>
-                                    );
-                                })}
-                            </View>
-                        </View>
 
                         {filteredVariations.length === 0 ? (
                             <View style={{ 

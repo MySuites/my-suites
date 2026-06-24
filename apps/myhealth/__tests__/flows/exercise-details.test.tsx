@@ -160,27 +160,9 @@ describe('Exercise Details Integration', () => {
         expect(variationsTab).toBeTruthy();
         fireEvent.press(variationsTab);
 
-        // Verify filters are rendered
-        expect(getByText('Movement Type')).toBeTruthy();
-
-        // Initially both Dumbbell Curl and Barbell Curl are rendered (since filters default to 'All')
+        // Initially both Dumbbell Curl and Barbell Curl are rendered
         const tree = getByTestId('variation-tree');
         expect(within(tree).getByText('Dumbbell Curl')).toBeTruthy();
-        expect(within(tree).getByText('Barbell Curl')).toBeTruthy();
-
-        // Click Unilateral filter (under movement type)
-        const unilateralFilter = getByText('Unilateral');
-        fireEvent.press(unilateralFilter);
-
-        // Now only Dumbbell Curl (which is unilateral) should be displayed
-        expect(within(tree).getByText('Dumbbell Curl')).toBeTruthy();
-        expect(within(tree).queryByText('Barbell Curl')).toBeNull();
-
-        // Click Uniform filter (under movement type)
-        fireEvent.press(getByText('Uniform'));
-
-        // Now only Barbell Curl (which is uniform) should be displayed
-        expect(within(tree).queryByText('Dumbbell Curl')).toBeNull();
         expect(within(tree).getByText('Barbell Curl')).toBeTruthy();
     });
 

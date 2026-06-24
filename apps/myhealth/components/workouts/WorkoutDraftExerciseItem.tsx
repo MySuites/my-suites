@@ -8,8 +8,9 @@ import { RestTimerPicker } from './RestTimerPicker';
 import { DurationTimerPicker } from './DurationTimerPicker';
 import { AttachmentPicker } from './AttachmentPicker';
 import { EquipmentPicker } from './EquipmentPicker';
+import { MovementTypePicker } from './MovementTypePicker';
 import { isUnilateralExercise } from '../../utils/workout-logic';
-import { inferEquipment } from '../../providers/DataRepository';
+import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 
 export interface WorkoutDraftExerciseItemProps {
     item: any;
@@ -31,6 +32,7 @@ export interface WorkoutDraftExerciseItemProps {
     isReadOnly?: boolean;
     onUpdateAttachment?: (attachment: string) => void;
     onUpdateEquipment?: (equipment: string) => void;
+    onUpdateMovementType?: (movementType: string) => void;
 }
 
 
@@ -55,7 +57,8 @@ export const WorkoutDraftExerciseItem = ({
     onDrag,
     isReadOnly,
     onUpdateAttachment,
-    onUpdateEquipment
+    onUpdateEquipment,
+    onUpdateMovementType
 }: WorkoutDraftExerciseItemProps) => {
     const theme = useTheme();
     const [menuVisible, setMenuVisible] = useState(false);
@@ -81,6 +84,9 @@ export const WorkoutDraftExerciseItem = ({
 
     // Equipment Picker state
     const [isEquipmentPickerVisible, setIsEquipmentPickerVisible] = useState(false);
+
+    // Movement Type Picker state
+    const [isMovementTypePickerVisible, setIsMovementTypePickerVisible] = useState(false);
 
     useEffect(() => {
         setIsLocalEditing(false);
@@ -115,12 +121,13 @@ export const WorkoutDraftExerciseItem = ({
     };
 
     const { showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(item.properties, item.id);
-    const isUnilateral = isUnilateralExercise(item.name);
     
     const isAttachmentSupported = item.id === 'lat_pulldown' || item.id === 'seated_cable_row';
     const defaultAttachment = item.id === 'lat_pulldown' ? 'Lat Bar' : item.id === 'seated_cable_row' ? 'Close-Grip V-Bar' : undefined;
     const attachment = item.attachment || defaultAttachment;
     const equipment = item.equipment || inferEquipment(item.name);
+    const movementType = item.movementType || inferMovementType(item.name, equipment);
+    const isUnilateral = movementType === 'unilateral';
     
     // Ensure duration falls back to reps if needed (legacy data fix for display)
     const rawTargets = item.setTargets || Array.from({ length: item.sets || 1 }, () => ({ reps: item.reps || undefined, weight: undefined }));
@@ -238,6 +245,39 @@ export const WorkoutDraftExerciseItem = ({
                                     color: theme.bgDark === '#000000' ? '#ccc' : '#444'
                                 }}>
                                     {equipment.charAt(0).toUpperCase() + equipment.slice(1)}
+                                </Text>
+                                {!isReadOnly && (
+                                    <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
+                    {movementType && (
+                        <View style={{ flexDirection: 'row', marginTop: (isAttachmentSupported && attachment) || equipment ? 2 : 4, marginBottom: 2 }}>
+                            <TouchableOpacity
+                                disabled={isReadOnly}
+                                onPress={(e) => {
+                                    e.stopPropagation();
+                                    setIsMovementTypePickerVisible(true);
+                                }}
+                                style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                                    paddingHorizontal: 8,
+                                    paddingVertical: 3,
+                                    borderRadius: 4,
+                                }}
+                            >
+                                <IconSymbol name="figure.walk" size={10} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
+                                <Text style={{
+                                    marginLeft: 4,
+                                    fontSize: 10,
+                                    fontWeight: '600',
+                                    color: theme.bgDark === '#000000' ? '#ccc' : '#444'
+                                }}>
+                                    {movementType.charAt(0).toUpperCase() + movementType.slice(1)}
                                 </Text>
                                 {!isReadOnly && (
                                     <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
@@ -381,11 +421,14 @@ export const WorkoutDraftExerciseItem = ({
                                                 />
                                             </View>
                                         ) : (() => {
-                                            const l = set.reps_left !== undefined && set.reps_left !== null ? set.reps_left : (set.reps !== undefined && set.reps !== null ? set.reps : "-");
-                                            const r = set.reps_right !== undefined && set.reps_right !== null ? set.reps_right : (set.reps !== undefined && set.reps !== null ? set.reps : "-");
-                                            const displayText = (set.reps_left !== undefined || set.reps_right !== undefined) ? `${l}L/${r}R` : `${set.reps ?? "-"}`;
+                                            const l = set.reps_left !== undefined && set.reps_left !== null && set.reps_left !== '' ? set.reps_left : (set.reps !== undefined && set.reps !== null && set.reps !== '' ? set.reps : "-");
+                                            const r = set.reps_right !== undefined && set.reps_right !== null && set.reps_right !== '' ? set.reps_right : (set.reps !== undefined && set.reps !== null && set.reps !== '' ? set.reps : "-");
+                                            const hasVal = (set.reps_left !== undefined && set.reps_left !== null && set.reps_left !== '') || 
+                                                           (set.reps_right !== undefined && set.reps_right !== null && set.reps_right !== '') || 
+                                                           (set.reps !== undefined && set.reps !== null && set.reps !== '');
+                                            const displayText = `${l}L/${r}R`;
                                             return (
-                                                <Text className={`border border-transparent rounded px-2 py-1 w-20 text-center font-medium ${getTextColorClass(set.reps_left !== undefined || set.reps_right !== undefined ? 'has-val' : set.reps)}`}>
+                                                <Text className={`border border-transparent rounded px-2 py-1 w-20 text-center font-medium ${getTextColorClass(hasVal ? 'has-val' : '')}`}>
                                                     {displayText}
                                                 </Text>
                                             );
@@ -553,6 +596,13 @@ export const WorkoutDraftExerciseItem = ({
                 currentEquipment={equipment}
                 onClose={() => setIsEquipmentPickerVisible(false)}
                 onSelect={(opt) => onUpdateEquipment?.(opt)}
+            />
+
+            <MovementTypePicker
+                visible={isMovementTypePickerVisible}
+                currentMovementType={movementType}
+                onClose={() => setIsMovementTypePickerVisible(false)}
+                onSelect={(opt) => onUpdateMovementType?.(opt)}
             />
         </View>
     );

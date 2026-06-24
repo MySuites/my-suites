@@ -18,6 +18,7 @@ import { IconSymbol } from "@mysuite/ui";
 import { DurationTimerPicker } from './DurationTimerPicker';
 import { formatSeconds } from '../../utils/formatting';
 import { isUnilateralExercise } from '../../utils/workout-logic';
+import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 
 import { getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
 
@@ -67,7 +68,9 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
 
     const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(exercise.properties, exercise.id);
 
-    const isUnilateral = isUnilateralExercise(exercise.name);
+    const equipment = exercise.equipment || inferEquipment(exercise.name);
+    const movementType = exercise.movementType || inferMovementType(exercise.name, equipment);
+    const isUnilateral = movementType === 'unilateral';
 
     const getValue = (field: 'weight' | 'reps' | 'reps_left' | 'reps_right' | 'duration' | 'distance' | 'rpe') => {
         let val = exercise.setTargets?.[index]?.[field];
@@ -116,7 +119,7 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
         }
 
         if (showReps) {
-            if (isUnilateral && (prev.reps_left !== undefined || prev.reps_right !== undefined)) {
+            if (isUnilateral) {
                 const l = prev.reps_left ?? prev.reps ?? "0";
                 const r = prev.reps_right ?? prev.reps ?? "0";
                 parts.push(`${l}L/${r}R`);

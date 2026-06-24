@@ -286,6 +286,7 @@ export function ActiveWorkoutOverlay() {
                         onUpdateRestTime={(newRestTime) => updateExercise(index, { restTime: newRestTime })}
                         onUpdateAttachment={(newAttachment) => updateExercise(index, { attachment: newAttachment })}
                         onUpdateEquipment={(newEquipment) => updateExercise(index, { equipment: newEquipment })}
+                        onUpdateMovementType={(newMovementType) => updateExercise(index, { movementType: newMovementType })}
                         latestBodyWeight={latestBodyWeight}
                         onPressName={() => {
                             Keyboard.dismiss();
@@ -371,6 +372,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     onUpdateRestTime,
     onUpdateAttachment,
     onUpdateEquipment,
+    onUpdateMovementType,
 }: {
     exercise: any;
     index: number;
@@ -386,6 +388,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     onUpdateRestTime?: (restTime: number) => void;
     onUpdateAttachment?: (attachment: string) => void;
     onUpdateEquipment?: (equipment: string) => void;
+    onUpdateMovementType?: (movementType: string) => void;
 }) {
     const theme = useUITheme();
 
@@ -406,6 +409,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
             onUpdateRestTime={onUpdateRestTime}
             onUpdateAttachment={onUpdateAttachment}
             onUpdateEquipment={onUpdateEquipment}
+            onUpdateMovementType={onUpdateMovementType}
             onUpdateSetTarget={(setIndex, key, value) => {
                 const currentTargets = exercise.setTargets ? [...exercise.setTargets] : [];
                 while (currentTargets.length <= setIndex) {

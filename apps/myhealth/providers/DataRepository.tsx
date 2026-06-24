@@ -325,11 +325,14 @@ export const DataRepository = {
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
         const exercisesDef = await db.getAllAsync<any>('SELECT * FROM exercises');
         
-        const exerciseMetaMap = new Map<string, { properties: string[] }>();
+        const exerciseMetaMap = new Map<string, { properties: string[], equipment?: string, attachment?: string, movement_type?: string }>();
         exercisesDef.forEach(e => {
             if (e.id) {
                  exerciseMetaMap.set(e.id, {
-                     properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : []
+                     properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : [],
+                     equipment: e.equipment || undefined,
+                     attachment: e.attachment || undefined,
+                     movement_type: e.movement_type || undefined,
                  });
             }
         });
@@ -344,6 +347,7 @@ export const DataRepository = {
                  const exName = set.exercise_name || 'Unknown Exercise';
  
                  if (!exercisesMap.has(exId)) {
+                     const meta = exerciseMetaMap.get(exId);
                      exercisesMap.set(exId, {
                          id: exId,
                          name: exName,
@@ -351,7 +355,10 @@ export const DataRepository = {
                          reps: 0,
                          completedSets: 0,
                          logs: [],
-                         properties: exerciseMetaMap.get(exId)?.properties || [],
+                         properties: meta?.properties || [],
+                         equipment: set.equipment || meta?.equipment || inferEquipment(exName),
+                         attachment: set.attachment || meta?.attachment || inferAttachment(exName),
+                         movementType: meta?.movement_type || inferMovementType(exName, set.equipment || meta?.equipment || inferEquipment(exName)),
                      });
                  }
  
@@ -409,13 +416,14 @@ export const DataRepository = {
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
         const exercisesDef = await db.getAllAsync<any>('SELECT * FROM exercises');
         
-        const exerciseMetaMap = new Map<string, { properties: string[], equipment?: string, attachment?: string }>();
+        const exerciseMetaMap = new Map<string, { properties: string[], equipment?: string, attachment?: string, movement_type?: string }>();
         exercisesDef.forEach(e => {
             if (e.id) {
                  exerciseMetaMap.set(e.id, {
                      properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : [],
                      equipment: e.equipment || undefined,
                      attachment: e.attachment || undefined,
+                     movement_type: e.movement_type || undefined,
                  });
             }
         });
@@ -443,6 +451,7 @@ export const DataRepository = {
                         properties: meta?.properties || [],
                         equipment: set.equipment || meta?.equipment || inferEquipment(exName),
                         attachment: set.attachment || meta?.attachment || inferAttachment(exName),
+                        movementType: meta?.movement_type || inferMovementType(exName, set.equipment || meta?.equipment || inferEquipment(exName)),
                     });
                 }
 
@@ -579,7 +588,7 @@ export const DataRepository = {
                         for (const s of ex.logs) {
                             await db.runAsync(`
                                 INSERT INTO set_logs (id, workout_log_id, exercise_id, exercise_name, weight, reps, reps_left, reps_right, distance, duration, bodyweight, rpe, equipment, attachment, created_at, sync_status)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
                             `, [
                                 s.id || uuid.v4(),
                                 id,
