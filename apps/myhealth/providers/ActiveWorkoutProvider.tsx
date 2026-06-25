@@ -5,6 +5,7 @@ import { createExercise } from '../utils/workout-logic';
 import { useActiveWorkoutTimers } from '../hooks/workouts/useActiveWorkoutTimers';
 import { useActiveWorkoutPersistence } from '../hooks/workouts/useActiveWorkoutPersistence';
 import { useLatestBodyWeight } from '../hooks/workouts/useLatestBodyWeight';
+import { inferEquipment, inferMovementType } from './DataRepository';
 import uuid from 'react-native-uuid';
 import { Alert } from 'react-native';
 import { router } from 'expo-router';
@@ -176,6 +177,14 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                 completedSets: 0,
                 completedIndices: [],
                 logs: [],
+                setTargets: ex.setTargets ? ex.setTargets.map((t: any) => ({
+                    ...t,
+                    reps: undefined,
+                    reps_left: undefined,
+                    reps_right: undefined,
+                    duration: undefined,
+                    distance: undefined,
+                })) : undefined
             })));
             setWorkoutName(name || "Current Workout");
             setRoutineId(newRoutineId || null);
@@ -219,7 +228,15 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
             equipment: equipment || undefined,
             completedSets: 0, 
             completedIndices: [], 
-            logs: [] 
+            logs: [],
+            setTargets: ex.setTargets ? ex.setTargets.map((t: any) => ({
+                ...t,
+                reps: undefined,
+                reps_left: undefined,
+                reps_right: undefined,
+                duration: undefined,
+                distance: undefined,
+            })) : undefined
         }]);
     }, []);
 
@@ -319,12 +336,55 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                         }
                         return parseFloat(v.toString());
                     };
-                    const left = target.reps_left !== undefined && target.reps_left !== null && (target.reps_left as any) !== '' ? parseInt(target.reps_left.toString(), 10) : undefined;
-                    const right = target.reps_right !== undefined && target.reps_right !== null && (target.reps_right as any) !== '' ? parseInt(target.reps_right.toString(), 10) : undefined;
+                    const prev = ex.previousLog?.[idx];
+                    const equipment = ex.equipment || inferEquipment(ex.name);
+                    const movementType = ex.movementType || inferMovementType(ex.name, equipment);
+                    const isUnilateral = movementType === 'unilateral';
                     
-                    let repsVal = parseVal(target.reps);
+                    let leftVal = target.reps_left as any;
+                    if ((leftVal === undefined || leftVal === null || leftVal === '') && prev && prev.reps_left !== undefined && prev.reps_left !== null) {
+                        leftVal = prev.reps_left;
+                    }
+                    if ((leftVal === undefined || leftVal === null || leftVal === '') && isUnilateral && ex.reps !== undefined && ex.reps !== null) {
+                        leftVal = ex.reps;
+                    }
+                    const left = leftVal !== undefined && leftVal !== null && leftVal !== '' ? parseInt(leftVal.toString(), 10) : undefined;
+                    
+                    let rightVal = target.reps_right as any;
+                    if ((rightVal === undefined || rightVal === null || rightVal === '') && prev && prev.reps_right !== undefined && prev.reps_right !== null) {
+                        rightVal = prev.reps_right;
+                    }
+                    if ((rightVal === undefined || rightVal === null || rightVal === '') && isUnilateral && ex.reps !== undefined && ex.reps !== null) {
+                        rightVal = ex.reps;
+                    }
+                    const right = rightVal !== undefined && rightVal !== null && rightVal !== '' ? parseInt(rightVal.toString(), 10) : undefined;
+                    
+                    let repsValStr = target.reps as any;
+                    if ((repsValStr === undefined || repsValStr === null || repsValStr === '') && prev && prev.reps !== undefined && prev.reps !== null) {
+                        repsValStr = prev.reps;
+                    }
+                    if ((repsValStr === undefined || repsValStr === null || repsValStr === '') && !isUnilateral && ex.reps !== undefined && ex.reps !== null) {
+                        repsValStr = ex.reps;
+                    }
+                    let repsVal = parseVal(repsValStr);
                     if ((repsVal === 0 || repsVal === undefined || repsVal === null) && (left !== undefined || right !== undefined)) {
                         repsVal = Math.max(left ?? 0, right ?? 0);
+                    }
+
+                    let durationValStr = target.duration as any;
+                    if ((durationValStr === undefined || durationValStr === null || durationValStr === '') && prev && prev.duration !== undefined && prev.duration !== null) {
+                        durationValStr = prev.duration;
+                    }
+                    if ((durationValStr === undefined || durationValStr === null || durationValStr === '') && ex.reps !== undefined && ex.reps !== null) {
+                        durationValStr = ex.reps;
+                    }
+
+                    let distanceValStr = target.distance as any;
+                    if ((distanceValStr === undefined || distanceValStr === null || distanceValStr === '') && prev && prev.distance !== undefined && prev.distance !== null) {
+                        distanceValStr = prev.distance;
+                    }
+                    if ((distanceValStr === undefined || distanceValStr === null || distanceValStr === '') && ex.reps !== undefined && ex.reps !== null) {
+                        distanceValStr = ex.reps;
                     }
 
                     logs[idx] = {
@@ -333,8 +393,8 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                         reps: repsVal,
                         reps_left: left,
                         reps_right: right,
-                        duration: parseVal(target.duration),
-                        distance: parseVal(target.distance),
+                        duration: parseVal(durationValStr),
+                        distance: parseVal(distanceValStr),
                         rpe: parseVal(target.rpe, true),
                         bodyweight: target.weight === undefined ? latestBodyWeight : undefined
                     };
@@ -348,7 +408,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         });
 
         // Save the workout
-        saveCompletedWorkout(workoutName, exercisesWithLogs, workoutSeconds, undefined, note, routineId || undefined);
+        saveCompletedWorkout(workoutName, exercisesWithLogs, workoutSeconds, undefined, note, routineId || undefined, sourceWorkoutId || undefined);
 
         // Reset state
 		setRunning(false);
@@ -361,7 +421,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
         // Clear persistence
         clearPersistence();
-    }, [workoutName, exercises, workoutSeconds, saveCompletedWorkout, routineId, setRunning, resetTimers, clearPersistence, latestBodyWeight]);
+    }, [workoutName, exercises, workoutSeconds, saveCompletedWorkout, routineId, sourceWorkoutId, setRunning, resetTimers, clearPersistence, latestBodyWeight]);
 
     const handleCancelWorkout = useCallback(() => {
         // Cancel is effectively the same as finish for now (discard/reset)

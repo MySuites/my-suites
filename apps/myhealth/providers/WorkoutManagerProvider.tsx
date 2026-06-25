@@ -34,7 +34,7 @@ interface WorkoutManagerContextType {
     isLoading: boolean;
     saveWorkout: (name: string, exercises: Exercise[], onSuccess: () => void) => Promise<void>;
     deleteSavedWorkout: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => void;
-    updateSavedWorkout: (id: string, name: string, exercises: Exercise[], onSuccess: () => void) => Promise<void>;
+    updateSavedWorkout: (id: string, name: string, exercises: Exercise[], onSuccess: () => void, valuesOnly?: boolean) => Promise<void>;
     saveRoutineDraft: (name: string, sequence: any[], onSuccess: () => void) => Promise<void>;
     updateRoutine: (id: string, name: string, sequence: any[], onSuccess: () => void, suppressAlert?: boolean) => Promise<void>;
     deleteRoutine: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => void;
@@ -42,7 +42,7 @@ interface WorkoutManagerContextType {
     deleteCustomExercise: (id: string) => Promise<void>;
     workoutHistory: WorkoutLog[];
     fetchWorkoutLogDetails: (logId: string) => Promise<{ data: any[], error: any }>;
-    saveCompletedWorkout: (name: string, exercises: Exercise[], duration: number, onSuccess?: () => void, note?: string, routineId?: string) => Promise<void>;
+    saveCompletedWorkout: (name: string, exercises: Exercise[], duration: number, onSuccess?: () => void, note?: string, routineId?: string, sourceWorkoutId?: string) => Promise<void>;
     deleteWorkoutLog: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => void;
     lastSyncedAt: Date | null;
     sync: () => Promise<void>;
@@ -163,10 +163,76 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         }
     }, [showToast]);
 
-    const updateSavedWorkout = useCallback(async (id: string, name: string, exercises: Exercise[], onSuccess: () => void) => {
+    const updateSavedWorkout = useCallback(async (id: string, name: string, exercises: Exercise[], onSuccess: () => void, valuesOnly?: boolean) => {
          setIsSaving(true);
          try {
-             const workout = { id, name, exercises };
+             const originalWorkout = savedWorkouts.find(w => w.id === id);
+             const mergedExercises = exercises.map((incomingEx: any) => {
+                 const templateEx = originalWorkout ? originalWorkout.exercises.find((ex: any) => ex.id === incomingEx.id || ex.name === incomingEx.name) : null;
+                 const originalTargets = templateEx ? (templateEx.setTargets || []) : [];
+                 
+                 const completedLogs = incomingEx.logs || [];
+                 const activeTargets = incomingEx.setTargets || [];
+                 
+                 const newSetsCount = valuesOnly 
+                     ? (templateEx ? templateEx.sets : activeTargets.length)
+                     : (incomingEx.sets !== undefined ? incomingEx.sets : activeTargets.length);
+                 const newSetTargets = [];
+
+                 for (let i = 0; i < newSetsCount; i++) {
+                     const log = completedLogs[i];
+                     const activeTarget = activeTargets[i] || {};
+                     const originalTarget = originalTargets[i] || {};
+
+                     if (log) {
+                         newSetTargets.push({
+                             weight: log.weight,
+                             reps: log.reps,
+                             reps_left: log.reps_left,
+                             reps_right: log.reps_right,
+                             duration: log.duration,
+                             distance: log.distance,
+                             rpe: log.rpe
+                         });
+                     } else {
+                         newSetTargets.push({
+                             weight: originalTarget.weight !== undefined ? originalTarget.weight : activeTarget.weight,
+                             reps: originalTarget.reps !== undefined ? originalTarget.reps : activeTarget.reps,
+                             reps_left: originalTarget.reps_left !== undefined ? originalTarget.reps_left : activeTarget.reps_left,
+                             reps_right: originalTarget.reps_right !== undefined ? originalTarget.reps_right : activeTarget.reps_right,
+                             duration: originalTarget.duration !== undefined ? originalTarget.duration : activeTarget.duration,
+                             distance: originalTarget.distance !== undefined ? originalTarget.distance : activeTarget.distance,
+                             rpe: originalTarget.rpe !== undefined ? originalTarget.rpe : activeTarget.rpe
+                         });
+                     }
+                 }
+
+                 const updatedEx = {
+                     ...incomingEx,
+                     setTargets: newSetTargets,
+                     sets: newSetTargets.length
+                 };
+
+                 if (newSetTargets.length > 0) {
+                     const firstTarget = newSetTargets[0];
+                     if (firstTarget.reps !== undefined && firstTarget.reps !== null) {
+                         updatedEx.reps = firstTarget.reps;
+                     } else if (firstTarget.duration !== undefined && firstTarget.duration !== null) {
+                         updatedEx.reps = firstTarget.duration;
+                     } else if (firstTarget.distance !== undefined && firstTarget.distance !== null) {
+                         updatedEx.reps = firstTarget.distance;
+                     }
+                 }
+
+                 delete updatedEx.logs;
+                 delete updatedEx.completedSets;
+                 delete updatedEx.previousLog;
+                 delete updatedEx.completedIndices;
+
+                 return updatedEx;
+             });
+
+             const workout = { id, name, exercises: mergedExercises };
              await DataRepository.saveWorkout(workout);
              const updated = await DataRepository.getWorkouts();
              setSavedWorkouts(updated);
@@ -174,7 +240,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
          } finally {
              setIsSaving(false);
          }
-    }, []);
+    }, [savedWorkouts]);
 
     const deleteSavedWorkout = useCallback((id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => {
         const performDelete = async () => {
@@ -209,7 +275,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         duration: number,
         onSuccess?: () => void,
         note?: string,
-        routineId?: string
+        routineId?: string,
+        sourceWorkoutId?: string
     ) => {
          setIsSaving(true);
          try {
@@ -244,7 +311,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
          } finally {
              setIsSaving(false);
          }
-    }, [user, activeRoutine, markRoutineDayComplete]);
+     }, [user, activeRoutine, markRoutineDayComplete]);
 
     const saveRoutineDraft = useCallback(async (name: string, sequence: any[], onSuccess: () => void) => {
         setIsSaving(true);

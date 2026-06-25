@@ -83,6 +83,34 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
             val = exercise.setTargets?.[index]?.reps;
         }
 
+        if (isActiveWorkout && (val === undefined || val === null || val === '')) {
+            if (field === 'reps' || field === 'reps_left' || field === 'reps_right' || field === 'duration' || field === 'distance') {
+                const prev = exercise.previousLog?.[index];
+                if (prev) {
+                    if (field === 'reps' && prev.reps !== undefined && prev.reps !== null) {
+                        return prev.reps.toString();
+                    }
+                    if (field === 'reps_left' && prev.reps_left !== undefined && prev.reps_left !== null) {
+                        return prev.reps_left.toString();
+                    }
+                    if (field === 'reps_right' && prev.reps_right !== undefined && prev.reps_right !== null) {
+                        return prev.reps_right.toString();
+                    }
+                    if (field === 'duration' && prev.duration !== undefined && prev.duration !== null) {
+                        return prev.duration.toString();
+                    }
+                    if (field === 'distance' && prev.distance !== undefined && prev.distance !== null) {
+                        return prev.distance.toString();
+                    }
+                }
+                // Fall back to template baseline target if no previous log exists
+                if (exercise.reps !== undefined && exercise.reps !== null && exercise.reps !== 0) {
+                    return exercise.reps.toString();
+                }
+                return '';
+            }
+        }
+
         if (val === undefined || val === null) return '';
         return val.toString();
     };

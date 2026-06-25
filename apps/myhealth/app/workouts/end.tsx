@@ -113,20 +113,34 @@ export default function EndWorkoutScreen() {
                                 onPress: finalize
                             },
                             {
+                                text: "Update Values Only",
+                                onPress: async () => {
+                                    setIsSaving(true);
+                                    try {
+                                        await updateSavedWorkout(
+                                            sourceWorkoutId, 
+                                            original.name, 
+                                            exercises, 
+                                            finalize,
+                                            true
+                                        );
+                                    } catch (e) {
+                                        console.error("Failed to update values in template", e);
+                                        finalize();
+                                    } finally {
+                                        setIsSaving(false);
+                                    }
+                                }
+                            },
+                            {
                                 text: "Yes, Update Template",
                                 onPress: async () => {
                                     setIsSaving(true);
                                     try {
-                                        const updatedExercises = exercises.map(({ logs, previousLog, completedSets, ...rest }: any) => ({
-                                            ...rest,
-                                            completedSets: 0,
-                                            logs: []
-                                        }));
-                                        
                                         await updateSavedWorkout(
                                             sourceWorkoutId, 
                                             original.name, 
-                                            updatedExercises, 
+                                            exercises, 
                                             finalize
                                         );
                                     } catch (e) {
@@ -148,16 +162,10 @@ export default function EndWorkoutScreen() {
                     // Auto-update values in background
                     setIsSaving(true);
                     try {
-                        const updatedExercises = exercises.map(({ logs, previousLog, completedSets, ...rest }: any) => ({
-                            ...rest,
-                            completedSets: 0,
-                            logs: []
-                        }));
-                        
                         await updateSavedWorkout(
                             sourceWorkoutId, 
                             original.name, 
-                            updatedExercises, 
+                            exercises, 
                             finalize
                         );
                         return; // finalize is called by updateSavedWorkout
