@@ -284,6 +284,7 @@ export function ActiveWorkoutOverlay() {
                         onMoveUp={index > 0 ? () => reorderExercises(index, index - 1) : undefined}
                         onMoveDown={index < exercises.length - 1 ? () => reorderExercises(index, index + 1) : undefined}
                         onUpdateRestTime={(newRestTime) => updateExercise(index, { restTime: newRestTime })}
+                        onUpdatePrepTime={(newPrepTime) => updateExercise(index, { prepTime: newPrepTime })}
                         onUpdateAttachment={(newAttachment) => updateExercise(index, { attachment: newAttachment })}
                         onUpdateEquipment={(newEquipment) => updateExercise(index, { equipment: newEquipment })}
                         onUpdateMovementType={(newMovementType) => updateExercise(index, { movementType: newMovementType })}
@@ -370,6 +371,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     latestBodyWeight,
     onPressName,
     onUpdateRestTime,
+    onUpdatePrepTime,
     onUpdateAttachment,
     onUpdateEquipment,
     onUpdateMovementType,
@@ -386,6 +388,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     latestBodyWeight: number | null;
     onPressName?: () => void;
     onUpdateRestTime?: (restTime: number) => void;
+    onUpdatePrepTime?: (prepTime: number) => void;
     onUpdateAttachment?: (attachment: string) => void;
     onUpdateEquipment?: (equipment: string) => void;
     onUpdateMovementType?: (movementType: string) => void;
@@ -407,6 +410,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
                 completeSet(index, setIndex, {});
             }}
             onUpdateRestTime={onUpdateRestTime}
+            onUpdatePrepTime={onUpdatePrepTime}
             onUpdateAttachment={onUpdateAttachment}
             onUpdateEquipment={onUpdateEquipment}
             onUpdateMovementType={onUpdateMovementType}

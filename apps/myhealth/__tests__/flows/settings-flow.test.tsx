@@ -35,11 +35,6 @@ jest.mock('../../providers/AppThemeProvider', () => ({
     useThemePreference: () => ({ preference: 'system', setPreference: jest.fn() })
 }));
 
-jest.mock('../../providers/TimerSettingsProvider', () => ({
-    useTimerSettings: () => ({ prepCountdown: 0, setPrepCountdown: jest.fn() }),
-    TimerSettingsProvider: ({ children }: any) => children
-}));
-
 // Mock UI
 jest.mock('@mysuite/ui', () => ({
     useUITheme: () => ({ primary: 'blue', textMuted: 'gray', danger: 'red', bg: 'white' }),

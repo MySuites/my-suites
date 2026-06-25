@@ -56,9 +56,11 @@ interface SetRowProps {
     theme: any;
     latestBodyWeight?: number | null;
     isActiveWorkout?: boolean;
+    exercisePrepTime?: number;
+    onUpdatePrepTime?: (prepTime: number) => void;
 }
 
-export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onDeleteSet, onPressRPE, theme, latestBodyWeight, isActiveWorkout = true }: SetRowProps) => {
+export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onDeleteSet, onPressRPE, theme, latestBodyWeight, isActiveWorkout = true, exercisePrepTime, onUpdatePrepTime }: SetRowProps) => {
     const [isDurationPickerVisible, setIsDurationPickerVisible] = React.useState(false);
     const [durationAutoStart, setDurationAutoStart] = React.useState(false);
     const shouldDelete = useRef(false);
@@ -366,6 +368,8 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                   onSave={(val) => onUpdateSetTarget?.(index, 'duration', val.toString())}
                   isActiveWorkout={isActiveWorkout}
                   autoStart={durationAutoStart}
+                  prepTime={exercisePrepTime}
+                  onPrepTimeChange={onUpdatePrepTime}
               />
         </Swipeable>
     );

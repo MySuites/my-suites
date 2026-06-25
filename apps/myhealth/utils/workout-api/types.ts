@@ -35,6 +35,7 @@ export type Exercise = {
     nextVariations?: string[];
     difficulty?: number;
     restTime?: number; // seconds
+    prepTime?: number; // seconds (set-prep countdown, 0 = disabled)
     equipment?: string;
     movementType?: string;
     angle?: string;

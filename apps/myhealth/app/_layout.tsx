@@ -7,7 +7,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider, useAuth } from '@mysuite/auth';
 import { AppThemeProvider } from '../providers/AppThemeProvider';
 import { NavigationSettingsProvider } from '../providers/NavigationSettingsProvider';
-import { TimerSettingsProvider } from '../providers/TimerSettingsProvider';
 import { useColorScheme } from '../hooks/ui/use-color-scheme';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
@@ -127,11 +126,9 @@ export default function RootLayout() {
       <ToastProvider>
         <AuthProvider>
           <NavigationSettingsProvider>
-            <TimerSettingsProvider>
-              <AppThemeProvider>
+            <AppThemeProvider>
                 <RootLayoutContent isDbReady={isDbReady} setIsDbReady={setIsDbReady} />
-              </AppThemeProvider>
-            </TimerSettingsProvider>
+            </AppThemeProvider>
           </NavigationSettingsProvider>
         </AuthProvider>
       </ToastProvider>

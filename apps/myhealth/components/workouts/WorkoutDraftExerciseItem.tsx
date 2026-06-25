@@ -27,6 +27,7 @@ export interface WorkoutDraftExerciseItemProps {
     lastSaved?: number;
     onToggleLocalEdit?: (isEditing: boolean) => void;
     onUpdateRestTime?: (restTime: number) => void;
+    onUpdatePrepTime?: (prepTime: number) => void;
     onPressName?: () => void;
     onDrag?: () => void;
     isReadOnly?: boolean;
@@ -53,6 +54,7 @@ export const WorkoutDraftExerciseItem = ({
     lastSaved,
     onToggleLocalEdit,
     onUpdateRestTime,
+    onUpdatePrepTime,
     onPressName,
     onDrag,
     isReadOnly,
@@ -580,6 +582,8 @@ export const WorkoutDraftExerciseItem = ({
                     setIsDurationPickerVisible(false);
                 }}
                 isActiveWorkout={false}
+                prepTime={item.prepTime ?? 0}
+                onPrepTimeChange={onUpdatePrepTime}
             />
 
             <AttachmentPicker

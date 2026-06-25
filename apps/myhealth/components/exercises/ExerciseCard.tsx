@@ -24,6 +24,7 @@ interface ExerciseCardProps {
     onMoveDown?: () => void;
     onPressName?: () => void;
     onUpdateRestTime?: (restTime: number) => void;
+    onUpdatePrepTime?: (prepTime: number) => void;
     onUpdateAttachment?: (attachment: string) => void;
     onUpdateEquipment?: (equipment: string) => void;
     onUpdateMovementType?: (movementType: string) => void;
@@ -33,7 +34,7 @@ interface ExerciseCardProps {
     latestBodyWeight?: number | null;
 }
 
-export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight }: ExerciseCardProps) {
+export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight }: ExerciseCardProps) {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number, right: number } | null>(null);
@@ -291,6 +292,8 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                         }}
                         theme={theme}
                         latestBodyWeight={latestBodyWeight}
+                        exercisePrepTime={exercise.prepTime}
+                        onUpdatePrepTime={onUpdatePrepTime}
                     />
                 ))}
 

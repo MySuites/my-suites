@@ -136,6 +136,14 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
         });
     }
 
+    function updateExercisePrepTime(exerciseIndex: number, prepTime: number) {
+        setWorkoutDraftExercises((prev) => {
+            const newArr = [...prev];
+            newArr[exerciseIndex] = { ...newArr[exerciseIndex], prepTime };
+            return newArr;
+        });
+    }
+
     function updateExerciseAttachment(exerciseIndex: number, attachment: string) {
         setWorkoutDraftExercises((prev) => {
             const newArr = [...prev];
@@ -169,6 +177,7 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
         reorderExercises,
         updateSetTarget,
         updateExerciseRestTime,
+        updateExercisePrepTime,
         updateExerciseAttachment,
         updateExerciseEquipment,
         updateExerciseMovementType,
