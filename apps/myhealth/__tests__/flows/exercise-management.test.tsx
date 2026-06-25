@@ -528,6 +528,26 @@ describe('Exercise Management Integration', () => {
                 expect(getByText('Machine Chest Fly')).toBeTruthy();
             });
         });
+
+        it('toggles filter menu and dismisses it when backdrop is clicked', async () => {
+            const { getByText, queryByTestId, getByTestId } = render(<ExercisesScreen />);
+            
+            await waitFor(() => {
+                expect(getByText('Bench Press')).toBeTruthy();
+            });
+
+            expect(queryByTestId('filter-backdrop')).toBeNull();
+
+            fireEvent.press(getByText('Icon:line.3.horizontal.decrease'));
+
+            expect(getByTestId('filter-backdrop')).toBeTruthy();
+
+            fireEvent.press(getByTestId('filter-backdrop'));
+
+            await waitFor(() => {
+                expect(queryByTestId('filter-backdrop')).toBeNull();
+            });
+        });
     });
 
     describe('CreateExerciseScreen', () => {

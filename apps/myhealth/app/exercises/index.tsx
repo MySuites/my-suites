@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { SectionList, TouchableOpacity, View, TextInput, Text, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native'; 
+import { SectionList, TouchableOpacity, View, TextInput, Text, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, Pressable } from 'react-native'; 
 import { useRouter, useFocusEffect } from 'expo-router';
 
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, useToast, IconSymbol } from '@mysuite/ui';
@@ -378,6 +378,13 @@ export default function ExercisesScreen({
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View className="flex-1 bg-light dark:bg-dark">
+        {isFilterVisible && (
+          <Pressable 
+            testID="filter-backdrop"
+            className="absolute inset-0 bg-black/20 dark:bg-black/40 z-40" 
+            onPress={() => setIsFilterVisible(false)}
+          />
+        )}
         <ScreenHeader
             title={mode === 'select' ? "Add Exercise" : "Exercises"}
             leftAction={mode === 'select' ? <BackButton onPress={onClose} /> : <BackButton />}
