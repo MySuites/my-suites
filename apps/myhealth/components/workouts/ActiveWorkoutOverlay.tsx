@@ -81,6 +81,7 @@ export function ActiveWorkoutOverlay() {
         workoutName,
         hasActiveSession,
         pauseWorkout,
+        resumeWorkout,
         addExercise,
         latestBodyWeight
     } = useActiveWorkout();
@@ -128,17 +129,13 @@ export function ActiveWorkoutOverlay() {
                             </Text>
                             <View className="flex-row items-center gap-3 mt-1">
                                 <View className="flex-row items-center gap-1.5">
-                                    <View className={`w-2 h-2 rounded-full ${isRunning ? 'bg-primary dark:bg-primary-dark' : 'bg-gray-400'}`} />
+                                    {isRunning ? (
+                                        <View className="w-2 h-2 rounded-full bg-primary dark:bg-primary-dark" />
+                                    ) : (
+                                        <Text className="text-[9px] font-black tracking-widest text-warning uppercase">PAUSED</Text>
+                                    )}
                                     <Text className="text-sm font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
                                 </View>
-                                {totalSets > 0 && (
-                                    <>
-                                        <Text className="text-xs text-light-muted dark:text-dark-muted">•</Text>
-                                        <Text className="text-xs font-semibold text-light-muted dark:text-dark-muted">
-                                            {completedSets}/{totalSets} sets ({Math.round(progressPercent)}%)
-                                        </Text>
-                                    </>
-                                )}
                             </View>
                             {totalSets > 0 && (
                                 <View className="w-32 h-1.5 bg-black/10 dark:bg-white/10 rounded-full mt-2 overflow-hidden">
@@ -163,17 +160,40 @@ export function ActiveWorkoutOverlay() {
                         </RaisedCard>
                     }
                     rightAction={
-                        <RaisedCard 
-                            onPress={() => {
-                                Keyboard.dismiss();
-                                pauseWorkout();
-                                router.push('/workouts/end');
-                            }}
-                            className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                            style={{ borderRadius: 9999 }}
-                        >
-                            <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
-                        </RaisedCard>
+                        <View className="flex-row gap-2 items-center">
+                            {/* Pause / Resume */}
+                            <RaisedCard 
+                                onPress={() => {
+                                    Keyboard.dismiss();
+                                    if (isRunning) {
+                                        pauseWorkout();
+                                    } else {
+                                        resumeWorkout();
+                                    }
+                                }}
+                                className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                                style={{ borderRadius: 9999 }}
+                            >
+                                <IconSymbol 
+                                    name={isRunning ? 'pause.fill' : 'play.fill'} 
+                                    size={20} 
+                                    className="text-primary dark:text-primary-dark" 
+                                />
+                            </RaisedCard>
+
+                            {/* End Workout */}
+                            <RaisedCard 
+                                onPress={() => {
+                                    Keyboard.dismiss();
+                                    pauseWorkout();
+                                    router.push('/workouts/end');
+                                }}
+                                className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                                style={{ borderRadius: 9999 }}
+                            >
+                                <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
+                            </RaisedCard>
+                        </View>
                     }
                     className="z-[1001] border-b-0"
                 />
@@ -204,7 +224,11 @@ export function ActiveWorkoutOverlay() {
                     style={{ borderRadius: 9999 }}
                 >
                      <View className="flex-row items-center gap-2 mb-1">
-                          <View className={`w-2.5 h-2.5 rounded-full ${isRunning ? 'bg-white animate-pulse' : 'bg-white/50'}`} />
+                          {isRunning ? (
+                              <View className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+                          ) : (
+                              <IconSymbol name="pause.fill" size={10} color="rgba(255,255,255,0.7)" />
+                          )}
                           <Text className="text-lg font-bold tabular-nums text-white">
                              {formatSeconds(workoutSeconds)}
                           </Text>

@@ -32,6 +32,7 @@ const MAPPING = {
   'list.bullet.clipboard': 'list',
   'scale.3d': 'scale',
   'play.fill': 'play-arrow',
+  'pause.fill': 'pause',
   'ellipsis': 'menu',
   'menu': 'menu',
   'line.3.horizontal': 'menu',

@@ -20,6 +20,7 @@ interface ActiveWorkoutContextType {
     setWorkoutName: (name: string) => void;
     startWorkout: (exercisesToStart?: Exercise[], name?: string, routineId?: string, sourceWorkoutId?: string) => void;
     pauseWorkout: () => void;
+    resumeWorkout: () => void;
     resetWorkout: () => void;
     completeSet: (index: number, setIndex: number, input?: { weight?: number; bodyweight?: number; reps?: number; duration?: number; distance?: number; rpe?: number }) => void;
     nextExercise: () => void;
@@ -68,10 +69,6 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     const timerState = useActiveWorkoutTimers();
     const { isRunning, setRunning, workoutSeconds, setWorkoutSeconds, resetTimers, startRestTimer } = timerState;
 
-    // Auto-pause when minimized, auto-resume when expanded
-    useEffect(() => {
-        setRunning(isExpanded);
-    }, [isExpanded, setRunning]);
 
     const { weight: latestBodyWeight } = useLatestBodyWeight();
 
@@ -203,6 +200,10 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
     const pauseWorkout = useCallback(() => {
 		setRunning(false);
+	}, [setRunning]);
+
+    const resumeWorkout = useCallback(() => {
+		setRunning(true);
 	}, [setRunning]);
 
 	const resetWorkout = useCallback(() => {
@@ -446,6 +447,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         workoutName,
         startWorkout,
         pauseWorkout,
+        resumeWorkout,
         resetWorkout,
         completeSet: handleToggleSetCompletion,
         nextExercise,
@@ -465,7 +467,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         sourceWorkoutId,
         latestBodyWeight,
     }), [
-        exercises, currentIndex, workoutName, startWorkout, pauseWorkout, resetWorkout, 
+        exercises, currentIndex, workoutName, startWorkout, pauseWorkout, resumeWorkout, resetWorkout, 
         handleToggleSetCompletion, nextExercise, prevExercise, addExercise, updateExercise, 
         removeExercise, reorderExercises, handleFinishWorkout, handleCancelWorkout, isExpanded, hasActiveSession, 
         toggleExpanded, routineId, sourceWorkoutId, latestBodyWeight
