@@ -222,7 +222,7 @@ describe('Exercise Management Integration', () => {
                     name: 'Bodyweight Squat',
                     muscle_groups: ['Legs'],
                     difficulty: 3.0,
-                    equipment: 'bodyweight',
+                    equipment: 'none',
                     movementType: 'uniform',
                     nextVariations: ['sissy_squat']
                 },
@@ -231,7 +231,7 @@ describe('Exercise Management Integration', () => {
                     name: 'Sissy Squat',
                     muscle_groups: ['Legs'],
                     difficulty: 3.5,
-                    equipment: 'bodyweight',
+                    equipment: 'none',
                     movementType: 'uniform',
                     nextVariations: []
                 }
@@ -263,7 +263,7 @@ describe('Exercise Management Integration', () => {
                     name: 'Bodyweight Squat',
                     muscle_groups: ['Legs'],
                     difficulty: 3.0,
-                    equipment: 'bodyweight',
+                    equipment: 'none',
                     movementType: 'uniform',
                     nextVariations: ['sissy_squat']
                 },
@@ -272,7 +272,7 @@ describe('Exercise Management Integration', () => {
                     name: 'Sissy Squat',
                     muscle_groups: ['Legs'],
                     difficulty: 3.5,
-                    equipment: 'bodyweight',
+                    equipment: 'none',
                     movementType: 'uniform',
                     nextVariations: []
                 }

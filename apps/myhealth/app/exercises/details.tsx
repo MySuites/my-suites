@@ -429,7 +429,7 @@ export default function ExerciseDetailsScreen({
                                              <Text style={{ fontSize: 13, color: currentColors.text }}>{selectedAttachmentVal}</Text>
                                          </View>
                                     )}
-                                    {selectedEquipmentVal && (
+                                    {selectedEquipmentVal && selectedEquipmentVal !== 'none' && (
                                          <View style={{ 
                                              backgroundColor: 'rgba(255,255,255,0.1)', 
                                              paddingHorizontal: 12, 
@@ -830,7 +830,7 @@ export default function ExerciseDetailsScreen({
 
                             {(selectedVariation.equipment || selectedVariation.movementType || selectedVariation.angle || selectedVariation.attachment) ? (
                                 <View style={{ flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-                                    {selectedVariation.equipment && (
+                                    {selectedVariation.equipment && selectedVariation.equipment !== 'none' && (
                                         <View style={{
                                             backgroundColor: 'rgba(255,255,255,0.08)',
                                             paddingHorizontal: 12,
