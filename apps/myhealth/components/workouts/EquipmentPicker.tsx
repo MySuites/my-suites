@@ -9,6 +9,7 @@ export const EQUIPMENT_OPTIONS = [
     { value: 'dumbbell',   label: 'Dumbbell',   icon: 'dumbbell.fill' as const },
     { value: 'cable',      label: 'Cable',      icon: 'dumbbell.fill' as const },
     { value: 'machine',    label: 'Machine',    icon: 'dumbbell.fill' as const },
+    { value: 'parallettes', label: 'Parallettes', icon: 'dumbbell.fill' as const },
     { value: 'none',       label: 'None',       icon: 'dumbbell.fill' as const },
     { value: 'other',      label: 'Other',      icon: 'dumbbell.fill' as const },
 ];
@@ -21,6 +22,7 @@ export const ALL_EQUIPMENT_OPTIONS = [
     { value: 'smith machine',    label: 'Smith Machine',    icon: 'dumbbell.fill' as const },
     { value: 'hack machine',     label: 'Hack Machine',     icon: 'dumbbell.fill' as const },
     { value: 'pendulum machine', label: 'Pendulum Machine', icon: 'dumbbell.fill' as const },
+    { value: 'parallettes',       label: 'Parallettes',       icon: 'dumbbell.fill' as const },
     { value: 'none',             label: 'None',             icon: 'dumbbell.fill' as const },
     { value: 'other',            label: 'Other',            icon: 'dumbbell.fill' as const },
 ];

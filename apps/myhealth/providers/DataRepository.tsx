@@ -202,6 +202,7 @@ export function inferEquipment(name: string): string {
     if (n.includes('barbell')) return 'barbell';
     if (n.includes('cable')) return 'cable';
     if (n.includes('smith') || n.includes('machine') || n.includes('leg press') || n.includes('leg extension') || n.includes('leg curl') || n.includes('lat pulldown') || n.includes('seated row') || n.includes('chest press') || n.includes('pec deck')) return 'machine';
+    if (n.includes('parallette') || n.includes('parallette')) return 'parallettes';
     if (n.includes('push-up') || n.includes('pushup') || n.includes('pull-up') || n.includes('pullup') || n.includes('dip') || n.includes('bodyweight') || n.includes('handstand') || n.includes('planche') || n.includes('lever') || n.includes('plank') || n.includes('crunch') || n.includes('situp') || n.includes('squat')) return 'none';
     return 'other';
 }

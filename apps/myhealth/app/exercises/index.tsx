@@ -211,6 +211,19 @@ export default function ExercisesScreen({
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isFilterVisible, setIsFilterVisible] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  const toggleGroupExpanded = (groupId: string) => {
+      setExpandedGroups(prev => {
+          const next = new Set(prev);
+          if (next.has(groupId)) {
+              next.delete(groupId);
+          } else {
+              next.add(groupId);
+          }
+          return next;
+      });
+  };
 
   const handleConfirm = () => {
       if (selectedIds.size === 0) return;
@@ -313,6 +326,23 @@ export default function ExercisesScreen({
     const normalizeSearch = (text: string) => text.toLowerCase().replace(/[-_\s]+/g, ' ').trim();
     const normalizedQuery = normalizeSearch(searchQuery);
 
+    const flattenData = (dataArray: any[]) => {
+        const flat: any[] = [];
+        dataArray.forEach(item => {
+            flat.push(item);
+            if (item.isGroup && mode === 'select' && expandedGroups.has(item.id)) {
+                item.variations.forEach((v: any) => {
+                    flat.push({
+                        ...v,
+                        isVariation: true,
+                        parentGroupId: item.id
+                    });
+                });
+            }
+        });
+        return flat;
+    };
+
     let filtered = processedExercises.filter(ex => {
         if (ex.isGroup) {
             const matchesGroupName = normalizeSearch(ex.name).includes(normalizedQuery);
@@ -334,7 +364,7 @@ export default function ExercisesScreen({
     // 1. Custom Exercises
     const custom = filtered.filter(ex => !ex.isGroup && !DefaultExercises.some(d => d.id === ex.id));
     if (custom.length > 0) {
-        result.push({ title: 'Custom Exercises', data: custom });
+        result.push({ title: 'Custom Exercises', data: flattenData(custom) });
     }
 
     // 2. Default Exercises & Groups sorted by dynamic Muscle Group
@@ -353,11 +383,11 @@ export default function ExercisesScreen({
     });
 
     sortedMuscleGroups.forEach(mg => {
-        result.push({ title: mg, data: muscleGroupMap.get(mg)! });
+        result.push({ title: mg, data: flattenData(muscleGroupMap.get(mg)!) });
     });
     
     return result;
-  }, [processedExercises, searchQuery, selectedCategories]);
+  }, [processedExercises, searchQuery, selectedCategories, expandedGroups, mode]);
 
   if (detailsExercise) {
       return (
@@ -449,13 +479,14 @@ export default function ExercisesScreen({
             const isSelected = selectedIds.has(item.id);
             
             if (item.isGroup) {
+                const isExpanded = expandedGroups.has(item.id);
                 return (
                     <TouchableOpacity 
                         className="flex-row items-center justify-between py-4 pr-6 bg-light dark:bg-dark"
                         style={{ paddingLeft: 24 }}
                         onPress={() => {
                             if (mode === 'select') {
-                                setDetailsExercise(item.representative);
+                                toggleGroupExpanded(item.id);
                             } else {
                                 router.push({
                                     pathname: '/exercises/details',
@@ -468,7 +499,7 @@ export default function ExercisesScreen({
                             <Text className="text-base leading-6 font-bold text-light dark:text-dark">{item.name}</Text>
                             <Text className="text-xs text-light-muted dark:text-dark-muted mt-0.5">{item.subtitle}</Text>
                         </View>
-                        <IconSymbol name="chevron.right" size={16} color={theme.textMuted || '#888'} />
+                        <IconSymbol name={isExpanded ? "chevron.down" : "chevron.right"} size={16} color={theme.textMuted || '#888'} />
                     </TouchableOpacity>
                 );
             }
@@ -476,7 +507,7 @@ export default function ExercisesScreen({
             return (
             <TouchableOpacity 
                 className="flex-row items-center justify-between py-4 pr-6 bg-light dark:bg-dark"
-                style={{ paddingLeft: mode === 'select' ? 24 : 24 }}
+                style={{ paddingLeft: item.isVariation ? 48 : 24 }}
                 onPress={() => {
                     if (mode === 'select') {
                         const newSet = new Set(selectedIds);

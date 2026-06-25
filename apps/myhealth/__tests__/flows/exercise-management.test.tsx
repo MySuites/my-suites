@@ -256,7 +256,7 @@ describe('Exercise Management Integration', () => {
             });
         });
 
-        it('supports inline details overlay in select mode when group is pressed', async () => {
+        it('expands group inline and allows selecting variations in select mode', async () => {
             const mockDefaultExercises = [
                 {
                     id: 'bodyweight_squat',
@@ -284,7 +284,7 @@ describe('Exercise Management Integration', () => {
             (fetchExercises as jest.Mock).mockResolvedValue({ data: mockDefaultExercises });
             (DataRepository.getExercises as jest.Mock).mockResolvedValue(mockDefaultExercises);
 
-            const { getByText } = render(
+            const { getByText, queryByText } = render(
                 <ExercisesScreen mode="select" onSelect={mockOnSelect} onClose={mockOnClose} />
             );
 
@@ -293,22 +293,30 @@ describe('Exercise Management Integration', () => {
                 expect(getByText('Squat')).toBeTruthy();
             });
 
-            // Pressing "Squat" should open ExerciseDetailsScreen inline for the representative exercise
+            // Initially variations are NOT visible
+            expect(queryByText('Bodyweight Squat')).toBeNull();
+            expect(queryByText('Sissy Squat')).toBeNull();
+
+            // Pressing "Squat" should expand the group inline
             fireEvent.press(getByText('Squat'));
 
-            // Wait for any async/load effects
-            await act(async () => {
-                await Promise.resolve();
+            // Variations should now be visible
+            await waitFor(() => {
+                expect(getByText('Bodyweight Squat')).toBeTruthy();
+                expect(getByText('Sissy Squat')).toBeTruthy();
             });
 
-            // Since it rendered inline Details screen, the title should change/show bodyweight squat
-            expect(getByText('Bodyweight Squat')).toBeTruthy();
+            // Tapping "Bodyweight Squat" selects it
+            fireEvent.press(getByText('Bodyweight Squat'));
 
-            // And since mode === 'select', the sticky bottom button "Select Bodyweight Squat" should be rendered
-            expect(getByText('Select Bodyweight Squat')).toBeTruthy();
+            // Bottom confirmation button should appear
+            await waitFor(() => {
+                expect(getByText('Add 1 Exercise')).toBeTruthy();
+            });
 
-            // Clicking select button should call mockOnSelect with the exercise, and mockOnClose
-            fireEvent.press(getByText('Select Bodyweight Squat'));
+            // Pressing confirmation button completes selection
+            fireEvent.press(getByText('Add 1 Exercise'));
+
             expect(mockOnSelect).toHaveBeenCalledWith([mockDefaultExercises[0]]);
             expect(mockOnClose).toHaveBeenCalled();
         });
