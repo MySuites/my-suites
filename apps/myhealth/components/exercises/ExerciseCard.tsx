@@ -93,8 +93,8 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                             {exercise.name}
                         </Text>
                         
-                        {isAttachmentSupported && attachment && (
-                            <View style={{ flexDirection: 'row', marginTop: 4, marginBottom: 2 }}>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 2, alignItems: 'center' }}>
+                            {isAttachmentSupported && attachment && (
                                 <TouchableOpacity
                                     onPress={(e) => {
                                         e.stopPropagation();
@@ -120,11 +120,9 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                     </Text>
                                     <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
                                 </TouchableOpacity>
-                            </View>
-                        )}
+                            )}
 
-                        {equipment && (
-                            <View style={{ flexDirection: 'row', marginTop: isAttachmentSupported && attachment ? 2 : 4, marginBottom: 2 }}>
+                            {equipment && (
                                 <TouchableOpacity
                                     onPress={(e) => {
                                         e.stopPropagation();
@@ -150,11 +148,9 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                     </Text>
                                     <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
                                 </TouchableOpacity>
-                            </View>
-                        )}
+                            )}
 
-                        {movementType && (
-                            <View style={{ flexDirection: 'row', marginTop: (isAttachmentSupported && attachment) || equipment ? 2 : 4, marginBottom: 2 }}>
+                            {movementType && (
                                 <TouchableOpacity
                                     onPress={(e) => {
                                         e.stopPropagation();
@@ -180,8 +176,8 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                     </Text>
                                     <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
                                 </TouchableOpacity>
-                            </View>
-                        )}
+                            )}
+                        </View>
                         
                         <TouchableOpacity 
                             className="flex-row items-center mt-1"
