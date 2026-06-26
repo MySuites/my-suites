@@ -2,6 +2,7 @@ import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, Pressable, Text, Alert, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@mysuite/auth';
 import { useExerciseStats } from '../../hooks/workouts/useExerciseStats';
 import { ExerciseChart } from '../../components/exercises/ExerciseChart';
@@ -30,6 +31,7 @@ export default function ExerciseDetailsScreen({
     const router = useRouter();
     const params = useLocalSearchParams();
     const theme = useUITheme();
+    const insets = useSafeAreaInsets();
     const { user } = useAuth();
     const { deleteCustomExercise } = useWorkoutManager();
     
@@ -719,18 +721,11 @@ export default function ExerciseDetailsScreen({
             </ScrollView>
 
             {isSelectMode && (
-                <View style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    backgroundColor: currentColors.card,
-                    padding: 16,
-                    borderTopWidth: 1,
-                    borderTopColor: currentColors.border,
-                    zIndex: 999
-                }}>
-                    <Pressable
+                <View 
+                    className="absolute self-center shadow-lg"
+                    style={{ bottom: insets.bottom + 20, width: 'auto', minWidth: 200, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8, zIndex: 999 }}
+                >
+                    <RaisedCard
                         onPress={() => {
                             if (onSelect) {
                                 let res = { ...exercise };
@@ -739,18 +734,15 @@ export default function ExerciseDetailsScreen({
                                 onSelect(res);
                             }
                         }}
-                        style={({pressed}: {pressed: boolean}) => ({
-                            backgroundColor: theme.primary,
-                            padding: 16,
-                            borderRadius: 12,
-                            alignItems: 'center',
-                            opacity: pressed ? 0.8 : 1
-                        })}
+                        className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
+                        style={{ borderRadius: 9999 }}
                     >
-                        <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' }}>
-                            Select {exercise.name}
-                        </Text>
-                    </Pressable>
+                        <View className="flex-row items-center justify-center">
+                            <Text className="text-lg font-bold text-white">
+                                Select {exercise.name}
+                            </Text>
+                        </View>
+                    </RaisedCard>
                 </View>
             )}
 
@@ -889,28 +881,6 @@ export default function ExerciseDetailsScreen({
                                 </View>
                             ) : null}
 
-                            {isSelectMode && (
-                                <Pressable
-                                    onPress={() => {
-                                        if (onSelect) {
-                                            onSelect(selectedVariation);
-                                        }
-                                    }}
-                                    style={({pressed}: {pressed: boolean}) => ({
-                                        backgroundColor: theme.primary,
-                                        padding: 16,
-                                        borderRadius: 12,
-                                        alignItems: 'center',
-                                        opacity: pressed ? 0.8 : 1,
-                                        marginBottom: 12,
-                                    })}
-                                >
-                                    <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' }}>
-                                        Select {selectedVariation.name}
-                                    </Text>
-                                </Pressable>
-                            )}
-
                             {selectedVariation.description ? (
                                 <Text style={{ color: currentColors.text, fontSize: 15, opacity: 0.8, marginBottom: 24, textAlign: 'center', lineHeight: 22 }}>
                                     {selectedVariation.description}
@@ -922,17 +892,38 @@ export default function ExerciseDetailsScreen({
                             <Pressable
                                 onPress={() => handleViewVariationDetails(selectedVariation)}
                                 style={({pressed}: {pressed: boolean}) => ({
-                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                                     padding: 16,
                                     borderRadius: 12,
                                     alignItems: 'center',
-                                    opacity: pressed ? 0.8 : 1
+                                    opacity: pressed ? 0.8 : 1,
+                                    marginBottom: isSelectMode ? 16 : 0
                                 })}
                             >
                                 <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '600' }}>
                                     View Full Details
                                 </Text>
                             </Pressable>
+
+                            {isSelectMode && (
+                                <View style={{ alignItems: 'center', width: '100%' }}>
+                                    <RaisedCard
+                                        onPress={() => {
+                                            if (onSelect) {
+                                                onSelect(selectedVariation);
+                                            }
+                                        }}
+                                        className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
+                                        style={{ borderRadius: 9999, minWidth: 200 }}
+                                    >
+                                        <View className="flex-row items-center justify-center">
+                                            <Text className="text-lg font-bold text-white">
+                                                Select {selectedVariation.name}
+                                            </Text>
+                                        </View>
+                                    </RaisedCard>
+                                </View>
+                            )}
                         </View>
                     </View>
                 )}
