@@ -162,13 +162,27 @@ export const initDatabase = async () => {
         newName: string,
     ) => {
         try {
-            // Check if old column exists and new one doesn't
-            // Simpler: Just try rename. If it fails, it's likely already renamed or old doesn't exist.
+            const info = await database.getAllAsync<any>(`PRAGMA table_info(${table})`);
+            const oldExists = info.some((c) => c.name === oldName);
+            const newExists = info.some((c) => c.name === newName);
+
+            if (!oldExists) {
+                // Already renamed (or never existed) — nothing to do
+                return;
+            }
+            if (newExists) {
+                // Target column already present — skip to avoid conflict
+                console.warn(`[DB] safeRenameColumn: "${newName}" already exists in "${table}", skipping rename of "${oldName}"`);
+                return;
+            }
+
+            console.log(`[DB] Renaming column "${oldName}" -> "${newName}" in "${table}"...`);
             await database.runAsync(
                 `ALTER TABLE ${table} RENAME COLUMN ${oldName} TO ${newName}`,
             );
-        } catch {
-            // Ignore
+            console.log(`[DB] Successfully renamed "${oldName}" -> "${newName}" in "${table}"`);
+        } catch (err) {
+            console.error(`[DB] Failed to rename column "${oldName}" -> "${newName}" in "${table}":`, err);
         }
     };
 
