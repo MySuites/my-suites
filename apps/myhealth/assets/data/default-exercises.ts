@@ -1,4 +1,4 @@
-export const EXERCISE_DATA_VERSION = 50;
+export const EXERCISE_DATA_VERSION = 51;
 
 export const BarbellBenchPress = [
     {
@@ -171,7 +171,7 @@ export const Squats = [
         "name": "Bodyweight Squat",
         "type": "Bodyweight, Reps",
         "muscle_group": "Quadriceps",
-        difficulty: 3.0,
+        difficulty: 1.0,
         "instructions": [
             "Stand with your feet shoulder-width apart and toes pointing slightly outward.",
             "Place your hands on your hips, behind your head, or straight out in front.",
@@ -196,7 +196,7 @@ export const Squats = [
         "name": "Sissy Squat",
         "type": "Bodyweight, Reps",
         "muscle_group": "Quadriceps",
-        difficulty: 7.5,
+        difficulty: 3.5,
     },
     {
         "id": "shrimp_squat",
@@ -205,7 +205,7 @@ export const Squats = [
         "name": "Shrimp Squat",
         "type": "Bodyweight, Reps",
         "muscle_group": "Quadriceps",
-        difficulty: 6.5,
+        difficulty: 3.0,
         "nextVariations": [
             "pistol_squat",
         ],
@@ -216,7 +216,7 @@ export const Squats = [
         "name": "Pistol Squat",
         "type": "Bodyweight, Reps",
         "muscle_group": "Quadriceps",
-        difficulty: 8.0,
+        difficulty: 3.5,
         "nextVariations": [
             "dragon_squat",
         ],
@@ -228,7 +228,7 @@ export const Squats = [
         "name": "Dragon Squat",
         "type": "Bodyweight, Reps",
         "muscle_group": "Quadriceps",
-        difficulty: 9.0,
+        difficulty: 5.0,
     },
 ];
 
@@ -240,7 +240,13 @@ export const WeightedSquats = [
         "name": "Weighted Squat",
         "type": "Weighted, Reps",
         "muscle_group": "Quadriceps",
-        equipment: ["barbell", "dumbbell", "smith machine", "hack machine", "pendulum machine"],
+        equipment: [
+            "barbell",
+            "dumbbell",
+            "smith machine",
+            "hack machine",
+            "pendulum machine",
+        ],
         movementType: "uniform",
     },
 ];
@@ -253,7 +259,7 @@ export const Lunges = [
         "name": "Lunges",
         "type": "Bodyweight, Reps",
         "muscle_group": "Quadriceps",
-        difficulty: 7.5,
+        difficulty: 1.0,
         "nextVariations": [],
     },
     {
@@ -262,7 +268,7 @@ export const Lunges = [
         "name": "Weighted Lunges",
         "type": "Weighted, Bodyweight, Reps",
         "muscle_group": "Quadriceps",
-        difficulty: 8.5,
+        difficulty: 1.5,
         "nextVariations": [],
     },
 ];
@@ -275,7 +281,7 @@ export const SplitSquats = [
         "name": "Split Squat",
         "type": "Bodyweight, Reps",
         "muscle_group": "Quadriceps",
-        difficulty: 8.0,
+        difficulty: 1.0,
         "nextVariations": [],
     },
     {
@@ -476,7 +482,8 @@ export const BicepCurls = [
 export const TricepExtensions = [
     {
         "id": "skullcrusher",
-        "description": "Tricep extension performed lying on a bench, which can be done using a barbell or dumbbells.",
+        "description":
+            "Tricep extension performed lying on a bench, which can be done using a barbell or dumbbells.",
         "name": "Skullcrusher",
         "type": "Weighted, Reps",
         "muscle_group": "Triceps",
@@ -529,7 +536,7 @@ export const LegRaises = [
         "name": "Leg Raise",
         "type": "Bodyweight, Reps",
         "muscle_group": "Abdominals",
-        difficulty: 5.0,
+        difficulty: 1.0,
     },
     {
         "id": "hanging_leg_raise",
@@ -538,7 +545,7 @@ export const LegRaises = [
         "name": "Hanging Leg Raise",
         "type": "Bodyweight, Reps",
         "muscle_group": "Abdominals",
-        difficulty: 6.5,
+        difficulty: 1.5,
     },
     {
         "id": "l-sit_hold",
@@ -546,10 +553,19 @@ export const LegRaises = [
         "name": "L-Sit Hold",
         "type": "Bodyweight, Duration",
         "muscle_group": "Abdominals",
-        difficulty: 9.0,
+        difficulty: 2.5,
         "nextVariations": [
             "v-sit_hold",
+            "straddle_l-sit_hold",
         ],
+    },
+    {
+        "id": "straddle_l-sit_hold",
+        "description": "Isometric core and arm hold in a straddle L shape.",
+        "name": "Straddle L-Sit Hold",
+        "type": "Bodyweight, Duration",
+        "muscle_group": "Abdominals",
+        difficulty: 3.0,
     },
     {
         "id": "v-sit_hold",
@@ -557,7 +573,7 @@ export const LegRaises = [
         "name": "V-Sit Hold",
         "type": "Bodyweight, Duration",
         "muscle_group": "Abdominals",
-        difficulty: 3.5,
+        difficulty: 4.5,
         "nextVariations": [
             "i-sit_hold",
         ],
@@ -568,7 +584,7 @@ export const LegRaises = [
         "name": "I-Sit Hold",
         "type": "Bodyweight, Duration",
         "muscle_group": "Abdominals",
-        difficulty: 7.0,
+        difficulty: 6.0,
         "nextVariations": [
             "manna_hold",
         ],
@@ -580,7 +596,7 @@ export const LegRaises = [
         "name": "Manna Hold",
         "type": "Bodyweight, Duration",
         "muscle_group": "Abdominals",
-        difficulty: 8.0,
+        difficulty: 9.5,
     },
 ];
 
@@ -591,7 +607,7 @@ export const Crunches = [
         "name": "Crunch",
         "type": "Bodyweight, Reps",
         "muscle_group": "Abdominals",
-        difficulty: 6.0,
+        difficulty: 1.0,
     },
     {
         "id": "cable_crunch",
@@ -609,7 +625,7 @@ export const PushUps = [
         "name": "Wall Push-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Chest",
-        difficulty: 1.5,
+        difficulty: 0.5,
         "nextVariations": [
             "incline_push_up",
             "knee_push_up",
@@ -621,7 +637,7 @@ export const PushUps = [
         "name": "Incline Push-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Chest",
-        difficulty: 2.5,
+        difficulty: 1.0,
         "nextVariations": [
             "push_up",
         ],
@@ -632,7 +648,7 @@ export const PushUps = [
         "name": "Knee Push-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Chest",
-        difficulty: 2.0,
+        difficulty: 1.5,
         "nextVariations": [
             "push_up",
         ],
@@ -643,7 +659,7 @@ export const PushUps = [
         "name": "Push-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Triceps",
-        difficulty: 3.5,
+        difficulty: 2.0,
         "nextVariations": [
             "decline_push_up",
             "military_push_up",
@@ -659,7 +675,7 @@ export const PushUps = [
         "name": "Decline Push-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Chest",
-        difficulty: 4.0,
+        difficulty: 2.5,
         "nextVariations": [
             "pseudo_planche_push_up",
         ],
@@ -671,7 +687,7 @@ export const PushUps = [
         "name": "Diamond Push-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Triceps",
-        difficulty: 5.0,
+        difficulty: 3.0,
         "nextVariations": [
             "pseudo_planche_push_up",
         ],
@@ -682,7 +698,7 @@ export const PushUps = [
         "name": "Military Push-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Triceps",
-        difficulty: 4.5,
+        difficulty: 2.5,
         "nextVariations": [
             "diamond_push_up",
             "pseudo_planche_push_up",
@@ -694,7 +710,7 @@ export const PushUps = [
         "name": "Wide Push-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Chest",
-        difficulty: 4.0,
+        difficulty: 2.0,
         "nextVariations": [
             "pseudo_planche_push_up",
         ],
@@ -705,7 +721,7 @@ export const PushUps = [
         "name": "Pike Push-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Chest",
-        difficulty: 5.5,
+        difficulty: 3.0,
         "nextVariations": [
             "pseudo_planche_push_up",
             "wall_handstand_push_up",
@@ -718,7 +734,7 @@ export const PushUps = [
         "name": "Pseudo Planche Push-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Other",
-        difficulty: 7.0,
+        difficulty: 3.5,
     },
     {
         "id": "weighted_push_up",
@@ -726,7 +742,7 @@ export const PushUps = [
         "name": "Weighted Push-up",
         "type": "Weighted, Bodyweight, Reps",
         "muscle_group": "Chest",
-        difficulty: 5.0,
+        difficulty: 2.5,
         "nextVariations": [
             "pseudo_planche_push_up",
         ],
@@ -735,13 +751,43 @@ export const PushUps = [
 
 export const PullUps = [
     {
+        "id": "scapular_pull_up",
+        "description":
+            "Pull-up variation focusing on scapular retraction and depression, without bending the elbows.",
+        "name": "Scapular Pull-up",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Lats",
+        difficulty: 1.5,
+        "nextVariations": [],
+    },
+    {
+        "id": "assisted_pull_up",
+        "description":
+            "Pull-up variation using assistance from a band or partner to complete the movement.",
+        "name": "Assisted Pull-up",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Lats",
+        difficulty: 2.0,
+        "nextVariations": [],
+    },
+    {
+        "id": "negative_pull_up",
+        "description":
+            "Pull-up variation focusing on the eccentric (lowering) phase. Start at the top of the pull-up and slowly lower yourself to the bottom.",
+        "name": "Negative Pull-up",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Lats",
+        difficulty: 2.0,
+        "nextVariations": [],
+    },
+    {
         "id": "chin_up",
         "description":
             "Pull-up variation with an underhand grip targeting the lats and biceps.",
         "name": "Chin-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Biceps",
-        difficulty: 4.0,
+        difficulty: 2.5,
         "nextVariations": [],
     },
     {
@@ -751,7 +797,62 @@ export const PullUps = [
         "name": "Pull-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Lats",
-        difficulty: 4.5,
+        difficulty: 3.0,
+        "nextVariations": [
+            "wide_pull_up",
+        ],
+    },
+    {
+        "id": "wide_pull_up",
+        "description":
+            "Upper body pulling exercise targeting the lats and back.",
+        "name": "Wide Pull-up",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Lats",
+        difficulty: 3.5,
+        "nextVariations": [
+            "archer_pull_up",
+            "typewriter_pull_up",
+        ],
+    },
+    {
+        "id": "archer_pull_up",
+        "description":
+            "Pull-up variation with one arm reaching out to the side.",
+        "name": "Archer Pull-up",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Lats",
+        difficulty: 5.0,
+        "nextVariations": [],
+    },
+    {
+        "id": "typewriter_pull_up",
+        "description":
+            "Pull-up variation with one arm sliding across the bar to the other side.",
+        "name": "Typewriter Pull-up",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Lats",
+        difficulty: 5.5,
+        "nextVariations": [],
+    },
+    {
+        "id": "explosive_pull_up",
+        "description":
+            "Pull-up variation using explosive force to pull the body as high as possible.",
+        "name": "Explosive Pull-up",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Lats",
+        difficulty: 4.0,
+        "nextVariations": [],
+    },
+    {
+        "id": "muscle_up",
+        "description":
+            "Combination of a pull-up and a dip, using explosive force to pull the body over the bar and into a dip position.",
+        "name": "Muscle-up",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Lats",
+        difficulty: 5.0,
         "nextVariations": [],
     },
     {
@@ -760,7 +861,7 @@ export const PullUps = [
         "name": "Weighted Chin-up",
         "type": "Weighted, Bodyweight, Reps",
         "muscle_group": "Biceps",
-        difficulty: 6.0,
+        difficulty: 3.0,
     },
     {
         "id": "weighted_pull_up",
@@ -768,7 +869,7 @@ export const PullUps = [
         "name": "Weighted Pull-up",
         "type": "Weighted, Bodyweight, Reps",
         "muscle_group": "Lats",
-        difficulty: 6.5,
+        difficulty: 3.5,
     },
 ];
 
@@ -779,7 +880,7 @@ export const Rows = [
         "name": "Bodyweight Row",
         "type": "Bodyweight, Reps",
         "muscle_group": "Lats",
-        difficulty: 6.5,
+        difficulty: 1.5,
     },
     {
         "id": "weighted_row",
@@ -787,7 +888,7 @@ export const Rows = [
         "name": "Weighted Row",
         "type": "Weighted, Bodyweight, Reps",
         "muscle_group": "Lats",
-        difficulty: 4.5,
+        difficulty: 2.0,
     },
 ];
 
@@ -809,7 +910,7 @@ export const Planks = [
         "name": "Plank",
         "type": "Bodyweight, Duration",
         "muscle_group": "Abdominals",
-        difficulty: 9.5,
+        difficulty: 1.0,
     },
     {
         "id": "weighted_plank",
@@ -817,7 +918,7 @@ export const Planks = [
         "name": "Weighted Plank",
         "type": "Weighted, Bodyweight, Duration",
         "muscle_group": "Abdominals",
-        difficulty: 6.5,
+        difficulty: 1.5,
     },
     {
         "id": "side_plank",
@@ -825,7 +926,7 @@ export const Planks = [
         "name": "Side Plank",
         "type": "Bodyweight, Duration",
         "muscle_group": "Abdominals",
-        difficulty: 5.0,
+        difficulty: 1.5,
     },
 ];
 
@@ -836,7 +937,7 @@ export const RussianTwists = [
         "name": "Russian Twist",
         "type": "Bodyweight, Reps",
         "muscle_group": "Abdominals",
-        difficulty: 4.0,
+        difficulty: 1.5,
     },
 ];
 
@@ -847,7 +948,7 @@ export const Dips = [
         "name": "Bodyweight Dip",
         "type": "Bodyweight, Reps",
         "muscle_group": "Triceps",
-        difficulty: 7.5,
+        difficulty: 3.0,
     },
     {
         "id": "weighted_dip",
@@ -855,7 +956,7 @@ export const Dips = [
         "name": "Weighted Dip",
         "type": "Weighted, Bodyweight, Reps",
         "muscle_group": "Triceps",
-        difficulty: 7.5,
+        difficulty: 3.5,
     },
 ];
 
@@ -867,7 +968,7 @@ export const HandstandExercises = [
         "name": "Frog Stand",
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
-        difficulty: 4.0,
+        difficulty: 1.5,
         "nextVariations": [
             "crow_pose",
         ],
@@ -878,7 +979,7 @@ export const HandstandExercises = [
         "name": "Crow Pose",
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
-        difficulty: 5.0,
+        difficulty: 2.0,
         "nextVariations": [
             "chest_to_wall_handstand",
         ],
@@ -889,7 +990,7 @@ export const HandstandExercises = [
         "name": "Chest-to-Wall Handstand",
         "type": "Bodyweight, Duration",
         "muscle_group": "Other",
-        difficulty: 5.5,
+        difficulty: 2.5,
         "nextVariations": [
             "back_to_wall_handstand",
         ],
@@ -900,7 +1001,7 @@ export const HandstandExercises = [
         "name": "Back-to-Wall Handstand",
         "type": "Bodyweight, Duration",
         "muscle_group": "Other",
-        difficulty: 6.0,
+        difficulty: 2.5,
         "nextVariations": [
             "handstand",
         ],
@@ -911,7 +1012,7 @@ export const HandstandExercises = [
         "name": "Handstand",
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
-        difficulty: 7.5,
+        difficulty: 3.5,
         "nextVariations": [
             "one_arm_handstand",
             "pike_handstand_press",
@@ -923,7 +1024,7 @@ export const HandstandExercises = [
         "name": "Wall Handstand Push-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Shoulders",
-        difficulty: 8.0,
+        difficulty: 3.5,
         "nextVariations": [
             "handstand_push_up",
         ],
@@ -934,7 +1035,7 @@ export const HandstandExercises = [
         "name": "Handstand Push-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Shoulders",
-        difficulty: 9.5,
+        difficulty: 4.5,
     },
     {
         "id": "one_arm_handstand",
@@ -942,18 +1043,39 @@ export const HandstandExercises = [
         "name": "One-Arm Handstand",
         "type": "Bodyweight, Duration",
         "muscle_group": "Other",
-        difficulty: 8.0,
+        difficulty: 9.0,
     },
 ];
 
 export const HandstandPressExercises = [
+    {
+        "id": "tuck_handstand_press",
+        "description": "Pressing into a handstand from a tuck position.",
+        "name": "Tuck Handstand Press",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Shoulders",
+        difficulty: 7.5,
+        "nextVariations": [
+            "pike_handstand_press",
+        ],
+    },
     {
         "id": "pike_handstand_press",
         "description": "Pressing into a handstand from a pike position.",
         "name": "Pike Handstand Press",
         "type": "Bodyweight, Reps",
         "muscle_group": "Shoulders",
-        difficulty: 9.0,
+        difficulty: 7.5,
+        "nextVariations": [],
+    },
+    {
+        "id": "wall_straddle_handstand_press",
+        "description":
+            "Pressing into a handstand from a straddle position against a wall.",
+        "name": "Wall Straddle Handstand Press",
+        "type": "Bodyweight, Reps",
+        "muscle_group": "Shoulders",
+        difficulty: 6.0,
         "nextVariations": [
             "straddle_handstand_press",
         ],
@@ -964,18 +1086,18 @@ export const HandstandPressExercises = [
         "name": "Straddle Handstand Press",
         "type": "Bodyweight, Reps",
         "muscle_group": "Shoulders",
-        difficulty: 9.5,
+        difficulty: 7.5,
         "nextVariations": [
             "handstand_press",
         ],
     },
     {
-        "id": "handstand_press",
-        "description": "Pressing into a handstand from a standing position.",
-        "name": "Handstand Press",
+        "id": "bent_arm_handstand_press",
+        "description": "Pressing into a handstand from a bent arm position.",
+        "name": "Bent Arm Handstand Press",
         "type": "Bodyweight, Reps",
         "muscle_group": "Shoulders",
-        difficulty: 10.0,
+        difficulty: 7.5,
     },
 ];
 
@@ -987,16 +1109,16 @@ export const PlancheExercises = [
         "name": "Pseudo Planche Hold",
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
-        difficulty: 3.0,
+        difficulty: 2.5,
         "nextVariations": [
-            "tuck_planche_tippy_toes",
+            "toe_assisted_tuck_planche",
+            "bent_arm_planche_lean",
         ],
     },
     {
-        "id": "tuck_planche_tippy_toes",
-        "description":
-            "Tuck planche hold with knees tucked close to the chest and tippy toes for a more stable transition into a tuck planche.",
-        "name": "Tuck Planche With Tippy Toes",
+        "id": "toe_assisted_tuck_planche",
+        "description": "Tuck planche hold with assistance from your toes.",
+        "name": "Toe Assisted Tuck Planche",
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
         difficulty: 4.0,
@@ -1010,7 +1132,7 @@ export const PlancheExercises = [
         "name": "Tuck Planche",
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
-        difficulty: 5.0,
+        difficulty: 4.5,
         "nextVariations": [
             "advanced_tuck_planche",
         ],
@@ -1022,7 +1144,7 @@ export const PlancheExercises = [
         "name": "Advanced Tuck Planche",
         "type": "Bodyweight, Duration",
         "muscle_group": "Shoulders",
-        difficulty: 6.0,
+        difficulty: 5.5,
         "nextVariations": [
             "half_lay_planche",
         ],
@@ -1099,6 +1221,28 @@ export const PlancheExercises = [
         "muscle_group": "Shoulders",
         difficulty: 10.0,
     },
+    {
+        "id": "bent_arm_planche_lean",
+        "description":
+            "Isometric lean with bent arms, mimicking the planche position.",
+        "name": "Bent Arm Planche Lean",
+        "type": "Bodyweight, Duration",
+        "muscle_group": "Shoulders",
+        difficulty: 4.0,
+        "nextVariations": [
+            "bent_arm_planche",
+        ],
+    },
+    {
+        "id": "bent_arm_planche",
+        "description":
+            "Bent arm planche hold with body parallel to the ground.",
+        "name": "Bent Arm Planche",
+        "type": "Bodyweight, Duration",
+        "muscle_group": "Shoulders",
+        difficulty: 5.5,
+        "nextVariations": [],
+    },
 ];
 
 export const FrontLeverExercises = [
@@ -1108,7 +1252,7 @@ export const FrontLeverExercises = [
         "name": "Tuck Front Lever",
         "type": "Bodyweight, Duration",
         "muscle_group": "Lats",
-        difficulty: 4.0,
+        difficulty: 4.5,
         "nextVariations": [
             "advanced_tuck_front_lever",
         ],
@@ -1142,7 +1286,7 @@ export const FrontLeverExercises = [
         "name": "Straddle Front Lever",
         "type": "Bodyweight, Duration",
         "muscle_group": "Lats",
-        difficulty: 7.0,
+        difficulty: 6.5,
         "nextVariations": [
             "front_lever",
         ],
@@ -1153,7 +1297,7 @@ export const FrontLeverExercises = [
         "name": "Front Lever",
         "type": "Bodyweight, Duration",
         "muscle_group": "Lats",
-        difficulty: 8.0,
+        difficulty: 7.0,
         "nextVariations": [
             "front_lever_pull_up",
             "one_arm_front_lever",
@@ -1165,7 +1309,7 @@ export const FrontLeverExercises = [
         "name": "Front Lever Pull-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Lats",
-        difficulty: 9.0,
+        difficulty: 7.5,
         "nextVariations": [
             "front_lever_touch",
         ],
@@ -1176,7 +1320,7 @@ export const FrontLeverExercises = [
         "name": "Front Lever Touch",
         "type": "Bodyweight, Duration",
         "muscle_group": "Lats",
-        difficulty: 10.0,
+        difficulty: 8.0,
     },
     {
         "id": "one_arm_front_lever",
@@ -1195,7 +1339,7 @@ export const BackLeverExercises = [
         "name": "Tuck Back Lever",
         "type": "Bodyweight, Duration",
         "muscle_group": "Abdominals",
-        difficulty: 3.5,
+        difficulty: 3.0,
         "nextVariations": [
             "advanced_tuck_back_lever",
         ],
@@ -1206,18 +1350,7 @@ export const BackLeverExercises = [
         "name": "Advanced Tuck Back Lever",
         "type": "Bodyweight, Duration",
         "muscle_group": "Abdominals",
-        difficulty: 4.5,
-        "nextVariations": [
-            "half_lay_back_lever",
-        ],
-    },
-    {
-        "id": "half_lay_back_lever",
-        "description": "Back lever hold with hips extended and knees bent.",
-        "name": "Half-Lay Back Lever",
-        "type": "Bodyweight, Duration",
-        "muscle_group": "Abdominals",
-        difficulty: 5.5,
+        difficulty: 3.5,
         "nextVariations": [
             "straddle_back_lever",
         ],
@@ -1228,7 +1361,7 @@ export const BackLeverExercises = [
         "name": "Straddle Back Lever",
         "type": "Bodyweight, Duration",
         "muscle_group": "Abdominals",
-        difficulty: 6.5,
+        difficulty: 4.0,
         "nextVariations": [
             "back_lever",
         ],
@@ -1239,7 +1372,7 @@ export const BackLeverExercises = [
         "name": "Back Lever",
         "type": "Bodyweight, Duration",
         "muscle_group": "Abdominals",
-        difficulty: 7.5,
+        difficulty: 4.5,
         "nextVariations": [
             "back_lever_pull_up",
             "one_arm_back_lever",
@@ -1251,7 +1384,7 @@ export const BackLeverExercises = [
         "name": "Back Lever Pull-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Other",
-        difficulty: 8.5,
+        difficulty: 6.0,
         "nextVariations": [
             "back_lever_touch",
         ],
@@ -1262,7 +1395,7 @@ export const BackLeverExercises = [
         "name": "Back Lever Touch",
         "type": "Bodyweight, Duration",
         "muscle_group": "Other",
-        difficulty: 9.5,
+        difficulty: 6.5,
     },
     {
         "id": "one_arm_back_lever",
@@ -1270,7 +1403,7 @@ export const BackLeverExercises = [
         "name": "One-Arm Back Lever",
         "type": "Bodyweight, Duration",
         "muscle_group": "Other",
-        difficulty: 9.0,
+        difficulty: 8.0,
     },
 ];
 
@@ -1303,7 +1436,7 @@ export const WristExercises = [
         "name": "First Knuckle Raise",
         "type": "Bodyweight, Reps",
         "muscle_group": "Forearms",
-        difficulty: 4.0,
+        difficulty: 1.0,
     },
 ];
 
