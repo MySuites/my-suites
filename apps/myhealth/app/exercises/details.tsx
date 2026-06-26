@@ -772,7 +772,42 @@ export default function ExerciseDetailsScreen({
                             shadowOpacity: 0.3,
                             shadowRadius: 8,
                             elevation: 5,
+                            position: 'relative',
                         }}>
+                            <Pressable 
+                                onPress={() => setSelectedVariation(null)} 
+                                style={{
+                                    position: 'absolute',
+                                    top: 16,
+                                    left: 16,
+                                    padding: 8,
+                                    borderRadius: 9999,
+                                    zIndex: 10,
+                                }}
+                            >
+                                {({ pressed }) => (
+                                    <IconSymbol name="xmark" size={20} color={currentColors.text} style={{ opacity: pressed ? 0.6 : 1 }} />
+                                )}
+                            </Pressable>
+
+                            <Pressable 
+                                onPress={() => handleViewVariationDetails(selectedVariation)} 
+                                style={{
+                                    position: 'absolute',
+                                    top: 24,
+                                    right: 20,
+                                    zIndex: 10,
+                                }}
+                            >
+                                {({ pressed }) => (
+                                    <Text style={{ color: theme.primary, fontSize: 13, fontWeight: '600', opacity: pressed ? 0.6 : 1 }}>
+                                        View Full Details
+                                    </Text>
+                                )}
+                            </Pressable>
+
+                            <View style={{ height: 28 }} />
+
                             <Text style={{ color: currentColors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>
                                 {selectedVariation.name}
                             </Text>
@@ -889,21 +924,7 @@ export default function ExerciseDetailsScreen({
                                 <View style={{ height: 8 }} />
                             )}
 
-                            <Pressable
-                                onPress={() => handleViewVariationDetails(selectedVariation)}
-                                style={({pressed}: {pressed: boolean}) => ({
-                                    backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                                    padding: 16,
-                                    borderRadius: 12,
-                                    alignItems: 'center',
-                                    opacity: pressed ? 0.8 : 1,
-                                    marginBottom: isSelectMode ? 16 : 0
-                                })}
-                            >
-                                <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '600' }}>
-                                    View Full Details
-                                </Text>
-                            </Pressable>
+
 
                             {isSelectMode && (
                                 <View style={{ alignItems: 'center', width: '100%' }}>
