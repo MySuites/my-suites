@@ -68,6 +68,7 @@ const MAPPING = {
   'info.circle': 'info-outline',
   'lightbulb.fill': 'lightbulb',
   'list.bullet': 'list',
+  'square.and.arrow.down': 'file-download',
 } as const;
 
 

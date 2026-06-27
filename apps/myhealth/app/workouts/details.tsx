@@ -11,12 +11,24 @@ import { useWorkoutDraft } from '../../hooks/workouts/useWorkoutDraft';
 import { default as ExercisesScreen } from '../../app/exercises/index';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
+import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system/legacy';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { WorkoutOverviewChart } from '../../components/workouts/WorkoutOverviewChart';
 import { WorkoutDraftExerciseItem } from '../../components/workouts/WorkoutDraftExerciseItem';
 import { formatRestTime } from '../../utils/formatting';
+
+const resolveImageUri = (uri: string | null | undefined): string => {
+    if (!uri) return '';
+    if (uri.includes('/progress_pictures/')) {
+        const parts = uri.split('/progress_pictures/');
+        const filename = parts[parts.length - 1];
+        return `${FileSystem.documentDirectory}progress_pictures/${filename}`;
+    }
+    return uri;
+};
 
 export default function CreateWorkoutScreen() {
     const theme = useTheme();
@@ -289,6 +301,27 @@ export default function CreateWorkoutScreen() {
         );
     }
 
+    const handleSaveToPhotos = async (uri: string) => {
+        try {
+            const resolvedUri = resolveImageUri(uri);
+            const fileInfo = await FileSystem.getInfoAsync(resolvedUri);
+            if (!fileInfo.exists) {
+                Alert.alert("Photo Not Found", "This photo no longer exists on the device. It may have been removed when the app was reinstalled.");
+                return;
+            }
+            const { status } = await MediaLibrary.requestPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert("Permission Required", "Permission to access the photo library is required to save photos.");
+                return;
+            }
+            await MediaLibrary.saveToLibraryAsync(resolvedUri);
+            Alert.alert("Success", "Photo successfully saved to your Photos library!");
+        } catch (error) {
+            console.error("Failed to save photo to library:", error);
+            Alert.alert("Error", "Failed to save photo to your library.");
+        }
+    };
+
     function handleAddExercise(exercises: any[]) {
         if (exercises.length > 0) {
             exercises.forEach(exercise => {
@@ -547,24 +580,27 @@ export default function CreateWorkoutScreen() {
                                     showsHorizontalScrollIndicator={false}
                                     contentContainerStyle={{ gap: 12 }}
                                 >
-                                    {workoutLogImageUrls.map((uri, idx) => (
-                                        <Pressable
-                                            key={idx}
-                                            onPress={() => setSelectedImage(uri)}
-                                            style={{
-                                                width: 100,
-                                                height: 100,
-                                                borderRadius: 12,
-                                                overflow: 'hidden',
-                                                backgroundColor: 'rgba(0,0,0,0.05)',
-                                            }}
-                                        >
-                                            <Image
-                                                source={{ uri }}
-                                                style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
-                                            />
-                                        </Pressable>
-                                    ))}
+                                    {workoutLogImageUrls.map((rawUri, idx) => {
+                                        const uri = resolveImageUri(rawUri);
+                                        return (
+                                            <Pressable
+                                                key={idx}
+                                                onPress={() => setSelectedImage(uri)}
+                                                style={{
+                                                    width: 100,
+                                                    height: 100,
+                                                    borderRadius: 12,
+                                                    overflow: 'hidden',
+                                                    backgroundColor: 'rgba(0,0,0,0.05)',
+                                                }}
+                                            >
+                                                <Image
+                                                    source={{ uri }}
+                                                    style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
+                                                />
+                                            </Pressable>
+                                        );
+                                    })}
                                 </ScrollView>
                             </View>
                         )}
@@ -719,18 +755,71 @@ export default function CreateWorkoutScreen() {
                 );
             })()}
             {selectedImage && (
-                <Modal visible={!!selectedImage} transparent animationType="fade">
+                <View style={{ 
+                    position: 'absolute', 
+                    top: 0, 
+                    left: 0, 
+                    right: 0, 
+                    bottom: 0, 
+                    backgroundColor: 'rgba(0,0,0,0.95)', 
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    zIndex: 99999 
+                }}>
                     <Pressable 
-                        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', justifyContent: 'center', alignItems: 'center' }}
+                        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
                         onPress={() => setSelectedImage(null)}
-                    >
-                        <Image 
-                            source={{ uri: selectedImage }} 
-                            style={{ width: '100%', height: '80%', resizeMode: 'contain' }} 
-                        />
-                        <Text style={{ color: '#fff', position: 'absolute', bottom: 40, fontSize: 16 }}>Tap anywhere to close</Text>
-                    </Pressable>
-                </Modal>
+                    />
+                    
+                    <Image 
+                        source={{ uri: resolveImageUri(selectedImage) }} 
+                        style={{ width: '100%', height: '80%', resizeMode: 'contain' }} 
+                    />
+
+                    {/* Top Action Header */}
+                    <View style={{
+                        position: 'absolute',
+                        top: insets.top + 12,
+                        left: 0,
+                        right: 0,
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        paddingHorizontal: 20,
+                        zIndex: 100000
+                    }}>
+                        <TouchableOpacity 
+                            onPress={() => setSelectedImage(null)}
+                            style={{
+                                backgroundColor: 'rgba(255,255,255,0.15)',
+                                width: 40,
+                                height: 40,
+                                borderRadius: 20,
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <IconSymbol name="xmark" size={20} color="#fff" />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity 
+                            onPress={() => handleSaveToPhotos(selectedImage)}
+                            style={{
+                                backgroundColor: 'rgba(255,255,255,0.15)',
+                                width: 40,
+                                height: 40,
+                                borderRadius: 20,
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <IconSymbol name="square.and.arrow.down" size={20} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+
+                    <Text style={{ color: 'rgba(255,255,255,0.6)', position: 'absolute', bottom: insets.bottom + 20, fontSize: 14 }}>
+                        Tap anywhere to close
+                    </Text>
+                </View>
             )}
         </View>
         </TouchableWithoutFeedback>

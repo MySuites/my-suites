@@ -26,7 +26,8 @@
         },
         "NSCameraUsageDescription": "MyHealth uses your camera to let you attach photos to workouts and exercises.",
         "NSMicrophoneUsageDescription": "MyHealth uses your microphone for video recording.",
-        "NSPhotoLibraryUsageDescription": "MyHealth uses your photo library to let you select and save progress pictures."
+        "NSPhotoLibraryUsageDescription": "MyHealth uses your photo library to let you select and save progress pictures.",
+        "NSPhotoLibraryAddUsageDescription": "MyHealth uses your photo library to let you save progress pictures."
       }
     },
     "android": {
