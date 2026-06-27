@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Keyboard, TouchableWithoutFeedback, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
+import * as ImagePicker from 'expo-image-picker';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
@@ -33,6 +34,64 @@ export default function EndWorkoutScreen() {
     const totalExercises = filteredExercises.length;
 
     const [notes, setNotes] = React.useState("");
+    const [imageUri, setImageUri] = React.useState<string | null>(null);
+
+    const handleTakePhoto = async () => {
+        const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+        if (permissionResult.granted === false) {
+            Alert.alert("Permission Required", "Camera access is required to take a progress picture.");
+            return;
+        }
+        try {
+            const result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.8,
+            });
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                setImageUri(result.assets[0].uri);
+            }
+        } catch (error) {
+            console.error("Failed to launch camera:", error);
+            Alert.alert(
+                "Camera Unavailable",
+                "The camera is not available on this device (e.g. iOS Simulator). Would you like to select a photo from your library instead?",
+                [
+                    { text: "Choose from Library", onPress: handleChooseFromLibrary },
+                    { text: "Cancel", style: "cancel" }
+                ]
+            );
+        }
+    };
+
+    const handleChooseFromLibrary = async () => {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: 'images',
+                allowsEditing: true,
+                quality: 0.8,
+            });
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                setImageUri(result.assets[0].uri);
+            }
+        } catch (error) {
+            console.error("Failed to launch image library:", error);
+            Alert.alert("Error", "Could not open the photo library.");
+        }
+    };
+
+    const handlePickImage = async () => {
+        Alert.alert(
+            "Progress Picture",
+            "How would you like to add a progress picture?",
+            [
+                { text: "Take Photo", onPress: handleTakePhoto },
+                { text: "Choose from Library", onPress: handleChooseFromLibrary },
+                { text: "Cancel", style: "cancel" }
+            ]
+        );
+    };
 
     const ChangeType = {
         NONE: 'NONE',
@@ -93,7 +152,7 @@ export default function EndWorkoutScreen() {
         }
 
         const finalize = () => {
-            finishWorkout(notes);
+            finishWorkout(notes, imageUri || undefined);
             router.dismiss();
         };
 
@@ -247,11 +306,11 @@ export default function EndWorkoutScreen() {
                 templateExercises,
                 () => {}
             );
-            finishWorkout(notes);
+            finishWorkout(notes, imageUri || undefined);
             router.dismiss();
         } catch (e) {
             console.error("Failed to save new template", e);
-            finishWorkout(notes);
+            finishWorkout(notes, imageUri || undefined);
             router.dismiss();
         } finally {
             setIsSaving(false);
@@ -277,8 +336,7 @@ export default function EndWorkoutScreen() {
     };
 
     return (
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-            <View className="flex-1 bg-light dark:bg-dark">
+        <View className="flex-1 bg-light dark:bg-dark">
             <ScreenHeader 
                 title="Workout Summary" 
                 leftAction={<BackButton />} 
@@ -332,6 +390,42 @@ export default function EndWorkoutScreen() {
                 </RaisedCard>
 
                 <RaisedCard className="p-4 mb-6">
+                    <Text className="font-semibold text-light dark:text-dark mb-3 text-lg">Progress Picture</Text>
+                    {imageUri ? (
+                        <View style={{ position: 'relative', width: '100%', aspectRatio: 4/3, borderRadius: 12, overflow: 'hidden' }}>
+                            <Image 
+                                source={{ uri: imageUri }} 
+                                style={{ width: '100%', height: '100%', resizeMode: 'cover' }} 
+                            />
+                            <TouchableOpacity 
+                                onPress={() => setImageUri(null)}
+                                style={{
+                                    position: 'absolute',
+                                    top: 12,
+                                    right: 12,
+                                    backgroundColor: 'rgba(0,0,0,0.6)',
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: 16,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <IconSymbol name="xmark" size={16} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <TouchableOpacity 
+                            onPress={handlePickImage}
+                            className="w-full aspect-[4/3] rounded-xl border-2 border-dashed border-black/10 dark:border-white/10 items-center justify-center bg-black/[0.02] dark:bg-white/[0.02]"
+                        >
+                            <IconSymbol name="camera.fill" size={32} color={theme.primary} />
+                            <Text className="text-sm font-semibold text-light dark:text-dark mt-2">Take or Select Progress Picture</Text>
+                        </TouchableOpacity>
+                    )}
+                </RaisedCard>
+
+                <RaisedCard className="p-4 mb-6">
                     <Text className="font-semibold text-light dark:text-dark mb-4 text-lg">Detailed Summary</Text>
                     {filteredExercises.map((ex, idx) => (
                         <View key={idx} className="flex-row justify-between mb-2">
@@ -359,6 +453,5 @@ export default function EndWorkoutScreen() {
                 initialName={pendingName}
             />
         </View>
-        </TouchableWithoutFeedback>
     );
 }

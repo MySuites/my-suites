@@ -25,7 +25,8 @@
           "NSAllowsArbitraryLoads": true
         },
         "NSCameraUsageDescription": "MyHealth uses your camera to let you attach photos to workouts and exercises.",
-        "NSMicrophoneUsageDescription": "MyHealth uses your microphone for video recording."
+        "NSMicrophoneUsageDescription": "MyHealth uses your microphone for video recording.",
+        "NSPhotoLibraryUsageDescription": "MyHealth uses your photo library to let you select and save progress pictures."
       }
     },
     "android": {
@@ -41,7 +42,8 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_MEDIA_IMAGES"
       ]
     },
     "web": {
@@ -86,6 +88,13 @@
           "cameraPermission": "MyHealth uses your camera to let you attach photos to workouts and exercises.",
           "microphonePermission": "MyHealth uses your microphone for video recording.",
           "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "MyHealth uses your photo library to let you select and save progress pictures.",
+          "cameraPermission": "MyHealth uses your camera to let you attach photos to workouts and exercises."
         }
       ]
     ],

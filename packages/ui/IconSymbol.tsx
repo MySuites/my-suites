@@ -20,6 +20,7 @@ const MAPPING = {
   'figure.walk': 'directions-walk',
   'gearshape.fill': 'settings',
   'dumbbell.fill': 'fitness-center',
+  'camera.fill': 'photo-camera',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
   'chevron.left': 'chevron-left',

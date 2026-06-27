@@ -447,7 +447,8 @@ export const DataRepository = {
                  createdAt: log.created_at,
                  syncStatus: log.sync_status,
                  updatedAt: log.updated_at || new Date(log.created_at).getTime(),
-                 deletedAt: log.deleted_at 
+                 deletedAt: log.deleted_at,
+                 imageUrl: log.image_url
              } as LocalWorkoutLog;
         });
     },
@@ -597,6 +598,7 @@ export const DataRepository = {
                 createdAt: log.created_at,
                 syncStatus: log.sync_status || 'synced',
                 updatedAt: log.updated_at || new Date(log.created_at).getTime(),
+                imageUrl: log.image_url
             };
         });
     },
@@ -608,8 +610,8 @@ export const DataRepository = {
                  if (!l) continue; // Defensive check
                  // 1. Save Log Header
                  await db.runAsync(`
-                    INSERT OR REPLACE INTO workout_logs (id, user_id, workout_date, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT OR REPLACE INTO workout_logs (id, user_id, workout_date, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status, image_url)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                  `, [
                      l.id,
                      l.userId || null,
@@ -620,7 +622,8 @@ export const DataRepository = {
                      l.createdAt || null,
                      l.updatedAt || Date.now(),
                      (l as any).deletedAt || null, 
-                     l.syncStatus || 'synced'
+                     l.syncStatus || 'synced',
+                     l.imageUrl || null
                  ]);
 
                  // 2. Save Sets
@@ -681,8 +684,8 @@ export const DataRepository = {
         await db.withTransactionAsync(async () => {
             // 1. Save Header
             await db.runAsync(`
-                INSERT OR REPLACE INTO workout_logs (id, user_id, workout_date, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 'pending')
+                INSERT OR REPLACE INTO workout_logs (id, user_id, workout_date, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status, image_url)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 'pending', ?)
             `, [
                 id,
                 log.userId || null,
@@ -691,7 +694,8 @@ export const DataRepository = {
                 log.duration || null,
                 log.note || null,
                 timestamp,
-                now
+                now,
+                log.imageUrl || null
             ]);
 
             // 2. Save Sets

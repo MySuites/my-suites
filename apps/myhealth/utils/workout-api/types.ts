@@ -51,6 +51,7 @@ export type WorkoutLog = {
     workoutName?: string; // joined from workouts table
     createdAt: string;
     exercises?: Exercise[];
+    imageUrl?: string;
 };
 
 export interface Syncable {
@@ -72,6 +73,7 @@ export interface LocalWorkoutLog extends Syncable {
     createdAt: string;
     workoutDate?: string;
     workoutId?: string;
+    imageUrl?: string;
 }
 
 export interface BodyWeightLog extends Syncable {
