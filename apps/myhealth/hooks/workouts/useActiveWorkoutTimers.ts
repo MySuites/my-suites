@@ -1,16 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-// Safely import Audio to avoid crashing on missing native module
-let Audio: any;
-try {
-    Audio = require("expo-av").Audio;
-} catch {
-    console.warn(
-        "expo-av native module not found. Sound playback will be disabled.",
-    );
-}
+import { useAudioPlayer } from "expo-audio";
 
 export function useActiveWorkoutTimers() {
+    const player = useAudioPlayer(require("../../assets/sounds/timer_success.mp3"));
     const [isRunning, setRunning] = useState(false);
     const [workoutSeconds, setWorkoutSeconds] = useState(0);
     const [restSeconds, setRestSeconds] = useState(0);
@@ -24,22 +16,16 @@ export function useActiveWorkoutTimers() {
     const lastRestTickRef = useRef<number | null>(null);
 
     const playTimerCompleteSound = async () => {
-        if (!Audio) return;
         try {
-            const { sound } = await Audio.Sound.createAsync(
-                require("../../assets/sounds/timer_success.mp3"),
-            );
-            await sound.playAsync();
-            // Optional: unload after some time or on finish
-            sound.setOnPlaybackStatusUpdate((status: any) => {
-                if (status.isLoaded && status.didJustFinish) {
-                    sound.unloadAsync();
-                }
-            });
-        } catch {
+            if (player) {
+                player.seekTo(0);
+                player.play();
+            }
+        } catch (e) {
             // Silently fail if sound file is missing or invalid placeholder
             console.log(
                 "Timer sound playback failed (expected if placeholder is invalid)",
+                e
             );
         }
     };

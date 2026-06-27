@@ -97,7 +97,8 @@
           "photosPermission": "MyHealth uses your photo library to let you select and save progress pictures.",
           "cameraPermission": "MyHealth uses your camera to let you attach photos to workouts and exercises."
         }
-      ]
+      ],
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,10 +1,4 @@
 import '../global.css';
-import { LogBox } from 'react-native';
-
-LogBox.ignoreLogs([
-  '[expo-av]: Expo AV has been deprecated',
-]);
-
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';

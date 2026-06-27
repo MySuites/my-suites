@@ -8,6 +8,21 @@ jest.mock("expo-secure-store", () => ({
     deleteItemAsync: jest.fn(),
 }));
 
+jest.mock("expo-audio", () => ({
+    useAudioPlayer: jest.fn(() => ({
+        play: jest.fn(),
+        pause: jest.fn(),
+        stop: jest.fn(),
+        seekTo: jest.fn(),
+    })),
+    AudioPlayer: jest.fn().mockImplementation(() => ({
+        play: jest.fn(),
+        pause: jest.fn(),
+        stop: jest.fn(),
+        seekTo: jest.fn(),
+    })),
+}));
+
 jest.mock("@mysuite/auth", () => ({
     supabase: {
         auth: {

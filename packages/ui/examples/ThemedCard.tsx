@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { useUITheme } from '../index';
+import { useUITheme } from '../ThemeContext';
 
 type ThemedCardProps = {
   title: string;
