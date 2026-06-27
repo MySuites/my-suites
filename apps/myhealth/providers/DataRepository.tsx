@@ -434,6 +434,23 @@ export const DataRepository = {
                  ex.completedSets = (ex.completedSets || 0) + 1;
              });
  
+             let parsedUrls: string[] = [];
+             let singleUrl: string | undefined = undefined;
+             if (log.image_url) {
+                 if (log.image_url.startsWith('[')) {
+                     try {
+                         parsedUrls = JSON.parse(log.image_url);
+                         singleUrl = parsedUrls[0];
+                     } catch {
+                         parsedUrls = [log.image_url];
+                         singleUrl = log.image_url;
+                     }
+                 } else {
+                     parsedUrls = [log.image_url];
+                     singleUrl = log.image_url;
+                 }
+             }
+ 
              return {
                  id: log.id,
                  userId: log.user_id,
@@ -448,7 +465,8 @@ export const DataRepository = {
                  syncStatus: log.sync_status,
                  updatedAt: log.updated_at || new Date(log.created_at).getTime(),
                  deletedAt: log.deleted_at,
-                 imageUrl: log.image_url
+                 imageUrl: singleUrl,
+                 imageUrls: parsedUrls
              } as LocalWorkoutLog;
         });
     },
@@ -584,6 +602,23 @@ export const DataRepository = {
                 ex.completedSets = (ex.completedSets || 0) + 1;
             });
 
+            let parsedUrls: string[] = [];
+            let singleUrl: string | undefined = undefined;
+            if (log.image_url) {
+                if (log.image_url.startsWith('[')) {
+                    try {
+                        parsedUrls = JSON.parse(log.image_url);
+                        singleUrl = parsedUrls[0];
+                    } catch {
+                        parsedUrls = [log.image_url];
+                        singleUrl = log.image_url;
+                    }
+                } else {
+                    parsedUrls = [log.image_url];
+                    singleUrl = log.image_url;
+                }
+            }
+
             return {
                 id: log.id,
                 workoutId: undefined, // Template link not preserved in flat log table usually, but could add column if needed. schema has it? Schema in database.ts didn't have workout_id.
@@ -598,7 +633,8 @@ export const DataRepository = {
                 createdAt: log.created_at,
                 syncStatus: log.sync_status || 'synced',
                 updatedAt: log.updated_at || new Date(log.created_at).getTime(),
-                imageUrl: log.image_url
+                imageUrl: singleUrl,
+                imageUrls: parsedUrls
             };
         });
     },
@@ -623,7 +659,7 @@ export const DataRepository = {
                      l.updatedAt || Date.now(),
                      (l as any).deletedAt || null, 
                      l.syncStatus || 'synced',
-                     l.imageUrl || null
+                     l.imageUrls && l.imageUrls.length > 0 ? JSON.stringify(l.imageUrls) : (l.imageUrl || null)
                  ]);
 
                  // 2. Save Sets
@@ -695,7 +731,7 @@ export const DataRepository = {
                 log.note || null,
                 timestamp,
                 now,
-                log.imageUrl || null
+                log.imageUrls && log.imageUrls.length > 0 ? JSON.stringify(log.imageUrls) : (log.imageUrl || null)
             ]);
 
             // 2. Save Sets

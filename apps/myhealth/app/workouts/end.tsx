@@ -34,7 +34,7 @@ export default function EndWorkoutScreen() {
     const totalExercises = filteredExercises.length;
 
     const [notes, setNotes] = React.useState("");
-    const [imageUri, setImageUri] = React.useState<string | null>(null);
+    const [imageUris, setImageUris] = React.useState<string[]>([]);
 
     const handleTakePhoto = async () => {
         const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
@@ -50,7 +50,7 @@ export default function EndWorkoutScreen() {
                 quality: 0.8,
             });
             if (!result.canceled && result.assets && result.assets.length > 0) {
-                setImageUri(result.assets[0].uri);
+                setImageUris(prev => [result.assets[0].uri, ...prev]);
             }
         } catch (error) {
             console.error("Failed to launch camera:", error);
@@ -69,11 +69,12 @@ export default function EndWorkoutScreen() {
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: 'images',
-                allowsEditing: true,
+                allowsMultipleSelection: true,
                 quality: 0.8,
             });
             if (!result.canceled && result.assets && result.assets.length > 0) {
-                setImageUri(result.assets[0].uri);
+                const newUris = result.assets.map(asset => asset.uri);
+                setImageUris(prev => [...newUris, ...prev]);
             }
         } catch (error) {
             console.error("Failed to launch image library:", error);
@@ -152,7 +153,7 @@ export default function EndWorkoutScreen() {
         }
 
         const finalize = () => {
-            finishWorkout(notes, imageUri || undefined);
+            finishWorkout(notes, imageUris[0] || undefined, imageUris);
             router.dismiss();
         };
 
@@ -306,11 +307,11 @@ export default function EndWorkoutScreen() {
                 templateExercises,
                 () => {}
             );
-            finishWorkout(notes, imageUri || undefined);
+            finishWorkout(notes, imageUris[0] || undefined, imageUris);
             router.dismiss();
         } catch (e) {
             console.error("Failed to save new template", e);
-            finishWorkout(notes, imageUri || undefined);
+            finishWorkout(notes, imageUris[0] || undefined, imageUris);
             router.dismiss();
         } finally {
             setIsSaving(false);
@@ -359,12 +360,15 @@ export default function EndWorkoutScreen() {
                 keyboardDismissMode="on-drag"
             >
                 <RaisedCard className="p-6 mb-6 items-center">
-                    <Text className="text-2xl font-bold text-light dark:text-dark mb-2">{workoutName}</Text>
-                    <Text className="text-4xl font-black text-primary dark:text-primary-dark mb-4">
-                        {formatDuration(workoutSeconds)}
-                    </Text>
+                    <Text className="text-2xl font-bold text-light dark:text-dark mb-4">{workoutName}</Text>
                     
-                    <View className="flex-row gap-8">
+                    <View className="flex-row justify-around w-full">
+                        <View className="items-center">
+                            <Text className="text-xl font-bold text-light dark:text-dark">
+                                {formatDuration(workoutSeconds)}
+                            </Text>
+                            <Text className="text-gray-500 dark:text-gray-400">Duration</Text>
+                        </View>
                         <View className="items-center">
                             <Text className="text-xl font-bold text-light dark:text-dark">{completedSetsCount}</Text>
                             <Text className="text-gray-500 dark:text-gray-400">Sets</Text>
@@ -377,9 +381,64 @@ export default function EndWorkoutScreen() {
                 </RaisedCard>
 
                 <RaisedCard className="p-4 mb-6">
+                    <Text className="font-semibold text-light dark:text-dark mb-3 text-lg">Progress Pictures</Text>
+                    <ScrollView 
+                        horizontal 
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ gap: 12, alignItems: 'center' }}
+                    >
+                        <TouchableOpacity 
+                            onPress={handlePickImage}
+                            style={{ 
+                                width: 100, 
+                                height: 100, 
+                                borderRadius: 12, 
+                                borderStyle: 'dashed', 
+                                borderWidth: 2, 
+                                borderColor: theme.border || 'rgba(0,0,0,0.1)', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                backgroundColor: 'rgba(0,0,0,0.02)'
+                            }}
+                            className="dark:bg-white/[0.02]"
+                        >
+                            <IconSymbol name="camera.fill" size={28} color={theme.primary} />
+                            <Text className="text-xs font-semibold text-light dark:text-dark mt-1 text-center px-2">
+                                Add Photo
+                            </Text>
+                        </TouchableOpacity>
+
+                        {imageUris.map((uri, idx) => (
+                            <View key={idx} style={{ position: 'relative', width: 100, height: 100, borderRadius: 12, overflow: 'hidden' }}>
+                                <Image 
+                                    source={{ uri }} 
+                                    style={{ width: '100%', height: '100%', resizeMode: 'cover' }} 
+                                />
+                                <TouchableOpacity 
+                                    onPress={() => setImageUris(prev => prev.filter((_, i) => i !== idx))}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 8,
+                                        right: 8,
+                                        backgroundColor: 'rgba(0,0,0,0.6)',
+                                        width: 26,
+                                        height: 26,
+                                        borderRadius: 13,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <IconSymbol name="xmark" size={12} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+                    </ScrollView>
+                </RaisedCard>
+
+                <RaisedCard className="p-4 mb-6">
                     <Text className="font-semibold text-light dark:text-dark mb-2 text-lg">Notes</Text>
                     <TextInput 
-                        className="text-light dark:text-dark min-h-[80px] p-2 border border-black/10 dark:border-white/10 rounded-lg"
+                        className="text-light dark:text-dark min-h-[60px] p-2 border border-black/10 dark:border-white/10 rounded-lg"
                         multiline
                         placeholder="How did it feel?"
                         placeholderTextColor="#9CA3AF"
@@ -387,42 +446,6 @@ export default function EndWorkoutScreen() {
                         onChangeText={setNotes}
                         textAlignVertical="top"
                     />
-                </RaisedCard>
-
-                <RaisedCard className="p-4 mb-6">
-                    <Text className="font-semibold text-light dark:text-dark mb-3 text-lg">Progress Picture</Text>
-                    {imageUri ? (
-                        <View style={{ position: 'relative', width: '100%', aspectRatio: 4/3, borderRadius: 12, overflow: 'hidden' }}>
-                            <Image 
-                                source={{ uri: imageUri }} 
-                                style={{ width: '100%', height: '100%', resizeMode: 'cover' }} 
-                            />
-                            <TouchableOpacity 
-                                onPress={() => setImageUri(null)}
-                                style={{
-                                    position: 'absolute',
-                                    top: 12,
-                                    right: 12,
-                                    backgroundColor: 'rgba(0,0,0,0.6)',
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: 16,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}
-                            >
-                                <IconSymbol name="xmark" size={16} color="#fff" />
-                            </TouchableOpacity>
-                        </View>
-                    ) : (
-                        <TouchableOpacity 
-                            onPress={handlePickImage}
-                            className="w-full aspect-[4/3] rounded-xl border-2 border-dashed border-black/10 dark:border-white/10 items-center justify-center bg-black/[0.02] dark:bg-white/[0.02]"
-                        >
-                            <IconSymbol name="camera.fill" size={32} color={theme.primary} />
-                            <Text className="text-sm font-semibold text-light dark:text-dark mt-2">Take or Select Progress Picture</Text>
-                        </TouchableOpacity>
-                    )}
                 </RaisedCard>
 
                 <RaisedCard className="p-4 mb-6">

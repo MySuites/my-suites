@@ -42,7 +42,7 @@ interface WorkoutManagerContextType {
     deleteCustomExercise: (id: string) => Promise<void>;
     workoutHistory: WorkoutLog[];
     fetchWorkoutLogDetails: (logId: string) => Promise<{ data: any[], error: any }>;
-    saveCompletedWorkout: (name: string, exercises: Exercise[], duration: number, onSuccess?: () => void, note?: string, routineId?: string, sourceWorkoutId?: string, imageUrl?: string) => Promise<void>;
+    saveCompletedWorkout: (name: string, exercises: Exercise[], duration: number, onSuccess?: () => void, note?: string, routineId?: string, sourceWorkoutId?: string, imageUrl?: string, imageUrls?: string[]) => Promise<void>;
     deleteWorkoutLog: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => void;
     lastSyncedAt: Date | null;
     sync: () => Promise<void>;
@@ -91,7 +91,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                     createdAt: h.date,
                     notes: h.note,
                     exercises: h.exercises,
-                    imageUrl: h.imageUrl
+                    imageUrl: h.imageUrl,
+                    imageUrls: h.imageUrls
                 }));
                 mappedHistory.sort((a, b) => new Date(b.workoutDate).getTime() - new Date(a.workoutDate).getTime());
                 setWorkoutHistory(mappedHistory);
@@ -278,7 +279,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         note?: string,
         routineId?: string,
         sourceWorkoutId?: string,
-        imageUrl?: string
+        imageUrl?: string,
+        imageUrls?: string[]
     ) => {
          setIsSaving(true);
          try {
@@ -291,6 +293,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                  createdAt: new Date().toISOString(),
                  note: note,
                  imageUrl: imageUrl,
+                 imageUrls: imageUrls,
                  id: undefined as any
              });
              
@@ -303,7 +306,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                     createdAt: h.date,
                     notes: h.note,
                     exercises: h.exercises,
-                    imageUrl: h.imageUrl
+                    imageUrl: h.imageUrl,
+                    imageUrls: h.imageUrls
              }));
              mappedHistory.sort((a: any, b: any) => new Date(b.workoutDate).getTime() - new Date(a.workoutDate).getTime());
              setWorkoutHistory(mappedHistory);

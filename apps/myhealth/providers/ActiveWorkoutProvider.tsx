@@ -32,7 +32,7 @@ interface ActiveWorkoutContextType {
     isExpanded: boolean;
     toggleExpanded: () => void;
     setExpanded: (expanded: boolean) => void;
-    finishWorkout: (note?: string, imageUrl?: string) => void;
+    finishWorkout: (note?: string, imageUrl?: string, imageUrls?: string[]) => void;
     cancelWorkout: () => void;
     hasActiveSession: boolean;
     routineId: string | null;
@@ -322,7 +322,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
     const { saveCompletedWorkout } = useWorkoutManager();
 
-    const handleFinishWorkout = useCallback((note?: string, imageUrl?: string) => {
+    const handleFinishWorkout = useCallback((note?: string, imageUrl?: string, imageUrls?: string[]) => {
         // Generate logs for completed sets before saving
         const exercisesWithLogs = exercises.map(ex => {
             const logs: any[] = [];
@@ -409,7 +409,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         });
 
         // Save the workout
-        saveCompletedWorkout(workoutName, exercisesWithLogs, workoutSeconds, undefined, note, routineId || undefined, sourceWorkoutId || undefined, imageUrl);
+        saveCompletedWorkout(workoutName, exercisesWithLogs, workoutSeconds, undefined, note, routineId || undefined, sourceWorkoutId || undefined, imageUrl, imageUrls);
 
         // Reset state
 		setRunning(false);
