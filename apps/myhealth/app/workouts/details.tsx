@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Pressable, Modal, Dimensions, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Pressable, Modal, Dimensions, Keyboard, TouchableWithoutFeedback, Image, ScrollView } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -43,8 +43,10 @@ export default function CreateWorkoutScreen() {
 
     const editingWorkoutId = typeof id === 'string' ? id : null;
     const viewingLogId = typeof logId === 'string' ? logId : null;
-    const originalWorkout = savedWorkouts.find(w => w.id === editingWorkoutId);
+    const historyItem = viewingLogId ? workoutHistory.find((h: any) => h.id === viewingLogId) : null;
+    const workoutLogImageUrls = historyItem?.imageUrls || (historyItem?.imageUrl ? [historyItem.imageUrl] : []);
     const isLogView = !!viewingLogId;
+    const originalWorkout = savedWorkouts.find(w => w.id === editingWorkoutId);
     
     // Pre-compute initial values synchronously to avoid the loading spinner
     const initialData = useRef((() => {
@@ -127,7 +129,8 @@ export default function CreateWorkoutScreen() {
     const [workoutLogDuration] = useState<number | null>(initialData.logDuration || null);
 
     const [isAddingExercise, setIsAddingExercise] = useState(false);
-    const [activeTab, setActiveTab] = useState<'exercises' | 'performance'>('exercises');
+    const [activeTab, setActiveTab] = useState<'details' | 'performance'>('details');
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const [headerMenuVisible, setHeaderMenuVisible] = useState(false);
     const [headerMenuPos, setHeaderMenuPos] = useState({ top: 0, right: 0 });
@@ -479,7 +482,7 @@ export default function CreateWorkoutScreen() {
 
             <GestureHandlerRootView style={{ flex: 1 }}>
                 <DraggableFlatList
-                    data={(activeTab === 'exercises' || isEditing) ? workoutDraftExercises : []}
+                    data={(activeTab === 'details' || isEditing) ? workoutDraftExercises : []}
                     onDragEnd={({ from, to }) => reorderExercises(from, to)}
                     keyExtractor={(item, index) => `${index}-${item.name}`} 
                     containerStyle={{ flex: 1 }}
@@ -502,20 +505,20 @@ export default function CreateWorkoutScreen() {
                                 marginBottom: 24
                             }}>
                                 <Pressable
-                                    onPress={() => setActiveTab('exercises')}
+                                    onPress={() => setActiveTab('details')}
                                     style={{
                                         flex: 1,
                                         paddingVertical: 8,
                                         alignItems: 'center',
-                                        backgroundColor: activeTab === 'exercises' ? activeToggleBg : 'transparent',
+                                        backgroundColor: activeTab === 'details' ? activeToggleBg : 'transparent',
                                         borderRadius: 6,
                                     }}
                                 >
                                     <Text style={{
-                                        color: activeTab === 'exercises' ? activeToggleText : (theme.text as string),
-                                        fontWeight: activeTab === 'exercises' ? '600' : '400',
-                                        opacity: activeTab === 'exercises' ? 1 : 0.7
-                                    }}>Exercises</Text>
+                                        color: activeTab === 'details' ? activeToggleText : (theme.text as string),
+                                        fontWeight: activeTab === 'details' ? '600' : '400',
+                                        opacity: activeTab === 'details' ? 1 : 0.7
+                                    }}>Details</Text>
                                 </Pressable>
                                 <Pressable
                                     onPress={() => setActiveTab('performance')}
@@ -534,10 +537,39 @@ export default function CreateWorkoutScreen() {
                                     }}>Performance</Text>
                                 </Pressable>
                             </View>
-                        
-                        {!isEditing && activeTab === 'performance' && workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
+                                             {!isEditing && activeTab === 'performance' && workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
 
-                        {(isEditing || activeTab === 'exercises') && (
+                        {!isEditing && activeTab === 'details' && workoutLogImageUrls.length > 0 && (
+                            <View style={{ marginBottom: 20 }}>
+                                <Text className="font-semibold text-light dark:text-dark mb-3 text-lg">Progress Pictures</Text>
+                                <ScrollView 
+                                    horizontal 
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={{ gap: 12 }}
+                                >
+                                    {workoutLogImageUrls.map((uri, idx) => (
+                                        <Pressable
+                                            key={idx}
+                                            onPress={() => setSelectedImage(uri)}
+                                            style={{
+                                                width: 100,
+                                                height: 100,
+                                                borderRadius: 12,
+                                                overflow: 'hidden',
+                                                backgroundColor: 'rgba(0,0,0,0.05)',
+                                            }}
+                                        >
+                                            <Image
+                                                source={{ uri }}
+                                                style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
+                                            />
+                                        </Pressable>
+                                    ))}
+                                </ScrollView>
+                            </View>
+                        )}
+
+                        {(isEditing || activeTab === 'details') && (
                             <View className="flex-row justify-between items-center mb-2 mt-2">
                                 <Text className="text-base leading-6 font-semibold text-light dark:text-dark">Exercises</Text>
                                 {!isLogView && (
@@ -554,7 +586,7 @@ export default function CreateWorkoutScreen() {
                     </View>
                 }
                 ListEmptyComponent={
-                    (isEditing || activeTab === 'exercises') ? (
+                    (isEditing || activeTab === 'details') ? (
                         <View className="py-10 justify-center items-center opacity-50">
                             <Text className="leading-6 mb-2 text-lg text-light-muted dark:text-dark-muted">No exercises added yet</Text>
                         </View>
@@ -686,6 +718,20 @@ export default function CreateWorkoutScreen() {
                 </Animated.View>
                 );
             })()}
+            {selectedImage && (
+                <Modal visible={!!selectedImage} transparent animationType="fade">
+                    <Pressable 
+                        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', justifyContent: 'center', alignItems: 'center' }}
+                        onPress={() => setSelectedImage(null)}
+                    >
+                        <Image 
+                            source={{ uri: selectedImage }} 
+                            style={{ width: '100%', height: '80%', resizeMode: 'contain' }} 
+                        />
+                        <Text style={{ color: '#fff', position: 'absolute', bottom: 40, fontSize: 16 }}>Tap anywhere to close</Text>
+                    </Pressable>
+                </Modal>
+            )}
         </View>
         </TouchableWithoutFeedback>
     );

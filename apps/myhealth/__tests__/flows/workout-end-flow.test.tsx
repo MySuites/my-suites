@@ -31,6 +31,13 @@ jest.mock('../../providers/WorkoutManagerProvider', () => ({
     useWorkoutManager: () => mockWorkoutManagerState
 }));
 
+jest.mock('expo-file-system/legacy', () => ({
+    documentDirectory: 'file:///mock-doc-dir/',
+    getInfoAsync: jest.fn().mockResolvedValue({ exists: true }),
+    makeDirectoryAsync: jest.fn().mockResolvedValue(undefined),
+    copyAsync: jest.fn().mockResolvedValue(undefined),
+}));
+
 jest.mock('@mysuite/ui', () => {
     return {
         useUITheme: () => ({ primary: 'blue', textMuted: 'gray', danger: 'red', bg: 'white' }),
@@ -122,7 +129,7 @@ describe('End Workout Flow', () => {
         expect(mockRouterDismiss).toHaveBeenCalled();
     });
 
-    it('saves history immediately if no template source and user chooses "History Only"', () => {
+    it('saves history immediately if no template source and user chooses "History Only"', async () => {
         const { getByTestId } = render(<EndWorkoutScreen />);
         
         const saveButton = getByTestId('save-workout-btn');
@@ -141,13 +148,15 @@ describe('End Workout Flow', () => {
         const buttons = alertCall[2];
         const historyAction = buttons.find((b: any) => b.text === 'History Only');
         
-        act(() => {
+        await act(async () => {
             historyAction.onPress();
         });
 
-        expect(mockFinishWorkout).toHaveBeenCalled();
-        expect(mockSaveWorkout).not.toHaveBeenCalled();
-        expect(mockRouterDismiss).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(mockFinishWorkout).toHaveBeenCalled();
+            expect(mockSaveWorkout).not.toHaveBeenCalled();
+            expect(mockRouterDismiss).toHaveBeenCalled();
+        });
     });
 
     it('prompts and saves as new template if user chooses to', async () => {
@@ -222,7 +231,7 @@ describe('End Workout Flow', () => {
         expect(mockFinishWorkout).toHaveBeenCalled();
     });
 
-    it('saves history immediately if routineId is present, skipping template prompt', () => {
+    it('saves history immediately if routineId is present, skipping template prompt', async () => {
         mockActiveWorkoutState.routineId = 'some-routine-id';
         mockActiveWorkoutState.sourceWorkoutId = null;
 
@@ -237,7 +246,9 @@ describe('End Workout Flow', () => {
             expect.any(Array)
         );
 
-        expect(mockFinishWorkout).toHaveBeenCalled();
-        expect(mockRouterDismiss).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(mockFinishWorkout).toHaveBeenCalled();
+            expect(mockRouterDismiss).toHaveBeenCalled();
+        });
     });
 });

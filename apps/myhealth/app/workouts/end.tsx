@@ -3,12 +3,44 @@ import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Keyboard, T
 import { useRouter } from 'expo-router';
 import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { WorkoutNamePrompt } from '../../components/workouts/WorkoutNamePrompt';
+
+async function persistProgressPictures(uris: string[]): Promise<string[]> {
+    const persistedUris: string[] = [];
+    const directory = `${FileSystem.documentDirectory}progress_pictures/`;
+
+    try {
+        const dirInfo = await FileSystem.getInfoAsync(directory);
+        if (!dirInfo.exists) {
+            await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+        }
+
+        for (const uri of uris) {
+            if (uri.startsWith(FileSystem.documentDirectory || '')) {
+                persistedUris.push(uri);
+                continue;
+            }
+
+            const filename = uri.split('/').pop() || `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+            const destPath = `${directory}${filename}`;
+            await FileSystem.copyAsync({
+                from: uri,
+                to: destPath
+            });
+            persistedUris.push(destPath);
+        }
+    } catch (error) {
+        console.error("Failed to copy images to document directory:", error);
+        return uris;
+    }
+    return persistedUris;
+}
 
 export default function EndWorkoutScreen() {
     const router = useRouter();
@@ -152,9 +184,19 @@ export default function EndWorkoutScreen() {
             return;
         }
 
-        const finalize = () => {
-            finishWorkout(notes, imageUris[0] || undefined, imageUris);
-            router.dismiss();
+        const finalize = async () => {
+            setIsSaving(true);
+            try {
+                const persisted = await persistProgressPictures(imageUris);
+                finishWorkout(notes, persisted[0] || undefined, persisted);
+                router.dismiss();
+            } catch (error) {
+                console.error("Failed to persist photos:", error);
+                finishWorkout(notes, imageUris[0] || undefined, imageUris);
+                router.dismiss();
+            } finally {
+                setIsSaving(false);
+            }
         };
 
         // Paths are now mutually exclusive to prevent double-prompts
@@ -307,7 +349,8 @@ export default function EndWorkoutScreen() {
                 templateExercises,
                 () => {}
             );
-            finishWorkout(notes, imageUris[0] || undefined, imageUris);
+            const persisted = await persistProgressPictures(imageUris);
+            finishWorkout(notes, persisted[0] || undefined, persisted);
             router.dismiss();
         } catch (e) {
             console.error("Failed to save new template", e);

@@ -61,7 +61,8 @@ export const initDatabase = async () => {
                 created_at TEXT,
                 updated_at INTEGER,
                 deleted_at INTEGER,
-                sync_status TEXT DEFAULT 'pending'
+                sync_status TEXT DEFAULT 'pending',
+                image_url TEXT
             );
         `);
         console.log("[DB] Created workout_logs");
@@ -209,6 +210,7 @@ export const initDatabase = async () => {
     };
 
     await safeAddColumn("workout_logs", "deleted_at", "INTEGER");
+    await safeAddColumn("workout_logs", "image_url", "TEXT");
     await safeAddColumn("exercises", "deleted_at", "INTEGER");
     await safeAddColumn("workouts", "sort_order", "INTEGER");
 
