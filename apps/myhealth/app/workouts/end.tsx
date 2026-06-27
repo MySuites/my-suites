@@ -4,12 +4,32 @@ import { useRouter } from 'expo-router';
 import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as MediaLibrary from 'expo-media-library';
+import { storage } from '../../utils/storage';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { WorkoutNamePrompt } from '../../components/workouts/WorkoutNamePrompt';
+
+async function autoSaveToPhotos(uris: string[]) {
+    try {
+        const autoSave = await storage.getItem<boolean>('auto_save_photos_to_gallery');
+        if (!autoSave || uris.length === 0) return;
+
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        if (status !== 'granted') {
+            return;
+        }
+
+        for (const uri of uris) {
+            await MediaLibrary.saveToLibraryAsync(uri);
+        }
+    } catch (error) {
+        console.error("Auto-save photos failed:", error);
+    }
+}
 
 async function persistProgressPictures(uris: string[]): Promise<string[]> {
     const persistedUris: string[] = [];
@@ -188,6 +208,7 @@ export default function EndWorkoutScreen() {
             setIsSaving(true);
             try {
                 const persisted = await persistProgressPictures(imageUris);
+                autoSaveToPhotos(persisted);
                 finishWorkout(notes, persisted[0] || undefined, persisted);
                 router.dismiss();
             } catch (error) {
@@ -350,6 +371,7 @@ export default function EndWorkoutScreen() {
                 () => {}
             );
             const persisted = await persistProgressPictures(imageUris);
+            autoSaveToPhotos(persisted);
             finishWorkout(notes, persisted[0] || undefined, persisted);
             router.dismiss();
         } catch (e) {

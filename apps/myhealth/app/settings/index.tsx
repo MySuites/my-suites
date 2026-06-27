@@ -8,6 +8,7 @@ import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { BodyWeightService } from '../../services/BodyWeightService';
 import { HealthKitService } from '../../services/HealthKitService';
+import { storage } from '../../utils/storage';
 import * as WebBrowser from 'expo-web-browser';
 
 const PRIVACY_POLICY_URL = 'https://mysuites.github.io/myhealth-privacy_policy/';
@@ -52,6 +53,15 @@ export default function SettingsScreen() {
   };
 
   const [isHealthConnected, setIsHealthConnected] = useState(false);
+  const [autoSavePhotos, setAutoSavePhotos] = useState(false);
+
+  useEffect(() => {
+    async function loadAutoSavePref() {
+      const val = await storage.getItem<boolean>('auto_save_photos_to_gallery');
+      setAutoSavePhotos(!!val);
+    }
+    loadAutoSavePref();
+  }, []);
 
   const checkHealthStatus = useCallback(async () => {
     const isAuth = await HealthKitService.isAuthorized();
@@ -126,6 +136,26 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
+          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Photos</Text>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+            <Text className="text-base text-light dark:text-dark">Auto-Save Progress Photos</Text>
+            <Switch
+              value={autoSavePhotos}
+              onValueChange={async (value) => {
+                setAutoSavePhotos(value);
+                await storage.setItem('auto_save_photos_to_gallery', value);
+                showToast({ 
+                  message: value ? "Auto-save enabled" : "Auto-save disabled", 
+                  type: 'success' 
+                });
+              }}
+              trackColor={{ false: theme.card, true: theme.primary }}
+              thumbColor={autoSavePhotos ? "#ffffff" : "#f4f3f4"}
+            />
+          </View>
+        </View>
+
+        <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Integrations</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Apple Health</Text>
@@ -161,7 +191,7 @@ export default function SettingsScreen() {
           </View>
         </View>
         
-        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.3.6
+        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.3.7
         </Text>
       </ScrollView>
     </View>
