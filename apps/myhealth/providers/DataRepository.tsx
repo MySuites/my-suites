@@ -329,10 +329,36 @@ export const DataRepository = {
         const exerciseMetaMap = new Map<string, { properties: string[], equipment?: string, attachment?: string, movement_type?: string }>();
         exercisesDef.forEach(e => {
             if (e.id) {
+                 let eq = e.equipment;
+                 if (eq && typeof eq === 'string' && eq.startsWith('[')) {
+                     try {
+                         const parsed = JSON.parse(eq);
+                         eq = Array.isArray(parsed) ? parsed[0] : parsed;
+                     } catch {}
+                 }
+                 if (eq && typeof eq === 'string' && eq.startsWith('"')) {
+                     try {
+                         eq = JSON.parse(eq);
+                     } catch {}
+                 }
+                 
+                 let att = e.attachment;
+                 if (att && typeof att === 'string' && att.startsWith('[')) {
+                     try {
+                         const parsed = JSON.parse(att);
+                         att = Array.isArray(parsed) ? parsed[0] : parsed;
+                     } catch {}
+                 }
+                 if (att && typeof att === 'string' && att.startsWith('"')) {
+                     try {
+                         att = JSON.parse(att);
+                     } catch {}
+                 }
+
                  exerciseMetaMap.set(e.id, {
                      properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : [],
-                     equipment: e.equipment || undefined,
-                     attachment: e.attachment || undefined,
+                     equipment: eq || undefined,
+                     attachment: att || undefined,
                      movement_type: e.movement_type || undefined,
                  });
             }
@@ -349,6 +375,36 @@ export const DataRepository = {
  
                  if (!exercisesMap.has(exId)) {
                      const meta = exerciseMetaMap.get(exId);
+                     
+                     let setEq = set.equipment;
+                     if (setEq && typeof setEq === 'string' && setEq.startsWith('[')) {
+                         try {
+                             const parsed = JSON.parse(setEq);
+                             setEq = Array.isArray(parsed) ? parsed[0] : parsed;
+                         } catch {}
+                     }
+                     if (setEq && typeof setEq === 'string' && setEq.startsWith('"')) {
+                         try {
+                             setEq = JSON.parse(setEq);
+                         } catch {}
+                     }
+
+                     let setAtt = set.attachment;
+                     if (setAtt && typeof setAtt === 'string' && setAtt.startsWith('[')) {
+                         try {
+                             const parsed = JSON.parse(setAtt);
+                             setAtt = Array.isArray(parsed) ? parsed[0] : parsed;
+                         } catch {}
+                     }
+                     if (setAtt && typeof setAtt === 'string' && setAtt.startsWith('"')) {
+                         try {
+                             setAtt = JSON.parse(setAtt);
+                         } catch {}
+                     }
+
+                     const finalEq = setEq || meta?.equipment || inferEquipment(exName);
+                     const finalAtt = setAtt || meta?.attachment || inferAttachment(exName);
+
                      exercisesMap.set(exId, {
                          id: exId,
                          name: exName,
@@ -357,9 +413,9 @@ export const DataRepository = {
                          completedSets: 0,
                          logs: [],
                          properties: meta?.properties || [],
-                         equipment: set.equipment || meta?.equipment || inferEquipment(exName),
-                         attachment: set.attachment || meta?.attachment || inferAttachment(exName),
-                         movementType: meta?.movement_type || inferMovementType(exName, set.equipment || meta?.equipment || inferEquipment(exName)),
+                         equipment: finalEq,
+                         attachment: finalAtt,
+                         movementType: meta?.movement_type || inferMovementType(exName, finalEq),
                      });
                  }
  
@@ -420,10 +476,36 @@ export const DataRepository = {
         const exerciseMetaMap = new Map<string, { properties: string[], equipment?: string, attachment?: string, movement_type?: string }>();
         exercisesDef.forEach(e => {
             if (e.id) {
+                 let eq = e.equipment;
+                 if (eq && typeof eq === 'string' && eq.startsWith('[')) {
+                     try {
+                         const parsed = JSON.parse(eq);
+                         eq = Array.isArray(parsed) ? parsed[0] : parsed;
+                     } catch {}
+                 }
+                 if (eq && typeof eq === 'string' && eq.startsWith('"')) {
+                     try {
+                         eq = JSON.parse(eq);
+                     } catch {}
+                 }
+                 
+                 let att = e.attachment;
+                 if (att && typeof att === 'string' && att.startsWith('[')) {
+                     try {
+                         const parsed = JSON.parse(att);
+                         att = Array.isArray(parsed) ? parsed[0] : parsed;
+                     } catch {}
+                 }
+                 if (att && typeof att === 'string' && att.startsWith('"')) {
+                     try {
+                         att = JSON.parse(att);
+                     } catch {}
+                 }
+
                  exerciseMetaMap.set(e.id, {
                      properties: e.properties ? e.properties.split(',').map((s: string) => s.trim()) : [],
-                     equipment: e.equipment || undefined,
-                     attachment: e.attachment || undefined,
+                     equipment: eq || undefined,
+                     attachment: att || undefined,
                      movement_type: e.movement_type || undefined,
                  });
             }
@@ -442,6 +524,36 @@ export const DataRepository = {
 
                 if (!exercisesMap.has(exId)) {
                     const meta = exerciseMetaMap.get(exId);
+                    
+                    let setEq = set.equipment;
+                    if (setEq && typeof setEq === 'string' && setEq.startsWith('[')) {
+                        try {
+                            const parsed = JSON.parse(setEq);
+                            setEq = Array.isArray(parsed) ? parsed[0] : parsed;
+                        } catch {}
+                    }
+                    if (setEq && typeof setEq === 'string' && setEq.startsWith('"')) {
+                         try {
+                             setEq = JSON.parse(setEq);
+                         } catch {}
+                    }
+
+                    let setAtt = set.attachment;
+                    if (setAtt && typeof setAtt === 'string' && setAtt.startsWith('[')) {
+                        try {
+                            const parsed = JSON.parse(setAtt);
+                            setAtt = Array.isArray(parsed) ? parsed[0] : parsed;
+                        } catch {}
+                    }
+                    if (setAtt && typeof setAtt === 'string' && setAtt.startsWith('"')) {
+                         try {
+                             setAtt = JSON.parse(setAtt);
+                         } catch {}
+                    }
+
+                    const finalEq = setEq || meta?.equipment || inferEquipment(exName);
+                    const finalAtt = setAtt || meta?.attachment || inferAttachment(exName);
+
                     exercisesMap.set(exId, {
                         id: exId,
                         name: exName,
@@ -450,9 +562,9 @@ export const DataRepository = {
                         completedSets: 0,
                         logs: [],
                         properties: meta?.properties || [],
-                        equipment: set.equipment || meta?.equipment || inferEquipment(exName),
-                        attachment: set.attachment || meta?.attachment || inferAttachment(exName),
-                        movementType: meta?.movement_type || inferMovementType(exName, set.equipment || meta?.equipment || inferEquipment(exName)),
+                        equipment: finalEq,
+                        attachment: finalAtt,
+                        movementType: meta?.movement_type || inferMovementType(exName, finalEq),
                     });
                 }
 

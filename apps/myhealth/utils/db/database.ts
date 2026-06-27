@@ -9,6 +9,28 @@ export const getDb = async () => {
     return db;
 };
 
+function localInferEquipment(name: string): string {
+    const n = name.toLowerCase();
+    if (n.includes('dumbbell')) return 'dumbbell';
+    if (n.includes('barbell')) return 'barbell';
+    if (n.includes('cable')) return 'cable';
+    if (n.includes('smith') || n.includes('machine') || n.includes('leg press') || n.includes('leg extension') || n.includes('leg curl') || n.includes('lat pulldown') || n.includes('seated row') || n.includes('chest press') || n.includes('pec deck')) return 'machine';
+    if (n.includes('parallette') || n.includes('parallette')) return 'parallettes';
+    if (n.includes('push-up') || n.includes('pushup') || n.includes('pull-up') || n.includes('pullup') || n.includes('dip') || n.includes('bodyweight') || n.includes('handstand') || n.includes('planche') || n.includes('lever') || n.includes('plank') || n.includes('crunch') || n.includes('situp') || n.includes('squat')) return 'none';
+    return 'other';
+}
+
+function localInferAttachment(name: string): string {
+    const n = name.toLowerCase();
+    if (n.includes('neutral-grip') || n.includes('neutral grip')) return 'Neutral-Grip Handles';
+    if (n.includes('close-grip') || n.includes('close grip')) return 'Close-Grip V-Bar';
+    if (n.includes('wide-grip') || n.includes('wide grip')) return 'Wide-Grip Bar';
+    if (n.includes('straight bar')) return 'Straight Bar';
+    if (n.includes('lat bar') || n.includes('lat_pulldown') || n.includes('pulldown')) return 'Lat Bar';
+    if (n === 'seated cable row' || n.includes('seated row')) return 'Close-Grip V-Bar';
+    return '';
+}
+
 export const initDatabase = async () => {
     const database = await getDb();
 
@@ -225,6 +247,68 @@ export const initDatabase = async () => {
         console.log("[DB] Cleanup of ghost data complete");
     } catch (e) {
         console.error("[DB] Failed to cleanup ghost data", e);
+    }
+
+    // Backfill NULL/empty equipment/attachment for existing set_logs
+    try {
+        console.log("[DB] Running set_logs backfill migration...");
+        const setLogs = await database.getAllAsync<any>('SELECT id, exercise_id, exercise_name, equipment, attachment FROM set_logs WHERE equipment IS NULL OR attachment IS NULL OR equipment = "" OR attachment = ""');
+        if (setLogs.length > 0) {
+            console.log(`[DB] Found ${setLogs.length} set_logs to backfill`);
+            const exercises = await database.getAllAsync<any>('SELECT id, name, equipment, attachment FROM exercises');
+            const exerciseMap = new Map<string, any>();
+            exercises.forEach(ex => {
+                exerciseMap.set(ex.id, ex);
+                if (ex.name) {
+                    exerciseMap.set(ex.name.toLowerCase(), ex);
+                }
+            });
+            
+            await database.withTransactionAsync(async () => {
+                for (const log of setLogs) {
+                    let eq = log.equipment;
+                    let att = log.attachment;
+                    
+                    const ex = log.exercise_id ? exerciseMap.get(log.exercise_id) : (log.exercise_name ? exerciseMap.get(log.exercise_name.toLowerCase()) : null);
+                    
+                    if ((!eq || eq === "") && ex) {
+                        let exEq = ex.equipment;
+                        if (exEq && typeof exEq === 'string' && exEq.startsWith('[')) {
+                            try {
+                                const parsed = JSON.parse(exEq);
+                                exEq = Array.isArray(parsed) ? parsed[0] : parsed;
+                            } catch {}
+                        }
+                        eq = exEq;
+                    }
+                    if (!eq || eq === "") {
+                        eq = localInferEquipment(log.exercise_name || '');
+                    }
+                    
+                    if ((!att || att === "") && ex) {
+                        let exAtt = ex.attachment;
+                        if (exAtt && typeof exAtt === 'string' && exAtt.startsWith('[')) {
+                            try {
+                                const parsed = JSON.parse(exAtt);
+                                exAtt = Array.isArray(parsed) ? parsed[0] : parsed;
+                            } catch {}
+                        }
+                        att = exAtt;
+                    }
+                    if (!att || att === "") {
+                        att = localInferAttachment(log.exercise_name || '');
+                    }
+                    
+                    await database.runAsync(
+                        'UPDATE set_logs SET equipment = ?, attachment = ? WHERE id = ?',
+                        [eq || 'none', att || 'None', log.id]
+                    );
+                }
+            });
+            console.log("[DB] set_logs backfill migration complete.");
+        }
+    } catch (e) {
+        console.error("[DB] Failed running set_logs backfill migration:", e);
     }
 
     // Migration for consolidated exercises
