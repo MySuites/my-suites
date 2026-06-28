@@ -5,7 +5,7 @@ import { createExercise } from '../utils/workout-logic';
 import { useActiveWorkoutTimers } from '../hooks/workouts/useActiveWorkoutTimers';
 import { useActiveWorkoutPersistence } from '../hooks/workouts/useActiveWorkoutPersistence';
 import { useLatestBodyWeight } from '../hooks/workouts/useLatestBodyWeight';
-import { inferEquipment, inferMovementType } from './DataRepository';
+import { DataRepository, inferEquipment, inferMovementType } from './DataRepository';
 import uuid from 'react-native-uuid';
 import { Alert } from 'react-native';
 import { router } from 'expo-router';
@@ -407,6 +407,20 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                 logs
             };
         });
+
+        // Save the progress pictures to the progress_pictures table as well
+        if (imageUrls && imageUrls.length > 0) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const picNotes = note ? `${workoutName}: ${note}` : `Added from workout: ${workoutName}`;
+            imageUrls.forEach(url => {
+                DataRepository.saveProgressPicture(user?.id || null, {
+                    id: uuid.v4() as string,
+                    imageUri: url,
+                    date: todayStr,
+                    notes: picNotes
+                }).catch(err => console.error("Failed to save progress picture from workout:", err));
+            });
+        }
 
         // Save the workout
         saveCompletedWorkout(workoutName, exercisesWithLogs, workoutSeconds, undefined, note, routineId || undefined, sourceWorkoutId || undefined, imageUrl, imageUrls);

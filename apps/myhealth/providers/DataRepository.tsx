@@ -1082,6 +1082,48 @@ export const DataRepository = {
             }
         });
     },
+
+    getProgressPictures: async (userId: string | null): Promise<any[]> => {
+        const db = await getDb();
+        const rows = await db.getAllAsync<any>(
+            'SELECT * FROM progress_pictures WHERE user_id = ? ORDER BY date DESC, created_at DESC',
+            [userId || 'guest']
+        );
+        return rows.map(r => ({
+            id: r.id,
+            userId: r.user_id,
+            imageUri: r.image_uri,
+            date: r.date,
+            notes: r.notes || "",
+            createdAt: r.created_at,
+            updatedAt: r.updated_at,
+            syncStatus: r.sync_status
+        }));
+    },
+
+    saveProgressPicture: async (userId: string | null, pic: { id: string, imageUri: string, date: string, notes: string }): Promise<void> => {
+        const db = await getDb();
+        const now = Date.now();
+        const timestamp = new Date().toISOString();
+        await db.runAsync(`
+            INSERT OR REPLACE INTO progress_pictures (id, user_id, image_uri, date, notes, created_at, updated_at, sync_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            pic.id,
+            userId || 'guest',
+            pic.imageUri,
+            pic.date,
+            pic.notes,
+            timestamp,
+            now,
+            'pending'
+        ]);
+    },
+
+    deleteProgressPicture: async (id: string): Promise<void> => {
+        const db = await getDb();
+        await db.runAsync('DELETE FROM progress_pictures WHERE id = ?', [id]);
+    },
     
     clearAllLocalData: async (): Promise<void> => {
         const db = await getDb();
@@ -1091,6 +1133,7 @@ export const DataRepository = {
             await db.runAsync('DELETE FROM set_logs');
             await db.runAsync('DELETE FROM body_measurements');
             await db.runAsync('DELETE FROM routines');
+            await db.runAsync('DELETE FROM progress_pictures');
             
             // Delete custom exercises (those not in default data)
             // We use NOT IN clause.

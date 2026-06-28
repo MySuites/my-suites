@@ -152,6 +152,20 @@ export const initDatabase = async () => {
             );
         `);
         console.log("[DB] Created exercises");
+
+        await database.execAsync(`
+            CREATE TABLE IF NOT EXISTS progress_pictures (
+                id TEXT PRIMARY KEY,
+                user_id TEXT,
+                image_uri TEXT,
+                date TEXT,
+                notes TEXT,
+                created_at TEXT,
+                updated_at INTEGER,
+                sync_status TEXT DEFAULT 'pending'
+            );
+        `);
+        console.log("[DB] Created progress_pictures");
     } catch (createErr) {
         console.error("[DB] FATAL ERROR CREATING TABLES:", createErr);
     }
@@ -246,6 +260,7 @@ export const initDatabase = async () => {
         await database.execAsync(`DELETE FROM set_logs WHERE id IS NULL OR id = 'null';`);
         await database.execAsync(`DELETE FROM body_measurements WHERE id IS NULL OR id = 'null';`);
         await database.execAsync(`DELETE FROM routines WHERE id IS NULL OR id = 'null';`);
+        await database.execAsync(`DELETE FROM progress_pictures WHERE id IS NULL OR id = 'null';`);
         console.log("[DB] Cleanup of ghost data complete");
     } catch (e) {
         console.error("[DB] Failed to cleanup ghost data", e);

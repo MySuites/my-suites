@@ -8,6 +8,7 @@ import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { SettingsButton } from '../../components/ui/SettingsButton';
+import { BurgerMenu } from '../../components/ui/BurgerMenu';
 
 export default function SleepScreen() {
     const theme = useUITheme();
@@ -30,6 +31,11 @@ export default function SleepScreen() {
                                 />
                             </RaisedCard>} />
             <Text className="text-center text-lg font-semibold mt-36 mb-2 text-light dark:text-dark">To be implemented</Text>
+            
+            <BurgerMenu
+                visible={menuVisible}
+                onClose={() => setMenuVisible(false)}
+            />
         </View>
     );
 }

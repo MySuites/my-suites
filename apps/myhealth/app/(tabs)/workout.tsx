@@ -21,6 +21,7 @@ import { HollowedCard, RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 import { SavedWorkout } from '../../types';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { SettingsButton } from '../../components/ui/SettingsButton';
+import { BurgerMenu } from '../../components/ui/BurgerMenu';
 
 function Workout() {
 	const router = useRouter();
@@ -332,52 +333,11 @@ function Workout() {
                 </View>
 			</ScrollView>
                 
-                {/* Menu Overlay */}
-                {menuVisible && (
-                    <>
-                        <TouchableOpacity 
-                            activeOpacity={1} 
-                            onPress={() => setMenuVisible(false)}
-                            className="absolute top-0 bottom-0 left-0 right-0 z-50 bg-black/20"
-                        />
-                        <RaisedCard 
-                            className="absolute top-28 right-4 z-[60] w-48 p-2 bg-light dark:bg-dark-lighter origin-top-right rounded-xl"
-                            style={{ 
-                                shadowColor: '#000', 
-                                shadowOffset: { width: 0, height: 4 }, 
-                                shadowOpacity: 0.15, 
-                                shadowRadius: 12, 
-                                elevation: 5 
-                            }}
-                        >
-                            <TouchableOpacity 
-                                onPress={() => { setMenuVisible(false); router.push('/exercises' as any); }}
-                                className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
-                            >
-                                <IconSymbol name="dumbbell.fill" size={20} color={theme.text} style={{ marginRight: 12 }} />
-                                <Text className="text-light dark:text-dark font-medium">Exercises</Text>
-                            </TouchableOpacity>
-                            
-                            <TouchableOpacity 
-                                onPress={() => { setMenuVisible(false); router.push('/workouts/history' as any); }}
-                                className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
-                            >
-                                <IconSymbol name="clock.fill" size={20} color={theme.text} style={{ marginRight: 12 }} />
-                                <Text className="text-light dark:text-dark font-medium">History</Text>
-                            </TouchableOpacity>
-
-                            <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
-                            
-                            <TouchableOpacity 
-                                onPress={() => { setMenuVisible(false); handleStartEmpty(activeRoutineObj?.id); }}
-                                className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
-                            >
-                                <IconSymbol name="plus" size={20} color={theme.primary} style={{ marginRight: 12 }} />
-                                <Text className="text-primary font-medium">Start Empty</Text>
-                            </TouchableOpacity>
-                        </RaisedCard>
-                    </>
-                )}
+            <BurgerMenu 
+                visible={menuVisible} 
+                onClose={() => setMenuVisible(false)} 
+                onStartEmpty={() => handleStartEmpty(activeRoutineObj?.id)}
+            />
 
                 {/* Quick Start Floating Button */}
                 {!hasActiveSession && (

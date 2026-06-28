@@ -112,3 +112,11 @@ jest.mock('react-native-safe-area-context', () => {
         },
     };
 });
+
+jest.mock('expo-file-system', () => ({
+    documentDirectory: 'file:///mock-document-dir/',
+    getInfoAsync: jest.fn(() => Promise.resolve({ exists: false })),
+    makeDirectoryAsync: jest.fn(() => Promise.resolve()),
+    copyAsync: jest.fn(() => Promise.resolve()),
+    deleteAsync: jest.fn(() => Promise.resolve()),
+}));

@@ -5,6 +5,7 @@ import { RaisedCard, useUITheme, IconSymbol, useToast } from '@mysuite/ui';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { SettingsButton } from '../../components/ui/SettingsButton';
+import { BurgerMenu } from '../../components/ui/BurgerMenu';
 import { BodyWeightCard } from '../../components/bodyweight/BodyWeightCard';
 import { WeightLogModal } from '../../components/bodyweight/WeightLogModal';
 import { BodyWeightService, BodyWeightEntry } from '../../services/BodyWeightService';
@@ -348,6 +349,11 @@ export default function HomeScreen() {
         visible={isWeightModalVisible}
         onClose={() => setIsWeightModalVisible(false)}
         onSave={handleSaveWeight}
+      />
+
+      <BurgerMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
       />
     </View>
   );
