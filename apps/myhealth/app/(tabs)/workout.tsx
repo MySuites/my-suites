@@ -6,6 +6,8 @@ import {
  	TouchableOpacity,
  	Alert,
     ScrollView,
+    Modal,
+    Pressable,
 } from "react-native";
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -67,6 +69,8 @@ function Workout() {
     };
     const [menuVisible, setMenuVisible] = useState(false);
     const [activeSwipedCardId, setActiveSwipedCardId] = useState<string | null>(null);
+    const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+    const [isDayModalVisible, setIsDayModalVisible] = useState(false);
 
     const { 
         savedWorkouts, 
@@ -92,7 +96,7 @@ function Workout() {
 
     const completedDates = useMemo(() => {
         const set = new Set<string>();
-        (workoutHistory || []).forEach(log => {
+        (workoutHistory || []).forEach((log: any) => {
             if (log.workoutDate) {
                 try {
                     const dateStr = new Date(log.workoutDate).toDateString();
@@ -103,8 +107,20 @@ function Workout() {
         return set;
     }, [workoutHistory]);
 
+    const workoutsOnSelectedDay = useMemo(() => {
+        if (!selectedDay) return [];
+        const dateStringStr = selectedDay.toDateString();
+        return (workoutHistory || []).filter((log: any) => {
+            try {
+                return new Date(log.workoutDate).toDateString() === dateStringStr;
+            } catch {
+                return false;
+            }
+        });
+    }, [selectedDay, workoutHistory]);
+
     // Derived state for current routine
-    const activeRoutineObj = routines.find(r => r.id === activeRoutine?.id);
+    const activeRoutineObj = routines.find((r: any) => r.id === activeRoutine?.id);
     const dayIndex = activeRoutine?.dayIndex || 0;
     
     const timelineDays = useRoutineTimeline(activeRoutineObj, dayIndex, 'week');
@@ -124,10 +140,10 @@ function Workout() {
         let fresh;
         
         if (workout.id) {
-            fresh = savedWorkouts.find(w => w.id === workout.id);
+            fresh = savedWorkouts.find((w: any) => w.id === workout.id);
         }
         if (!fresh && workout.name) {
-            fresh = savedWorkouts.find(w => w.name.trim() === workout.name.trim());
+            fresh = savedWorkouts.find((w: any) => w.name.trim() === workout.name.trim());
         }
         if (fresh && fresh.exercises && fresh.exercises.length > 0) {
             exercisesToStart = fresh.exercises;
@@ -222,7 +238,14 @@ function Workout() {
                                 const weekday = day.toLocaleDateString('default', { weekday: 'short' });
 
                                 return (
-                                    <View key={idx} style={{ alignItems: 'center', gap: 6, width: 34 }}>
+                                    <TouchableOpacity 
+                                        key={idx} 
+                                        onPress={() => {
+                                            setSelectedDay(day);
+                                            setIsDayModalVisible(true);
+                                        }}
+                                        style={{ alignItems: 'center', gap: 6, width: 34 }}
+                                    >
                                         <Text style={{ fontSize: 11, fontWeight: '600', color: theme.text, opacity: isToday ? 1 : 0.4 }}>
                                             {weekday}
                                         </Text>
@@ -252,7 +275,7 @@ function Workout() {
                                                 {day.getDate()}
                                             </Text>
                                         </View>
-                                    </View>
+                                    </TouchableOpacity>
                                 );
                             })}
                         </ScrollView>
@@ -358,7 +381,7 @@ function Workout() {
                                          }
                                          
                                          if (todayItem.workoutId) {
-                                              const workout = savedWorkouts.find(w => w.id === todayItem.workoutId);
+                                              const workout = savedWorkouts.find((w: any) => w.id === todayItem.workoutId);
                                               if (workout) {
                                                   handleStartSavedWorkout(workout, activeRoutineObj.id);
                                                   return;
@@ -384,7 +407,7 @@ function Workout() {
                                                     return `${todayItem.workout.name}`;
                                                 }
                                                 if (todayItem.workoutId) {
-                                                    const workout = savedWorkouts.find(w => w.id === todayItem.workoutId);
+                                                    const workout = savedWorkouts.find((w: any) => w.id === todayItem.workoutId);
                                                     if (workout && workout.name) {
                                                         return `${workout.name}`;
                                                     }
@@ -399,6 +422,92 @@ function Workout() {
                         </RaisedCard>
                      </View>
                 )}
+
+            <Modal
+                visible={isDayModalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setIsDayModalVisible(false)}
+            >
+                <Pressable 
+                    className="flex-1 justify-center items-center bg-black/50 px-4"
+                    onPress={() => setIsDayModalVisible(false)}
+                >
+                    <Pressable 
+                        className="w-full max-w-md p-5 rounded-2xl bg-light dark:bg-dark-lighter"
+                        onPress={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <View className="flex-row justify-between items-center mb-4">
+                            <View>
+                                <Text className="text-xs font-bold uppercase text-primary dark:text-primary-dark">
+                                    {selectedDay ? selectedDay.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) : ''}
+                                </Text>
+                                <Text className="text-xl font-bold text-light dark:text-dark">
+                                    Completed Workouts
+                                </Text>
+                            </View>
+                            <TouchableOpacity 
+                                onPress={() => setIsDayModalVisible(false)}
+                                className="w-8 h-8 items-center justify-center rounded-full bg-black/5 dark:bg-white/10"
+                            >
+                                <IconSymbol name="xmark" size={16} color={theme.text} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* List */}
+                        <ScrollView 
+                            style={{ maxHeight: 300 }}
+                            showsVerticalScrollIndicator={false}
+                        >
+                            {workoutsOnSelectedDay.length > 0 ? (
+                                workoutsOnSelectedDay.map((log: any, idx: number) => (
+                                    <TouchableOpacity
+                                        key={log.id || idx}
+                                        onPress={() => {
+                                            setIsDayModalVisible(false);
+                                            router.push({
+                                                pathname: '/workouts/details' as any,
+                                                params: { logId: log.id }
+                                            });
+                                        }}
+                                        className="p-3 mb-2 rounded-xl bg-black/5 dark:bg-white/5 active:bg-black/10 dark:active:bg-white/10 flex-row justify-between items-center"
+                                    >
+                                        <View className="flex-1 mr-3">
+                                            <Text className="text-base font-semibold text-light dark:text-dark">
+                                                {log.workoutName || 'Untitled Workout'}
+                                            </Text>
+                                            {log.exercises && log.exercises.length > 0 && (
+                                                <Text className="text-xs text-light-muted dark:text-dark-muted mt-1" numberOfLines={1}>
+                                                    {log.exercises.map((ex: any) => ex.name).join(', ')}
+                                                </Text>
+                                            )}
+                                        </View>
+                                        <IconSymbol name="chevron.right" size={16} color={theme.primary} />
+                                    </TouchableOpacity>
+                                ))
+                            ) : (
+                                <View className="py-8 items-center justify-center">
+                                    <Text className="text-sm text-light-muted dark:text-dark-muted text-center mb-4">
+                                        No workouts logged for this day.
+                                    </Text>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setIsDayModalVisible(false);
+                                            handleStartEmpty(activeRoutineObj?.id);
+                                        }}
+                                        className="py-2.5 px-5 rounded-full bg-primary dark:bg-primary-dark"
+                                    >
+                                        <Text className="text-white font-semibold text-sm">
+                                            Start Empty Workout
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </ScrollView>
+                    </Pressable>
+                </Pressable>
+            </Modal>
 		</View>
 	);
 }
