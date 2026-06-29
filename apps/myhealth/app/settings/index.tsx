@@ -10,6 +10,7 @@ import { BodyWeightService } from '../../services/BodyWeightService';
 import { HealthKitService } from '../../services/HealthKitService';
 import { storage } from '../../utils/storage';
 import * as WebBrowser from 'expo-web-browser';
+import { router } from 'expo-router';
 
 const PRIVACY_POLICY_URL = 'https://mysuites.github.io/myhealth-privacy_policy/';
 const TERMS_OF_SERVICE_URL = 'https://mysuites.github.io/myhealth-terms_of_service/';
@@ -197,6 +198,18 @@ export default function SettingsScreen() {
               thumbColor={developerMode ? "#ffffff" : "#f4f3f4"}
             />
           </View>
+          {developerMode && (
+            <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+              <Text className="text-base text-light dark:text-dark font-medium">View SQLite Database</Text>
+              <RaisedCard 
+                onPress={() => router.push('/settings/developer/database' as any)}
+                className="w-10 h-10 active:h-9 p-0 rounded-full items-center justify-center"
+                style={{ borderRadius: 9999 }}
+              >
+                <IconSymbol name="chevron.right" size={20} color={theme.primary} />
+              </RaisedCard>
+            </View>
+          )}
         </View>
 
         <View className="mb-6">
@@ -214,7 +227,7 @@ export default function SettingsScreen() {
           </View>
         </View>
         
-        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.4.2
+        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.4.3
         </Text>
       </ScrollView>
     </View>

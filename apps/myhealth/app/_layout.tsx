@@ -31,6 +31,7 @@ function RootLayoutNav() {
 
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="settings/index" options={{ headerShown: false }} />
+      <Stack.Screen name="settings/developer/database" options={{ headerShown: false }} />
       <Stack.Screen name="profile/index" options={{ headerShown: false }} />
       <Stack.Screen name="exercises/index" options={{ title: 'Exercises', headerShown: false }} />
       <Stack.Screen name="exercises/details" options={{ headerShown: false }} />
