@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, Alert, ScrollView, Switch, InteractionManager, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, ScrollView, Switch, InteractionManager } from 'react-native';
 import { useUITheme, ThemeToggle, IconSymbol, useToast, RaisedCard } from '@mysuite/ui';
 
 import { DataRepository } from '../../providers/DataRepository';
 import { useThemePreference } from '../../providers/AppThemeProvider';
+import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { BodyWeightService } from '../../services/BodyWeightService';
@@ -19,6 +20,7 @@ export default function SettingsScreen() {
   const theme = useUITheme();
   const { preference, setPreference } = useThemePreference();
   const { showToast } = useToast();
+  const { isRpeEnabled, setIsRpeEnabled } = useWorkoutManager();
   const handleDeleteData = () => {
     Alert.alert(
         "Delete All Data?",
@@ -181,6 +183,25 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
+          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Workouts</Text>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+            <Text className="text-base text-light dark:text-dark font-medium">Enable RPE Tracking</Text>
+            <Switch
+              value={isRpeEnabled}
+              onValueChange={async (value) => {
+                await setIsRpeEnabled(value);
+                showToast({ 
+                  message: value ? "RPE tracking enabled" : "RPE tracking disabled", 
+                  type: 'success' 
+                });
+              }}
+              trackColor={{ false: theme.card, true: theme.primary }}
+              thumbColor={isRpeEnabled ? "#ffffff" : "#f4f3f4"}
+            />
+          </View>
+        </View>
+
+        <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Developer</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Developer Mode</Text>
@@ -227,7 +248,7 @@ export default function SettingsScreen() {
           </View>
         </View>
         
-        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.4.4
+        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.4.5
         </Text>
       </ScrollView>
     </View>

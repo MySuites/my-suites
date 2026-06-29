@@ -4,12 +4,12 @@ import { AttachmentPicker } from '../workouts/AttachmentPicker';
 import { EquipmentPicker } from '../workouts/EquipmentPicker';
 import { MovementTypePicker } from '../workouts/MovementTypePicker';
 import { RestTimerPicker } from '../workouts/RestTimerPicker';
-import { Exercise } from '../../providers/WorkoutManagerProvider';
+import { Exercise, useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { RaisedCard, IconSymbol } from '@mysuite/ui';
 import { SetRow, getExerciseFields } from '../workouts/SetRow';
 import { formatRestTime } from '../../utils/formatting';
 import { RPEPicker } from '../workouts/RPEPicker';
-import { isUnilateralExercise } from '../../utils/workout-logic';
+
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 
 interface ExerciseCardProps {
@@ -58,7 +58,9 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
     const completedSets = exercise.completedSets || 0;
     const isFinished = completedSets >= exercise.sets;
 
-    const { showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(exercise.properties, exercise.id);
+    const { isRpeEnabled } = useWorkoutManager();
+    const { showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(exercise.properties, exercise.id);
+    const showRPE = calculatedShowRPE && isRpeEnabled;
     
     const isAttachmentSupported = exercise.id === 'lat_pulldown' || exercise.id === 'seated_cable_row';
     const defaultAttachment = exercise.id === 'lat_pulldown' ? 'Lat Bar' : exercise.id === 'seated_cable_row' ? 'Close-Grip V-Bar' : undefined;

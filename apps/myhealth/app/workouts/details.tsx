@@ -58,12 +58,12 @@ export default function CreateWorkoutScreen() {
     const historyItem = viewingLogId ? workoutHistory.find((h: any) => h.id === viewingLogId) : null;
     const workoutLogImageUrls = historyItem?.imageUrls || (historyItem?.imageUrl ? [historyItem.imageUrl] : []);
     const isLogView = !!viewingLogId;
-    const originalWorkout = savedWorkouts.find(w => w.id === editingWorkoutId);
+    const originalWorkout = savedWorkouts.find((w: any) => w.id === editingWorkoutId);
     
     // Pre-compute initial values synchronously to avoid the loading spinner
     const initialData = useRef((() => {
         if (editingWorkoutId) {
-            const workout = savedWorkouts.find(w => w.id === editingWorkoutId);
+            const workout = savedWorkouts.find((w: any) => w.id === editingWorkoutId);
             if (workout) {
                 return {
                     name: workout.name,
@@ -154,19 +154,7 @@ export default function CreateWorkoutScreen() {
     const activeToggleBg = theme.bgLight as string; 
     const activeToggleText = theme.text as string;
 
-    const normalizeExercises = (exercises: any[]) => {
-        return (exercises || []).map(ex => {
-            const { isNewlyAdded, ...rest } = ex;
-            const normalizedTargets = (ex.setTargets || []).map((t: any) => {
-                const nt = { ...t };
-                Object.keys(nt).forEach(key => {
-                    if (nt[key] === undefined || nt[key] === null) delete nt[key];
-                });
-                return nt;
-            });
-            return { ...rest, setTargets: normalizedTargets };
-        });
-    };
+
 
     const areExercisesEqual = (exs1: any[], exs2: any[]) => {
         const e1List = exs1 || [];
@@ -373,7 +361,7 @@ export default function CreateWorkoutScreen() {
     function handleCancel() {
         if (editingWorkoutId) {
             // Revert changes
-            const workout = savedWorkouts.find(w => w.id === editingWorkoutId);
+            const workout = savedWorkouts.find((w: any) => w.id === editingWorkoutId);
             if (workout) {
                 setWorkoutDraftName(workout.name);
                 setWorkoutDraftExercises(workout.exercises ? JSON.parse(JSON.stringify(workout.exercises)) : []);
@@ -618,7 +606,7 @@ export default function CreateWorkoutScreen() {
                                     showsHorizontalScrollIndicator={false}
                                     contentContainerStyle={{ gap: 12 }}
                                 >
-                                    {workoutLogImageUrls.map((rawUri, idx) => {
+                                    {workoutLogImageUrls.map((rawUri: string, idx: number) => {
                                         const uri = resolveImageUri(rawUri);
                                         return (
                                             <Pressable

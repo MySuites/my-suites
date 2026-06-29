@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Keyboard, TouchableWithoutFeedback, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 import * as ImagePicker from 'expo-image-picker';
@@ -222,7 +222,7 @@ export default function EndWorkoutScreen() {
 
         // Paths are now mutually exclusive to prevent double-prompts
         if (sourceWorkoutId) {
-            const original = savedWorkouts.find(w => w.id === sourceWorkoutId);
+            const original = savedWorkouts.find((w: any) => w.id === sourceWorkoutId);
             if (original) {
                 const changeType = getWorkoutChangeType(exercises, original.exercises);
                 

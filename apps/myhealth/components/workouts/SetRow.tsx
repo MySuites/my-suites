@@ -17,10 +17,10 @@ import * as Haptics from 'expo-haptics';
 import { IconSymbol } from "@mysuite/ui";
 import { DurationTimerPicker } from './DurationTimerPicker';
 import { formatSeconds } from '../../utils/formatting';
-import { isUnilateralExercise } from '../../utils/workout-logic';
+
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 
-import { getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
+import { getExerciseDefaultProperties, useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 
 export const getExerciseFields = (properties?: string[], exerciseId?: string) => {
     let props = properties || [];
@@ -68,7 +68,9 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
     const isCompleted = exercise.completedIndices?.includes(index);
     const isEvenSet = (index + 1) % 2 === 0;
 
-    const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(exercise.properties, exercise.id);
+    const { isRpeEnabled } = useWorkoutManager();
+    const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(exercise.properties, exercise.id);
+    const showRPE = calculatedShowRPE && isRpeEnabled;
 
     const equipment = exercise.equipment || inferEquipment(exercise.name);
     const movementType = exercise.movementType || inferMovementType(exercise.name, equipment);

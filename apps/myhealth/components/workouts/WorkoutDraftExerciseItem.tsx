@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Dimensions, Modal } from 'react-native';
 import { useUITheme as useTheme, IconSymbol, RaisedCard } from '@mysuite/ui';
-import { getExerciseDefaultProperties } from '../../providers/WorkoutManagerProvider';
+import { getExerciseDefaultProperties, useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { formatRestTime, formatSeconds } from '../../utils/formatting';
 import { RPEPicker } from './RPEPicker';
 import { RestTimerPicker } from './RestTimerPicker';
@@ -9,7 +9,7 @@ import { DurationTimerPicker } from './DurationTimerPicker';
 import { AttachmentPicker } from './AttachmentPicker';
 import { EquipmentPicker } from './EquipmentPicker';
 import { MovementTypePicker } from './MovementTypePicker';
-import { isUnilateralExercise } from '../../utils/workout-logic';
+
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 
 export interface WorkoutDraftExerciseItemProps {
@@ -122,7 +122,9 @@ export const WorkoutDraftExerciseItem = ({
         };
     };
 
-    const { showWeight, showReps, showDuration, showDistance, showRPE } = getExerciseFields(item.properties, item.id);
+    const { isRpeEnabled } = useWorkoutManager();
+    const { showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(item.properties, item.id);
+    const showRPE = calculatedShowRPE && isRpeEnabled;
     
     const isAttachmentSupported = item.id === 'lat_pulldown' || item.id === 'seated_cable_row';
     const defaultAttachment = item.id === 'lat_pulldown' ? 'Lat Bar' : item.id === 'seated_cable_row' ? 'Close-Grip V-Bar' : undefined;
