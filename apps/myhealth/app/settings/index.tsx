@@ -54,13 +54,16 @@ export default function SettingsScreen() {
 
   const [isHealthConnected, setIsHealthConnected] = useState(false);
   const [autoSavePhotos, setAutoSavePhotos] = useState(false);
+  const [developerMode, setDeveloperMode] = useState(false);
 
   useEffect(() => {
-    async function loadAutoSavePref() {
+    async function loadPrefs() {
       const val = await storage.getItem<boolean>('auto_save_photos_to_gallery');
       setAutoSavePhotos(!!val);
+      const devVal = await storage.getItem<boolean>('developer_mode');
+      setDeveloperMode(!!devVal);
     }
-    loadAutoSavePref();
+    loadPrefs();
   }, []);
 
   const checkHealthStatus = useCallback(async () => {
@@ -177,6 +180,26 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
+          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Developer</Text>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+            <Text className="text-base text-light dark:text-dark">Developer Mode</Text>
+            <Switch
+              value={developerMode}
+              onValueChange={async (value) => {
+                setDeveloperMode(value);
+                await storage.setItem('developer_mode', value);
+                showToast({ 
+                  message: value ? "Developer mode enabled" : "Developer mode disabled", 
+                  type: 'success' 
+                });
+              }}
+              trackColor={{ false: theme.card, true: theme.primary }}
+              thumbColor={developerMode ? "#ffffff" : "#f4f3f4"}
+            />
+          </View>
+        </View>
+
+        <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Data</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-danger">Delete Data</Text>
@@ -191,7 +214,7 @@ export default function SettingsScreen() {
           </View>
         </View>
         
-        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.4.1
+        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.4.2
         </Text>
       </ScrollView>
     </View>
