@@ -10,6 +10,7 @@ import {
 import { router } from 'expo-router';
 import { RaisedCard, HollowedCard, useUITheme, IconSymbol, useToast } from '@mysuite/ui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
 
 import { ScreenHeader } from '../../../components/ui/ScreenHeader';
 import { getDb } from '../../../utils/db/database';
@@ -126,12 +127,92 @@ export default function DeveloperDatabaseScreen() {
         }
     };
 
-    const renderJsonValue = (val: any) => {
+    const renderJsonValue = (val: any, keyName?: string) => {
         if (val === null) return <Text className="text-gray-400">NULL</Text>;
+
+        // Helper to check if a string looks like an image path
+        const isImagePath = (str: string) => {
+            return typeof str === 'string' && (
+                str.startsWith('file://') || 
+                str.startsWith('http://') || 
+                str.startsWith('https://')
+            );
+        };
+
+        // Case 1: Simple image path string
+        if (isImagePath(val)) {
+            return (
+                <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                    <Text className="text-light dark:text-dark font-medium text-xs" numberOfLines={2}>{String(val)}</Text>
+                    <Image 
+                        source={{ uri: val }}
+                        style={{ width: 100, height: 100, borderRadius: 8, marginTop: 4 }}
+                        contentFit="cover"
+                    />
+                </View>
+            );
+        }
+
+        // Case 2: JSON array of image paths
+        if (typeof val === 'string' && val.trim().startsWith('[') && val.trim().endsWith(']')) {
+            try {
+                const parsed = JSON.parse(val);
+                if (Array.isArray(parsed) && parsed.length > 0 && parsed.every(item => typeof item === 'string' && isImagePath(item))) {
+                    return (
+                        <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                            <Text className="text-light dark:text-dark font-medium text-xs" numberOfLines={2}>{String(val)}</Text>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 4, marginTop: 4 }}>
+                                {parsed.map((uri, idx) => (
+                                    <Image 
+                                        key={idx}
+                                        source={{ uri }}
+                                        style={{ width: 80, height: 80, borderRadius: 6 }}
+                                        contentFit="cover"
+                                    />
+                                ))}
+                            </View>
+                        </View>
+                    );
+                }
+            } catch (e) {
+                // Ignore parse errors, fallback to normal rendering
+            }
+        }
+
         if (typeof val === 'object') return <Text className="text-blue-500 font-mono text-xs">{JSON.stringify(val)}</Text>;
         if (typeof val === 'boolean') return <Text className="text-purple-500 font-bold">{val ? "TRUE" : "FALSE"}</Text>;
         if (typeof val === 'number') return <Text className="text-green-600 dark:text-green-400 font-mono">{val}</Text>;
         return <Text className="text-light dark:text-dark font-medium">{String(val)}</Text>;
+    };
+
+    const getRowThumbnailUri = (row: TableRow): string | null => {
+        const imageKeys = ['image_uri', 'image_url', 'imageUrl', 'imageUrls'];
+        const isImageUri = (str: any) => {
+            return typeof str === 'string' && (
+                str.startsWith('file://') || 
+                str.startsWith('http://') || 
+                str.startsWith('https://')
+            );
+        };
+
+        for (const key of imageKeys) {
+            const val = row[key];
+            if (isImageUri(val)) return val;
+            if (typeof val === 'string' && val.trim().startsWith('[') && val.trim().endsWith(']')) {
+                try {
+                    const parsed = JSON.parse(val);
+                    if (Array.isArray(parsed) && parsed.length > 0 && isImageUri(parsed[0])) {
+                        return parsed[0];
+                    }
+                } catch (e) {}
+            }
+        }
+
+        for (const key in row) {
+            const val = row[key];
+            if (isImageUri(val)) return val;
+        }
+        return null;
     };
 
     return (
@@ -256,7 +337,7 @@ export default function DeveloperDatabaseScreen() {
                                             <View key={col} className="flex-row py-1 border-b border-gray-100 dark:border-gray-900 justify-between">
                                                 <Text className="text-xs text-gray-500 font-mono font-semibold" style={{ width: '40%' }}>{col}</Text>
                                                 <View style={{ width: '60%', alignItems: 'flex-end' }}>
-                                                    {renderJsonValue(row[col])}
+                                                    {renderJsonValue(row[col], col)}
                                                 </View>
                                             </View>
                                         ))}
@@ -287,9 +368,9 @@ export default function DeveloperDatabaseScreen() {
                             ) : (
                                 rows.map((row, index) => {
                                     const isExpanded = expandedRowIndex === index;
-                                    // Use ID or primary key if available, otherwise index
-                                    const rowLabel = row.id || row.name || `Row #${index + 1}`;
-                                    
+                                    const rowLabel = row.name || row.workout_name || row.exercise_name || row.id || `Row #${index + 1}`;
+                                    const thumbnailUri = getRowThumbnailUri(row);
+
                                     return (
                                         <RaisedCard
                                             key={index}
@@ -298,8 +379,15 @@ export default function DeveloperDatabaseScreen() {
                                         >
                                             <TouchableOpacity
                                                 onPress={() => setExpandedRowIndex(isExpanded ? null : index)}
-                                                className="flex-row justify-between items-center"
+                                                className="flex-row items-center"
                                             >
+                                                {thumbnailUri && (
+                                                    <Image 
+                                                        source={{ uri: thumbnailUri }}
+                                                        style={{ width: 44, height: 44, borderRadius: 8, marginRight: 12 }}
+                                                        contentFit="cover"
+                                                    />
+                                                )}
                                                 <View style={{ flex: 1, marginRight: 12 }}>
                                                     <Text className="text-xs font-bold text-light dark:text-dark font-mono" numberOfLines={1}>
                                                         {rowLabel}
@@ -325,7 +413,7 @@ export default function DeveloperDatabaseScreen() {
                                                                 {col}
                                                             </Text>
                                                             <View className="pl-1">
-                                                                {renderJsonValue(row[col])}
+                                                                {renderJsonValue(row[col], col)}
                                                             </View>
                                                         </View>
                                                     ))}
