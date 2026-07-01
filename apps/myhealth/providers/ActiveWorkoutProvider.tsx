@@ -9,6 +9,7 @@ import { DataRepository, inferEquipment, inferMovementType } from './DataReposit
 import uuid from 'react-native-uuid';
 import { Alert } from 'react-native';
 import { router } from 'expo-router';
+import { NotificationService } from '../services/NotificationService';
 
 // Define the shape of our context
 interface ActiveWorkoutContextType {
@@ -186,6 +187,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
             setWorkoutName(name || "Current Workout");
             setRoutineId(newRoutineId || null);
             setSourceWorkoutId(newSourceWorkoutId || null);
+            NotificationService.scheduleWorkoutTimeoutReminder();
         } else {
             // We are resuming
             if (name !== undefined) setWorkoutName(name);
@@ -436,6 +438,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
         // Clear persistence
         clearPersistence();
+        NotificationService.cancelWorkoutTimeoutReminder();
     }, [workoutName, exercises, workoutSeconds, saveCompletedWorkout, routineId, sourceWorkoutId, setRunning, resetTimers, clearPersistence, latestBodyWeight]);
 
     const handleCancelWorkout = useCallback(() => {
@@ -451,6 +454,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
         // Clear persistence
         clearPersistence();
+        NotificationService.cancelWorkoutTimeoutReminder();
     }, [setRunning, resetTimers, clearPersistence]);
 
     const value = React.useMemo(() => ({

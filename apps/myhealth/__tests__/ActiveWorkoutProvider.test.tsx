@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { ActiveWorkoutProvider, useActiveWorkout, useActiveWorkoutTimer } from '../providers/ActiveWorkoutProvider';
 import { Button, Text, View, Alert } from 'react-native';
+import { NotificationService } from '../services/NotificationService';
 
 const mockReact = React;
 
@@ -11,7 +12,9 @@ const TestComponent = () => {
         exercises, 
         startWorkout,
         addExercise,
-        completeSet
+        completeSet,
+        finishWorkout,
+        cancelWorkout
     } = useActiveWorkout();
     
     const { isRunning, workoutSeconds } = useActiveWorkoutTimer();
@@ -29,6 +32,8 @@ const TestComponent = () => {
             <Button title="Start" onPress={() => startWorkout(([] as any))} />
             <Button title="Add Ex" onPress={() => addExercise('New Ex', '3', '12')} />
             <Button title="Complete Set" onPress={() => completeSet(0, 0)} />
+            <Button title="Finish" onPress={() => finishWorkout('My Note')} />
+            <Button title="Cancel" onPress={() => cancelWorkout()} />
         </View>
     );
 };
@@ -40,6 +45,16 @@ jest.mock('../providers/WorkoutManagerProvider', () => ({
         saveCompletedWorkout: jest.fn(),
         createCustomExercise: jest.fn(),
     })
+}));
+
+jest.mock('../services/NotificationService', () => ({
+    NotificationService: {
+        getPermissions: jest.fn(() => Promise.resolve(true)),
+        requestPermissions: jest.fn(() => Promise.resolve(true)),
+        scheduleWorkoutTimeoutReminder: jest.fn(() => Promise.resolve('mock-timeout-id')),
+        cancelWorkoutTimeoutReminder: jest.fn(() => Promise.resolve()),
+        registerForegroundHandler: jest.fn(),
+    }
 }));
 
 jest.mock('../hooks/workouts/useActiveWorkoutPersistence', () => {
@@ -107,5 +122,30 @@ describe('ActiveWorkoutProvider', () => {
         fireEvent.press(getByText('Complete Set'));
 
         expect(getByTestId('exercise-0')).toHaveTextContent('Push Ups: 1/3');
+    });
+
+    it('schedules timeout notification when starting workout, and cancels on finish/cancel', async () => {
+        jest.clearAllMocks();
+        const { getByText } = render(
+            <ActiveWorkoutProvider>
+                <TestComponent />
+            </ActiveWorkoutProvider>
+        );
+
+        // Start workout
+        fireEvent.press(getByText('Start'));
+        expect(NotificationService.scheduleWorkoutTimeoutReminder).toHaveBeenCalled();
+
+        // Finish workout
+        fireEvent.press(getByText('Finish'));
+        expect(NotificationService.cancelWorkoutTimeoutReminder).toHaveBeenCalled();
+
+        // Start workout again
+        fireEvent.press(getByText('Start'));
+        expect(NotificationService.scheduleWorkoutTimeoutReminder).toHaveBeenCalledTimes(2);
+
+        // Cancel workout
+        fireEvent.press(getByText('Cancel'));
+        expect(NotificationService.cancelWorkoutTimeoutReminder).toHaveBeenCalledTimes(2);
     });
 });

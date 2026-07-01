@@ -89,5 +89,54 @@ export const NotificationService = {
     } catch (error) {
       console.error('Failed to cancel scheduled notifications:', error);
     }
+  },
+
+  /**
+   * Schedule a workout reminder notification after 3 hours.
+   */
+  async scheduleWorkoutTimeoutReminder(): Promise<string | null> {
+    try {
+      // First cancel any existing workout timeout reminder.
+      await this.cancelWorkoutTimeoutReminder();
+
+      // Check permission before scheduling
+      const hasPermission = await this.getPermissions();
+      if (!hasPermission) {
+        console.warn('Cannot schedule workout reminder: permission not granted');
+        return null;
+      }
+
+      const identifier = await Notifications.scheduleNotificationAsync({
+        identifier: 'active-workout-reminder',
+        content: {
+          title: 'Still Working Out? 🏋️',
+          body: "Your workout has been running for over 3 hours. Don't forget to log your sets and finish your session!",
+          sound: true,
+        },
+        trigger: {
+          seconds: 3 * 60 * 60, // 3 hours
+          repeats: false,
+        } as any,
+      });
+
+      console.log('Active workout timeout reminder scheduled successfully');
+      return identifier;
+    } catch (error) {
+      console.error('Failed to schedule workout timeout reminder:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Cancel the active workout timeout reminder.
+   */
+  async cancelWorkoutTimeoutReminder(): Promise<void> {
+    try {
+      await Notifications.cancelScheduledNotificationAsync('active-workout-reminder');
+      console.log('Active workout timeout reminder cancelled');
+    } catch (error) {
+      // It is normal to error if the notification was not scheduled
+      console.log('Active workout timeout reminder was not scheduled or already fired');
+    }
   }
 };
