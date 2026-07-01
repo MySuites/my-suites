@@ -1,8 +1,9 @@
 import React from 'react';
 import { render, fireEvent, act } from '@testing-library/react-native';
-import { Alert } from 'react-native';
+import { Alert, TouchableOpacity as MockTouchableOpacity } from 'react-native';
 import { useAuth, supabase } from '@mysuite/auth';
 import SettingsScreen from '../../app/settings/index';
+import { NotificationService } from '../../services/NotificationService';
 
 // Mock dependencies
 jest.mock('@mysuite/auth', () => ({
@@ -30,6 +31,16 @@ jest.mock('../../services/BodyWeightService', () => ({
     }
 }));
 
+jest.mock('../../services/NotificationService', () => ({
+    NotificationService: {
+        getPermissions: jest.fn(() => Promise.resolve(true)),
+        requestPermissions: jest.fn(() => Promise.resolve(true)),
+        scheduleDailyReminder: jest.fn(() => Promise.resolve('mock-notification-id')),
+        cancelAllReminders: jest.fn(() => Promise.resolve()),
+        registerForegroundHandler: jest.fn(),
+    }
+}));
+
 // Mock Providers
 jest.mock('../../providers/AppThemeProvider', () => ({
     useThemePreference: () => ({ preference: 'system', setPreference: jest.fn() })
@@ -41,10 +52,7 @@ jest.mock('@mysuite/ui', () => ({
     ThemeToggle: () => null,
     IconSymbol: () => null,
     useToast: () => ({ showToast: jest.fn() }),
-    RaisedCard: (props: any) => { 
-        const { TouchableOpacity } = require('react-native');
-        return <TouchableOpacity {...props} />;
-    },
+    RaisedCard: (props: any) => <MockTouchableOpacity {...props} />,
 }));
 
 // Mock Components
@@ -67,9 +75,6 @@ jest.mock('../../components/bodyweight/WeightLogModal', () => ({
 describe('Settings Flow', () => {
 
     it('renders settings and handles account deletion', async () => {
-        const mockSignOut = supabase.auth.signOut as jest.Mock;
-        const mockInvoke = supabase.functions.invoke as jest.Mock;
-        
         (useAuth as jest.Mock).mockReturnValue({ 
             user: { id: 'test-user-id' }
         });
@@ -77,7 +82,7 @@ describe('Settings Flow', () => {
         // Spy on Alert
         jest.spyOn(Alert, 'alert');
 
-        const { getByText, getByTestId } = render(<SettingsScreen />);
+        const { getByTestId } = render(<SettingsScreen />);
 
         // Check if Delete Data button is present
         const deleteButton = getByTestId('delete-data-btn');
@@ -110,5 +115,41 @@ describe('Settings Flow', () => {
         // expect(mockSignOut).toHaveBeenCalled(); // handleDeleteData does not sign out?
         // Actually handleDeleteData does NOT sign out. It just deletes data. 
         // So this test expectation was also wrong for Delete Data.
+    });
+
+    it('toggles daily workout reminders and schedules them', async () => {
+        const { getByTestId, getByText } = render(<SettingsScreen />);
+
+        // The option text is shown
+        expect(getByText('Daily Workout Reminder')).toBeTruthy();
+
+        // Switch should be found
+        const toggleSwitch = getByTestId('daily-reminder-switch');
+        expect(toggleSwitch.props.value).toBe(false);
+
+        // Turn on the toggle switch
+        await act(async () => {
+            fireEvent(toggleSwitch, 'onValueChange', true);
+        });
+
+        // The service should be called to request permissions and schedule
+        expect(NotificationService.requestPermissions).toHaveBeenCalled();
+        expect(NotificationService.scheduleDailyReminder).toHaveBeenCalledWith(9, 0);
+
+        // The Switch value should now be true
+        expect(toggleSwitch.props.value).toBe(true);
+
+        // The "Reminder Time" option should be shown
+        expect(getByText('Reminder Time')).toBeTruthy();
+        expect(getByText('9:00 AM')).toBeTruthy();
+
+        // Turn off the toggle switch
+        await act(async () => {
+            fireEvent(toggleSwitch, 'onValueChange', false);
+        });
+
+        // The service should cancel the reminder
+        expect(NotificationService.cancelAllReminders).toHaveBeenCalled();
+        expect(toggleSwitch.props.value).toBe(false);
     });
 });

@@ -18,6 +18,7 @@ import { ToastProvider } from '@mysuite/ui';
 import { DataRepository } from '../providers/DataRepository';
 import { EXERCISE_DATA_VERSION } from '../assets/data/default-exercises';
 import { BodyWeightService } from '../services/BodyWeightService';
+import { NotificationService } from '../services/NotificationService';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -59,6 +60,10 @@ function RootLayoutNav() {
 function RootLayoutContent({ isDbReady, setIsDbReady }: { isDbReady: boolean, setIsDbReady: (v: boolean) => void }) {
   const colorScheme = useColorScheme(); // correct hook usage inside provider
   const { user } = useAuth();
+
+  useEffect(() => {
+    NotificationService.registerForegroundHandler();
+  }, []);
 
   useEffect(() => {
     async function setupApp() {
