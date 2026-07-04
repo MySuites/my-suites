@@ -85,8 +85,10 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
     const scrollViewRef = useRef<ScrollView>(null);
     const totalSets = Math.max(exercise.sets, exercise.logs?.length || 0);
     const prevSetsCountRef = useRef(exercise.sets);
+    const isProgrammaticScroll = useRef(false);
 
     const handleScroll = (event: any) => {
+        if (isProgrammaticScroll.current) return;
         const contentOffset = event.nativeEvent.contentOffset.x;
         const index = Math.round(contentOffset / (cardWidth || 1));
         if (index !== activeSetIndex && index >= 0 && index < totalSets) {
@@ -102,13 +104,21 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                 setActiveSetIndex(lastIndex);
                 // Wrap in a tiny timeout to ensure Layout is finished rendering the new item
                 setTimeout(() => {
+                    isProgrammaticScroll.current = true;
                     scrollViewRef.current?.scrollTo({ x: lastIndex * cardWidth, animated: true });
+                    setTimeout(() => {
+                        isProgrammaticScroll.current = false;
+                    }, 500);
                 }, 50);
             } else if (exercise.sets < prevSetsCountRef.current) {
                 const lastIndex = Math.max(0, totalSets - 1);
                 if (activeSetIndex > lastIndex) {
                     setActiveSetIndex(lastIndex);
+                    isProgrammaticScroll.current = true;
                     scrollViewRef.current?.scrollTo({ x: lastIndex * cardWidth, animated: true });
+                    setTimeout(() => {
+                        isProgrammaticScroll.current = false;
+                    }, 500);
                 }
             }
         }
@@ -118,7 +128,11 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
     // Parent-driven scrolling hook
     React.useEffect(() => {
         if (horizontalSets && scrollViewRef.current && cardWidth > 0 && propActiveSetIndex !== undefined) {
+            isProgrammaticScroll.current = true;
             scrollViewRef.current.scrollTo({ x: propActiveSetIndex * cardWidth, animated: true });
+            setTimeout(() => {
+                isProgrammaticScroll.current = false;
+            }, 500);
         }
     }, [propActiveSetIndex, cardWidth, horizontalSets]);
 
@@ -128,7 +142,11 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
             const nextIndex = Math.max(0, activeSetIndex - 1);
             setActiveSetIndex(nextIndex);
             if (scrollViewRef.current && cardWidth > 0) {
+                isProgrammaticScroll.current = true;
                 scrollViewRef.current.scrollTo({ x: nextIndex * cardWidth, animated: true });
+                setTimeout(() => {
+                    isProgrammaticScroll.current = false;
+                }, 500);
             }
         }
     };
@@ -138,10 +156,14 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
         onCompleteSet(setIndex);
         
         if (horizontalSets && !currentlyCompleted && setIndex < totalSets - 1) {
+            isProgrammaticScroll.current = true;
             setTimeout(() => {
                 const nextIndex = setIndex + 1;
                 setActiveSetIndex(nextIndex);
                 scrollViewRef.current?.scrollTo({ x: nextIndex * cardWidth, animated: true });
+                setTimeout(() => {
+                    isProgrammaticScroll.current = false;
+                }, 500);
             }, 300);
         }
     };

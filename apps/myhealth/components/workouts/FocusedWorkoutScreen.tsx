@@ -356,16 +356,24 @@ export function FocusedWorkoutScreen({ onToggleView }: FocusedWorkoutScreenProps
                                     <RaisedCard
                                         onPress={() => {
                                             const wasCompleted = isCompleted;
-                                            // Toggle completion status
-                                            completeSet(currentIndex, activeSetIndex, {});
+                                            if (!wasCompleted) {
+                                                completeSet(currentIndex, activeSetIndex, {});
+                                            }
                                             
-                                            // Auto-page scroll if marking complete and there's a next set
-                                            if (!wasCompleted && activeSetIndex < totalSets - 1) {
+                                            if (activeSetIndex < totalSets - 1) {
                                                 setTimeout(() => {
                                                     setActiveSetIndices(prev => ({
                                                         ...prev,
                                                         [currentIndex]: activeSetIndex + 1
                                                     }));
+                                                }, 300);
+                                            } else if (currentIndex < exercises.length - 1) {
+                                                setTimeout(() => {
+                                                    setActiveSetIndices(prev => ({
+                                                        ...prev,
+                                                        [currentIndex + 1]: prev[currentIndex + 1] || 0
+                                                    }));
+                                                    setCurrentIndex(currentIndex + 1);
                                                 }, 300);
                                             }
                                         }}
