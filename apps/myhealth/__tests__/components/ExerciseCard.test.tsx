@@ -110,4 +110,10 @@ describe('ExerciseCard', () => {
         const { getByText } = render(<ExerciseCard {...defaultProps} exercise={dumbbellExercise} />);
         expect(getByText('Dumbbell')).toBeTruthy();
     });
+
+    it('should render horizontal sets indicator and delete set button when horizontalSets is true', () => {
+        const { queryByText, getByText } = render(<ExerciseCard {...defaultProps} horizontalSets={true} />);
+        // Delete Set button is only displayed for horizontal pagination layout
+        expect(getByText('Delete Set')).toBeTruthy();
+    });
 });

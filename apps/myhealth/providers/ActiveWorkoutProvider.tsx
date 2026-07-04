@@ -17,6 +17,7 @@ interface ActiveWorkoutContextType {
     setExercises: React.Dispatch<React.SetStateAction<Exercise[]>>;
 
     currentIndex: number;
+    setCurrentIndex: (index: number) => void;
     workoutName: string;
     setWorkoutName: (name: string) => void;
     startWorkout: (exercisesToStart?: Exercise[], name?: string, routineId?: string, sourceWorkoutId?: string) => void;
@@ -462,6 +463,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         setExercises,
 
         currentIndex,
+        setCurrentIndex,
         workoutName,
         startWorkout,
         pauseWorkout,
@@ -485,7 +487,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         sourceWorkoutId,
         latestBodyWeight,
     }), [
-        exercises, currentIndex, workoutName, startWorkout, pauseWorkout, resumeWorkout, resetWorkout, 
+        exercises, currentIndex, setCurrentIndex, workoutName, startWorkout, pauseWorkout, resumeWorkout, resetWorkout, 
         handleToggleSetCompletion, nextExercise, prevExercise, addExercise, updateExercise, 
         removeExercise, reorderExercises, handleFinishWorkout, handleCancelWorkout, isExpanded, hasActiveSession, 
         toggleExpanded, routineId, sourceWorkoutId, latestBodyWeight

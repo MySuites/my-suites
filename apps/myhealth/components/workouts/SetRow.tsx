@@ -58,9 +58,10 @@ interface SetRowProps {
     isActiveWorkout?: boolean;
     exercisePrepTime?: number;
     onUpdatePrepTime?: (prepTime: number) => void;
+    enableSwipeToDelete?: boolean;
 }
 
-export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onDeleteSet, onPressRPE, theme, latestBodyWeight, isActiveWorkout = true, exercisePrepTime, onUpdatePrepTime }: SetRowProps) => {
+export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onDeleteSet, onPressRPE, theme, latestBodyWeight, isActiveWorkout = true, exercisePrepTime, onUpdatePrepTime, enableSwipeToDelete = true }: SetRowProps) => {
     const [isDurationPickerVisible, setIsDurationPickerVisible] = React.useState(false);
     const [durationAutoStart, setDurationAutoStart] = React.useState(false);
     const shouldDelete = useRef(false);
@@ -199,32 +200,8 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
         };
     });
 
-    return (
-        <Swipeable
-            ref={swipeableRef}
-            renderRightActions={(_, dragX) => (
-                <SetSwipeAction 
-                    dragX={dragX} 
-                    onDelete={() => {
-                        swipeableRef.current?.close();
-                        onDeleteSet(index);
-                    }}
-                    onSetReadyToDelete={(ready) => shouldDelete.current = ready}
-                    cardOffset={cardOffset}
-                    rowWidth={rowWidth}
-                />
-            )}
-            onSwipeableWillOpen={() => {
-                if (shouldDelete.current) {
-                    swipeableRef.current?.close();
-                    onDeleteSet(index); 
-                }
-            }}
-            rightThreshold={40}
-            overshootRight={true}
-            friction={2}
-            containerStyle={{ overflow: 'visible' }}
-        >
+    const content = (
+        <>
              <Animated.View 
                 className={`flex-row items-center mb-2 h-11 px-1 ${isEvenSet ? 'bg-light dark:bg-dark' : ''} rounded-lg overflow-hidden`}
                 style={animatedRowStyle}
@@ -373,6 +350,40 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                   prepTime={exercisePrepTime}
                   onPrepTimeChange={onUpdatePrepTime}
               />
+        </>
+    );
+
+    if (!enableSwipeToDelete) {
+        return content;
+    }
+
+    return (
+        <Swipeable
+            ref={swipeableRef}
+            renderRightActions={(_, dragX) => (
+                <SetSwipeAction 
+                    dragX={dragX} 
+                    onDelete={() => {
+                        swipeableRef.current?.close();
+                        onDeleteSet(index);
+                    }}
+                    onSetReadyToDelete={(ready) => shouldDelete.current = ready}
+                    cardOffset={cardOffset}
+                    rowWidth={rowWidth}
+                />
+            )}
+            onSwipeableWillOpen={() => {
+                if (shouldDelete.current) {
+                    swipeableRef.current?.close();
+                    onDeleteSet(index); 
+                }
+            }}
+            rightThreshold={40}
+            overshootRight={true}
+            friction={2}
+            containerStyle={{ overflow: 'visible' }}
+        >
+            {content}
         </Swipeable>
     );
 };

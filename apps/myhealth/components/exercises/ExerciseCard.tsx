@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Pressable, ScrollView, useWindowDimensions } from 'react-native';
 import { AttachmentPicker } from '../workouts/AttachmentPicker';
 import { EquipmentPicker } from '../workouts/EquipmentPicker';
 import { MovementTypePicker } from '../workouts/MovementTypePicker';
@@ -32,9 +32,10 @@ interface ExerciseCardProps {
 
     theme: any;
     latestBodyWeight?: number | null;
+    horizontalSets?: boolean;
 }
 
-export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight }: ExerciseCardProps) {
+export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets }: ExerciseCardProps) {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number, right: number } | null>(null);
@@ -68,6 +69,67 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
     const equipment = exercise.equipment || inferEquipment(exercise.name);
     const movementType = exercise.movementType || inferMovementType(exercise.name, equipment);
     const isUnilateral = movementType === 'unilateral';
+
+    // Horizontal Sets Paging state
+    const dimensions = useWindowDimensions();
+    const [activeSetIndex, setActiveSetIndex] = useState(0);
+    const [cardWidth, setCardWidth] = useState(dimensions.width - 32);
+    const scrollViewRef = useRef<ScrollView>(null);
+    const totalSets = Math.max(exercise.sets, exercise.logs?.length || 0);
+    const prevSetsCountRef = useRef(exercise.sets);
+
+    const handleScroll = (event: any) => {
+        const contentOffset = event.nativeEvent.contentOffset.x;
+        const index = Math.round(contentOffset / (cardWidth || 1));
+        if (index !== activeSetIndex && index >= 0 && index < totalSets) {
+            setActiveSetIndex(index);
+        }
+    };
+
+    // Auto-scroll on sets length increase
+    React.useEffect(() => {
+        if (horizontalSets && scrollViewRef.current && cardWidth > 0) {
+            if (exercise.sets > prevSetsCountRef.current) {
+                const lastIndex = Math.max(0, totalSets - 1);
+                setActiveSetIndex(lastIndex);
+                // Wrap in a tiny timeout to ensure Layout is finished rendering the new item
+                setTimeout(() => {
+                    scrollViewRef.current?.scrollTo({ x: lastIndex * cardWidth, animated: true });
+                }, 50);
+            } else if (exercise.sets < prevSetsCountRef.current) {
+                const lastIndex = Math.max(0, totalSets - 1);
+                if (activeSetIndex > lastIndex) {
+                    setActiveSetIndex(lastIndex);
+                    scrollViewRef.current?.scrollTo({ x: lastIndex * cardWidth, animated: true });
+                }
+            }
+        }
+        prevSetsCountRef.current = exercise.sets;
+    }, [exercise.sets, cardWidth, horizontalSets, totalSets, activeSetIndex]);
+
+    const handleDeleteActiveSet = () => {
+        if (onDeleteSet) {
+            onDeleteSet(activeSetIndex);
+            const nextIndex = Math.max(0, activeSetIndex - 1);
+            setActiveSetIndex(nextIndex);
+            if (scrollViewRef.current && cardWidth > 0) {
+                scrollViewRef.current.scrollTo({ x: nextIndex * cardWidth, animated: true });
+            }
+        }
+    };
+
+    const handleCompleteSetAndAutoPage = (setIndex: number) => {
+        const currentlyCompleted = exercise.completedIndices?.includes(setIndex);
+        onCompleteSet(setIndex);
+        
+        if (horizontalSets && !currentlyCompleted && setIndex < totalSets - 1) {
+            setTimeout(() => {
+                const nextIndex = setIndex + 1;
+                setActiveSetIndex(nextIndex);
+                scrollViewRef.current?.scrollTo({ x: nextIndex * cardWidth, animated: true });
+            }, 300);
+        }
+    };
 
     const handleOpenMenu = () => {
         menuButtonRef.current?.measure((_x: number, _y: number, _width: number, height: number, _pageX: number, pageY: number) => {
@@ -260,7 +322,12 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                 </Pressable>
             </Modal>
 
-            <View className="p-4">
+            <View 
+                className="p-4"
+                onLayout={(e) => {
+                    setCardWidth(e.nativeEvent.layout.width);
+                }}
+            >
                 {/* Headers */}
                 <View className="flex-row mb-2 px-1">
                     <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[30px] text-light-muted dark:text-dark-muted">SET</Text>
@@ -275,34 +342,108 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                 </View>
 
                 {/* Render Rows */}
-                {Array.from({ length: Math.max(exercise.sets, exercise.logs?.length || 0) }).map((_, i) => (
-                    <SetRow 
-                        key={i} 
-                        index={i}
-                        exercise={exercise}
-                        onCompleteSet={() => onCompleteSet(i)}
-                        onUpdateSetTarget={onUpdateSetTarget}
-                        onDeleteSet={onDeleteSet}
-                        onPressRPE={(setIdx, val) => {
-                            setRPEPickerIndex(setIdx);
-                            setRPEPickerValue(val);
-                            setIsRPEPickerVisible(true);
-                        }}
-                        theme={theme}
-                        latestBodyWeight={latestBodyWeight}
-                        exercisePrepTime={exercise.prepTime}
-                        onUpdatePrepTime={onUpdatePrepTime}
-                    />
-                ))}
+                {horizontalSets ? (
+                    cardWidth > 0 ? (
+                        <View style={{ width: cardWidth, overflow: 'hidden' }}>
+                            <ScrollView
+                                ref={scrollViewRef}
+                                horizontal
+                                pagingEnabled
+                                showsHorizontalScrollIndicator={false}
+                                onScroll={handleScroll}
+                                scrollEventThrottle={16}
+                                contentContainerStyle={{ alignItems: 'center' }}
+                            >
+                                {Array.from({ length: totalSets }).map((_, i) => (
+                                    <View key={i} style={{ width: cardWidth }}>
+                                        <SetRow 
+                                            index={i}
+                                            exercise={exercise}
+                                            onCompleteSet={() => handleCompleteSetAndAutoPage(i)}
+                                            onUpdateSetTarget={onUpdateSetTarget}
+                                            onDeleteSet={onDeleteSet}
+                                            onPressRPE={(setIdx, val) => {
+                                                setRPEPickerIndex(setIdx);
+                                                setRPEPickerValue(val);
+                                                setIsRPEPickerVisible(true);
+                                            }}
+                                            theme={theme}
+                                            latestBodyWeight={latestBodyWeight}
+                                            exercisePrepTime={exercise.prepTime}
+                                            onUpdatePrepTime={onUpdatePrepTime}
+                                            enableSwipeToDelete={false}
+                                        />
+                                    </View>
+                                ))}
+                            </ScrollView>
+                        </View>
+                    ) : null
+                ) : (
+                    Array.from({ length: totalSets }).map((_, i) => (
+                        <SetRow 
+                            key={i} 
+                            index={i}
+                            exercise={exercise}
+                            onCompleteSet={() => onCompleteSet(i)}
+                            onUpdateSetTarget={onUpdateSetTarget}
+                            onDeleteSet={onDeleteSet}
+                            onPressRPE={(setIdx, val) => {
+                                setRPEPickerIndex(setIdx);
+                                setRPEPickerValue(val);
+                                setIsRPEPickerVisible(true);
+                            }}
+                            theme={theme}
+                            latestBodyWeight={latestBodyWeight}
+                            exercisePrepTime={exercise.prepTime}
+                            onUpdatePrepTime={onUpdatePrepTime}
+                        />
+                    ))
+                )}
 
-                {/* Add Set Button */}
-                <TouchableOpacity 
-                    onPress={onAddSet}
-                    className="flex-row items-center justify-center p-2 mt-1 rounded-lg border border-dashed border-black/10 dark:border-white/10"
-                >
-                    <IconSymbol name="plus" size={14} color={theme.primary} />
-                    <Text className="ml-2 text-sm text-primary dark:text-primary-dark font-medium">Add Set</Text>
-                </TouchableOpacity>
+                {/* Pagination Dots for Horizontal Paging */}
+                {horizontalSets && totalSets > 1 && (
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, marginVertical: 8 }}>
+                        {Array.from({ length: totalSets }).map((_, i) => {
+                            const isActive = i === activeSetIndex;
+                            const isCompleted = exercise.completedIndices?.includes(i);
+                            return (
+                                <View
+                                    key={i}
+                                    style={{
+                                        width: isActive ? 16 : 6,
+                                        height: 6,
+                                        borderRadius: 3,
+                                        backgroundColor: isActive 
+                                            ? (isCompleted ? theme.primary : theme.text)
+                                            : (isCompleted ? `${theme.primary}50` : `${theme.textMuted}30`),
+                                    }}
+                                />
+                            );
+                        })}
+                    </View>
+                )}
+
+                {/* Add/Delete Set Buttons */}
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
+                    <TouchableOpacity 
+                        onPress={onAddSet}
+                        style={{ flex: 1 }}
+                        className="flex-row items-center justify-center p-2 rounded-lg border border-dashed border-black/10 dark:border-white/10 active:opacity-70"
+                    >
+                        <IconSymbol name="plus" size={14} color={theme.primary} />
+                        <Text className="ml-2 text-sm text-primary dark:text-primary-dark font-medium">Add Set</Text>
+                    </TouchableOpacity>
+
+                    {horizontalSets && totalSets > 0 && (
+                        <TouchableOpacity 
+                            onPress={handleDeleteActiveSet}
+                            className="flex-row items-center justify-center p-2 px-3 rounded-lg border border-danger/30 bg-danger/5 active:bg-danger/10"
+                        >
+                            <IconSymbol name="trash.fill" size={14} color={theme.danger} />
+                            <Text className="ml-2 text-sm text-danger font-medium">Delete Set</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
             </View>
 
             <RestTimerPicker
