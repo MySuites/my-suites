@@ -35,9 +35,10 @@ interface ExerciseCardProps {
     horizontalSets?: boolean;
     activeSetIndex?: number;
     onActiveSetChange?: (index: number) => void;
+    showName?: boolean;
 }
 
-export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange }: ExerciseCardProps) {
+export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange, showName }: ExerciseCardProps) {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number, right: number } | null>(null);
@@ -190,9 +191,11 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                         delayLongPress={200}
                         disabled={!onPressName && !onDrag}
                     >
-                        <Text className="text-lg font-bold text-light dark:text-dark">
-                            {exercise.name}
-                        </Text>
+                        {showName !== false && (
+                            <Text className="text-lg font-bold text-light dark:text-dark">
+                                {exercise.name}
+                            </Text>
+                        )}
                         
                         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 2, alignItems: 'center' }}>
                             {isAttachmentSupported && attachment && (

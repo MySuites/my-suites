@@ -76,7 +76,6 @@ export function FocusedWorkoutScreen({ onToggleView }: FocusedWorkoutScreenProps
         completeSet,
         updateExercise,
         setExpanded,
-        workoutName,
         latestBodyWeight,
     } = useActiveWorkout();
     
@@ -122,6 +121,9 @@ export function FocusedWorkoutScreen({ onToggleView }: FocusedWorkoutScreenProps
     const progressPercent = totalSets > 0 ? (completedSets / totalSets) * 100 : 0;
 
     const renderHeader = () => {
+        const currentExercise = exercises[currentIndex];
+        const exerciseName = currentExercise?.name || "Current Exercise";
+
         return (
             <ScreenHeader
                 title={
@@ -131,7 +133,7 @@ export function FocusedWorkoutScreen({ onToggleView }: FocusedWorkoutScreenProps
                             numberOfLines={1}
                             pointerEvents="none"
                         >
-                            {workoutName || "Current Workout"}
+                            {exerciseName}
                         </Text>
                         <View className="flex-row items-center gap-3 mt-1">
                             <View className="flex-row items-center gap-1.5">
@@ -193,6 +195,7 @@ export function FocusedWorkoutScreen({ onToggleView }: FocusedWorkoutScreenProps
                     exercise={exercise}
                     isCurrent={true}
                     horizontalSets={true}
+                    showName={false}
                     activeSetIndex={activeSetIndices[index] || 0}
                     onActiveSetChange={(setIdx) => {
                         setActiveSetIndices(prev => ({
