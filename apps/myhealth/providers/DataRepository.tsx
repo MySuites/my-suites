@@ -492,7 +492,7 @@ export const DataRepository = {
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
         const exercisesDef = await db.getAllAsync<any>('SELECT * FROM exercises');
         
-        const exerciseMetaMap = new Map<string, { properties: string[], equipment?: string, attachment?: string, movement_type?: string }>();
+        const exerciseMetaMap = new Map<string, { properties: string[], equipment?: string, attachment?: string, movement_type?: string, muscleGroups?: string[] }>();
         exercisesDef.forEach(e => {
             if (e.id) {
                  let eq = e.equipment;
@@ -526,6 +526,7 @@ export const DataRepository = {
                      equipment: eq || undefined,
                      attachment: att || undefined,
                      movement_type: e.movement_type || undefined,
+                     muscleGroups: e.muscle_groups ? JSON.parse(e.muscle_groups) : [],
                  });
             }
         });
@@ -584,6 +585,7 @@ export const DataRepository = {
                         equipment: finalEq,
                         attachment: finalAtt,
                         movementType: meta?.movement_type || inferMovementType(exName, finalEq),
+                        muscleGroups: meta?.muscleGroups || [],
                     });
                 }
 

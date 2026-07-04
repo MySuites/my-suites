@@ -40,6 +40,8 @@ export type Exercise = {
     movementType?: string;
     angle?: string;
     attachment?: string;
+    muscleGroups?: string[];
+    secondaryMuscles?: string[];
 };
 
 export type WorkoutLog = {

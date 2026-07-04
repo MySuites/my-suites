@@ -10,9 +10,10 @@ import { BodyWeightCard } from '../../components/bodyweight/BodyWeightCard';
 import { WeightLogModal } from '../../components/bodyweight/WeightLogModal';
 import { BodyWeightService, BodyWeightEntry } from '../../services/BodyWeightService';
 import { DateRange } from '../../components/ui/TimeSeriesChart';
-import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
+import { useWorkoutManager, WorkoutLog, Exercise, SetLog } from '../../providers/WorkoutManagerProvider';
 import { VolumeTrendCard } from '../../components/workouts/VolumeTrendCard';
 import { TotalWorkoutsCard } from '../../components/workouts/TotalWorkoutsCard';
+import { MuscleHeatmap } from '../../components/dashboard/MuscleHeatmap';
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -25,7 +26,7 @@ export default function HomeScreen() {
   const [isWeightModalVisible, setIsWeightModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedRange, setSelectedRange] = useState<DateRange>('Week');
-  const { workoutHistory } = useWorkoutManager();
+  const { workoutHistory, isLoading: workoutsLoading } = useWorkoutManager();
   const [selectedVolumeRange, setSelectedVolumeRange] = useState<DateRange>('Week');
   const [selectedWorkoutsRange, setSelectedWorkoutsRange] = useState<DateRange>('Week');
 
@@ -180,12 +181,12 @@ export default function HomeScreen() {
       return { volumeHistoryData: [], rangeAverageVolume: null, rangeTotalVolume: null, rangeWorkoutCount: 0 };
     }
 
-    const rawVolumeLogs = workoutHistory.map(log => {
+    const rawVolumeLogs = workoutHistory.map((log: WorkoutLog) => {
       let totalVolume = 0;
       if (log.exercises) {
-        log.exercises.forEach(ex => {
+        log.exercises.forEach((ex: Exercise) => {
           if (ex.logs) {
-            ex.logs.forEach(set => {
+            ex.logs.forEach((set: SetLog) => {
               const weight = parseFloat(set.weight as any) || 0;
               const reps = parseInt(set.reps as any) || 0;
               totalVolume += (weight * reps);
@@ -213,12 +214,12 @@ export default function HomeScreen() {
       startDate.setDate(now.getDate() - 365);
     }
 
-    const filtered = rawVolumeLogs.filter(item => {
+    const filtered = rawVolumeLogs.filter((item: { value: number; date: string }) => {
       const itemDate = new Date(item.date);
       return itemDate >= startDate;
     });
 
-    const total = filtered.reduce((sum, item) => sum + item.value, 0);
+    const total = filtered.reduce((sum: number, item: { value: number; date: string }) => sum + item.value, 0);
     const count = filtered.length;
     const avg = count > 0 ? total / count : 0;
 
@@ -236,7 +237,7 @@ export default function HomeScreen() {
       return { workoutsHistoryData: [], totalWorkoutCount: 0 };
     }
 
-    const rawWorkoutsCount = workoutHistory.map(log => ({
+    const rawWorkoutsCount = workoutHistory.map((log: WorkoutLog) => ({
       value: 1,
       date: log.workoutDate,
     }));
@@ -255,7 +256,7 @@ export default function HomeScreen() {
       startDate.setDate(now.getDate() - 365);
     }
 
-    const filtered = rawWorkoutsCount.filter(item => {
+    const filtered = rawWorkoutsCount.filter((item: { value: number; date: string }) => {
       const itemDate = new Date(item.date);
       return itemDate >= startDate;
     });
@@ -265,6 +266,88 @@ export default function HomeScreen() {
       totalWorkoutCount: filtered.length,
     };
   }, [workoutHistory, selectedWorkoutsRange]);
+
+  const muscleVolumes = useMemo(() => {
+    const results: Record<string, { muscle: string; sets: number; exercises: string[] }> = {};
+    const supportedMuscles = [
+      'Chest', 'Shoulders', 'Biceps', 'Forearms', 'Abdominals', 'Quadriceps', 
+      'Adductors', 'Tibialis', 'Traps', 'Lats', 'Lower back', 'Triceps', 'Glutes', 'Hamstrings', 'Calves'
+    ];
+    supportedMuscles.forEach(m => {
+      results[m] = { muscle: m, sets: 0, exercises: [] };
+    });
+
+    const mapMuscleName = (name: string): string => {
+        const n = name.trim().toLowerCase();
+        if (n === 'pectoral' || n === 'pectorals' || n === 'chest') return 'Chest';
+        if (n === 'deltoid' || n === 'deltoids' || n === 'shoulders' || n === 'shoulder') return 'Shoulders';
+        if (n === 'bicep' || n === 'biceps') return 'Biceps';
+        if (n === 'tricep' || n === 'triceps') return 'Triceps';
+        if (n === 'forearm' || n === 'forearms') return 'Forearms';
+        if (n === 'abdominal' || n === 'abdominals' || n === 'abs') return 'Abdominals';
+        if (n === 'quadriceps' || n === 'quads' || n === 'quad') return 'Quadriceps';
+        if (n === 'adductors' || n === 'adductor' || n === 'adduction') return 'Adductors';
+        if (n === 'shin' || n === 'shins' || n === 'tibialis') return 'Tibialis';
+        if (n === 'trap' || n === 'traps' || n === 'trapezius') return 'Traps';
+        if (n === 'lat' || n === 'lats' || n === 'latissimus dorsi') return 'Lats';
+        if (n === 'lower back' || n === 'erectors') return 'Lower back';
+        if (n === 'glute' || n === 'glutes' || n === 'gluteus') return 'Glutes';
+        if (n === 'hamstring' || n === 'hamstrings') return 'Hamstrings';
+        if (n === 'calf' || n === 'calves') return 'Calves';
+        return name.charAt(0).toUpperCase() + name.slice(1);
+    };
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const logsInLast7Days = (workoutHistory || []).filter((log: WorkoutLog) => {
+      if (!log.workoutDate) return false;
+      try {
+        const d = new Date(log.workoutDate);
+        return d >= sevenDaysAgo;
+      } catch {
+        return false;
+      }
+    });
+
+    logsInLast7Days.forEach((log: WorkoutLog) => {
+      if (!log.exercises) return;
+      log.exercises.forEach((ex: Exercise) => {
+        const setsCount = ex.logs?.length || ex.completedSets || 0;
+        if (setsCount === 0) return;
+
+        const mGroups = ex.muscleGroups || [];
+        if (mGroups.length === 0) return;
+
+        // 1. Primary Muscle (1.0 weight)
+        const primary = mapMuscleName(mGroups[0]);
+        if (results[primary]) {
+          results[primary].sets += setsCount;
+          if (!results[primary].exercises.includes(ex.name)) {
+            results[primary].exercises.push(ex.name);
+          }
+        }
+
+        // 2. Secondary Muscles (0.5 weight)
+        mGroups.slice(1).forEach((sec: string) => {
+          const secondary = mapMuscleName(sec);
+          if (results[secondary]) {
+            results[secondary].sets += Math.round(setsCount * 0.5 * 10) / 10;
+            if (!results[secondary].exercises.includes(ex.name)) {
+              results[secondary].exercises.push(ex.name);
+            }
+          }
+        });
+      });
+    });
+
+    Object.keys(results).forEach((k: string) => {
+      results[k].sets = Math.round(results[k].sets * 10) / 10;
+    });
+
+    return results;
+  }, [workoutHistory]);
 
      useEffect(() => {
         const task = InteractionManager.runAfterInteractions(() => {
@@ -341,6 +424,9 @@ export default function HomeScreen() {
                   textColor={theme.textMuted}
                   isLoading={isLoading}
                />
+          </View>
+          <View className="w-full mb-6">
+               <MuscleHeatmap volumes={muscleVolumes} isLoading={workoutsLoading} />
           </View>
         </View>
       </ScrollView>
