@@ -86,6 +86,7 @@ export function FocusedWorkoutScreen({ onToggleView }: FocusedWorkoutScreenProps
 
     const flatListRef = useRef<FlatList>(null);
     const [containerHeight, setContainerHeight] = useState(0);
+    const [activeSetIndices, setActiveSetIndices] = useState<Record<number, number>>({});
 
     // Scroll to the active exercise index when it changes
     useEffect(() => {
@@ -230,6 +231,13 @@ export function FocusedWorkoutScreen({ onToggleView }: FocusedWorkoutScreenProps
                     exercise={exercise}
                     isCurrent={true}
                     horizontalSets={true}
+                    activeSetIndex={activeSetIndices[index] || 0}
+                    onActiveSetChange={(setIdx) => {
+                        setActiveSetIndices(prev => ({
+                            ...prev,
+                            [index]: setIdx
+                        }));
+                    }}
                     onRemoveExercise={undefined}
                     onMoveUp={undefined}
                     onMoveDown={undefined}
@@ -294,6 +302,13 @@ export function FocusedWorkoutScreen({ onToggleView }: FocusedWorkoutScreenProps
                             completedSets: newCompletedIndices.length,
                             sets: Math.max(0, currentTarget - 1)
                         });
+
+                        const currentActive = activeSetIndices[index] || 0;
+                        const nextActive = Math.max(0, currentActive - 1);
+                        setActiveSetIndices(prev => ({
+                            ...prev,
+                            [index]: nextActive
+                        }));
                     }}
                 />
             </View>
@@ -354,12 +369,56 @@ export function FocusedWorkoutScreen({ onToggleView }: FocusedWorkoutScreenProps
 
                         {/* Vertical Switcher Footer */}
                         <View style={{ 
-                            flexDirection: 'row', 
+                            flexDirection: 'column', 
                             alignItems: 'center', 
                             justifyContent: 'center', 
                             marginTop: 12,
-                            paddingBottom: Math.max(16, insets.bottom) + 16 
+                            paddingBottom: Math.max(16, insets.bottom) + 16,
+                            paddingHorizontal: 20,
+                            width: '100%'
                         }}>
+                            {/* Set Completion Button */}
+                            {(() => {
+                                const currentExercise = exercises[currentIndex];
+                                if (!currentExercise) return null;
+                                
+                                const totalSets = Math.max(currentExercise.sets, currentExercise.logs?.length || 0);
+                                if (totalSets === 0) return null;
+                                
+                                const activeSetIndex = activeSetIndices[currentIndex] || 0;
+                                const isCompleted = currentExercise.completedIndices?.includes(activeSetIndex) || false;
+                                
+                                return (
+                                    <RaisedCard
+                                        onPress={() => {
+                                            const wasCompleted = isCompleted;
+                                            // Toggle completion status
+                                            completeSet(currentIndex, activeSetIndex, {});
+                                            
+                                            // Auto-page scroll if marking complete and there's a next set
+                                            if (!wasCompleted && activeSetIndex < totalSets - 1) {
+                                                setTimeout(() => {
+                                                    setActiveSetIndices(prev => ({
+                                                        ...prev,
+                                                        [currentIndex]: activeSetIndex + 1
+                                                    }));
+                                                }, 300);
+                                            }
+                                        }}
+                                        activeOpacity={0.8}
+                                        className="border-0 w-full py-4 px-8 rounded-full flex-row items-center justify-center bg-primary mb-4"
+                                    >
+                                        <Text style={{
+                                            fontSize: 16,
+                                            fontWeight: '700',
+                                            color: "#ffffff"
+                                        }}>
+                                            {isCompleted ? `Set ${activeSetIndex + 1} Completed` : `Complete Set ${activeSetIndex + 1}`}
+                                        </Text>
+                                    </RaisedCard>
+                                );
+                            })()}
+
                             <Text style={{ fontSize: 15, fontWeight: '700', color: theme.textMuted }}>
                                 Exercise {currentIndex + 1} of {exercises.length}
                             </Text>

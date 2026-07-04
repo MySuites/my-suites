@@ -59,9 +59,10 @@ interface SetRowProps {
     exercisePrepTime?: number;
     onUpdatePrepTime?: (prepTime: number) => void;
     enableSwipeToDelete?: boolean;
+    showCheckbox?: boolean;
 }
 
-export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onDeleteSet, onPressRPE, theme, latestBodyWeight, isActiveWorkout = true, exercisePrepTime, onUpdatePrepTime, enableSwipeToDelete = true }: SetRowProps) => {
+export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpdateSetTarget, onUpdateLog, onDeleteSet, onPressRPE, theme, latestBodyWeight, isActiveWorkout = true, exercisePrepTime, onUpdatePrepTime, enableSwipeToDelete = true, showCheckbox = true }: SetRowProps) => {
     const [isDurationPickerVisible, setIsDurationPickerVisible] = React.useState(false);
     const [durationAutoStart, setDurationAutoStart] = React.useState(false);
     const shouldDelete = useRef(false);
@@ -329,12 +330,16 @@ export const SetRow = ({ index, exercise, onCompleteSet, onUncompleteSet, onUpda
                          </Text>
                      </TouchableOpacity>
                   )}
-                  <TouchableOpacity 
-                      className={`w-7 h-7 rounded-lg items-center justify-center ml-1 ${isCompleted ? 'bg-primary dark:bg-primary-dark' : 'border-2 border-primary dark:border-primary-dark'}`}
-                      onPress={() => onCompleteSet({})}
-                  >
-                       <IconSymbol name="checkmark" size={16} color={isCompleted ? "#fff" : theme.primary} />
-                  </TouchableOpacity>
+                  {showCheckbox ? (
+                      <TouchableOpacity 
+                          className={`w-7 h-7 rounded-lg items-center justify-center ml-1 ${isCompleted ? 'bg-primary dark:bg-primary-dark' : 'border-2 border-primary dark:border-primary-dark'}`}
+                          onPress={() => onCompleteSet({})}
+                      >
+                           <IconSymbol name="checkmark" size={16} color={isCompleted ? "#fff" : theme.primary} />
+                      </TouchableOpacity>
+                  ) : (
+                      <View className="w-7 ml-1" />
+                  )}
              </Animated.View>
 
              <DurationTimerPicker 

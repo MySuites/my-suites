@@ -33,9 +33,11 @@ interface ExerciseCardProps {
     theme: any;
     latestBodyWeight?: number | null;
     horizontalSets?: boolean;
+    activeSetIndex?: number;
+    onActiveSetChange?: (index: number) => void;
 }
 
-export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets }: ExerciseCardProps) {
+export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange }: ExerciseCardProps) {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number, right: number } | null>(null);
@@ -72,7 +74,13 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
 
     // Horizontal Sets Paging state
     const dimensions = useWindowDimensions();
-    const [activeSetIndex, setActiveSetIndex] = useState(0);
+    const [localActiveSetIndex, setLocalActiveSetIndex] = useState(0);
+    const activeSetIndex = propActiveSetIndex !== undefined ? propActiveSetIndex : localActiveSetIndex;
+    const setActiveSetIndex = (val: number) => {
+        setLocalActiveSetIndex(val);
+        onActiveSetChange?.(val);
+    };
+    
     const [cardWidth, setCardWidth] = useState(dimensions.width - 32);
     const scrollViewRef = useRef<ScrollView>(null);
     const totalSets = Math.max(exercise.sets, exercise.logs?.length || 0);
@@ -106,6 +114,13 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
         }
         prevSetsCountRef.current = exercise.sets;
     }, [exercise.sets, cardWidth, horizontalSets, totalSets, activeSetIndex]);
+
+    // Parent-driven scrolling hook
+    React.useEffect(() => {
+        if (horizontalSets && scrollViewRef.current && cardWidth > 0 && propActiveSetIndex !== undefined) {
+            scrollViewRef.current.scrollTo({ x: propActiveSetIndex * cardWidth, animated: true });
+        }
+    }, [propActiveSetIndex, cardWidth, horizontalSets]);
 
     const handleDeleteActiveSet = () => {
         if (onDeleteSet) {
@@ -372,6 +387,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                             exercisePrepTime={exercise.prepTime}
                                             onUpdatePrepTime={onUpdatePrepTime}
                                             enableSwipeToDelete={false}
+                                            showCheckbox={false}
                                         />
                                     </View>
                                 ))}

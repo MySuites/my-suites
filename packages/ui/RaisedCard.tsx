@@ -26,10 +26,13 @@ export function RaisedCard({ children, style, className, onPress, onLongPress, d
   
   return onPress ? (
     <Pressable 
-        style={({ pressed }) => [
-            typeof style === 'function' ? (style as any)(pressed) : style,
-            pressed && { opacity: activeOpacity }
-        ]} 
+        style={({ pressed }) => {
+            const userStyle = typeof style === 'function' ? (style as any)(pressed) : style;
+            return {
+                ...(userStyle || {}),
+                ...(pressed ? { opacity: activeOpacity } : {})
+            };
+        }} 
         className={baseClassName} 
         onPress={onPress} 
         onLongPress={onLongPress}
