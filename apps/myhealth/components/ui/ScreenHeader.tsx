@@ -6,9 +6,10 @@ interface ScreenHeaderProps {
   rightAction?: React.ReactNode;
   leftAction?: React.ReactNode;
   className?: string; // Allow additional styling if needed, though we aim for consistency
+  rightActionClassName?: string;
 }
 
-export function ScreenHeader({ title, rightAction, leftAction, className }: ScreenHeaderProps) {
+export function ScreenHeader({ title, rightAction, leftAction, className, rightActionClassName }: ScreenHeaderProps) {
   const colorScheme = useColorScheme();
 
   return (
@@ -30,7 +31,7 @@ export function ScreenHeader({ title, rightAction, leftAction, className }: Scre
             <View className="flex-1 mx-16 justify-center items-center">{title}</View>
         )}
         {rightAction && (
-          <View className="absolute right-5 flex-row h-12">
+          <View className={rightActionClassName || "absolute right-5 flex-row h-12"}>
               {rightAction}
           </View>
         )}

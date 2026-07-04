@@ -168,50 +168,14 @@ export function FocusedWorkoutScreen({ onToggleView }: FocusedWorkoutScreenProps
                     </RaisedCard>
                 }
                 rightAction={
-                    <View className="flex-row gap-2 items-center">
-                        {/* Toggle to Detail View */}
-                        <RaisedCard 
-                            onPress={onToggleView}
-                            testID="toggle-detail-btn"
-                            className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                            style={{ borderRadius: 9999 }}
-                        >
-                            <IconSymbol name="list.bullet" size={22} className="text-primary dark:text-primary-dark" />
-                        </RaisedCard>
-
-                        {/* Pause / Resume */}
-                        <RaisedCard 
-                            onPress={() => {
-                                Keyboard.dismiss();
-                                if (isRunning) {
-                                    pauseWorkout();
-                                } else {
-                                    resumeWorkout();
-                                }
-                            }}
-                            className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                            style={{ borderRadius: 9999 }}
-                        >
-                            <IconSymbol 
-                                name={isRunning ? 'pause.fill' : 'play.fill'} 
-                                size={20} 
-                                className="text-primary dark:text-primary-dark" 
-                            />
-                        </RaisedCard>
-
-                        {/* End Workout */}
-                        <RaisedCard 
-                            onPress={() => {
-                                Keyboard.dismiss();
-                                pauseWorkout();
-                                router.push('/workouts/end');
-                            }}
-                            className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                            style={{ borderRadius: 9999 }}
-                        >
-                            <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
-                        </RaisedCard>
-                    </View>
+                    <RaisedCard 
+                        onPress={onToggleView}
+                        testID="toggle-detail-btn"
+                        className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                        style={{ borderRadius: 9999 }}
+                    >
+                        <IconSymbol name="list.bullet" size={22} className="text-primary dark:text-primary-dark" />
+                    </RaisedCard>
                 }
                 className="z-[1001] border-b-0"
             />
