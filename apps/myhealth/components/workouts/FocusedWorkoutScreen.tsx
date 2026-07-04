@@ -77,8 +77,6 @@ export function FocusedWorkoutScreen({ onToggleView }: FocusedWorkoutScreenProps
         updateExercise,
         setExpanded,
         workoutName,
-        pauseWorkout,
-        resumeWorkout,
         latestBodyWeight,
     } = useActiveWorkout();
     
@@ -234,46 +232,8 @@ export function FocusedWorkoutScreen({ onToggleView }: FocusedWorkoutScreenProps
                         };
                         updateExercise(index, { setTargets: currentTargets });
                     }}
-                    onAddSet={() => {
-                        const nextSetIndex = exercise.sets;
-                        const previousTarget = exercise.setTargets?.[nextSetIndex - 1];
-                        const newTarget = previousTarget ? { ...previousTarget } : { weight: 0, reps: exercise.reps };
-                        const currentTargets = exercise.setTargets ? [...exercise.setTargets] : [];
-                        while (currentTargets.length < nextSetIndex) {
-                            currentTargets.push({ weight: 0, reps: exercise.reps });
-                        }
-                        currentTargets[nextSetIndex] = newTarget;
-                        updateExercise(index, { 
-                            sets: exercise.sets + 1,
-                            setTargets: currentTargets
-                        });
-                    }}
-                    onDeleteSet={(setIndex) => {
-                        const currentTarget = exercise.sets;
-                        const currentSetTargets = exercise.setTargets ? [...exercise.setTargets] : [];
-                        if (setIndex < currentSetTargets.length) {
-                            currentSetTargets.splice(setIndex, 1);
-                        }
-                        
-                        let newCompletedIndices = [...(exercise.completedIndices || [])];
-                        newCompletedIndices = newCompletedIndices
-                            .filter(idx => idx !== setIndex)
-                            .map(idx => idx > setIndex ? idx - 1 : idx);
-
-                        updateExercise(index, { 
-                            setTargets: currentSetTargets,
-                            completedIndices: newCompletedIndices,
-                            completedSets: newCompletedIndices.length,
-                            sets: Math.max(0, currentTarget - 1)
-                        });
-
-                        const currentActive = activeSetIndices[index] || 0;
-                        const nextActive = Math.max(0, currentActive - 1);
-                        setActiveSetIndices(prev => ({
-                            ...prev,
-                            [index]: nextActive
-                        }));
-                    }}
+                    onAddSet={undefined}
+                    onDeleteSet={undefined}
                 />
             </View>
         );

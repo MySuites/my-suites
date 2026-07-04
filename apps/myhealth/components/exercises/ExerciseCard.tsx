@@ -17,8 +17,8 @@ interface ExerciseCardProps {
     isCurrent: boolean;
     onCompleteSet: (setIndex: number) => void;
     onUpdateSetTarget?: (index: number, key: 'weight' | 'reps' | 'reps_left' | 'reps_right' | 'duration' | 'distance' | 'rpe', value: string) => void;
-    onAddSet: () => void;
-    onDeleteSet: (index: number) => void;
+    onAddSet?: () => void;
+    onDeleteSet?: (index: number) => void;
     onRemoveExercise?: () => void;
     onMoveUp?: () => void;
     onMoveDown?: () => void;
@@ -123,7 +123,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
             }
         }
         prevSetsCountRef.current = exercise.sets;
-    }, [exercise.sets, cardWidth, horizontalSets, totalSets, activeSetIndex]);
+    }, [exercise.sets, cardWidth, horizontalSets, totalSets, activeSetIndex, setActiveSetIndex]);
 
     // Parent-driven scrolling hook
     React.useEffect(() => {
@@ -398,7 +398,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                             exercise={exercise}
                                             onCompleteSet={() => handleCompleteSetAndAutoPage(i)}
                                             onUpdateSetTarget={onUpdateSetTarget}
-                                            onDeleteSet={onDeleteSet}
+                                            onDeleteSet={onDeleteSet || (() => {})}
                                             onPressRPE={(setIdx, val) => {
                                                 setRPEPickerIndex(setIdx);
                                                 setRPEPickerValue(val);
@@ -424,7 +424,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                             exercise={exercise}
                             onCompleteSet={() => onCompleteSet(i)}
                             onUpdateSetTarget={onUpdateSetTarget}
-                            onDeleteSet={onDeleteSet}
+                            onDeleteSet={onDeleteSet || (() => {})}
                             onPressRPE={(setIdx, val) => {
                                 setRPEPickerIndex(setIdx);
                                 setRPEPickerValue(val);
@@ -463,18 +463,21 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
 
                 {/* Add/Delete Set Buttons */}
                 <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
-                    <TouchableOpacity 
-                        onPress={onAddSet}
-                        style={{ flex: 1 }}
-                        className="flex-row items-center justify-center p-2 rounded-lg border border-dashed border-black/10 dark:border-white/10 active:opacity-70"
-                    >
-                        <IconSymbol name="plus" size={14} color={theme.primary} />
-                        <Text className="ml-2 text-sm text-primary dark:text-primary-dark font-medium">Add Set</Text>
-                    </TouchableOpacity>
+                    {onAddSet && (
+                        <TouchableOpacity 
+                            onPress={onAddSet}
+                            style={{ flex: 1 }}
+                            className="flex-row items-center justify-center p-2 rounded-lg border border-dashed border-black/10 dark:border-white/10 active:opacity-70"
+                        >
+                            <IconSymbol name="plus" size={14} color={theme.primary} />
+                            <Text className="ml-2 text-sm text-primary dark:text-primary-dark font-medium">Add Set</Text>
+                        </TouchableOpacity>
+                    )}
 
-                    {horizontalSets && totalSets > 0 && (
+                    {onDeleteSet && horizontalSets && totalSets > 0 && (
                         <TouchableOpacity 
                             onPress={handleDeleteActiveSet}
+                            style={{ flex: onAddSet ? undefined : 1 }}
                             className="flex-row items-center justify-center p-2 px-3 rounded-lg border border-danger/30 bg-danger/5 active:bg-danger/10"
                         >
                             <IconSymbol name="trash.fill" size={14} color={theme.danger} />
