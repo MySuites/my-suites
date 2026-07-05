@@ -77,25 +77,18 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
     const dimensions = useWindowDimensions();
     const [localActiveSetIndex, setLocalActiveSetIndex] = useState(0);
     const activeSetIndex = propActiveSetIndex !== undefined ? propActiveSetIndex : localActiveSetIndex;
-    const setActiveSetIndex = (val: number) => {
+    const setActiveSetIndex = React.useCallback((val: number) => {
         setLocalActiveSetIndex(val);
         onActiveSetChange?.(val);
-    };
+    }, [onActiveSetChange]);
     
-    const [cardWidth, setCardWidth] = useState(dimensions.width - 32);
+    const [cardWidth, setCardWidth] = useState(dimensions.width - 64);
     const scrollViewRef = useRef<ScrollView>(null);
     const totalSets = Math.max(exercise.sets, exercise.logs?.length || 0);
     const prevSetsCountRef = useRef(exercise.sets);
     const isProgrammaticScroll = useRef(false);
 
-    const handleScroll = (event: any) => {
-        if (isProgrammaticScroll.current) return;
-        const contentOffset = event.nativeEvent.contentOffset.x;
-        const index = Math.round(contentOffset / (cardWidth || 1));
-        if (index !== activeSetIndex && index >= 0 && index < totalSets) {
-            setActiveSetIndex(index);
-        }
-    };
+
 
     // Auto-scroll on sets length increase
     React.useEffect(() => {
@@ -182,7 +175,16 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
 
     return (
         <>
-            <View className="flex-row justify-between items-center p-4">
+            <View 
+                style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingHorizontal: 16,
+                    paddingTop: horizontalSets ? 0 : 16,
+                    paddingBottom: horizontalSets ? 4 : 16,
+                }}
+            >
                 <View className="flex-1 flex-row items-center">
                     <TouchableOpacity 
                         className="flex-1" 
@@ -208,21 +210,21 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                         flexDirection: 'row',
                                         alignItems: 'center',
                                         backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-                                        paddingHorizontal: 8,
-                                        paddingVertical: 3,
-                                        borderRadius: 4,
+                                        paddingHorizontal: 10,
+                                        paddingVertical: 5,
+                                        borderRadius: 6,
                                     }}
                                 >
-                                    <IconSymbol name="gearshape.fill" size={10} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
+                                    <IconSymbol name="gearshape.fill" size={13} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
                                     <Text style={{
-                                        marginLeft: 4,
-                                        fontSize: 10,
+                                        marginLeft: 5,
+                                        fontSize: 12,
                                         fontWeight: '600',
                                         color: theme.bgDark === '#000000' ? '#ccc' : '#444'
                                     }}>
                                         {attachment}
                                     </Text>
-                                    <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
+                                    <IconSymbol name="chevron.down" size={10} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 4 }} />
                                 </TouchableOpacity>
                             )}
 
@@ -236,21 +238,21 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                         flexDirection: 'row',
                                         alignItems: 'center',
                                         backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-                                        paddingHorizontal: 8,
-                                        paddingVertical: 3,
-                                        borderRadius: 4,
+                                        paddingHorizontal: 10,
+                                        paddingVertical: 5,
+                                        borderRadius: 6,
                                     }}
                                 >
-                                    <IconSymbol name="dumbbell.fill" size={10} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
+                                    <IconSymbol name="dumbbell.fill" size={13} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
                                     <Text style={{
-                                        marginLeft: 4,
-                                        fontSize: 10,
+                                        marginLeft: 5,
+                                        fontSize: 12,
                                         fontWeight: '600',
                                         color: theme.bgDark === '#000000' ? '#ccc' : '#444'
                                     }}>
                                         {equipment.charAt(0).toUpperCase() + equipment.slice(1)}
                                     </Text>
-                                    <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
+                                    <IconSymbol name="chevron.down" size={10} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 4 }} />
                                 </TouchableOpacity>
                             )}
 
@@ -264,34 +266,36 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                         flexDirection: 'row',
                                         alignItems: 'center',
                                         backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-                                        paddingHorizontal: 8,
-                                        paddingVertical: 3,
-                                        borderRadius: 4,
+                                        paddingHorizontal: 10,
+                                        paddingVertical: 5,
+                                        borderRadius: 6,
                                     }}
                                 >
-                                    <IconSymbol name="figure.walk" size={10} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
+                                    <IconSymbol name="figure.walk" size={13} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
                                     <Text style={{
-                                        marginLeft: 4,
-                                        fontSize: 10,
+                                        marginLeft: 5,
+                                        fontSize: 12,
                                         fontWeight: '600',
                                         color: theme.bgDark === '#000000' ? '#ccc' : '#444'
                                     }}>
                                         {movementType.charAt(0).toUpperCase() + movementType.slice(1)}
                                     </Text>
-                                    <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
+                                    <IconSymbol name="chevron.down" size={10} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 4 }} />
                                 </TouchableOpacity>
                             )}
                         </View>
                         
-                        <TouchableOpacity 
-                            className="flex-row items-center mt-1"
-                            onPress={() => setIsPickerVisible(true)}
-                        >
-                            <IconSymbol name="timer" size={12} color={theme.bgDark === '#000000' ? '#999' : '#666'} />
-                            <Text className="ml-1 text-[11px] font-semibold text-light-muted dark:text-dark-muted">
-                                Rest Timer: {formatRestTime(exercise.restTime ?? 90)}
-                            </Text>
-                        </TouchableOpacity>
+                        {!horizontalSets && (
+                            <TouchableOpacity 
+                                className="flex-row items-center mt-1"
+                                onPress={() => setIsPickerVisible(true)}
+                            >
+                                <IconSymbol name="timer" size={12} color={theme.bgDark === '#000000' ? '#999' : '#666'} />
+                                <Text className="ml-1 text-[11px] font-semibold text-light-muted dark:text-dark-muted">
+                                    Rest Timer: {formatRestTime(exercise.restTime ?? 90)}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                     </TouchableOpacity>
                 </View>
                 <View className="flex-row items-center gap-3">
@@ -362,61 +366,58 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                 </Pressable>
             </Modal>
 
-            <View 
-                className="p-4"
+             <View 
+                className={horizontalSets ? "p-4 flex-1" : "p-4"}
+                style={horizontalSets ? { flex: 1 } : undefined}
                 onLayout={(e) => {
-                    setCardWidth(e.nativeEvent.layout.width);
+                    setCardWidth(e.nativeEvent.layout.width - 32);
                 }}
-            >
+             >
                 {/* Headers */}
-                <View className="flex-row mb-2 px-1">
-                    <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[30px] text-light-muted dark:text-dark-muted">SET</Text>
-                    <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted flex-1">PREVIOUS</Text>
+                {!horizontalSets && (
+                    <View className="flex-row mb-2 px-1">
+                        {!horizontalSets && (
+                            <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[30px] text-light-muted dark:text-dark-muted">SET</Text>
+                        )}
+                        <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted flex-1">PREVIOUS</Text>
 
-                    {showWeight && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">LBS</Text>}
-                    {showReps && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">{isUnilateral ? 'L / R' : 'REPS'}</Text>}
-                    {showDuration && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">TIME</Text>}
-                    {showDistance && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">DIST</Text>}
-                    {showRPE && <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[40px] ml-2 mr-0.5 text-light-muted dark:text-dark-muted">RPE</Text>}
-                    <View className="w-[30px] items-center" />
-                </View>
+                        {showWeight && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">LBS</Text>}
+                        {showReps && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">{isUnilateral ? 'L / R' : 'REPS'}</Text>}
+                        {showDuration && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">TIME</Text>}
+                        {showDistance && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">DIST</Text>}
+                        {showRPE && <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[40px] ml-2 mr-0.5 text-light-muted dark:text-dark-muted">RPE</Text>}
+                        <View className="w-[30px] items-center" />
+                    </View>
+                )}
+
+
 
                 {/* Render Rows */}
                 {horizontalSets ? (
                     cardWidth > 0 ? (
-                        <View style={{ width: cardWidth, overflow: 'hidden' }}>
-                            <ScrollView
-                                ref={scrollViewRef}
-                                horizontal
-                                pagingEnabled
-                                showsHorizontalScrollIndicator={false}
-                                onScroll={handleScroll}
-                                scrollEventThrottle={16}
-                                contentContainerStyle={{ alignItems: 'center' }}
-                            >
-                                {Array.from({ length: totalSets }).map((_, i) => (
-                                    <View key={i} style={{ width: cardWidth }}>
-                                        <SetRow 
-                                            index={i}
-                                            exercise={exercise}
-                                            onCompleteSet={() => handleCompleteSetAndAutoPage(i)}
-                                            onUpdateSetTarget={onUpdateSetTarget}
-                                            onDeleteSet={onDeleteSet || (() => {})}
-                                            onPressRPE={(setIdx, val) => {
-                                                setRPEPickerIndex(setIdx);
-                                                setRPEPickerValue(val);
-                                                setIsRPEPickerVisible(true);
-                                            }}
-                                            theme={theme}
-                                            latestBodyWeight={latestBodyWeight}
-                                            exercisePrepTime={exercise.prepTime}
-                                            onUpdatePrepTime={onUpdatePrepTime}
-                                            enableSwipeToDelete={false}
-                                            showCheckbox={false}
-                                        />
-                                    </View>
-                                ))}
-                            </ScrollView>
+                        <View style={{ width: cardWidth, flex: 1 }}>
+                            <SetRow 
+                                key={`set-${activeSetIndex}`}
+                                index={activeSetIndex}
+                                exercise={exercise}
+                                onCompleteSet={() => handleCompleteSetAndAutoPage(activeSetIndex)}
+                                onUpdateSetTarget={onUpdateSetTarget}
+                                onDeleteSet={onDeleteSet || (() => {})}
+                                onPressRPE={(setIdx, val) => {
+                                    setRPEPickerIndex(setIdx);
+                                    setRPEPickerValue(val);
+                                    setIsRPEPickerVisible(true);
+                                }}
+                                theme={theme}
+                                latestBodyWeight={latestBodyWeight}
+                                exercisePrepTime={exercise.prepTime}
+                                onUpdatePrepTime={onUpdatePrepTime}
+                                enableSwipeToDelete={false}
+                                showCheckbox={false}
+                                showSetNumber={false}
+                                isActiveSet={isCurrent ?? false}
+                                onPressRestTimer={() => setIsPickerVisible(true)}
+                            />
                         </View>
                     ) : null
                 ) : (
@@ -437,31 +438,10 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                             latestBodyWeight={latestBodyWeight}
                             exercisePrepTime={exercise.prepTime}
                             onUpdatePrepTime={onUpdatePrepTime}
+                            onPressRestTimer={() => setIsPickerVisible(true)}
+                            showSetNumber={!horizontalSets}
                         />
                     ))
-                )}
-
-                {/* Pagination Dots for Horizontal Paging */}
-                {horizontalSets && totalSets > 1 && (
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, marginVertical: 8 }}>
-                        {Array.from({ length: totalSets }).map((_, i) => {
-                            const isActive = i === activeSetIndex;
-                            const isCompleted = exercise.completedIndices?.includes(i);
-                            return (
-                                <View
-                                    key={i}
-                                    style={{
-                                        width: isActive ? 16 : 6,
-                                        height: 6,
-                                        borderRadius: 3,
-                                        backgroundColor: isActive 
-                                            ? (isCompleted ? theme.primary : theme.text)
-                                            : (isCompleted ? `${theme.primary}50` : `${theme.textMuted}30`),
-                                    }}
-                                />
-                            );
-                        })}
-                    </View>
                 )}
 
                 {/* Add/Delete Set Buttons */}

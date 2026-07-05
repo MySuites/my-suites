@@ -11,9 +11,13 @@ import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds, formatRestTime } from '../../utils/formatting';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 
-function RestTimerBar({ seconds, onSkip, onAdjust }: { seconds: number; onSkip: () => void; onAdjust: (amt: number) => void }) {
+export function RestTimerBar() {
+    const { restSeconds, startRestTimer } = useActiveWorkoutTimer();
     const theme = useUITheme();
     const insets = useSafeAreaInsets();
+    
+    if (restSeconds <= 0) return null;
+    
     return (
         <Animated.View 
             entering={SlideInDown.duration(300)} 
@@ -33,7 +37,7 @@ function RestTimerBar({ seconds, onSkip, onAdjust }: { seconds: number; onSkip: 
         >
             <View className="flex-row items-center gap-3">
                 <TouchableOpacity 
-                    onPress={() => onAdjust(-15)} 
+                    onPress={() => startRestTimer(Math.max(0, restSeconds - 15))} 
                     className="w-12 h-10 rounded-xl bg-light dark:bg-dark-lighter items-center justify-center active:opacity-70"
                 >
                     <Text className="text-light dark:text-dark font-bold text-xs">-15s</Text>
@@ -41,11 +45,11 @@ function RestTimerBar({ seconds, onSkip, onAdjust }: { seconds: number; onSkip: 
 
                 <View className="items-center px-2">
                     <Text className="text-light-muted dark:text-dark-muted text-[10px] font-bold uppercase tracking-wider">Resting</Text>
-                    <Text className="text-light dark:text-dark text-xl font-black tabular-nums">{formatRestTime(seconds)}</Text>
+                    <Text className="text-light dark:text-dark text-xl font-black tabular-nums">{formatRestTime(restSeconds)}</Text>
                 </View>
 
                 <TouchableOpacity 
-                    onPress={() => onAdjust(15)} 
+                    onPress={() => startRestTimer(restSeconds + 15)} 
                     className="w-12 h-10 rounded-xl bg-light dark:bg-dark-lighter items-center justify-center active:opacity-70"
                 >
                     <Text className="text-light dark:text-dark font-bold text-xs">+15s</Text>
@@ -53,13 +57,101 @@ function RestTimerBar({ seconds, onSkip, onAdjust }: { seconds: number; onSkip: 
             </View>
             
             <RaisedCard 
-                onPress={onSkip}
+                onPress={() => startRestTimer(0)}
                 className="px-6 py-2.5 rounded-full bg-primary"
                 style={{ borderRadius: 9999 }}
             >
                 <Text className="text-white font-bold">Skip</Text>
             </RaisedCard>
         </Animated.View>
+    );
+}
+
+function DetailScreenHeader({ onToggleView }: { onToggleView: () => void }) {
+    const router = useRouter();
+    const { isRunning, workoutSeconds } = useActiveWorkoutTimer();
+    const { workoutName, pauseWorkout, resumeWorkout, setExpanded } = useActiveWorkout();
+    
+    return (
+        <ScreenHeader
+            title={
+                <View className="flex-col items-center pt-2">
+                    <Text 
+                        className="text-lg font-bold text-light dark:text-dark text-center" 
+                        numberOfLines={1}
+                        pointerEvents="none"
+                    >
+                        {workoutName || "Current Workout"}
+                    </Text>
+                    <View className="flex-row items-center gap-3 mt-1">
+                        <View className="flex-row items-center gap-1.5">
+                            {isRunning ? (
+                                <View className="w-2 h-2 rounded-full bg-primary dark:bg-primary-dark" />
+                            ) : (
+                                <Text className="text-[9px] font-black tracking-widest text-warning uppercase">PAUSED</Text>
+                            )}
+                            <Text className="text-sm font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
+                        </View>
+                    </View>
+                </View>
+            }
+            leftAction={
+                <RaisedCard 
+                    onPress={() => {
+                        Keyboard.dismiss();
+                        setExpanded(false);
+                    }}
+                    className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                    style={{ borderRadius: 9999 }}
+                >
+                    <IconSymbol name="chevron.down" size={22} className="text-primary dark:text-primary-dark" />
+                </RaisedCard>
+            }
+            rightAction={
+                <View className="flex-row gap-2 items-center">
+                    <RaisedCard 
+                        onPress={onToggleView}
+                        testID="toggle-focused-btn"
+                        className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                        style={{ borderRadius: 9999 }}
+                    >
+                        <IconSymbol name="bolt.fill" size={22} className="text-primary dark:text-primary-dark" />
+                    </RaisedCard>
+
+                    <RaisedCard 
+                        onPress={() => {
+                            Keyboard.dismiss();
+                            if (isRunning) {
+                                pauseWorkout();
+                            } else {
+                                resumeWorkout();
+                            }
+                        }}
+                        className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                        style={{ borderRadius: 9999 }}
+                    >
+                        <IconSymbol 
+                            name={isRunning ? 'pause.fill' : 'play.fill'} 
+                            size={20} 
+                            className="text-primary dark:text-primary-dark" 
+                        />
+                    </RaisedCard>
+
+                    <RaisedCard 
+                        onPress={() => {
+                            Keyboard.dismiss();
+                            pauseWorkout();
+                            router.push('/workouts/end');
+                        }}
+                        className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                        style={{ borderRadius: 9999 }}
+                    >
+                        <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
+                    </RaisedCard>
+                </View>
+            }
+            className="z-[1001] border-b-0"
+        />
     );
 }
 
@@ -74,29 +166,41 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
     const {
         exercises,
         currentIndex,
+        setCurrentIndex,
         completeSet,
         updateExercise,
-        setExpanded,
         resetWorkout,
         cancelWorkout,
         removeExercise,
         reorderExercises,
-        workoutName,
-        pauseWorkout,
-        resumeWorkout,
         addExercise,
         latestBodyWeight
     } = useActiveWorkout();
     
-    const { isRunning, workoutSeconds, restSeconds, startRestTimer } = useActiveWorkoutTimer();
     const [isAddingExercise, setIsAddingExercise] = React.useState(false);
 
-    const totalSets = exercises.reduce((acc, ex) => {
-        const setsNum = typeof ex.sets === 'string' ? parseInt(ex.sets, 10) : (typeof ex.sets === 'number' ? ex.sets : 0);
-        return acc + (isNaN(setsNum) ? 0 : setsNum);
-    }, 0);
-    const completedSets = exercises.reduce((acc, ex) => acc + (ex.completedSets || 0), 0);
-    const progressPercent = totalSets > 0 ? (completedSets / totalSets) * 100 : 0;
+    const itemHeightsRef = React.useRef<{[index: number]: number}>({});
+
+    const handleScroll = React.useCallback((event: any) => {
+        const scrollY = event.nativeEvent.contentOffset.y;
+        
+        let activeIdx = 0;
+        let currentY = 0;
+        const total = exercises.length;
+        for (let i = 0; i < total; i++) {
+            const height = itemHeightsRef.current[i] ?? 280;
+            if (scrollY < currentY + 70) {
+                activeIdx = i;
+                break;
+            }
+            currentY += height + 24; // card height + mb-6 margin (24px)
+            activeIdx = Math.min(i + 1, total - 1);
+        }
+        
+        if (activeIdx !== currentIndex) {
+            setCurrentIndex(activeIdx);
+        }
+    }, [exercises.length, currentIndex, setCurrentIndex]);
 
     function handleOpenAddExercise() {
         Keyboard.dismiss();
@@ -111,100 +215,7 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
         setIsAddingExercise(false);
     }
 
-    const renderHeader = () => {
-        return (
-            <ScreenHeader
-                title={
-                    <View className="flex-col items-center pt-2">
-                        <Text 
-                            className="text-lg font-bold text-light dark:text-dark text-center" 
-                            numberOfLines={1}
-                            pointerEvents="none"
-                        >
-                            {workoutName || "Current Workout"}
-                        </Text>
-                        <View className="flex-row items-center gap-3 mt-1">
-                            <View className="flex-row items-center gap-1.5">
-                                {isRunning ? (
-                                    <View className="w-2 h-2 rounded-full bg-primary dark:bg-primary-dark" />
-                                ) : (
-                                    <Text className="text-[9px] font-black tracking-widest text-warning uppercase">PAUSED</Text>
-                                )}
-                                <Text className="text-sm font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
-                            </View>
-                        </View>
-                        {totalSets > 0 && (
-                            <View className="w-32 h-1.5 bg-black/10 dark:bg-white/10 rounded-full mt-2 overflow-hidden">
-                                <View 
-                                    className="h-full bg-primary" 
-                                    style={{ width: `${progressPercent}%` }} 
-                                />
-                            </View>
-                        )}
-                    </View>
-                }
-                leftAction={
-                    <RaisedCard 
-                        onPress={() => {
-                            Keyboard.dismiss();
-                            setExpanded(false);
-                        }}
-                        className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                        style={{ borderRadius: 9999 }}
-                    >
-                        <IconSymbol name="chevron.down" size={22} className="text-primary dark:text-primary-dark" />
-                    </RaisedCard>
-                }
-                rightAction={
-                    <View className="flex-row gap-2 items-center">
-                        {/* Toggle to Focused View */}
-                        <RaisedCard 
-                            onPress={onToggleView}
-                            testID="toggle-focused-btn"
-                            className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                            style={{ borderRadius: 9999 }}
-                        >
-                            <IconSymbol name="bolt.fill" size={22} className="text-primary dark:text-primary-dark" />
-                        </RaisedCard>
 
-                        {/* Pause / Resume */}
-                        <RaisedCard 
-                            onPress={() => {
-                                Keyboard.dismiss();
-                                if (isRunning) {
-                                    pauseWorkout();
-                                } else {
-                                    resumeWorkout();
-                                }
-                            }}
-                            className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                            style={{ borderRadius: 9999 }}
-                        >
-                            <IconSymbol 
-                                name={isRunning ? 'pause.fill' : 'play.fill'} 
-                                size={20} 
-                                className="text-primary dark:text-primary-dark" 
-                            />
-                        </RaisedCard>
-
-                        {/* End Workout */}
-                        <RaisedCard 
-                            onPress={() => {
-                                Keyboard.dismiss();
-                                pauseWorkout();
-                                router.push('/workouts/end');
-                            }}
-                            className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                            style={{ borderRadius: 9999 }}
-                        >
-                            <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
-                        </RaisedCard>
-                    </View>
-                }
-                className="z-[1001] border-b-0"
-            />
-        );
-    };
 
     const renderFooter = () => (
         <View className="px-4 pb-20 mt-4">
@@ -252,11 +263,17 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
         </View>
     );
 
-    const renderItem = ({ item: exercise, drag, isActive, getIndex }: RenderItemParams<any>) => {
-        const index = getIndex() ?? 0;
+    const renderItem = React.useCallback(({ item: exercise, drag, isActive }: RenderItemParams<any>) => {
+        const index = exercises.indexOf(exercise);
         return (
             <ScaleDecorator activeScale={1.05}>
-                <View className={`mb-6 p-1.5 ${isActive ? 'bg-light dark:bg-dark rounded-2xl' : ''}`}>
+                <View 
+                    className={`mb-6 p-1.5 ${isActive ? 'bg-light dark:bg-dark rounded-2xl' : ''}`}
+                    onLayout={(e) => {
+                        const { height } = e.nativeEvent.layout;
+                        itemHeightsRef.current[index] = height;
+                    }}
+                >
                     <ActiveWorkoutExerciseItem
                         exercise={exercise}
                         index={index}
@@ -284,11 +301,58 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
                 </View>
             </ScaleDecorator>
         );
-    };
+    }, [currentIndex, completeSet, updateExercise, removeExercise, reorderExercises, exercises, latestBodyWeight, router]);
 
     return (
         <View style={{ flex: 1 }}>
-            {renderHeader()}
+            <DetailScreenHeader onToggleView={onToggleView} />
+
+            {/* Left Edge Vertical Progress Bar */}
+            {exercises.length > 0 && (
+                <View 
+                    style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: '25%',
+                        height: '50%',
+                        width: 9,
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        zIndex: 100,
+                    }}
+                >
+                    {exercises.map((ex, idx) => {
+                        const isCurrentEx = idx === currentIndex;
+                        const setsNum = typeof ex.sets === 'string' ? parseInt(ex.sets, 10) : (typeof ex.sets === 'number' ? ex.sets : 0);
+                        const exTotalSets = isNaN(setsNum) ? 0 : setsNum;
+                        const exCompletedSets = ex.completedSets || 0;
+                        const exProgress = exTotalSets > 0 ? (exCompletedSets / exTotalSets) : 0;
+                        
+                        return (
+                            <View 
+                                key={idx}
+                                style={{
+                                    flex: 1,
+                                    width: isCurrentEx ? 9 : 5,
+                                    backgroundColor: 'rgba(0,0,0,0.25)',
+                                    marginBottom: idx === exercises.length - 1 ? 0 : 3,
+                                    borderRadius: 9999,
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                <View 
+                                    style={{
+                                        width: '100%',
+                                        height: `${exProgress * 100}%`,
+                                        backgroundColor: theme.primary,
+                                        borderRadius: 9999,
+                                    }}
+                                />
+                            </View>
+                        );
+                    })}
+                </View>
+            )}
             <DraggableFlatList
                 data={exercises}
                 onDragEnd={({ from, to }) => reorderExercises(from, to)}
@@ -305,15 +369,14 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
                     paddingBottom: 40,
                 }}
                 activationDistance={20}
+                initialNumToRender={4}
+                maxToRenderPerBatch={4}
+                windowSize={5}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
             />
 
-            {restSeconds > 0 && (
-                <RestTimerBar 
-                    seconds={restSeconds} 
-                    onSkip={() => startRestTimer(0)} 
-                    onAdjust={(amt) => startRestTimer(Math.max(0, restSeconds + amt))}
-                />
-            )}
+            <RestTimerBar />
 
             {isAddingExercise && (
                 <Animated.View 

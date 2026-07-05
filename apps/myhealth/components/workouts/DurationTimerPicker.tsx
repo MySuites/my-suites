@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Modal, FlatList, TouchableOpacity, NativeScrollEvent, NativeSyntheticEvent, Vibration } from 'react-native';
 import { IconSymbol, useUITheme, RaisedCard } from '@mysuite/ui';
+import Svg, { Circle } from 'react-native-svg';
 import { formatSeconds } from '../../utils/formatting';
 
 const ITEM_HEIGHT = 50;
@@ -44,6 +45,16 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
     const minData = [null, null, ...MIN_VALUES, null, null];
     const secData = [null, null, ...SEC_VALUES, null, null];
 
+    const totalDuration = (selectedMin * 60) + selectedSec;
+    const progress = isPrepping
+        ? (localPrepTime > 0 ? prepRemaining / localPrepTime : 0)
+        : (totalDuration > 0 ? remainingSeconds / totalDuration : 0);
+
+    const radius = 95;
+    const strokeWidth = 10;
+    const size = 220;
+    const circumference = 2 * Math.PI * radius;
+
     useEffect(() => {
         if (visible) {
             const m = Math.floor(initialValue / 60);
@@ -51,9 +62,20 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
             setSelectedMin(m);
             setSelectedSec(s);
             setRemainingSeconds(initialValue);
-            setIsTimerRunning(false);
-            setIsPrepping(false);
             setLocalPrepTime(prepTime);
+            
+            if (autoStart && (initialValue > 0 || prepTime > 0)) {
+                if (prepTime > 0) {
+                    setIsPrepping(true);
+                    setPrepRemaining(prepTime);
+                } else {
+                    setIsPrepping(false);
+                }
+                setIsTimerRunning(true);
+            } else {
+                setIsTimerRunning(false);
+                setIsPrepping(false);
+            }
             
             // Scroll after delay
             setTimeout(() => {
@@ -74,25 +96,9 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                 }
             }, 100);
         }
-    }, [visible, initialValue, prepTime]);
+    }, [visible, initialValue, prepTime, autoStart]);
 
-    useEffect(() => {
-        if (visible && autoStart && initialValue > 0) {
-            handleStartTimer(prepTime);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [visible, autoStart, initialValue, prepTime]);
 
-    const handleStartTimer = (customPrepTime?: number) => {
-        const actualPrepTime = customPrepTime !== undefined ? customPrepTime : localPrepTime;
-        if (actualPrepTime > 0) {
-            setIsPrepping(true);
-            setPrepRemaining(actualPrepTime);
-        } else {
-            setIsPrepping(false);
-        }
-        setIsTimerRunning(true);
-    };
 
     useEffect(() => {
         if (isTimerRunning) {
@@ -183,13 +189,39 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
 
                     <View style={{ height: WHEEL_HEIGHT + 100 }} className="items-center justify-center mb-8">
                         {isTimerRunning ? (
-                            <View className="items-center justify-center">
-                                <Text className="text-[64px] font-black text-primary dark:text-primary-dark mb-2">
-                                    {isPrepping ? prepRemaining : formatSeconds(remainingSeconds)}
-                                </Text>
-                                <Text className="text-xl font-bold text-light-muted dark:text-dark-muted tracking-widest">
-                                    {isPrepping ? 'READY...' : 'GO!'}
-                                </Text>
+                            <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
+                                <Svg width={size} height={size}>
+                                    {/* Background Circle */}
+                                    <Circle
+                                        cx={size / 2}
+                                        cy={size / 2}
+                                        r={radius}
+                                        stroke={theme.bgDark === '#000000' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}
+                                        strokeWidth={strokeWidth}
+                                        fill="transparent"
+                                    />
+                                    {/* Foreground Progress Circle */}
+                                    <Circle
+                                        cx={size / 2}
+                                        cy={size / 2}
+                                        r={radius}
+                                        stroke={isPrepping ? '#ff9f0a' : theme.primary}
+                                        strokeWidth={strokeWidth}
+                                        fill="transparent"
+                                        strokeDasharray={circumference}
+                                        strokeDashoffset={circumference * (1 - progress)}
+                                        strokeLinecap="round"
+                                        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+                                    />
+                                </Svg>
+                                <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center' }}>
+                                    <Text className="text-4xl font-black text-light dark:text-dark">
+                                        {isPrepping ? prepRemaining : formatSeconds(remainingSeconds)}
+                                    </Text>
+                                    <Text className="text-xs font-bold text-light-muted dark:text-dark-muted tracking-widest mt-1 uppercase">
+                                        {isPrepping ? 'READY' : 'GO!'}
+                                    </Text>
+                                </View>
                             </View>
                         ) : (
                             <>
@@ -266,26 +298,26 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                                     </View>
                                 </View>
 
-                                {/* Prep Time Selector */}
-                                <View className="mt-8 items-center">
-                                    <Text className="text-[10px] font-bold uppercase tracking-wider text-light-muted dark:text-dark-muted mb-3">Prep Countdown</Text>
-                                    <View className="flex-row bg-black/5 dark:bg-white/5 rounded-xl p-1">
-                                        {[0, 3, 5, 10].map((s) => (
-                                            <TouchableOpacity 
-                                                key={s}
-                                                onPress={() => {
-                                                    setLocalPrepTime(s);
-                                                    onPrepTimeChange?.(s);
-                                                }}
-                                                className={`px-4 py-2 rounded-lg ${localPrepTime === s ? 'bg-white dark:bg-black/20' : 'bg-transparent'}`}
-                                            >
-                                                <Text className={`text-sm font-bold ${localPrepTime === s ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted'}`}>
-                                                    {s === 0 ? 'None' : `${s}s`}
-                                                </Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
-                                </View>
+                                 {/* Prep Time Selector */}
+                                 <View className="mt-8 items-center">
+                                     <Text className="text-[11px] font-bold uppercase tracking-widest text-light-muted dark:text-dark-muted mb-3">Prep Countdown</Text>
+                                     <View className="flex-row bg-black/10 dark:bg-white/10 rounded-2xl p-1">
+                                         {[0, 3, 5, 10].map((s) => (
+                                             <TouchableOpacity 
+                                                 key={s}
+                                                 onPress={() => {
+                                                     setLocalPrepTime(s);
+                                                     onPrepTimeChange?.(s);
+                                                 }}
+                                                 className={`px-6 py-2.5 rounded-xl ${localPrepTime === s ? 'bg-white dark:bg-dark shadow-sm' : 'bg-transparent'}`}
+                                             >
+                                                 <Text className={`text-sm font-extrabold ${localPrepTime === s ? 'text-primary dark:text-primary-dark' : 'text-light-muted/60 dark:text-dark-muted/60'}`}>
+                                                     {s === 0 ? 'None' : `${s}s`}
+                                                 </Text>
+                                             </TouchableOpacity>
+                                         ))}
+                                     </View>
+                                 </View>
                             </>
                         )}
                     </View>

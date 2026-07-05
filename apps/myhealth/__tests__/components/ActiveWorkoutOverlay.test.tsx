@@ -147,8 +147,8 @@ describe('ActiveWorkoutOverlay and Screen Toggling', () => {
         // 5. In Focused view, the draggable checklist is hidden
         expect(queryByTestId('draggable-list')).toBeNull();
 
-        // 6. Focused view elements are displayed (e.g. Navigation Header showing "Exercise 1 of 2")
-        expect(queryByText(/Exercise 1/)).toBeTruthy();
+        // 6. Focused view elements are displayed (e.g. Navigation Header showing the current exercise name)
+        expect(queryByText(/Bench Press/)).toBeTruthy();
 
         // 7. Toggle back to Detail view using toggle-detail-btn (list icon)
         const backToDetailBtn = getByTestId('toggle-detail-btn');

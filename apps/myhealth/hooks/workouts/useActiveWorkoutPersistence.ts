@@ -94,7 +94,14 @@ export function useActiveWorkoutPersistence({
                         // For now let's assume if data exists calling hook means we might want it.
                         // But verifying "hasActiveSession" usually means "is expanded/visible".
                         if (data["myhealth_workout_exercises"]) {
-                            setHasActiveSession(true);
+                            try {
+                                const parsed = JSON.parse(data["myhealth_workout_exercises"]);
+                                if (parsed && parsed.length > 0) {
+                                    setHasActiveSession(true);
+                                }
+                            } catch (e) {
+                                // Ignore
+                            }
                         }
                     }
 

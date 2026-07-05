@@ -432,7 +432,10 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 		setRunning(false);
 		resetTimers();
 		setCurrentIndex(0);
-		setExercises((exs) => exs.map((x) => ({...x, completedSets: 0, completedIndices: [], logs: []})));
+		setExercises([]);
+		setWorkoutName("Current Workout");
+		setRoutineId(null);
+		setSourceWorkoutId(null);
         
         setHasActiveSession(false);
         setIsExpanded(false);
@@ -440,15 +443,16 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         // Clear persistence
         clearPersistence();
         NotificationService.cancelWorkoutTimeoutReminder();
-    }, [workoutName, exercises, workoutSeconds, saveCompletedWorkout, routineId, sourceWorkoutId, setRunning, resetTimers, clearPersistence, latestBodyWeight]);
+    }, [workoutName, exercises, workoutSeconds, saveCompletedWorkout, routineId, sourceWorkoutId, setRunning, resetTimers, clearPersistence, latestBodyWeight, user?.id]);
 
     const handleCancelWorkout = useCallback(() => {
-        // Cancel is effectively the same as finish for now (discard/reset)
-        // But we separate it for future distinction (Finish = Save potentially)
         setRunning(false);
         resetTimers();
         setCurrentIndex(0);
-        setExercises((exs) => exs.map((x) => ({...x, completedSets: 0, completedIndices: [], logs: []})));
+        setExercises([]);
+        setWorkoutName("Current Workout");
+        setRoutineId(null);
+        setSourceWorkoutId(null);
         
         setHasActiveSession(false);
         setIsExpanded(false);
