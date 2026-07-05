@@ -97,27 +97,16 @@ function DetailScreenHeader({ onToggleView }: { onToggleView: () => void }) {
             }
             leftAction={
                 <RaisedCard 
-                    onPress={() => {
-                        Keyboard.dismiss();
-                        setExpanded(false);
-                    }}
+                    onPress={onToggleView}
+                    testID="toggle-focused-btn"
                     className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
                     style={{ borderRadius: 9999 }}
                 >
-                    <IconSymbol name="chevron.down" size={22} className="text-primary dark:text-primary-dark" />
+                    <IconSymbol name="bolt.fill" size={22} className="text-primary dark:text-primary-dark" />
                 </RaisedCard>
             }
             rightAction={
                 <View className="flex-row gap-2 items-center">
-                    <RaisedCard 
-                        onPress={onToggleView}
-                        testID="toggle-focused-btn"
-                        className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                        style={{ borderRadius: 9999 }}
-                    >
-                        <IconSymbol name="bolt.fill" size={22} className="text-primary dark:text-primary-dark" />
-                    </RaisedCard>
-
                     <RaisedCard 
                         onPress={() => {
                             Keyboard.dismiss();

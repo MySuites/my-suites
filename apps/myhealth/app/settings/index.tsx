@@ -369,7 +369,7 @@ export default function SettingsScreen() {
           </View>
         </View>
         
-        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.5.16
+        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.5.17
         </Text>
       </ScrollView>
     </View>
