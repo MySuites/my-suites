@@ -78,7 +78,7 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
             }
             
             // Scroll after delay
-            setTimeout(() => {
+            const timeout = setTimeout(() => {
                 const mIdx = MIN_VALUES.indexOf(m);
                 const sIdx = SEC_VALUES.indexOf(s);
                 
@@ -95,6 +95,8 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                     });
                 }
             }, 100);
+
+            return () => clearTimeout(timeout);
         }
     }, [visible, initialValue, prepTime, autoStart]);
 

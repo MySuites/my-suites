@@ -292,7 +292,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                                     ref={flatListRef}
                                     data={exercises}
                                     renderItem={renderExerciseItem}
-                                    extraData={`${currentIndex}-${JSON.stringify(activeSetIndices)}`}
+                                    extraData={activeSetIndices}
                                     keyExtractor={(item, index) => `${item.id}-${index}`}
                                     pagingEnabled={true}
                                     showsVerticalScrollIndicator={false}

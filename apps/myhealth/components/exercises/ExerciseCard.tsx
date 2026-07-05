@@ -87,6 +87,28 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
     const totalSets = Math.max(exercise.sets, exercise.logs?.length || 0);
     const prevSetsCountRef = useRef(exercise.sets);
     const isProgrammaticScroll = useRef(false);
+    const isMountedRef = useRef(true);
+    const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+    React.useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+            timeoutRefs.current.forEach(clearTimeout);
+            timeoutRefs.current = [];
+        };
+    }, []);
+
+    const scheduleTimeout = React.useCallback((callback: () => void, delay: number) => {
+        const timeoutId = setTimeout(() => {
+            timeoutRefs.current = timeoutRefs.current.filter((id) => id !== timeoutId);
+            if (!isMountedRef.current) {
+                return;
+            }
+            callback();
+        }, delay);
+        timeoutRefs.current.push(timeoutId);
+        return timeoutId;
+    }, []);
 
 
 
@@ -97,10 +119,10 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                 const lastIndex = Math.max(0, totalSets - 1);
                 setActiveSetIndex(lastIndex);
                 // Wrap in a tiny timeout to ensure Layout is finished rendering the new item
-                setTimeout(() => {
+                scheduleTimeout(() => {
                     isProgrammaticScroll.current = true;
                     scrollViewRef.current?.scrollTo({ x: lastIndex * cardWidth, animated: true });
-                    setTimeout(() => {
+                    scheduleTimeout(() => {
                         isProgrammaticScroll.current = false;
                     }, 500);
                 }, 50);
@@ -110,25 +132,25 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                     setActiveSetIndex(lastIndex);
                     isProgrammaticScroll.current = true;
                     scrollViewRef.current?.scrollTo({ x: lastIndex * cardWidth, animated: true });
-                    setTimeout(() => {
+                    scheduleTimeout(() => {
                         isProgrammaticScroll.current = false;
                     }, 500);
                 }
             }
         }
         prevSetsCountRef.current = exercise.sets;
-    }, [exercise.sets, cardWidth, horizontalSets, totalSets, activeSetIndex, setActiveSetIndex]);
+    }, [exercise.sets, cardWidth, horizontalSets, totalSets, activeSetIndex, setActiveSetIndex, scheduleTimeout]);
 
     // Parent-driven scrolling hook
     React.useEffect(() => {
         if (horizontalSets && scrollViewRef.current && cardWidth > 0 && propActiveSetIndex !== undefined) {
             isProgrammaticScroll.current = true;
             scrollViewRef.current.scrollTo({ x: propActiveSetIndex * cardWidth, animated: true });
-            setTimeout(() => {
+            scheduleTimeout(() => {
                 isProgrammaticScroll.current = false;
             }, 500);
         }
-    }, [propActiveSetIndex, cardWidth, horizontalSets]);
+    }, [propActiveSetIndex, cardWidth, horizontalSets, scheduleTimeout]);
 
     const handleDeleteActiveSet = () => {
         if (onDeleteSet) {
@@ -138,7 +160,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
             if (scrollViewRef.current && cardWidth > 0) {
                 isProgrammaticScroll.current = true;
                 scrollViewRef.current.scrollTo({ x: nextIndex * cardWidth, animated: true });
-                setTimeout(() => {
+                scheduleTimeout(() => {
                     isProgrammaticScroll.current = false;
                 }, 500);
             }
@@ -151,11 +173,11 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
         
         if (horizontalSets && !currentlyCompleted && setIndex < totalSets - 1) {
             isProgrammaticScroll.current = true;
-            setTimeout(() => {
+            scheduleTimeout(() => {
                 const nextIndex = setIndex + 1;
                 setActiveSetIndex(nextIndex);
                 scrollViewRef.current?.scrollTo({ x: nextIndex * cardWidth, animated: true });
-                setTimeout(() => {
+                scheduleTimeout(() => {
                     isProgrammaticScroll.current = false;
                 }, 500);
             }, 300);

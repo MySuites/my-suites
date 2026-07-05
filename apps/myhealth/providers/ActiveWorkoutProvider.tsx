@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { Exercise, useWorkoutManager, fetchLastExercisePerformance } from './WorkoutManagerProvider'; 
 import { useAuth } from '@mysuite/auth';
 import { createExercise } from '../utils/workout-logic';
@@ -94,7 +94,10 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     });
     
     // Fetch previous performance logs for exercises
-    const exerciseIdsSerialized = JSON.stringify(exercises.map(ex => ex.id));
+    const exerciseIdsSerialized = useMemo(
+        () => JSON.stringify(exercises.map(ex => ex.id)),
+        [exercises],
+    );
     useEffect(() => {
         if (!hasActiveSession || exercises.length === 0) return;
 
@@ -133,7 +136,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
         fetchMissingLogs();
         return () => { isMounted = false; };
-    }, [user, hasActiveSession, exerciseIdsSerialized, exercises]); // Re-run when user changes, session starts, or exercise list changes
+    }, [user, hasActiveSession, exerciseIdsSerialized]); // Re-run when user changes, session starts, or exercise ids change
 
     // Auto-prompt when all sets are completed
     useEffect(() => {

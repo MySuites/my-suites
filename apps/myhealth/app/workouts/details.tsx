@@ -213,11 +213,13 @@ export default function CreateWorkoutScreen() {
 
         if (!isLoading) return; // Already initialized synchronously
 
+        let isActive = true;
+
         async function loadLog() {
             if (!viewingLogId) return;
             try {
                 const { data } = await fetchWorkoutLogDetails(viewingLogId);
-                if (data && data.length > 0) {
+                if (data && data.length > 0 && isActive) {
                     const historyExercises = data.map((ex: any) => ({
                         id: ex.sets[0]?.details?.exercise_id || '',
                         name: ex.name,
@@ -239,13 +241,20 @@ export default function CreateWorkoutScreen() {
                     setWorkoutDraftExercises(historyExercises);
                 }
             } catch (err) {
-                console.error("Failed to load log details", err);
+                if (isActive) {
+                    console.error("Failed to load log details", err);
+                }
             } finally {
-                setIsLoading(false);
+                if (isActive) {
+                    setIsLoading(false);
+                }
             }
         }
 
         loadLog();
+        return () => {
+            isActive = false;
+        };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [viewingLogId]);
 

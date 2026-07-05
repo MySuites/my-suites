@@ -36,7 +36,7 @@ export function RestTimerPicker({ visible, onClose, initialValue, onSave }: Rest
             setSelectedSec(s);
             
             // Scroll after delay
-            setTimeout(() => {
+            const timeout = setTimeout(() => {
                 const mIdx = MIN_VALUES.indexOf(m);
                 const sIdx = SEC_VALUES.indexOf(s);
                 
@@ -53,6 +53,8 @@ export function RestTimerPicker({ visible, onClose, initialValue, onSave }: Rest
                     });
                 }
             }, 100);
+
+            return () => clearTimeout(timeout);
         }
     }, [visible, initialValue]);
 
