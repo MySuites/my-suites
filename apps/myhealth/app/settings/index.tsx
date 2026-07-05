@@ -60,7 +60,10 @@ export default function SettingsScreen() {
   const [isHealthConnected, setIsHealthConnected] = useState(false);
   const [autoSavePhotos, setAutoSavePhotos] = useState(false);
   const [developerMode, setDeveloperMode] = useState(false);
+  const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [longWorkoutReminderEnabled, setLongWorkoutReminderEnabled] = useState(false);
+  const [longWorkoutDuration, setLongWorkoutDuration] = useState(90);
   const [reminderHour, setReminderHour] = useState(9);
   const [reminderMinute, setReminderMinute] = useState(0);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -105,6 +108,43 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleTogglePushNotifications = async (value: boolean) => {
+    if (value) {
+      const granted = await NotificationService.requestPermissions();
+      if (granted) {
+        setPushNotificationsEnabled(true);
+        await storage.setItem('push_notifications_enabled', true);
+        showToast({ message: "Push notifications enabled", type: 'success' });
+      } else {
+        setPushNotificationsEnabled(false);
+        await storage.setItem('push_notifications_enabled', false);
+        Alert.alert(
+          "Permission Denied",
+          "Please enable notification permissions for MyHealth in your system settings to receive push notifications.",
+          [{ text: "OK" }]
+        );
+      }
+    } else {
+      setPushNotificationsEnabled(false);
+      await storage.setItem('push_notifications_enabled', false);
+      showToast({ message: "Push notifications disabled", type: 'success' });
+    }
+  };
+
+  const handleToggleLongWorkoutReminder = async (value: boolean) => {
+    setLongWorkoutReminderEnabled(value);
+    await storage.setItem('long_workout_reminder_enabled', value);
+    showToast({ 
+      message: value ? "Long workout reminder enabled" : "Long workout reminder disabled", 
+      type: 'success' 
+    });
+  };
+
+  const handleUpdateLongWorkoutDuration = async (minutes: number) => {
+    setLongWorkoutDuration(minutes);
+    await storage.setItem('long_workout_duration', minutes);
+  };
+
   const handleTimeChange = async (event: any, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
       setShowTimePicker(false);
@@ -131,12 +171,20 @@ export default function SettingsScreen() {
       const devVal = await storage.getItem<boolean>('developer_mode');
       setDeveloperMode(!!devVal);
 
+      const pushNotifEnabled = await storage.getItem<boolean>('push_notifications_enabled');
+      setPushNotificationsEnabled(!!pushNotifEnabled);
+
       const notifEnabled = await storage.getItem<boolean>('notifications_enabled');
       setNotificationsEnabled(!!notifEnabled);
       const hour = await storage.getItem<number>('notification_reminder_hour');
       const minute = await storage.getItem<number>('notification_reminder_minute');
       if (hour !== null) setReminderHour(hour);
       if (minute !== null) setReminderMinute(minute);
+
+      const longWorkoutEnabled = await storage.getItem<boolean>('long_workout_reminder_enabled');
+      setLongWorkoutReminderEnabled(!!longWorkoutEnabled);
+      const duration = await storage.getItem<number>('long_workout_duration');
+      if (duration !== null) setLongWorkoutDuration(duration);
     }
     loadPrefs();
   }, []);
@@ -257,18 +305,29 @@ export default function SettingsScreen() {
         <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Notifications</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+            <Text className="text-base text-light dark:text-dark">Push Notifications</Text>
+            <Switch
+              testID="push-notifications-switch"
+              value={pushNotificationsEnabled}
+              onValueChange={handleTogglePushNotifications}
+              trackColor={{ false: theme.card, true: theme.primary }}
+              thumbColor={pushNotificationsEnabled ? "#ffffff" : "#f4f3f4"}
+            />
+          </View>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-6" style={{ opacity: pushNotificationsEnabled ? 1 : 0.5 }}>
             <Text className="text-base text-light dark:text-dark">Daily Workout Reminder</Text>
             <Switch
               testID="daily-reminder-switch"
               value={notificationsEnabled}
               onValueChange={handleToggleNotifications}
+              disabled={!pushNotificationsEnabled}
               trackColor={{ false: theme.card, true: theme.primary }}
               thumbColor={notificationsEnabled ? "#ffffff" : "#f4f3f4"}
             />
           </View>
-          {notificationsEnabled && (
+          {notificationsEnabled && pushNotificationsEnabled && (
             <>
-              <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+              <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-6">
                 <Text className="text-base text-light dark:text-dark font-medium">Reminder Time</Text>
                 <TouchableOpacity 
                   onPress={() => setShowTimePicker(!showTimePicker)}
@@ -281,7 +340,7 @@ export default function SettingsScreen() {
                 </TouchableOpacity>
               </View>
               {showTimePicker && (
-                <View className="bg-light dark:bg-dark p-2 rounded-xl mt-1">
+                <View className="bg-light dark:bg-dark p-2 rounded-xl mt-1 ml-6">
                   <DateTimePicker
                     value={getReminderDate(reminderHour, reminderMinute)}
                     mode="time"
@@ -300,6 +359,39 @@ export default function SettingsScreen() {
                 </View>
               )}
             </>
+          )}
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-6" style={{ opacity: pushNotificationsEnabled ? 1 : 0.5 }}>
+            <Text className="text-base text-light dark:text-dark">Long Workout Reminder</Text>
+            <Switch
+              testID="long-workout-reminder-switch"
+              value={longWorkoutReminderEnabled}
+              onValueChange={handleToggleLongWorkoutReminder}
+              disabled={!pushNotificationsEnabled}
+              trackColor={{ false: theme.card, true: theme.primary }}
+              thumbColor={longWorkoutReminderEnabled ? "#ffffff" : "#f4f3f4"}
+            />
+          </View>
+          {longWorkoutReminderEnabled && pushNotificationsEnabled && (
+            <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-12">
+              <Text className="text-base text-light dark:text-dark font-medium">Duration (minutes)</Text>
+              <View className="flex-row items-center gap-2">
+                <TouchableOpacity 
+                  onPress={() => handleUpdateLongWorkoutDuration(Math.max(30, longWorkoutDuration - 15))}
+                  className="px-3 py-1.5 bg-light dark:bg-dark rounded-lg"
+                >
+                  <Text className="text-base font-semibold" style={{ color: theme.primary }}>−</Text>
+                </TouchableOpacity>
+                <Text className="text-base text-light dark:text-dark font-medium w-12 text-center">
+                  {longWorkoutDuration}
+                </Text>
+                <TouchableOpacity 
+                  onPress={() => handleUpdateLongWorkoutDuration(Math.min(180, longWorkoutDuration + 15))}
+                  className="px-3 py-1.5 bg-light dark:bg-dark rounded-lg"
+                >
+                  <Text className="text-base font-semibold" style={{ color: theme.primary }}>+</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           )}
         </View>
 
@@ -369,7 +461,7 @@ export default function SettingsScreen() {
           </View>
         </View>
         
-        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.5.17
+        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.5.18
         </Text>
       </ScrollView>
     </View>
