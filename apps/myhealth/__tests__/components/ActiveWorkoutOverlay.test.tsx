@@ -137,24 +137,22 @@ describe('ActiveWorkoutOverlay and Screen Toggling', () => {
         // 2. Start workout
         fireEvent.press(getByTestId('start-workout-btn'));
 
-        // 3. Confirm workout details overlay is expanded (default detail view)
-        expect(getByTestId('draggable-list')).toBeTruthy();
-
-        // 4. Toggle to Focused screen using toggle-focused-btn (lightning bolt)
-        const toggleBtn = getByTestId('toggle-focused-btn');
-        fireEvent.press(toggleBtn);
-
-        // 5. In Focused view, the draggable checklist is hidden
+        // 3. Confirm active screen is active by default (no draggable list)
         expect(queryByTestId('draggable-list')).toBeNull();
-
-        // 6. Focused view elements are displayed (e.g. Navigation Header showing the current exercise name)
         expect(queryByText(/Bench Press/)).toBeTruthy();
 
-        // 7. Toggle back to Detail view using toggle-detail-btn (list icon)
-        const backToDetailBtn = getByTestId('toggle-detail-btn');
-        fireEvent.press(backToDetailBtn);
+        // 4. Toggle to Detail screen using toggle-detail-btn (list icon)
+        const toggleBtn = getByTestId('toggle-detail-btn');
+        fireEvent.press(toggleBtn);
 
-        // 8. Draggable checklist is visible again
+        // 5. In Detail view, the draggable checklist is visible
         expect(getByTestId('draggable-list')).toBeTruthy();
+
+        // 6. Toggle back to Active view using toggle-focused-btn (lightning bolt / button)
+        const backToFocusedBtn = getByTestId('toggle-focused-btn');
+        fireEvent.press(backToFocusedBtn);
+
+        // 7. Draggable checklist is hidden again
+        expect(queryByTestId('draggable-list')).toBeNull();
     });
 });

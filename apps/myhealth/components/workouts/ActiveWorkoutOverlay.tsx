@@ -17,10 +17,16 @@ export function ActiveWorkoutOverlay() {
         hasActiveSession,
     } = useActiveWorkout();
     
-    const [activeView, setActiveView] = useState<'detail' | 'active'>('detail');
+    const [activeView, setActiveView] = useState<'detail' | 'active'>('active');
 
     const handleToggleToActive = React.useCallback(() => setActiveView('active'), []);
     const handleToggleToDetail = React.useCallback(() => setActiveView('detail'), []);
+
+    React.useEffect(() => {
+        if (hasActiveSession) {
+            setActiveView('active');
+        }
+    }, [hasActiveSession]);
 
     if (!hasActiveSession) {
         return null;
