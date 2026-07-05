@@ -199,6 +199,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                      const originalTarget = originalTargets[i] || {};
 
                      if (log) {
+                         // Use completed log values as the new template
                          newSetTargets.push({
                              weight: log.weight,
                              reps: log.reps,
@@ -209,14 +210,15 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                              rpe: log.rpe
                          });
                      } else {
+                         // For uncompleted sets, prefer activeTarget (what was set during workout) over original template
                          newSetTargets.push({
-                             weight: originalTarget.weight !== undefined ? originalTarget.weight : activeTarget.weight,
-                             reps: originalTarget.reps !== undefined ? originalTarget.reps : activeTarget.reps,
-                             reps_left: originalTarget.reps_left !== undefined ? originalTarget.reps_left : activeTarget.reps_left,
-                             reps_right: originalTarget.reps_right !== undefined ? originalTarget.reps_right : activeTarget.reps_right,
-                             duration: originalTarget.duration !== undefined ? originalTarget.duration : activeTarget.duration,
-                             distance: originalTarget.distance !== undefined ? originalTarget.distance : activeTarget.distance,
-                             rpe: originalTarget.rpe !== undefined ? originalTarget.rpe : activeTarget.rpe
+                             weight: activeTarget.weight !== undefined ? activeTarget.weight : originalTarget.weight,
+                             reps: activeTarget.reps !== undefined ? activeTarget.reps : originalTarget.reps,
+                             reps_left: activeTarget.reps_left !== undefined ? activeTarget.reps_left : originalTarget.reps_left,
+                             reps_right: activeTarget.reps_right !== undefined ? activeTarget.reps_right : originalTarget.reps_right,
+                             duration: activeTarget.duration !== undefined ? activeTarget.duration : originalTarget.duration,
+                             distance: activeTarget.distance !== undefined ? activeTarget.distance : originalTarget.distance,
+                             rpe: activeTarget.rpe !== undefined ? activeTarget.rpe : originalTarget.rpe
                          });
                      }
                  }

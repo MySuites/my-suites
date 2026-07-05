@@ -114,6 +114,7 @@ export const NotificationService = {
           sound: true,
         },
         trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
           seconds: 3 * 60 * 60, // 3 hours
           repeats: false,
         } as any,
