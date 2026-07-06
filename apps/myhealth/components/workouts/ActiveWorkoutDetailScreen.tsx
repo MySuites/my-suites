@@ -169,10 +169,12 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
     const [isAddingExercise, setIsAddingExercise] = React.useState(false);
 
     const itemHeightsRef = React.useRef<{[index: number]: number}>({});
+    const currentIndexRef = React.useRef(currentIndex);
+    React.useEffect(() => {
+        currentIndexRef.current = currentIndex;
+    }, [currentIndex]);
 
-    const handleScroll = React.useCallback((event: any) => {
-        const scrollY = event.nativeEvent.contentOffset.y;
-        
+    const handleScrollOffset = React.useCallback((scrollY: number) => {
         let activeIdx = 0;
         let currentY = 0;
         const total = exercises.length;
@@ -186,10 +188,11 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
             activeIdx = Math.min(i + 1, total - 1);
         }
         
-        if (activeIdx !== currentIndex) {
+        if (activeIdx !== currentIndexRef.current) {
+            currentIndexRef.current = activeIdx;
             setCurrentIndex(activeIdx);
         }
-    }, [exercises.length, currentIndex, setCurrentIndex]);
+    }, [exercises.length, setCurrentIndex]);
 
     function handleOpenAddExercise() {
         Keyboard.dismiss();
@@ -361,8 +364,7 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
                 initialNumToRender={4}
                 maxToRenderPerBatch={4}
                 windowSize={5}
-                onScroll={handleScroll}
-                scrollEventThrottle={16}
+                onScrollOffsetChange={handleScrollOffset}
             />
 
             <RestTimerBar />
