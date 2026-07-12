@@ -10,8 +10,7 @@ import Animated, {
     Extrapolation,
     withTiming,
     Easing,
-    SharedValue,
-    withSequence
+    SharedValue
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { IconSymbol } from "@mysuite/ui";
@@ -95,15 +94,9 @@ export const SetRow = ({
     const swipeableRef = useRef<any>(null);
 
     React.useEffect(() => {
-        if (isCompleted && !prevCompletedRef.current) {
-            scale.value = withSequence(
-                withTiming(1.06, { duration: 100 }),
-                withTiming(1, { duration: 150 })
-            );
-        }
         bgOpacity.value = withTiming(isCompleted ? 1 : 0, { duration: 250 });
         prevCompletedRef.current = isCompleted;
-    }, [isCompleted, scale, bgOpacity]);
+    }, [isCompleted, bgOpacity]);
 
     const animatedRowStyle = useAnimatedStyle(() => {
         return {

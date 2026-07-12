@@ -77,11 +77,13 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
     const dimensions = useWindowDimensions();
     const [localActiveSetIndex, setLocalActiveSetIndex] = useState(0);
     const activeSetIndex = propActiveSetIndex !== undefined ? propActiveSetIndex : localActiveSetIndex;
+    const lastAppliedSetIndexRef = useRef(propActiveSetIndex);
     const setActiveSetIndex = React.useCallback((val: number) => {
+        lastAppliedSetIndexRef.current = val;
         setLocalActiveSetIndex(val);
         onActiveSetChange?.(val);
     }, [onActiveSetChange]);
-    
+
     const [cardWidth, setCardWidth] = useState(dimensions.width - 64);
     const scrollViewRef = useRef<ScrollView>(null);
     const totalSets = Math.max(exercise.sets, exercise.logs?.length || 0);
@@ -143,7 +145,14 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
 
     // Parent-driven scrolling hook
     React.useEffect(() => {
-        if (horizontalSets && scrollViewRef.current && cardWidth > 0 && propActiveSetIndex !== undefined) {
+        if (
+            horizontalSets &&
+            scrollViewRef.current &&
+            cardWidth > 0 &&
+            propActiveSetIndex !== undefined &&
+            propActiveSetIndex !== lastAppliedSetIndexRef.current
+        ) {
+            lastAppliedSetIndexRef.current = propActiveSetIndex;
             isProgrammaticScroll.current = true;
             scrollViewRef.current.scrollTo({ x: propActiveSetIndex * cardWidth, animated: true });
             scheduleTimeout(() => {
@@ -392,7 +401,8 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                 className={horizontalSets ? "p-4 flex-1" : "p-4"}
                 style={horizontalSets ? { flex: 1 } : undefined}
                 onLayout={(e) => {
-                    setCardWidth(e.nativeEvent.layout.width - 32);
+                    const newWidth = e.nativeEvent.layout.width - 32;
+                    setCardWidth((prev) => (Math.abs(prev - newWidth) > 1 ? newWidth : prev));
                 }}
              >
                 {/* Headers */}
@@ -417,30 +427,54 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                 {/* Render Rows */}
                 {horizontalSets ? (
                     cardWidth > 0 ? (
-                        <View style={{ width: cardWidth, flex: 1 }}>
-                            <SetRow 
-                                key={`set-${activeSetIndex}`}
-                                index={activeSetIndex}
-                                exercise={exercise}
-                                onCompleteSet={() => handleCompleteSetAndAutoPage(activeSetIndex)}
-                                onUpdateSetTarget={onUpdateSetTarget}
-                                onDeleteSet={onDeleteSet || (() => {})}
-                                onPressRPE={(setIdx, val) => {
-                                    setRPEPickerIndex(setIdx);
-                                    setRPEPickerValue(val);
-                                    setIsRPEPickerVisible(true);
-                                }}
-                                theme={theme}
-                                latestBodyWeight={latestBodyWeight}
-                                exercisePrepTime={exercise.prepTime}
-                                onUpdatePrepTime={onUpdatePrepTime}
-                                enableSwipeToDelete={false}
-                                showCheckbox={false}
-                                showSetNumber={false}
-                                isActiveSet={isCurrent ?? false}
-                                onPressRestTimer={() => setIsPickerVisible(true)}
-                            />
-                        </View>
+                        <ScrollView
+                            ref={scrollViewRef}
+                            horizontal
+                            pagingEnabled
+                            showsHorizontalScrollIndicator={false}
+                            style={{ flex: 1 }}
+                            onMomentumScrollEnd={(e) => {
+                                if (isProgrammaticScroll.current || cardWidth <= 0) return;
+                                const newIndex = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
+                                if (newIndex !== activeSetIndex && newIndex >= 0 && newIndex < totalSets) {
+                                    setActiveSetIndex(newIndex);
+                                }
+                            }}
+                            onScrollEndDrag={(e) => {
+                                if (isProgrammaticScroll.current || cardWidth <= 0) return;
+                                if (e.nativeEvent.velocity && (Math.abs(e.nativeEvent.velocity.x) > 0.01)) return;
+                                const newIndex = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
+                                if (newIndex !== activeSetIndex && newIndex >= 0 && newIndex < totalSets) {
+                                    setActiveSetIndex(newIndex);
+                                }
+                            }}
+                        >
+                            {Array.from({ length: totalSets }).map((_, i) => (
+                                <View key={`set-${i}`} style={{ width: cardWidth, flex: 1 }}>
+                                    <SetRow
+                                        index={i}
+                                        exercise={exercise}
+                                        onCompleteSet={() => handleCompleteSetAndAutoPage(i)}
+                                        onUpdateSetTarget={onUpdateSetTarget}
+                                        onDeleteSet={onDeleteSet || (() => {})}
+                                        onPressRPE={(setIdx, val) => {
+                                            setRPEPickerIndex(setIdx);
+                                            setRPEPickerValue(val);
+                                            setIsRPEPickerVisible(true);
+                                        }}
+                                        theme={theme}
+                                        latestBodyWeight={latestBodyWeight}
+                                        exercisePrepTime={exercise.prepTime}
+                                        onUpdatePrepTime={onUpdatePrepTime}
+                                        enableSwipeToDelete={false}
+                                        showCheckbox={false}
+                                        showSetNumber={false}
+                                        isActiveSet={i === activeSetIndex && (isCurrent ?? false)}
+                                        onPressRestTimer={() => setIsPickerVisible(true)}
+                                    />
+                                </View>
+                            ))}
+                        </ScrollView>
                     ) : null
                 ) : (
                     Array.from({ length: totalSets }).map((_, i) => (
