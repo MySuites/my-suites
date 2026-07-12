@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — MyHealth</title>
+  <meta name="description" content="Terms of Service for the MyHealth app. Read the terms and conditions governing your use of the app." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3e;
+      --accent: #4f8ef7;
+      --accent-soft: rgba(79, 142, 247, 0.12);
+      --text-primary: #e8eaf0;
+      --text-secondary: #8b90a8;
+      --text-muted: #555872;
+      --amber: #fbbf24;
+      --amber-soft: rgba(251, 191, 36, 0.1);
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+    }
+
+    .header-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #4f8ef7, #a78bfa);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .header-inner h1 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .header-inner span {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-left: auto;
+    }
+
+    /* ── Main content ── */
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #e8eaf0, #8b90a8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .effective-date {
+      display: inline-block;
+      background: var(--amber-soft);
+      color: var(--amber);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .intro {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Sections ── */
+    section {
+      margin-bottom: 48px;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h2 .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      border: 1px solid rgba(79, 142, 247, 0.2);
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+    }
+
+    ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    ul li {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.6;
+    }
+
+    strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* ── Warning box ── */
+    .warning-box {
+      background: var(--amber-soft);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 16px 0;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .warning-box .icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+    .warning-box p { color: var(--amber); margin: 0; font-size: 0.9rem; font-weight: 500; }
+
+    /* ── Contact card ── */
+    .contact-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-top: 16px;
+    }
+
+    .contact-card p { margin: 0; font-size: 0.9rem; }
+    .contact-card a { color: var(--accent); text-decoration: none; }
+    .contact-card a:hover { text-decoration: underline; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    footer p { color: var(--text-muted); font-size: 0.8rem; margin: 0; }
+
+    @media (max-width: 600px) {
+      .page-title { font-size: 1.5rem; }
+      main { padding: 32px 16px 64px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo">🏋️</div>
+      <h1>MyHealth</h1>
+      <span>Terms of Service</span>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="page-title">Terms of Service</h1>
+    <div class="effective-date">✦ Effective Date: March 18, 2026</div>
+    <p class="intro">
+      Please read these Terms of Service ("Terms") carefully before using the MyHealth mobile application
+      (the "App") operated by MySuite ("we," "us," or "our"). By accessing or using the App, you agree
+      to be bound by these Terms. If you do not agree with any part of these Terms, you may not use the App.
+    </p>
+
+    <section>
+      <h2><span class="section-num">1</span> Use of the App</h2>
+      <p>MyHealth is a personal health and fitness tracking application. You agree to use the App only for lawful purposes and in accordance with these Terms. You agree not to:</p>
+      <ul>
+        <li>Use the App in any way that violates applicable local, national, or international law or regulation.</li>
+        <li>Attempt to gain unauthorized access to any part of the App or its related systems.</li>
+        <li>Reverse engineer, decompile, or disassemble any part of the App.</li>
+        <li>Use the App to transmit any unsolicited or unauthorized advertising or promotional material.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="section-num">2</span> Accounts</h2>
+      <p>To access certain features of the App, you may be required to create an account. You are responsible for:</p>
+      <ul>
+        <li>Maintaining the confidentiality of your account credentials.</li>
+        <li>All activities that occur under your account.</li>
+        <li>Notifying us immediately of any unauthorized use of your account.</li>
+      </ul>
+      <p>We reserve the right to terminate accounts that violate these Terms.</p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">3</span> Health Disclaimer</h2>
+      <div class="warning-box">
+        <span class="icon">⚠️</span>
+        <p>MyHealth is not a medical application. The information and data within the App are for informational and personal tracking purposes only and do not constitute medical advice, diagnosis, or treatment.</p>
+      </div>
+      <p>Always consult a qualified healthcare professional before making any changes to your diet, exercise regimen, or health routine. We are not liable for any health outcomes resulting from your use of the App.</p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">4</span> Intellectual Property</h2>
+      <p>The App and its original content, features, and functionality are and will remain the exclusive property of MySuite and its licensors. The App is protected by copyright, trademark, and other laws. You may not use our trademarks or trade dress in connection with any product or service without the prior written consent of MySuite.</p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">5</span> User Data</h2>
+      <p>Your use of the App is also governed by our <a href="privacy_policy.html" style="color: var(--accent);">Privacy Policy</a>, which is incorporated into these Terms by reference. By using the App, you consent to the collection and use of information as described in our Privacy Policy.</p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">6</span> Third-Party Services</h2>
+      <p>The App integrates with third-party services including:</p>
+      <ul>
+        <li><strong>Supabase</strong> — for authentication and cloud data storage.</li>
+        <li><strong>Apple HealthKit</strong> — for reading and writing health data (with your explicit permission).</li>
+      </ul>
+      <p>Your use of these integrations is subject to the respective third-party terms of service and privacy policies. We are not responsible for the practices of these third parties.</p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">7</span> Disclaimer of Warranties</h2>
+      <p>The App is provided on an "AS IS" and "AS AVAILABLE" basis without any warranties of any kind, either express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, or non-infringement.</p>
+      <p>We do not warrant that the App will be uninterrupted, error-free, or free of viruses or other harmful components.</p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">8</span> Limitation of Liability</h2>
+      <p>To the fullest extent permitted by applicable law, MySuite shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of data, loss of profits, or personal injury, arising out of or related to your use of the App.</p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">9</span> Changes to Terms</h2>
+      <p>We reserve the right to modify these Terms at any time. We will notify you of material changes by updating the effective date at the top of this page and by posting a notice within the App. Your continued use of the App after changes are posted constitutes your acceptance of the updated Terms.</p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">10</span> Governing Law</h2>
+      <p>These Terms shall be governed by and construed in accordance with the laws of the State of Florida, United States, without regard to its conflict of law provisions.</p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">11</span> Contact Us</h2>
+      <p>If you have any questions about these Terms of Service, please contact us:</p>
+      <div class="contact-card">
+        <p>📧 <a href="mailto:zli40547@gmail.com">zli40547@gmail.com</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 MyHealth. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — MyHealth</title>
+  <meta name="description" content="Privacy Policy for the MyHealth app. Learn how we collect, use, and protect your personal and health data." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3e;
+      --accent: #4f8ef7;
+      --accent-soft: rgba(79, 142, 247, 0.12);
+      --text-primary: #e8eaf0;
+      --text-secondary: #8b90a8;
+      --text-muted: #555872;
+      --green: #34d399;
+      --green-soft: rgba(52, 211, 153, 0.1);
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+    }
+
+    .header-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #4f8ef7, #a78bfa);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .header-inner h1 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .header-inner span {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-left: auto;
+    }
+
+    /* ── Main content ── */
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #e8eaf0, #8b90a8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .effective-date {
+      display: inline-block;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(52, 211, 153, 0.2);
+    }
+
+    .intro {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Sections ── */
+    section {
+      margin-bottom: 48px;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h2 .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      border: 1px solid rgba(79, 142, 247, 0.2);
+    }
+
+    h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 20px 0 10px;
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+    }
+
+    ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    ul li {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.6;
+    }
+
+    strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* ── Highlight box ── */
+    .highlight-box {
+      background: var(--green-soft);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 16px 0;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .highlight-box .icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+    .highlight-box p { color: var(--green); margin: 0; font-size: 0.9rem; font-weight: 500; }
+
+    /* ── Contact card ── */
+    .contact-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-top: 16px;
+    }
+
+    .contact-card p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    .contact-card a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .contact-card a:hover { text-decoration: underline; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    footer p {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin: 0;
+    }
+
+    @media (max-width: 600px) {
+      .page-title { font-size: 1.5rem; }
+      main { padding: 32px 16px 64px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo">🏋️</div>
+      <h1>MyHealth</h1>
+      <span>Privacy Policy</span>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="page-title">Privacy Policy</h1>
+    <div class="effective-date">✦ Effective Date: March 18, 2026</div>
+    <p class="intro">
+      This Privacy Policy describes how MyHealth ("we," "us," or "our") collects, uses, and shares
+      your personal information when you use our mobile application (the "App"). We are committed
+      to protecting your privacy and handling your data with transparency and care.
+    </p>
+
+    <section>
+      <h2><span class="section-num">1</span> Information We Collect</h2>
+
+      <h3>a. Personal Information You Provide</h3>
+      <ul>
+        <li><strong>User Content:</strong> Any data you explicitly enter into the App, such as workout logs, exercises, and body weight entries.</li>
+      </ul>
+
+      <h3>b. Health Data (HealthKit)</h3>
+      <ul>
+        <li>If you grant permission, the App can read and write data from the Apple HealthKit database (e.g., body weight).</li>
+        <li>This data is used to sync your health metrics with the App and provide a unified view of your fitness progress.</li>
+      </ul>
+      <div class="highlight-box">
+        <span class="icon">🛡️</span>
+        <p>We do not use health data for marketing or advertising purposes.</p>
+      </div>
+
+      <h3>c. Automatically Collected Information</h3>
+      <ul>
+        <li><strong>Usage Data:</strong> We may collect information about how you interact with the App (e.g., features used, time spent).</li>
+        <li><strong>Device Information:</strong> We may collect information about your mobile device (e.g., model, operating system version).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="section-num">2</span> How We Use Your Information</h2>
+      <ul>
+        <li>Provide and maintain the App's functionality.</li>
+        <li>Improve and personalize your user experience.</li>
+        <li>Respond to your inquiries or support requests.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="section-num">3</span> Data Sharing and Disclosure</h2>
+      <p>We do not sell your personal information. We may share your information only in the following limited circumstances:</p>
+      <ul>
+        <li><strong>Legal Requirements:</strong> We may disclose your information if required to do so by law or in response to valid requests by public authorities.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="section-num">4</span> Your Rights and Choices</h2>
+      <ul>
+        <li><strong>Data Deletion:</strong> You can delete all your associated data directly within the App settings by selecting "Delete Data".</li>
+        <li><strong>HealthKit Permissions:</strong> You can revoke the App's access to HealthKit at any time through your iOS device's Privacy settings (Settings → Privacy &amp; Security → Health).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="section-num">5</span> Security</h2>
+      <p>We implement reasonable security measures, including encryption of data in transit and at rest, to protect your personal information. However, no method of transmission over the internet is 100% secure.</p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">6</span> Children's Privacy</h2>
+      <p>The App is not intended for children under the age of 13. We do not knowingly collect personal information from children under 13. If you believe we have inadvertently collected such information, please contact us immediately.</p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">7</span> Changes to This Policy</h2>
+      <p>We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new Privacy Policy within the App and updating the effective date above.</p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">8</span> Contact Us</h2>
+      <p>If you have any questions about this Privacy Policy, please contact us:</p>
+      <div class="contact-card">
+        <p>📧 <a href="mailto:zli40547@gmail.com">zli40547@gmail.com</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 MyHealth. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
