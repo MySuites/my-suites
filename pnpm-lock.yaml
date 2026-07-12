@@ -287,6 +287,9 @@ importers:
         specifier: 0.5.1
         version: 0.5.1(@babel/core@7.28.5)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
     devDependencies:
+      '@bacons/apple-targets':
+        specifier: ^4.0.7
+        version: 4.0.7(expo@54.0.30)
       '@testing-library/jest-native':
         specifier: ^5.4.3
         version: 5.4.3(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react-test-renderer@19.1.0(react@19.1.0))(react@19.1.0)
@@ -1303,6 +1306,14 @@ packages:
     resolution: {integrity: sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A==}
     engines: {node: '>=6.9.0'}
 
+  '@bacons/apple-targets@4.0.7':
+    resolution: {integrity: sha512-DwD8gbz2vjbmLatR5qlWjrTocG/Ku4d2Kz/rIF4yzREPZtVBHMepVPCH7gEEgZw4PBTtWQe3XMGrPkomNp7QUg==}
+    peerDependencies:
+      expo: '>=52'
+
+  '@bacons/xcode@1.0.0-alpha.32':
+    resolution: {integrity: sha512-OGpH7+yMbWC2cgYZon5B+VVadH9HsB2V/abtEiplA65XnSuV4GAYAVixOCDc5k182WkfoakfdM0zW6U9cbcsbw==}
+
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
@@ -1489,6 +1500,9 @@ packages:
 
   '@expo/package-manager@1.9.9':
     resolution: {integrity: sha512-Nv5THOwXzPprMJwbnXU01iXSrCp3vJqly9M4EJ2GkKko9Ifer2ucpg7x6OUsE09/lw+npaoUnHMXwkw7gcKxlg==}
+
+  '@expo/plist@0.0.18':
+    resolution: {integrity: sha512-+48gRqUiz65R21CZ/IXa7RNBXgAI/uPSdvJqoN9x1hfL44DNbUoWHgHiEXTx7XelcATpDwNTz6sHLfy0iNqf+w==}
 
   '@expo/plist@0.4.8':
     resolution: {integrity: sha512-pfNtErGGzzRwHP+5+RqswzPDKkZrx+Cli0mzjQaus1ZWFsog5ibL+nVT3NcporW51o8ggnt7x813vtRbPiyOrQ==}
@@ -2169,6 +2183,9 @@ packages:
   '@react-native/normalize-colors@0.74.89':
     resolution: {integrity: sha512-qoMMXddVKVhZ8PA1AbUCk83trpd6N+1nF2A6k1i6LsQObyS92fELuk8kU/lQs6M7BsMHwqyLCpQJ1uFgNvIQXg==}
 
+  '@react-native/normalize-colors@0.79.7':
+    resolution: {integrity: sha512-RrvewhdanEWhlyrHNWGXGZCc6MY0JGpNgRzA8y6OomDz0JmlnlIsbBHbNpPnIrt9Jh2KaV10KTscD1Ry8xU9gQ==}
+
   '@react-native/normalize-colors@0.81.5':
     resolution: {integrity: sha512-0HuJ8YtqlTVRXGZuGeBejLE04wSQsibpTI+RGOyVqxZvgtlLLC/Ssw0UmbHhT4lYMp2fhdtvKZSs5emWB1zR/g==}
 
@@ -2600,6 +2617,11 @@ packages:
 
   '@webassemblyjs/wast-printer@1.14.1':
     resolution: {integrity: sha512-kPSSXE6De1XOR820C90RIo2ogvZG+c3KiHzqUoO/F34Y2shGzesfqv7o57xrxovZJH/MetF5UjroJ/R/3isoiw==}
+
+  '@xmldom/xmldom@0.7.13':
+    resolution: {integrity: sha512-lm2GW5PkosIzccsaZIz7tp8cPADSIlIHWDFTR1N0SzfinhhYgeIQjFMz4rYzanCScr3DqQLeomUDArp6MWKm+g==}
+    engines: {node: '>=10.0.0'}
+    deprecated: this version has critical issues, please update to the latest version
 
   '@xmldom/xmldom@0.8.11':
     resolution: {integrity: sha512-cQzWCtO6C8TQiYl1ruKNn2U6Ao4o4WBBcbL61yJl84x+j5sOWWFU9X7DpND8XZG3daDppSsigMdfAIl2upQBRw==}
@@ -7160,6 +7182,12 @@ packages:
 
   uuid@7.0.3:
     resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+    hasBin: true
+
+  uuid@8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   v8-to-istanbul@9.3.0:
@@ -7352,6 +7380,10 @@ packages:
   xmlbuilder@11.0.1:
     resolution: {integrity: sha512-fDlsI/kFEx7gLvbecc0/ohLG50fugQp8ryHzMTuW9vSa1GJ0XYWKnhsUx7oie3G98+r56aTQIUB4kht42R3JvA==}
     engines: {node: '>=4.0'}
+
+  xmlbuilder@14.0.0:
+    resolution: {integrity: sha512-ts+B2rSe4fIckR6iquDjsKbQFK2NlUk6iG5nf14mDEyldgoc2nEKZ3jZWMPTxGQwVgToSjt6VGIho1H8/fNFTg==}
+    engines: {node: '>=8.0'}
 
   xmlbuilder@15.1.1:
     resolution: {integrity: sha512-yMqGBqtXyeN1e3TGYvgNgDVZ3j84W4cwkOXQswghol6APgZWaff9lnbvN7MHYJOiXsvGPXtjTYJEiC9J2wv9Eg==}
@@ -8606,6 +8638,24 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
+  '@bacons/apple-targets@4.0.7(expo@54.0.30)':
+    dependencies:
+      '@bacons/xcode': 1.0.0-alpha.32
+      '@react-native/normalize-colors': 0.79.7
+      debug: 4.4.3
+      expo: 54.0.30(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(expo-router@6.0.21)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      glob: 10.4.5
+    transitivePeerDependencies:
+      - supports-color
+
+  '@bacons/xcode@1.0.0-alpha.32':
+    dependencies:
+      '@expo/plist': 0.0.18
+      debug: 4.4.3
+      uuid: 8.3.2
+    transitivePeerDependencies:
+      - supports-color
+
   '@bcoe/v8-coverage@0.2.3': {}
 
   '@egjs/hammerjs@2.0.17':
@@ -9153,6 +9203,12 @@ snapshots:
       ora: 3.4.0
       resolve-workspace-root: 2.0.0
 
+  '@expo/plist@0.0.18':
+    dependencies:
+      '@xmldom/xmldom': 0.7.13
+      base64-js: 1.5.1
+      xmlbuilder: 14.0.0
+
   '@expo/plist@0.4.8':
     dependencies:
       '@xmldom/xmldom': 0.8.11
@@ -9275,7 +9331,6 @@ snapshots:
       strip-ansi-cjs: strip-ansi@6.0.1
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
-    optional: true
 
   '@isaacs/fs-minipass@4.0.1':
     dependencies:
@@ -10292,6 +10347,8 @@ snapshots:
 
   '@react-native/normalize-colors@0.74.89': {}
 
+  '@react-native/normalize-colors@0.79.7': {}
+
   '@react-native/normalize-colors@0.81.5': {}
 
   '@react-native/virtualized-lists@0.81.5(@types/react@19.1.17)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)':
@@ -10835,6 +10892,8 @@ snapshots:
       '@xtuc/long': 4.2.2
     optional: true
 
+  '@xmldom/xmldom@0.7.13': {}
+
   '@xmldom/xmldom@0.8.11': {}
 
   '@xtuc/ieee754@1.2.0':
@@ -10943,8 +11002,7 @@ snapshots:
 
   ansi-styles@5.2.0: {}
 
-  ansi-styles@6.2.3:
-    optional: true
+  ansi-styles@6.2.3: {}
 
   any-promise@1.3.0: {}
 
@@ -11901,8 +11959,7 @@ snapshots:
       es-errors: 1.3.0
       gopd: 1.2.0
 
-  eastasianwidth@0.2.0:
-    optional: true
+  eastasianwidth@0.2.0: {}
 
   ee-first@1.1.1: {}
 
@@ -11914,8 +11971,7 @@ snapshots:
 
   emoji-regex@8.0.0: {}
 
-  emoji-regex@9.2.2:
-    optional: true
+  emoji-regex@9.2.2: {}
 
   encodeurl@1.0.2: {}
 
@@ -13090,7 +13146,6 @@ snapshots:
     dependencies:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
-    optional: true
 
   form-data@4.0.5:
     dependencies:
@@ -13200,7 +13255,6 @@ snapshots:
       minipass: 7.1.2
       package-json-from-dist: 1.0.1
       path-scurry: 1.11.1
-    optional: true
 
   glob@13.0.0:
     dependencies:
@@ -13635,7 +13689,6 @@ snapshots:
       '@isaacs/cliui': 8.0.2
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
-    optional: true
 
   jest-changed-files@29.7.0:
     dependencies:
@@ -15575,8 +15628,7 @@ snapshots:
 
   p-try@2.2.0: {}
 
-  package-json-from-dist@1.0.1:
-    optional: true
+  package-json-from-dist@1.0.1: {}
 
   parent-module@1.0.1:
     dependencies:
@@ -15617,7 +15669,6 @@ snapshots:
     dependencies:
       lru-cache: 10.4.3
       minipass: 7.1.2
-    optional: true
 
   path-scurry@2.0.1:
     dependencies:
@@ -16366,8 +16417,7 @@ snapshots:
 
   signal-exit@3.0.7: {}
 
-  signal-exit@4.1.0:
-    optional: true
+  signal-exit@4.1.0: {}
 
   simple-plist@1.3.1:
     dependencies:
@@ -16482,7 +16532,6 @@ snapshots:
       eastasianwidth: 0.2.0
       emoji-regex: 9.2.2
       strip-ansi: 7.1.2
-    optional: true
 
   string.prototype.matchall@4.0.12:
     dependencies:
@@ -16924,6 +16973,8 @@ snapshots:
 
   uuid@7.0.3: {}
 
+  uuid@8.3.2: {}
+
   v8-to-istanbul@9.3.0:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
@@ -17101,7 +17152,6 @@ snapshots:
       ansi-styles: 6.2.3
       string-width: 5.1.2
       strip-ansi: 7.1.2
-    optional: true
 
   wrappy@1.0.2: {}
 
@@ -17137,6 +17187,8 @@ snapshots:
       xmlbuilder: 11.0.1
 
   xmlbuilder@11.0.1: {}
+
+  xmlbuilder@14.0.0: {}
 
   xmlbuilder@15.1.1: {}
 

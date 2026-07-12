@@ -15,8 +15,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as WebBrowser from 'expo-web-browser';
 import { router } from 'expo-router';
 
-const PRIVACY_POLICY_URL = 'https://mysuites.github.io/myhealth-privacy_policy/';
-const TERMS_OF_SERVICE_URL = 'https://mysuites.github.io/myhealth-terms_of_service/';
+const PRIVACY_POLICY_URL = 'https://mysuites.github.io/my-suites/privacy_policy.html';
+const TERMS_OF_SERVICE_URL = 'https://mysuites.github.io/my-suites/tos.html';
 
 export default function SettingsScreen() {
   const theme = useUITheme();
@@ -461,7 +461,7 @@ export default function SettingsScreen() {
           </View>
         </View>
         
-        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.5.22
+        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.5.23
         </Text>
       </ScrollView>
     </View>

@@ -10,6 +10,16 @@ import uuid from 'react-native-uuid';
 import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import { NotificationService } from '../services/NotificationService';
+import { LiveActivityService } from '../services/LiveActivityService';
+
+function getSetProgressLabel(ex?: Exercise): string {
+    if (!ex) return '';
+    const targetSets = typeof ex.sets === 'string' ? parseInt(ex.sets, 10) : (typeof ex.sets === 'number' ? ex.sets : 0);
+    const completed = ex.completedSets || 0;
+    if (!targetSets || targetSets <= 0) return `Set ${completed + 1}`;
+    const current = Math.min(completed + 1, targetSets);
+    return `Set ${current} of ${targetSets}`;
+}
 
 // Define the shape of our context
 interface ActiveWorkoutContextType {
@@ -69,7 +79,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
     // Hooks
     const timerState = useActiveWorkoutTimers();
-    const { isRunning, setRunning, workoutSeconds, setWorkoutSeconds, resetTimers, startRestTimer } = timerState;
+    const { isRunning, setRunning, workoutSeconds, setWorkoutSeconds, restSeconds, resetTimers, startRestTimer } = timerState;
 
 
     const { weight: latestBodyWeight } = useLatestBodyWeight();
@@ -169,6 +179,34 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         }
     }, [exercises, hasActiveSession, hasPromptedCompletion]);
 
+    // Keep the Live Activity's exercise name / set progress in sync with the current exercise
+    const currentExercise = exercises[currentIndex];
+    const currentExerciseName = currentExercise?.name;
+    const currentExerciseCompletedSets = currentExercise?.completedSets || 0;
+    const currentExerciseSets = currentExercise?.sets;
+    useEffect(() => {
+        if (!hasActiveSession || !currentExercise) return;
+        LiveActivityService.update({
+            exerciseName: currentExerciseName,
+            setProgress: getSetProgressLabel(currentExercise),
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hasActiveSession, currentIndex, currentExerciseName, currentExerciseCompletedSets, currentExerciseSets]);
+
+    // Reflect rest-timer start/end on the Live Activity
+    const prevRestSecondsRef = React.useRef(0);
+    useEffect(() => {
+        if (!hasActiveSession) return;
+        const wasResting = prevRestSecondsRef.current > 0;
+        const isResting = restSeconds > 0;
+        if (!wasResting && isResting) {
+            LiveActivityService.update({ isResting: true, restEndsAt: new Date(Date.now() + restSeconds * 1000) });
+        } else if (wasResting && !isResting) {
+            LiveActivityService.update({ isResting: false });
+        }
+        prevRestSecondsRef.current = restSeconds;
+    }, [hasActiveSession, restSeconds]);
+
     // Actions
     const startWorkout = useCallback((exercisesToStart?: Exercise[], name?: string, newRoutineId?: string, newSourceWorkoutId?: string) => {
 		// Allow empty workouts
@@ -192,6 +230,15 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
             setRoutineId(newRoutineId || null);
             setSourceWorkoutId(newSourceWorkoutId || null);
             NotificationService.scheduleWorkoutTimeoutReminder();
+
+            const firstExercise = exercisesToStart[0];
+            LiveActivityService.start({
+                workoutName: name || "Current Workout",
+                exerciseName: firstExercise?.name || '',
+                setProgress: getSetProgressLabel(firstExercise),
+                startedAt: new Date(Date.now() - workoutSeconds * 1000),
+                isPaused: false,
+            });
         } else {
             // We are resuming
             if (name !== undefined) setWorkoutName(name);
@@ -202,15 +249,17 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 		setRunning(true);
         setHasActiveSession(true);
         setIsExpanded(true);
-	}, [setRunning]);
+	}, [setRunning, workoutSeconds]);
 
     const pauseWorkout = useCallback(() => {
 		setRunning(false);
+        LiveActivityService.update({ isPaused: true });
 	}, [setRunning]);
 
     const resumeWorkout = useCallback(() => {
 		setRunning(true);
-	}, [setRunning]);
+        LiveActivityService.update({ isPaused: false, startedAt: new Date(Date.now() - workoutSeconds * 1000) });
+	}, [setRunning, workoutSeconds]);
 
 	const resetWorkout = useCallback(() => {
 		// Keep running (or start if paused) as per user request to "continue counting" after reset
@@ -446,6 +495,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         // Clear persistence
         clearPersistence();
         NotificationService.cancelWorkoutTimeoutReminder();
+        LiveActivityService.end();
     }, [workoutName, exercises, workoutSeconds, saveCompletedWorkout, routineId, sourceWorkoutId, setRunning, resetTimers, clearPersistence, latestBodyWeight, user?.id]);
 
     const handleCancelWorkout = useCallback(() => {
@@ -463,6 +513,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         // Clear persistence
         clearPersistence();
         NotificationService.cancelWorkoutTimeoutReminder();
+        LiveActivityService.end();
     }, [setRunning, resetTimers, clearPersistence]);
 
     const value = React.useMemo(() => ({

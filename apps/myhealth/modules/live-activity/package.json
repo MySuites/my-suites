@@ -1,0 +1,8 @@
+{
+  "name": "live-activity",
+  "version": "1.0.0",
+  "description": "Local Expo Module bridging iOS ActivityKit Live Activities for the workout timer",
+  "main": "index.ts",
+  "license": "UNLICENSED",
+  "private": true
+}
