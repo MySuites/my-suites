@@ -36,9 +36,13 @@ interface ExerciseCardProps {
     activeSetIndex?: number;
     onActiveSetChange?: (index: number) => void;
     showName?: boolean;
+    // When true, mount the active set's input wheels even if this card isn't
+    // the current one. Used to preload adjacent (prev/next) exercises off-screen
+    // so swiping to them shows the real wheel with no placeholder swap.
+    preloadWheels?: boolean;
 }
 
-export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange, showName }: ExerciseCardProps) {
+export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange, showName, preloadWheels }: ExerciseCardProps) {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number, right: number } | null>(null);
@@ -469,7 +473,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                         enableSwipeToDelete={false}
                                         showCheckbox={false}
                                         showSetNumber={false}
-                                        isActiveSet={i === activeSetIndex && (isCurrent ?? false)}
+                                        isActiveSet={i === activeSetIndex && ((isCurrent ?? false) || (preloadWheels ?? false))}
                                         onPressRestTimer={() => setIsPickerVisible(true)}
                                     />
                                 </View>

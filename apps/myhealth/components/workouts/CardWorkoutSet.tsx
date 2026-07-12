@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Pressable, useWindowDimensions, Vibration, useColorScheme, InteractionManager } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Pressable, useWindowDimensions, Vibration, useColorScheme } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { DurationTimerPicker } from './DurationTimerPicker';
 import { HorizontalSelectorWheel } from './HorizontalSelectorWheel';
@@ -54,13 +54,17 @@ export function CardWorkoutSet({
     const [isDurationPickerVisible, setIsDurationPickerVisible] = React.useState(false);
     const [durationAutoStart, setDurationAutoStart] = React.useState(false);
 
-    const [wheelsReady, setWheelsReady] = React.useState(isActiveSet);
+    // Always start false so mounting a card never synchronously builds the
+    // heavy wheel inside the same commit that swaps the current exercise —
+    // that would block the name/progress paint. The wheel is mounted via the
+    // async timeout below (a separate commit, off the swipe's critical path).
+    // Preloaded neighbours flip to true while idle off-screen, so the swipe
+    // target already shows its wheel by the time it becomes current.
+    const [wheelsReady, setWheelsReady] = React.useState(false);
     React.useEffect(() => {
         if (isActiveSet) {
-            const handle = InteractionManager.runAfterInteractions(() => {
-                setWheelsReady(true);
-            });
-            return () => handle.cancel();
+            const handle = setTimeout(() => setWheelsReady(true), 60);
+            return () => clearTimeout(handle);
         } else {
             setWheelsReady(false);
         }
@@ -116,6 +120,38 @@ export function CardWorkoutSet({
     };
 
     const durationVal = getValue('duration');
+
+    // Stable callbacks for the selector wheels. The wheels are React.memo'd;
+    // passing a fresh closure each render would defeat the memo and force the
+    // 201-item wheel to reconcile on every parent re-render (timer ticks,
+    // exercise swipe), which stalls the name/progress paint. Refs hold the
+    // latest values so identity stays stable across renders.
+    const onUpdateSetTargetRef = useRef(onUpdateSetTarget);
+    onUpdateSetTargetRef.current = onUpdateSetTarget;
+    const durationValRef = useRef(durationVal);
+    durationValRef.current = durationVal;
+
+    const handleWeightChange = React.useCallback((val: number) => {
+        onUpdateSetTargetRef.current?.(index, 'weight', val.toString());
+    }, [index]);
+
+    const handleDurationMinChange = React.useCallback((newMin: number) => {
+        const currentSecs = parseInt(durationValRef.current) || 0;
+        const currentSec = currentSecs % 60;
+        const targetTotal = newMin * 60 + currentSec;
+        if (targetTotal !== currentSecs) {
+            onUpdateSetTargetRef.current?.(index, 'duration', targetTotal.toString());
+        }
+    }, [index]);
+
+    const handleDurationSecChange = React.useCallback((newSec: number) => {
+        const currentSecs = parseInt(durationValRef.current) || 0;
+        const currentMin = Math.floor(currentSecs / 60);
+        const targetTotal = currentMin * 60 + newSec;
+        if (targetTotal !== currentSecs) {
+            onUpdateSetTargetRef.current?.(index, 'duration', targetTotal.toString());
+        }
+    }, [index]);
 
     const [selectedPrepSec, setSelectedPrepSec] = React.useState(exercisePrepTime || 0);
 
@@ -276,22 +312,27 @@ export function CardWorkoutSet({
                     {wheelsReady ? (
                         <HorizontalSelectorWheel
                             value={parseFloat(getValue('weight')) || 0}
-                            onValueChange={(val) => onUpdateSetTarget?.(index, 'weight', val.toString())}
+                            onValueChange={handleWeightChange}
                             values={WEIGHT_VALUES}
                             itemWidth={WEIGHT_ITEM_WIDTH}
                             unit="lb"
                         />
                     ) : (
-                        <View 
-                            className="bg-black/5 dark:bg-white/5 rounded-xl justify-center items-center flex-row"
-                            style={{ width: WEIGHT_ITEM_WIDTH, height: 56 }}
-                        >
-                            <Text className="text-4xl font-black text-light dark:text-dark">
-                                {getValue('weight') || '0'}
-                            </Text>
-                            <Text className="text-xs font-black text-light dark:text-dark ml-0.5">
-                                lb
-                            </Text>
+                        <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
+                            {/* Matches the wheel's resting center box so the swap
+                                to the live wheel is seamless (only the faded
+                                neighbour values slide in). */}
+                            <View
+                                className="border-l border-r border-primary/20 bg-primary/5 justify-center items-center flex-row"
+                                style={{ width: WEIGHT_ITEM_WIDTH, height: 56, borderRadius: 12 }}
+                            >
+                                <Text className="text-4xl font-black text-light dark:text-dark">
+                                    {getValue('weight') || '0'}
+                                </Text>
+                                <Text className="text-xs font-black text-light dark:text-dark ml-0.5">
+                                    lb
+                                </Text>
+                            </View>
                         </View>
                     )}
                 </View>
@@ -403,14 +444,7 @@ export function CardWorkoutSet({
 
                                                 <VerticalSelectorWheel
                                                     value={Math.floor((parseInt(durationVal) || 0) / 60)}
-                                                    onValueChange={(newMin) => {
-                                                        const currentSecs = parseInt(durationVal) || 0;
-                                                        const currentSec = currentSecs % 60;
-                                                        const targetTotal = newMin * 60 + currentSec;
-                                                        if (targetTotal !== currentSecs) {
-                                                            onUpdateSetTarget?.(index, 'duration', targetTotal.toString());
-                                                        }
-                                                    }}
+                                                    onValueChange={handleDurationMinChange}
                                                     values={INLINE_MIN_VALUES}
                                                     itemHeight={40}
                                                     width={50}
@@ -424,14 +458,7 @@ export function CardWorkoutSet({
 
                                                 <VerticalSelectorWheel
                                                     value={(parseInt(durationVal) || 0) % 60}
-                                                    onValueChange={(newSec) => {
-                                                        const currentSecs = parseInt(durationVal) || 0;
-                                                        const currentMin = Math.floor(currentSecs / 60);
-                                                        const targetTotal = currentMin * 60 + newSec;
-                                                        if (targetTotal !== currentSecs) {
-                                                            onUpdateSetTarget?.(index, 'duration', targetTotal.toString());
-                                                        }
-                                                    }}
+                                                    onValueChange={handleDurationSecChange}
                                                     values={INLINE_SEC_VALUES}
                                                     itemHeight={40}
                                                     width={50}
@@ -441,12 +468,31 @@ export function CardWorkoutSet({
                                                 <Text className="text-sm font-bold text-light dark:text-dark" style={{ width: 12 }}>s</Text>
                                             </View>
                                         ) : (
-                                            <>
-                                                <Text className="text-light-muted dark:text-dark-muted uppercase tracking-wider text-[11px] font-semibold">Target</Text>
-                                                <Text className={`font-black text-light dark:text-dark text-center mt-1 ${isSmallScreen ? 'text-4xl' : 'text-5xl'}`}>
-                                                    {getValue('duration') !== '' ? formatSeconds(parseInt(getValue('duration')) || 0) : '0s'}
-                                                </Text>
-                                            </>
+                                            /* Static mirror of the live wheel's resting
+                                               state so the swap is seamless — same
+                                               highlight band, columns and labels, with
+                                               the selected min/sec at the wheel's
+                                               selected font size (36). */
+                                            <View style={{ height: 120, flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
+                                                <View
+                                                    className="absolute left-0 right-0 border-t border-b border-primary/20 bg-primary/5"
+                                                    style={{ height: 40, top: 40, borderRadius: 6 }}
+                                                    pointerEvents="none"
+                                                />
+                                                <View style={{ height: 120, width: 50 }} className="items-center justify-center">
+                                                    <Text className="font-black text-light dark:text-dark" style={{ fontSize: 36 }}>
+                                                        {Math.floor((parseInt(durationVal) || 0) / 60)}
+                                                    </Text>
+                                                </View>
+                                                <Text className="text-sm font-bold text-light dark:text-dark mr-0.5" style={{ width: 12 }}>m</Text>
+                                                <Text className="text-light dark:text-dark font-bold px-1 text-3xl opacity-60">:</Text>
+                                                <View style={{ height: 120, width: 50 }} className="items-center justify-center">
+                                                    <Text className="font-black text-light dark:text-dark" style={{ fontSize: 36 }}>
+                                                        {(parseInt(durationVal) || 0) % 60}
+                                                    </Text>
+                                                </View>
+                                                <Text className="text-sm font-bold text-light dark:text-dark" style={{ width: 12 }}>s</Text>
+                                            </View>
                                         )}
                                     </View>
                                 </View>

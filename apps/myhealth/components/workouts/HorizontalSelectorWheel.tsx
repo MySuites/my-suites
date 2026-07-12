@@ -9,7 +9,7 @@ interface HorizontalSelectorWheelProps {
     unit?: string;
 }
 
-export function HorizontalSelectorWheel({
+function HorizontalSelectorWheelBase({
     value,
     onValueChange,
     values,
@@ -69,6 +69,10 @@ export function HorizontalSelectorWheel({
                 horizontal
                 onLayout={() => {
                     const offset = getScrollOffset(value);
+                    // Keep scrollX in sync with the initial scroll position so the
+                    // selected (centered) item interpolates to full opacity/scale
+                    // — otherwise it renders faded because scrollX is still 0.
+                    scrollX.setValue(offset);
                     scrollViewRef.current?.scrollTo({ x: offset, animated: false });
                 }}
                 showsHorizontalScrollIndicator={false}
@@ -141,3 +145,8 @@ export function HorizontalSelectorWheel({
         </View>
     );
 }
+
+// Memoized so it skips re-render when the parent card re-renders for unrelated
+// reasons (timer ticks, exercise swipe). Only re-renders when value/config
+// changes — requires a stable onValueChange from the caller.
+export const HorizontalSelectorWheel = React.memo(HorizontalSelectorWheelBase);

@@ -9,7 +9,7 @@ interface VerticalSelectorWheelProps {
     width: number;
 }
 
-export function VerticalSelectorWheel({
+function VerticalSelectorWheelBase({
     value,
     onValueChange,
     values,
@@ -100,3 +100,7 @@ export function VerticalSelectorWheel({
         </View>
     );
 }
+
+// Memoized so it skips re-render on unrelated parent re-renders (timer ticks,
+// exercise swipe). Requires a stable onValueChange from the caller.
+export const VerticalSelectorWheel = React.memo(VerticalSelectorWheelBase);

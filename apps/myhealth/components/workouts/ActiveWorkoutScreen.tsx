@@ -107,6 +107,10 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
     const [containerHeight, setContainerHeight] = useState(0);
     const [activeSetIndices, setActiveSetIndices] = useState<Record<number, number>>({});
     const lastSelectedIndexRef = useRef(currentIndex);
+    // True only while the user is physically dragging/momentum-scrolling the
+    // pager. Live index detection is gated on this so programmatic scrolls
+    // (auto-advance to next exercise) don't momentarily revert currentIndex.
+    const isUserScrollingRef = useRef(false);
 
     // Scroll to the active exercise index when it changes
     useEffect(() => {
@@ -121,7 +125,26 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
         }
     }, [currentIndex, containerHeight, exercises.length]);
 
+    // Live page detection during scroll — updates currentIndex the moment the
+    // scroll crosses the halfway point, instead of waiting for momentum to
+    // settle (onMomentumScrollEnd), so the name/progress/active styling switch
+    // to the new exercise without the ~1s lag. Setting lastSelectedIndexRef
+    // first prevents the scroll-to-active effect from fighting the user.
+    const handleScrollLive = (e: any) => {
+        if (containerHeight <= 0 || !isUserScrollingRef.current) return;
+        const index = Math.round(e.nativeEvent.contentOffset.y / containerHeight);
+        if (index >= 0 && index < exercises.length && index !== lastSelectedIndexRef.current) {
+            lastSelectedIndexRef.current = index;
+            setCurrentIndex(index);
+        }
+    };
+
+    const handleScrollBeginDrag = () => {
+        isUserScrollingRef.current = true;
+    };
+
     const handleScroll = (e: any) => {
+        isUserScrollingRef.current = false;
         if (containerHeight <= 0) return;
         const yOffset = e.nativeEvent.contentOffset.y;
         const index = Math.round(yOffset / containerHeight);
@@ -145,6 +168,14 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
     const activeSetIndicesRef = useRef(activeSetIndices);
     activeSetIndicesRef.current = activeSetIndices;
 
+    // Drives FlatList row re-render on exercise swipe or set change.
+    // Reference changes only when currentIndex or activeSetIndices change,
+    // so the active-set styling updates immediately instead of lagging.
+    const listExtraData = React.useMemo(
+        () => ({ currentIndex, activeSetIndices }),
+        [currentIndex, activeSetIndices]
+    );
+
     const renderExerciseItem = React.useCallback(({ item: exercise, index }: { item: any; index: number }) => {
         if (containerHeight <= 0) return null;
         return (
@@ -154,9 +185,10 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                     paddingBottom: 24,
                 }}
             >
-                <ExerciseCard 
+                <ExerciseCard
                     exercise={exercise}
                     isCurrent={index === currentIndexRef.current}
+                    preloadWheels={Math.abs(index - currentIndexRef.current) <= 1}
                     horizontalSets={true}
                     showName={false}
                     activeSetIndex={activeSetIndicesRef.current[index] || 0}
@@ -292,10 +324,12 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                                     ref={flatListRef}
                                     data={exercises}
                                     renderItem={renderExerciseItem}
-                                    extraData={activeSetIndices}
+                                    extraData={listExtraData}
                                     keyExtractor={(item, index) => `${item.id}-${index}`}
                                     pagingEnabled={true}
                                     showsVerticalScrollIndicator={false}
+                                    onScrollBeginDrag={handleScrollBeginDrag}
+                                    onScroll={handleScrollLive}
                                     onMomentumScrollEnd={handleScroll}
                                     scrollEventThrottle={16}
                                     onScrollToIndexFailed={handleScrollToIndexFailed}
@@ -303,7 +337,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                                     snapToInterval={containerHeight}
                                     snapToAlignment="start"
                                     initialNumToRender={1}
-                                    windowSize={2}
+                                    windowSize={3}
                                     maxToRenderPerBatch={1}
                                     removeClippedSubviews={true}
                                 />
