@@ -16,6 +16,10 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
+// expo-sqlite's web build imports a .wasm binary directly; without this Metro
+// tries to resolve it as a source module and fails.
+config.resolver.assetExts.push('wasm');
+
 module.exports = withNativeWind(config, {
   input: './global.css',
   inlineRem: 16,
