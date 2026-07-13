@@ -23,6 +23,7 @@
     "@react-navigation/native": "^7.1.8",
     "@supabase/supabase-js": "^2.83.0",
     "expo": "~54.0.30",
+    "expo-application": "~7.0.8",
     "expo-audio": "~1.1.1",
     "expo-blur": "^15.0.8",
     "expo-camera": "~17.0.10",

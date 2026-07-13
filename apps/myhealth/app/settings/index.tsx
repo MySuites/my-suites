@@ -14,6 +14,7 @@ import { storage } from '../../utils/storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as WebBrowser from 'expo-web-browser';
 import { router } from 'expo-router';
+import * as Application from 'expo-application';
 
 const PRIVACY_POLICY_URL = 'https://mysuites.github.io/my-suites/privacy_policy.html';
 const TERMS_OF_SERVICE_URL = 'https://mysuites.github.io/my-suites/tos.html';
@@ -461,7 +462,9 @@ export default function SettingsScreen() {
           </View>
         </View>
         
-        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.6.0
+        <Text className="text-center text-xs text-gray-500 mt-6">
+          Version {Application.nativeApplicationVersion ?? '—'}
+          {Application.nativeBuildVersion ? ` (${Application.nativeBuildVersion})` : ''}
         </Text>
       </ScrollView>
     </View>
