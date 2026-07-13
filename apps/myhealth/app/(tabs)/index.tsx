@@ -16,8 +16,11 @@ import { VolumeTrendCard } from '../../components/workouts/VolumeTrendCard';
 import { TotalWorkoutsCard } from '../../components/workouts/TotalWorkoutsCard';
 import { MuscleHeatmap } from '../../components/dashboard/MuscleHeatmap';
 import { WeeklyCompletionRing, getCurrentWeekRange } from '../../components/dashboard/WeeklyCompletionRing';
+import { StrengthRankCard } from '../../components/dashboard/StrengthRankCard';
+import { useStrengthRanks } from '../../hooks/workouts/useStrengthRanks';
 import { storage } from '../../utils/storage';
 import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
+import { RANKING_SEX_STORAGE_KEY, DEFAULT_RANKING_SEX, StrengthSex } from '../../utils/strengthStandards';
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -386,6 +389,18 @@ export default function HomeScreen() {
     }).length;
   }, [workoutHistory]);
 
+  const [rankingSex, setRankingSex] = useState<StrengthSex>(DEFAULT_RANKING_SEX);
+  useEffect(() => {
+    storage.getItem<StrengthSex>(RANKING_SEX_STORAGE_KEY).then((sex) => {
+      if (sex === 'male' || sex === 'female') setRankingSex(sex);
+    });
+  }, []);
+  const handleChangeRankingSex = async (sex: StrengthSex) => {
+    setRankingSex(sex);
+    await storage.setItem(RANKING_SEX_STORAGE_KEY, sex);
+  };
+  const { bests: strengthBests, isLoading: strengthLoading } = useStrengthRanks(user);
+
   const handleSaveWeight = async (weight: number, date: Date) => {
     try {
         await BodyWeightService.saveWeight(user?.id || null, weight, date);
@@ -418,6 +433,15 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 140 }}>
         <View className="mb-6">
           <WeeklyCompletionRing completed={weeklyCompletedCount} goal={weeklyGoal} />
+        </View>
+        <View className="mb-6">
+          <StrengthRankCard
+            bests={strengthBests}
+            bodyweight={latestWeight}
+            sex={rankingSex}
+            onChangeSex={handleChangeRankingSex}
+            isLoading={strengthLoading}
+          />
         </View>
         <View className="flex-row flex-wrap">
           <View className="w-1/2 pr-2 mb-6">

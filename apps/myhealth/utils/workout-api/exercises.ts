@@ -5,6 +5,7 @@ import ExerciseDefaultData, {
 } from "../../assets/data/default-exercises";
 import { MUSCLE_GROUPS } from "../../assets/data/muscle-groups";
 import { DataRepository, inferAngle, inferAttachment } from "../../providers/DataRepository";
+import { estimateOneRepMax } from "../oneRepMax";
 
 export async function fetchExercises(user: any) {
     let data;
@@ -171,7 +172,7 @@ export async function fetchMuscleGroups() {
 export async function fetchExerciseStats(
     user: any,
     exerciseId: string,
-    metric: "weight" | "reps" | "duration" | "distance" | "volume" | "max_volume" = "weight",
+    metric: "weight" | "reps" | "duration" | "distance" | "volume" | "max_volume" | "estimated_1rm" = "weight",
 ) {
     // Local-First: Calculate from local history for ALL users (guest and auth).
     try {
@@ -208,6 +209,8 @@ export async function fetchExerciseStats(
                         else if (metric === "distance") rawVal = log.distance;
                         else if (metric === "volume" || metric === "max_volume") {
                             rawVal = (parseFloat(log.weight) || 0) * (parseInt(log.reps) || 0);
+                        } else if (metric === "estimated_1rm") {
+                            rawVal = estimateOneRepMax(parseFloat(log.weight) || 0, parseInt(log.reps) || 0);
                         }
 
                         debugLogStr += `(${rawVal})`;
@@ -249,9 +252,11 @@ export async function fetchExerciseStats(
                 month: "short",
                 day: "numeric",
             }),
-            dataPointText: metric === "volume" 
-                ? Math.round(item.total).toString() 
-                : (metric === "max_volume" ? Math.round(item.max).toString() : item.dataPointText),
+            dataPointText: metric === "volume"
+                ? Math.round(item.total).toString()
+                : (metric === "max_volume" || metric === "estimated_1rm")
+                    ? Math.round(item.max).toString()
+                    : item.dataPointText,
         }));
 
         return { data: chartData, error: null, debugLogStr };

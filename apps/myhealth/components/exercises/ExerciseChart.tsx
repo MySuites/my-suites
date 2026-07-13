@@ -5,9 +5,9 @@ import { LineChart } from 'react-native-gifted-charts';
 interface ExerciseChartProps {
     data: any[];
     loading: boolean;
-    selectedMetric: 'weight' | 'reps' | 'duration' | 'distance' | 'volume' | 'max_volume';
-    onSelectMetric: (metric: 'weight' | 'reps' | 'duration' | 'distance' | 'volume' | 'max_volume') => void;
-    availableMetrics: ('weight' | 'reps' | 'duration' | 'distance' | 'volume' | 'max_volume')[];
+    selectedMetric: 'weight' | 'reps' | 'duration' | 'distance' | 'volume' | 'max_volume' | 'estimated_1rm';
+    onSelectMetric: (metric: 'weight' | 'reps' | 'duration' | 'distance' | 'volume' | 'max_volume' | 'estimated_1rm') => void;
+    availableMetrics: ('weight' | 'reps' | 'duration' | 'distance' | 'volume' | 'max_volume' | 'estimated_1rm')[];
     themeColors: any;
     cardBackground: string;
     toggleBackground: string;
@@ -69,7 +69,7 @@ export const ExerciseChart = ({
                                     color: selectedMetric === m ? activeToggleText : themeColors.text,
                                     opacity: selectedMetric === m ? 1 : 0.6
                                 }}>
-                                    {m === 'max_volume' ? 'Max Set Vol' : m === 'volume' ? 'Total Vol' : m}
+                                    {m === 'max_volume' ? 'Max Set Vol' : m === 'volume' ? 'Total Vol' : m === 'estimated_1rm' ? 'Est. 1RM' : m}
                                 </Text>
                             </Pressable>
                         ))}
