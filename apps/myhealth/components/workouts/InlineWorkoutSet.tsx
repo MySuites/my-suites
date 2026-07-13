@@ -59,7 +59,12 @@ export function InlineWorkoutSet({
             val = exercise.setTargets?.[index]?.reps;
         }
 
-        if (isActiveWorkout && (val === undefined || val === null || val === '')) {
+        // Only fall back to the previous log / exercise default when the field
+        // has genuinely never been touched (val === undefined). An explicitly
+        // cleared field (val === '') must stay empty, otherwise the input
+        // snaps back to a non-empty value the instant the user backspaces it,
+        // making it impossible to clear the field or type a fresh "0".
+        if (isActiveWorkout && (val === undefined || val === null)) {
             if (field === 'reps' || field === 'reps_left' || field === 'reps_right' || field === 'duration' || field === 'distance') {
                 const prev = exercise.previousLog?.[index];
                 if (prev) {
