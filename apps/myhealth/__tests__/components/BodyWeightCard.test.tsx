@@ -103,19 +103,31 @@ describe('BodyWeightCard Component (Widget & Modal)', () => {
     fireEvent.press(getByText('M'));
     expect(onRangeChangeMock).toHaveBeenCalledWith('Month');
 
-    // Tap the plus button in the modal to log weight
+    // Tap the plus button in the modal to log weight — this should also
+    // close the chart modal itself, since having two <Modal>s visible at
+    // once is unreliable in RN and previously left the screen touch-frozen
+    // after closing the top one.
     fireEvent.press(getByTestId('modal-log-weight-btn'));
     expect(onLogWeightMock).toHaveBeenCalled();
+    expect(queryByText('Body Weight Trends')).toBeNull();
+  });
 
-    // Tap on close button to dismiss the modal
-    const closeBtn = queryByTestId('close-modal-btn');
-    expect(closeBtn).toBeTruthy();
-    
-    if (closeBtn) {
-        fireEvent.press(closeBtn);
-    }
+  it('closes the chart modal via its own close button', () => {
+    const { getByTestId, getByText, queryByText } = render(
+      <BodyWeightCard
+        weight={173.0}
+        history={mockHistory}
+        onLogWeight={jest.fn()}
+        selectedRange="Week"
+        onRangeChange={jest.fn()}
+        rangeAverage={173.0}
+      />
+    );
 
-    // Modal should be closed
+    fireEvent.press(getByTestId('bodyweight-widget-btn'));
+    expect(getByText('Body Weight Trends')).toBeTruthy();
+
+    fireEvent.press(getByTestId('close-modal-btn'));
     expect(queryByText('Body Weight Trends')).toBeNull();
   });
 

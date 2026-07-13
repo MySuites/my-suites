@@ -88,16 +88,20 @@ export function BodyWeightCard({
 
   return (
     <View className="mb-4">
-      {/* Widget Layout on Home Screen */}
-      <RaisedCard
-        testID="bodyweight-widget-btn"
-        onPress={() => setModalVisible(true)}
-        className="p-4"
-        style={{ borderRadius: 16 }}
-      >
+      {/* Widget Layout on Home Screen. RaisedCard is the plain visual
+          background here (no onPress) — the tappable regions below are
+          separate flex-sibling TouchableOpacitys, not nested inside each
+          other or absolutely positioned, so there's no touch-dispatch
+          ambiguity between the "open chart" area and the "+" button. */}
+      <RaisedCard className="p-4">
         <View className="flex-col gap-2">
-          {/* Top Row: Icon, range, chevron */}
-          <View className="flex-row justify-between items-center">
+          {/* Top Row: opens the chart/trends modal */}
+          <TouchableOpacity
+            testID="bodyweight-widget-btn"
+            onPress={() => setModalVisible(true)}
+            activeOpacity={0.7}
+            className="flex-row justify-between items-center"
+          >
             <View
               className="w-8 h-8 items-center justify-center rounded-xl"
               style={{ backgroundColor: (primaryColor || theme.primary) + '15' }} // ~8% opacity tint
@@ -111,12 +115,18 @@ export function BodyWeightCard({
               </Text>
               <IconSymbol name="chevron.right" size={12} color={textColor || theme.textMuted} />
             </View>
-          </View>
+          </TouchableOpacity>
 
-          {/* Bottom Row: Stats on left, Quick Log Action on right */}
+          {/* Bottom Row: info (opens modal) and "+" (logs weight) are flex
+              siblings — neither is nested inside the other, so there's no
+              touch-dispatch ambiguity between the two tap targets. */}
           <View className="flex-row justify-between items-end w-full">
-            {/* Main Info */}
-            <View className="flex-1 mr-2">
+            <TouchableOpacity
+              testID="bodyweight-widget-info-btn"
+              onPress={() => setModalVisible(true)}
+              activeOpacity={0.7}
+              className="flex-1 mr-2"
+            >
               <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5" numberOfLines={1}>
                 Body Weight
               </Text>
@@ -126,14 +136,11 @@ export function BodyWeightCard({
                 </Text>
                 <Text className="text-[10px] text-light-muted dark:text-dark-muted ml-0.5">lbs</Text>
               </View>
-            </View>
+            </TouchableOpacity>
 
             <TouchableOpacity
               testID="quick-log-weight-btn"
-              onPress={(e) => {
-                e?.stopPropagation?.();
-                onLogWeight();
-              }}
+              onPress={onLogWeight}
               activeOpacity={0.7}
               className="w-8 h-8 items-center justify-center bg-black/5 dark:bg-white/5 rounded-lg active:scale-95"
             >
@@ -164,9 +171,16 @@ export function BodyWeightCard({
               </View>
               
               <View className="flex-row items-center gap-2">
-                <RaisedCard 
+                <RaisedCard
                   testID="modal-log-weight-btn"
-                  onPress={onLogWeight}
+                  onPress={() => {
+                    // Close this modal before opening the weight-entry one.
+                    // Two RN <Modal>s visible at once is unreliable (iOS in
+                    // particular) — closing the top one afterward can leave
+                    // the screen behind it touch-frozen.
+                    setModalVisible(false);
+                    onLogWeight();
+                  }}
                   style={{ borderRadius: 9999 }}
                   className="w-10 h-10 p-0 items-center justify-center active:h-9"
                 >
