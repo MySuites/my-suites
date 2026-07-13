@@ -15,6 +15,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as WebBrowser from 'expo-web-browser';
 import { router } from 'expo-router';
 import * as Application from 'expo-application';
+import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
 
 const PRIVACY_POLICY_URL = 'https://mysuites.github.io/my-suites/privacy_policy.html';
 const TERMS_OF_SERVICE_URL = 'https://mysuites.github.io/my-suites/tos.html';
@@ -65,6 +66,7 @@ export default function SettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [longWorkoutReminderEnabled, setLongWorkoutReminderEnabled] = useState(false);
   const [longWorkoutDuration, setLongWorkoutDuration] = useState(90);
+  const [weeklyGoal, setWeeklyGoal] = useState(DEFAULT_WEEKLY_GOAL);
   const [reminderHour, setReminderHour] = useState(9);
   const [reminderMinute, setReminderMinute] = useState(0);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -146,6 +148,11 @@ export default function SettingsScreen() {
     await storage.setItem('long_workout_duration', minutes);
   };
 
+  const handleUpdateWeeklyGoal = async (goal: number) => {
+    setWeeklyGoal(goal);
+    await storage.setItem(WEEKLY_GOAL_STORAGE_KEY, goal);
+  };
+
   const handleTimeChange = async (event: any, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
       setShowTimePicker(false);
@@ -186,6 +193,9 @@ export default function SettingsScreen() {
       setLongWorkoutReminderEnabled(!!longWorkoutEnabled);
       const duration = await storage.getItem<number>('long_workout_duration');
       if (duration !== null) setLongWorkoutDuration(duration);
+
+      const goal = await storage.getItem<number>(WEEKLY_GOAL_STORAGE_KEY);
+      if (goal !== null) setWeeklyGoal(goal);
     }
     loadPrefs();
   }, []);
@@ -380,14 +390,36 @@ export default function SettingsScreen() {
               value={isRpeEnabled}
               onValueChange={async (value) => {
                 await setIsRpeEnabled(value);
-                showToast({ 
-                  message: value ? "RPE tracking enabled" : "RPE tracking disabled", 
-                  type: 'success' 
+                showToast({
+                  message: value ? "RPE tracking enabled" : "RPE tracking disabled",
+                  type: 'success'
                 });
               }}
               trackColor={{ false: theme.card, true: theme.primary }}
               thumbColor={isRpeEnabled ? "#ffffff" : "#f4f3f4"}
             />
+          </View>
+          <View className="flex-row justify-between items-center py-3">
+            <Text className="text-base text-light dark:text-dark font-medium">Weekly Workout Goal</Text>
+            <View className="flex-row items-center gap-2">
+              <TouchableOpacity
+                testID="weekly-goal-decrement"
+                onPress={() => handleUpdateWeeklyGoal(Math.max(1, weeklyGoal - 1))}
+                className="px-3 py-1.5 bg-light dark:bg-dark rounded-lg"
+              >
+                <Text className="text-base font-semibold" style={{ color: theme.primary }}>−</Text>
+              </TouchableOpacity>
+              <Text className="text-base text-light dark:text-dark font-medium w-12 text-center">
+                {weeklyGoal}
+              </Text>
+              <TouchableOpacity
+                testID="weekly-goal-increment"
+                onPress={() => handleUpdateWeeklyGoal(Math.min(7, weeklyGoal + 1))}
+                className="px-3 py-1.5 bg-light dark:bg-dark rounded-lg"
+              >
+                <Text className="text-base font-semibold" style={{ color: theme.primary }}>+</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 

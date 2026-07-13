@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { View, ScrollView, InteractionManager } from "react-native";
+import { useFocusEffect } from 'expo-router';
 import { useAuth } from '@mysuite/auth';
 import { RaisedCard, useUITheme, IconSymbol, useToast } from '@mysuite/ui';
 
@@ -14,6 +15,9 @@ import { useWorkoutManager, WorkoutLog, Exercise, SetLog } from '../../providers
 import { VolumeTrendCard } from '../../components/workouts/VolumeTrendCard';
 import { TotalWorkoutsCard } from '../../components/workouts/TotalWorkoutsCard';
 import { MuscleHeatmap } from '../../components/dashboard/MuscleHeatmap';
+import { WeeklyCompletionRing, getCurrentWeekRange } from '../../components/dashboard/WeeklyCompletionRing';
+import { storage } from '../../utils/storage';
+import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -357,6 +361,31 @@ export default function HomeScreen() {
         return () => task.cancel();
      }, [user, fetchLatestWeight, fetchAllWeightHistory]);
 
+  const [weeklyGoal, setWeeklyGoal] = useState(DEFAULT_WEEKLY_GOAL);
+  useEffect(() => {
+    storage.getItem<number>(WEEKLY_GOAL_STORAGE_KEY).then((goal) => {
+      if (goal !== null) setWeeklyGoal(goal);
+    });
+  }, []);
+  // Re-check the goal whenever Home regains focus, so a change made in
+  // Settings shows up immediately without needing to reload the whole app.
+  useFocusEffect(
+    useCallback(() => {
+      storage.getItem<number>(WEEKLY_GOAL_STORAGE_KEY).then((goal) => {
+        if (goal !== null) setWeeklyGoal(goal);
+      });
+    }, [])
+  );
+
+  const weeklyCompletedCount = useMemo(() => {
+    const { start, end } = getCurrentWeekRange();
+    return (workoutHistory || []).filter((log: WorkoutLog) => {
+      if (!log.workoutDate) return false;
+      const d = new Date(log.workoutDate);
+      return d >= start && d < end;
+    }).length;
+  }, [workoutHistory]);
+
   const handleSaveWeight = async (weight: number, date: Date) => {
     try {
         await BodyWeightService.saveWeight(user?.id || null, weight, date);
@@ -387,6 +416,9 @@ export default function HomeScreen() {
             </RaisedCard>} 
       />
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 140 }}>
+        <View className="mb-6">
+          <WeeklyCompletionRing completed={weeklyCompletedCount} goal={weeklyGoal} />
+        </View>
         <View className="flex-row flex-wrap">
           <View className="w-1/2 pr-2 mb-6">
              <BodyWeightCard 
