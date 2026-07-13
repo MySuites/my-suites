@@ -7,7 +7,7 @@ export function SettingsButton() {
     const theme = useUITheme();
 
     return (
-        <RaisedCard 
+        <RaisedCard
             onPress={() => router.push('/settings')}
             style={{ borderRadius: 9999 }}
             className="w-12 p-0 my-0 rounded-full items-center justify-center"

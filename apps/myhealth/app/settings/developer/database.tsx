@@ -128,7 +128,7 @@ export default function DeveloperDatabaseScreen() {
     };
 
     const renderJsonValue = (val: any, keyName?: string) => {
-        if (val === null) return <Text className="text-gray-400">NULL</Text>;
+        if (val === null) return <Text className="text-gray-400 dark:text-gray-500">NULL</Text>;
 
         // Helper to check if a string looks like an image path
         const isImagePath = (str: string) => {
@@ -179,8 +179,8 @@ export default function DeveloperDatabaseScreen() {
             }
         }
 
-        if (typeof val === 'object') return <Text className="text-blue-500 font-mono text-xs">{JSON.stringify(val)}</Text>;
-        if (typeof val === 'boolean') return <Text className="text-purple-500 font-bold">{val ? "TRUE" : "FALSE"}</Text>;
+        if (typeof val === 'object') return <Text className="text-blue-500 dark:text-blue-400 font-mono text-xs">{JSON.stringify(val)}</Text>;
+        if (typeof val === 'boolean') return <Text className="text-purple-500 dark:text-purple-400 font-bold">{val ? "TRUE" : "FALSE"}</Text>;
         if (typeof val === 'number') return <Text className="text-green-600 dark:text-green-400 font-mono">{val}</Text>;
         return <Text className="text-light dark:text-dark font-medium">{String(val)}</Text>;
     };
@@ -335,7 +335,7 @@ export default function DeveloperDatabaseScreen() {
                                         <Text className="text-xs font-bold text-primary mb-2">Row #{idx + 1}</Text>
                                         {queryResult.columns.map(col => (
                                             <View key={col} className="flex-row py-1 border-b border-gray-100 dark:border-gray-900 justify-between">
-                                                <Text className="text-xs text-gray-500 font-mono font-semibold" style={{ width: '40%' }}>{col}</Text>
+                                                <Text className="text-xs text-gray-500 dark:text-gray-400 font-mono font-semibold" style={{ width: '40%' }}>{col}</Text>
                                                 <View style={{ width: '60%', alignItems: 'flex-end' }}>
                                                     {renderJsonValue(row[col], col)}
                                                 </View>
@@ -393,7 +393,7 @@ export default function DeveloperDatabaseScreen() {
                                                         {rowLabel}
                                                     </Text>
                                                     {!isExpanded && row.created_at && (
-                                                        <Text className="text-[10px] text-gray-400 mt-0.5">
+                                                        <Text className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
                                                             Created: {row.created_at}
                                                         </Text>
                                                     )}
@@ -409,7 +409,7 @@ export default function DeveloperDatabaseScreen() {
                                                 <View className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-900">
                                                     {columns.map(col => (
                                                         <View key={col} className="py-2 border-b border-gray-50 dark:border-gray-900">
-                                                            <Text className="text-[10px] text-gray-400 font-mono font-bold uppercase mb-0.5">
+                                                            <Text className="text-[10px] text-gray-400 dark:text-gray-500 font-mono font-bold uppercase mb-0.5">
                                                                 {col}
                                                             </Text>
                                                             <View className="pl-1">

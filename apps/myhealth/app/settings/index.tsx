@@ -234,12 +234,12 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 140 }}>
         
         <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Appearance</Text>
+          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Appearance</Text>
           <ThemeToggle preference={preference} setPreference={setPreference} />
         </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Photos</Text>
+          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Photos</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Auto-Save Progress Photos to Library</Text>
             <Switch
@@ -259,7 +259,7 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Integrations</Text>
+          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Integrations</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Apple Health</Text>
             <Switch
@@ -280,7 +280,7 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Notifications</Text>
+          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Notifications</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Push Notifications</Text>
             <Switch
@@ -373,7 +373,7 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Workouts</Text>
+          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Workouts</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark font-medium">Enable RPE Tracking</Text>
             <Switch
@@ -392,7 +392,7 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Legal</Text>
+          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Legal</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Privacy Policy</Text>
             <RaisedCard 
@@ -416,7 +416,7 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Developer</Text>
+          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Developer</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Developer Mode</Text>
             <Switch
@@ -448,7 +448,7 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Data</Text>
+          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Data</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-danger">Delete Data</Text>
             <RaisedCard
@@ -462,7 +462,7 @@ export default function SettingsScreen() {
           </View>
         </View>
         
-        <Text className="text-center text-xs text-gray-500 mt-6">
+        <Text className="text-center text-xs text-gray-500 dark:text-gray-400 mt-6">
           Version {Application.nativeApplicationVersion ?? '—'}
           {Application.nativeBuildVersion ? ` (${Application.nativeBuildVersion})` : ''}
         </Text>

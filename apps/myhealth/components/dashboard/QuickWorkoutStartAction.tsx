@@ -52,7 +52,7 @@ export function QuickWorkoutStartAction() {
             <View className="px-4 mt-4">
                 <RaisedCard className="p-4">
                     <Text className="text-lg font-bold text-light dark:text-dark mb-2">No Active Routine</Text>
-                    <Text className="text-gray-500 mb-4">Set a routine to get quick access to your daily workouts.</Text>
+                    <Text className="text-gray-500 dark:text-gray-400 mb-4">Set a routine to get quick access to your daily workouts.</Text>
                     <RaisedCard 
                         onPress={() => router.push('/routines' as any)}
                         className="items-center justify-center"
@@ -71,10 +71,10 @@ export function QuickWorkoutStartAction() {
                     <View className="flex-row items-center justify-between">
                         <View>
                             <Text className="text-lg font-bold text-light dark:text-dark">Daily Goal Completed</Text>
-                            <Text className="text-gray-500">Great job!</Text>
+                            <Text className="text-gray-500 dark:text-gray-400">Great job!</Text>
                         </View>
-                        <View className="bg-green-500/20 px-3 py-1 rounded-full">
-                            <Text className="text-green-600 font-bold">Done</Text>
+                        <View className="bg-green-500/20 dark:bg-green-500/30 px-3 py-1 rounded-full">
+                            <Text className="text-green-600 dark:text-green-400 font-bold">Done</Text>
                         </View>
                     </View>
                 </RaisedCard>
@@ -89,10 +89,10 @@ export function QuickWorkoutStartAction() {
                     <View className="flex-row items-center justify-between">
                         <View>
                             <Text className="text-lg font-bold text-light dark:text-dark">Rest Day</Text>
-                            <Text className="text-gray-500">Take it easy today.</Text>
+                            <Text className="text-gray-500 dark:text-gray-400">Take it easy today.</Text>
                         </View>
-                        <View className="bg-blue-500/20 px-3 py-1 rounded-full">
-                            <Text className="text-blue-600 font-bold">Zzz</Text>
+                        <View className="bg-blue-500/20 dark:bg-blue-500/30 px-3 py-1 rounded-full">
+                            <Text className="text-blue-600 dark:text-blue-400 font-bold">Zzz</Text>
                         </View>
                     </View>
                 </RaisedCard>

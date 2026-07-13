@@ -16,10 +16,20 @@ interface CardProps extends ViewProps {
 export function RaisedCard({ children, style, className, onPress, onLongPress, delayLongPress, activeOpacity = 0.9, ...props }: CardProps) {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const bottomBorderClass = onPress 
-    ? "border-b-[4px] border-b-black/15 dark:border-b-black/50 active:border-b-[0px] active:mt-1" 
-    : "border-b-[3px] border-b-black/15 dark:border-b-white/5";
   const hasBg = className && (className.includes('bg-') && !className.includes('bg-opacity'));
+  // Cards with their own solid background color (e.g. bg-primary buttons) need
+  // a semi-transparent BLACK bottom border — black darkens any color underneath
+  // it, so the "raised button" shadow stays visible regardless of the card's
+  // color. A light white/5 tint (right for default neutral bg-lighter cards,
+  // matching static cards like Recent Activity) is nearly invisible on a solid
+  // color and makes the button look flat.
+  const bottomBorderClass = onPress
+    ? (hasBg
+        ? "border-b-[4px] border-b-black/15 dark:border-b-black/25 active:border-b-[0px] active:mt-1"
+        : "border-b-[4px] border-b-black/15 dark:border-b-white/5 active:border-b-[0px] active:mt-1")
+    : (hasBg
+        ? "border-b-[3px] border-b-black/15 dark:border-b-black/25"
+        : "border-b-[3px] border-b-black/15 dark:border-b-white/5");
   const defaultBg = hasBg ? '' : 'bg-lighter dark:bg-dark-lighter';
   
   const baseClassName = `${defaultBg} rounded-xl border-x border-t border-black/5 dark:border-white/5 ${bottomBorderClass} ${className || ''}`;

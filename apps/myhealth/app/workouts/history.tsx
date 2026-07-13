@@ -17,7 +17,7 @@ const WorkoutHistoryItem = ({ item, onDelete, onPress }: { item: any, onDelete: 
         >
             <View className="flex-row justify-between mb-2">
             <Text className="text-lg font-semibold text-light dark:text-dark">{item.workoutName || 'Untitled Workout'}</Text>
-            <Text className="text-sm text-gray-500">
+            <Text className="text-sm text-gray-500 dark:text-gray-400">
                 {new Date(item.workoutDate).toLocaleDateString()}
             </Text>
             </View>

@@ -19,10 +19,10 @@ export function MuscleHeatmap({ volumes, isLoading }: MuscleHeatmapProps) {
     const theme = useUITheme();
     const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
 
-    const isDark = theme.bgDark === '#000000';
+    const isDark = !!theme.dark;
 
-    const chartBg = '#15171e';
-    const bodyColor = '#000000';
+    const chartBg = isDark ? (theme.bgDark || theme.bg) : theme.bgLight;
+    const bodyColor = theme.textMuted;
     const inactiveFill = isDark ? '#2e303e' : '#b0bec5';
 
     const getMuscleColor = (name: string): string => {
@@ -59,7 +59,7 @@ export function MuscleHeatmap({ volumes, isLoading }: MuscleHeatmapProps) {
 
             <View style={[styles.chartWrapper, { backgroundColor: chartBg }]}>
                 {isLoading ? (
-                    <Text style={{ color: '#6a6a88' }}>Loading…</Text>
+                    <Text style={{ color: theme.textMuted }}>Loading…</Text>
                 ) : (
                     <>
                         <Svg width="100%" height="100%" viewBox="0 0 70 95">
@@ -108,8 +108,8 @@ export function MuscleHeatmap({ volumes, isLoading }: MuscleHeatmapProps) {
 
                         {/* Labels */}
                         <View style={styles.labelsRow}>
-                            <Text style={styles.labelText}>FRONT</Text>
-                            <Text style={styles.labelText}>BACK</Text>
+                            <Text style={[styles.labelText, { color: theme.textMuted }]}>FRONT</Text>
+                            <Text style={[styles.labelText, { color: theme.textMuted }]}>BACK</Text>
                         </View>
                     </>
                 )}
@@ -133,7 +133,7 @@ export function MuscleHeatmap({ volumes, isLoading }: MuscleHeatmapProps) {
                         )}
                     </View>
                 ) : (
-                    <Text style={{ fontSize: 12, color: theme.textMuted, fontStyle: 'italic' }}>
+                    <Text style={{ fontSize: 12, color: theme.textMuted, fontStyle: 'italic'}}>
                         Tap any muscle to see your training log
                     </Text>
                 )}
@@ -161,7 +161,6 @@ const styles = StyleSheet.create({
         bottom: 6,
     },
     labelText: {
-        color: '#6666aa',
         fontSize: 10,
         fontWeight: '600',
         letterSpacing: 2,

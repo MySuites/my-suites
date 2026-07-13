@@ -115,7 +115,7 @@ export default function RoutinesScreen() {
                         }} 
                         className={`px-4 h-10 active:h-9 my-0 items-center justify-center ${isActive ? 'bg-red-500/10 border-red-500/20' : ''}`}
                     >
-                        <Text className={`${isActive ? 'text-red-500' : 'text-primary dark:text-primary-dark'} text-sm font-semibold`}>
+                        <Text className={`${isActive ? 'text-red-500 dark:text-red-400' : 'text-primary dark:text-primary-dark'} text-sm font-semibold`}>
                             {isActive ? 'Stop Routine' : 'Set Active'}
                         </Text>
                     </RaisedCard>

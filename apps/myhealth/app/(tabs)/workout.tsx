@@ -183,7 +183,7 @@ function Workout() {
                 title="Workout" 
                 leftAction={<SettingsButton />} 
                 rightAction={
-                    <RaisedCard 
+                    <RaisedCard
                         onPress={() => setMenuVisible(!menuVisible)}
                         style={{ borderRadius: 9999 }}
                         className="w-12 p-0 items-center justify-center"

@@ -244,22 +244,22 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                     style={{
                                         flexDirection: 'row',
                                         alignItems: 'center',
-                                        backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                                        backgroundColor: theme.bgLight,
                                         paddingHorizontal: 10,
                                         paddingVertical: 5,
                                         borderRadius: 6,
                                     }}
                                 >
-                                    <IconSymbol name="gearshape.fill" size={13} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
+                                    <IconSymbol name="gearshape.fill" size={13} color={theme.textMuted} />
                                     <Text style={{
                                         marginLeft: 5,
                                         fontSize: 12,
                                         fontWeight: '600',
-                                        color: theme.bgDark === '#000000' ? '#ccc' : '#444'
+                                        color: theme.textMuted
                                     }}>
                                         {attachment}
                                     </Text>
-                                    <IconSymbol name="chevron.down" size={10} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 4 }} />
+                                    <IconSymbol name="chevron.down" size={10} color={theme.textMuted} style={{ marginLeft: 4 }} />
                                 </TouchableOpacity>
                             )}
 
@@ -272,22 +272,22 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                     style={{
                                         flexDirection: 'row',
                                         alignItems: 'center',
-                                        backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                                        backgroundColor: theme.bgLight,
                                         paddingHorizontal: 10,
                                         paddingVertical: 5,
                                         borderRadius: 6,
                                     }}
                                 >
-                                    <IconSymbol name="dumbbell.fill" size={13} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
+                                    <IconSymbol name="dumbbell.fill" size={13} color={theme.textMuted} />
                                     <Text style={{
                                         marginLeft: 5,
                                         fontSize: 12,
                                         fontWeight: '600',
-                                        color: theme.bgDark === '#000000' ? '#ccc' : '#444'
+                                        color: theme.textMuted
                                     }}>
                                         {equipment.charAt(0).toUpperCase() + equipment.slice(1)}
                                     </Text>
-                                    <IconSymbol name="chevron.down" size={10} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 4 }} />
+                                    <IconSymbol name="chevron.down" size={10} color={theme.textMuted} style={{ marginLeft: 4 }} />
                                 </TouchableOpacity>
                             )}
 
@@ -300,22 +300,22 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                     style={{
                                         flexDirection: 'row',
                                         alignItems: 'center',
-                                        backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                                        backgroundColor: theme.bgLight,
                                         paddingHorizontal: 10,
                                         paddingVertical: 5,
                                         borderRadius: 6,
                                     }}
                                 >
-                                    <IconSymbol name="figure.walk" size={13} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
+                                    <IconSymbol name="figure.walk" size={13} color={theme.textMuted} />
                                     <Text style={{
                                         marginLeft: 5,
                                         fontSize: 12,
                                         fontWeight: '600',
-                                        color: theme.bgDark === '#000000' ? '#ccc' : '#444'
+                                        color: theme.textMuted
                                     }}>
                                         {movementType.charAt(0).toUpperCase() + movementType.slice(1)}
                                     </Text>
-                                    <IconSymbol name="chevron.down" size={10} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 4 }} />
+                                    <IconSymbol name="chevron.down" size={10} color={theme.textMuted} style={{ marginLeft: 4 }} />
                                 </TouchableOpacity>
                             )}
                         </View>
@@ -325,7 +325,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                 className="flex-row items-center mt-1"
                                 onPress={() => setIsPickerVisible(true)}
                             >
-                                <IconSymbol name="timer" size={12} color={theme.bgDark === '#000000' ? '#999' : '#666'} />
+                                <IconSymbol name="timer" size={12} color={theme.textMuted} />
                                 <Text className="ml-1 text-[11px] font-semibold text-light-muted dark:text-dark-muted">
                                     Rest Timer: {formatRestTime(exercise.restTime ?? 90)}
                                 </Text>
@@ -401,11 +401,15 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                 </Pressable>
             </Modal>
 
-             <View 
-                className={horizontalSets ? "p-4 flex-1" : "p-4"}
+             <View
+                className={horizontalSets ? "py-4 flex-1" : "p-4"}
                 style={horizontalSets ? { flex: 1 } : undefined}
                 onLayout={(e) => {
-                    const newWidth = e.nativeEvent.layout.width - 32;
+                    // No horizontal padding here in horizontalSets mode (see className
+                    // above) — the swiping ScrollView should span the full available
+                    // width so pages don't leave a static, non-scrolling gutter on
+                    // each edge during the swipe.
+                    const newWidth = horizontalSets ? e.nativeEvent.layout.width : e.nativeEvent.layout.width - 32;
                     setCardWidth((prev) => (Math.abs(prev - newWidth) > 1 ? newWidth : prev));
                 }}
              >
@@ -437,6 +441,14 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                             pagingEnabled
                             showsHorizontalScrollIndicator={false}
                             style={{ flex: 1 }}
+                            onLayout={(e) => {
+                                // Authoritative width source: the ScrollView's own
+                                // rendered width, not a padding-math estimate from an
+                                // ancestor. Keeps each page's width (and paging math)
+                                // exactly in sync with what's actually on screen.
+                                const newWidth = e.nativeEvent.layout.width;
+                                setCardWidth((prev) => (Math.abs(prev - newWidth) > 1 ? newWidth : prev));
+                            }}
                             onMomentumScrollEnd={(e) => {
                                 if (isProgrammaticScroll.current || cardWidth <= 0) return;
                                 const newIndex = Math.round(e.nativeEvent.contentOffset.x / cardWidth);

@@ -397,60 +397,60 @@ export default function ExerciseDetailsScreen({
                                     ))}
                                     {properties.map((prop: string, index: number) => (
                                         <View key={`prop-${index}`} style={{ 
-                                            backgroundColor: 'rgba(255,255,255,0.1)', 
+                                            backgroundColor: theme.bgLight, 
                                             paddingHorizontal: 12, 
                                             paddingVertical: 6, 
                                             borderRadius: 16,
                                             borderWidth: 1,
-                                            borderColor: 'rgba(255,255,255,0.2)'
+                                            borderColor: theme.border
                                         }}>
                                             <Text style={{ fontSize: 13, color: currentColors.text }}>{String(prop)}</Text>
                                         </View>
                                     ))}
                                     {exercise?.angle && (
                                          <View style={{ 
-                                             backgroundColor: 'rgba(255,255,255,0.1)', 
+                                             backgroundColor: theme.bgLight, 
                                              paddingHorizontal: 12, 
                                              paddingVertical: 6, 
                                              borderRadius: 16,
                                              borderWidth: 1,
-                                             borderColor: 'rgba(255,255,255,0.2)'
+                                             borderColor: theme.border
                                          }}>
                                              <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{String(exercise.angle)}</Text>
                                          </View>
                                     )}
                                     {selectedAttachmentVal && (
                                          <View style={{ 
-                                             backgroundColor: 'rgba(255,255,255,0.1)', 
+                                             backgroundColor: theme.bgLight, 
                                              paddingHorizontal: 12, 
                                              paddingVertical: 6, 
                                              borderRadius: 16,
                                              borderWidth: 1,
-                                             borderColor: 'rgba(255,255,255,0.2)'
+                                             borderColor: theme.border
                                          }}>
                                              <Text style={{ fontSize: 13, color: currentColors.text }}>{selectedAttachmentVal}</Text>
                                          </View>
                                     )}
                                     {selectedEquipmentVal && selectedEquipmentVal !== 'none' && (
                                          <View style={{ 
-                                             backgroundColor: 'rgba(255,255,255,0.1)', 
+                                             backgroundColor: theme.bgLight, 
                                              paddingHorizontal: 12, 
                                              paddingVertical: 6, 
                                              borderRadius: 16,
                                              borderWidth: 1,
-                                             borderColor: 'rgba(255,255,255,0.2)'
+                                             borderColor: theme.border
                                          }}>
                                              <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{selectedEquipmentVal}</Text>
                                          </View>
                                     )}
                                     {exercise?.movementType && (
                                          <View style={{ 
-                                              backgroundColor: 'rgba(255,255,255,0.1)', 
+                                              backgroundColor: theme.bgLight, 
                                               paddingHorizontal: 12, 
                                               paddingVertical: 6, 
                                               borderRadius: 16,
                                               borderWidth: 1,
-                                              borderColor: 'rgba(255,255,255,0.2)'
+                                              borderColor: theme.border
                                           }}>
                                               <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{String(exercise.movementType)}</Text>
                                          </View>
@@ -480,12 +480,12 @@ export default function ExerciseDetailsScreen({
                                             key={att}
                                             onPress={() => setSelectedAttachmentVal(att)}
                                             style={{
-                                                backgroundColor: isSelected ? theme.primary : 'rgba(255,255,255,0.05)',
+                                                backgroundColor: isSelected ? theme.primary : theme.bgLight,
                                                 paddingHorizontal: 16,
                                                 paddingVertical: 10,
                                                 borderRadius: 20,
                                                 borderWidth: 1,
-                                                borderColor: isSelected ? 'transparent' : 'rgba(255,255,255,0.1)',
+                                                borderColor: isSelected ? 'transparent' : theme.border,
                                             }}
                                         >
                                             <Text style={{
@@ -520,12 +520,12 @@ export default function ExerciseDetailsScreen({
                                             key={opt.value}
                                             onPress={() => setSelectedEquipmentVal(opt.value)}
                                             style={{
-                                                backgroundColor: isSelected ? theme.primary : 'rgba(255,255,255,0.05)',
+                                                backgroundColor: isSelected ? theme.primary : theme.bgLight,
                                                 paddingHorizontal: 16,
                                                 paddingVertical: 10,
                                                 borderRadius: 20,
                                                 borderWidth: 1,
-                                                borderColor: isSelected ? 'transparent' : 'rgba(255,255,255,0.1)',
+                                                borderColor: isSelected ? 'transparent' : theme.border,
                                             }}
                                         >
                                             <Text style={{
@@ -580,11 +580,11 @@ export default function ExerciseDetailsScreen({
                         ) : (
                             <View style={{ 
                                 padding: 16, 
-                                backgroundColor: 'rgba(255,255,255,0.02)', 
+                                backgroundColor: theme.bgLight, 
                                 borderRadius: 12, 
                                 borderStyle: 'dashed', 
                                 borderWidth: 1, 
-                                borderColor: 'rgba(255,255,255,0.1)',
+                                borderColor: theme.border,
                                 alignItems: 'center'
                             }}>
                                 <Text style={{ color: currentColors.text, opacity: 0.5, fontSize: 14 }}>
@@ -610,7 +610,7 @@ export default function ExerciseDetailsScreen({
                                         style={{ 
                                             flexDirection: 'row', 
                                             gap: 10, 
-                                            backgroundColor: 'rgba(255,255,255,0.03)', 
+                                            backgroundColor: theme.bgLight, 
                                             padding: 12, 
                                             borderRadius: 12,
                                             borderLeftWidth: 3,
@@ -629,11 +629,11 @@ export default function ExerciseDetailsScreen({
                         ) : (
                             <View style={{ 
                                 padding: 16, 
-                                backgroundColor: 'rgba(255,255,255,0.02)', 
+                                backgroundColor: theme.bgLight, 
                                 borderRadius: 12, 
                                 borderStyle: 'dashed', 
                                 borderWidth: 1, 
-                                borderColor: 'rgba(255,255,255,0.1)',
+                                borderColor: theme.border,
                                 alignItems: 'center'
                             }}>
                                 <Text style={{ color: currentColors.text, opacity: 0.5, fontSize: 14 }}>
@@ -664,9 +664,9 @@ export default function ExerciseDetailsScreen({
                                                     paddingHorizontal: 16,
                                                     paddingVertical: 8,
                                                     borderRadius: 20,
-                                                    backgroundColor: isSelected ? theme.primary : (theme.bgLight || 'rgba(255,255,255,0.05)'),
+                                                    backgroundColor: isSelected ? theme.primary : theme.bgLight,
                                                     borderWidth: 1,
-                                                    borderColor: isSelected ? theme.primary : 'rgba(255,255,255,0.1)',
+                                                    borderColor: isSelected ? theme.primary : theme.border,
                                                     alignItems: 'center',
                                                 }}
                                             >
@@ -688,11 +688,11 @@ export default function ExerciseDetailsScreen({
                         {filteredVariations.length === 0 ? (
                             <View style={{ 
                                 padding: 32, 
-                                backgroundColor: 'rgba(255,255,255,0.02)', 
+                                backgroundColor: theme.bgLight, 
                                 borderRadius: 16, 
                                 borderStyle: 'dashed', 
                                 borderWidth: 1, 
-                                borderColor: 'rgba(255,255,255,0.1)',
+                                borderColor: theme.border,
                                 alignItems: 'center' 
                             }}>
                                 <Text style={{ color: currentColors.text, opacity: 0.5, fontSize: 14, textAlign: 'center' }}>
@@ -701,7 +701,7 @@ export default function ExerciseDetailsScreen({
                             </View>
                         ) : (
                             <>
-                                <View style={{ padding: 16, backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: 12, marginBottom: 16 }}>
+                                <View style={{ padding: 16, backgroundColor: theme.bgLight, borderRadius: 12, marginBottom: 16 }}>
                                     <Text style={{ color: currentColors.text, opacity: 0.8, fontSize: 13, textAlign: 'center' }}>
                                         Tap a variation to view its details and manage goals.
                                     </Text>
@@ -859,12 +859,12 @@ export default function ExerciseDetailsScreen({
                                 <View style={{ flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                                     {selectedVariation.equipment && selectedVariation.equipment !== 'none' && (
                                         <View style={{
-                                            backgroundColor: 'rgba(255,255,255,0.08)',
+                                            backgroundColor: theme.bgLight,
                                             paddingHorizontal: 12,
                                             paddingVertical: 5,
                                             borderRadius: 12,
                                             borderWidth: 1,
-                                            borderColor: 'rgba(255,255,255,0.12)'
+                                            borderColor: theme.border
                                         }}>
                                             <Text style={{ color: currentColors.text, fontSize: 12, textTransform: 'capitalize', fontWeight: '500' }}>
                                                 {selectedVariation.equipment}
@@ -873,12 +873,12 @@ export default function ExerciseDetailsScreen({
                                     )}
                                     {selectedVariation.angle && (
                                         <View style={{
-                                            backgroundColor: 'rgba(255,255,255,0.08)',
+                                            backgroundColor: theme.bgLight,
                                             paddingHorizontal: 12,
                                             paddingVertical: 5,
                                             borderRadius: 12,
                                             borderWidth: 1,
-                                            borderColor: 'rgba(255,255,255,0.12)'
+                                            borderColor: theme.border
                                         }}>
                                             <Text style={{ color: currentColors.text, fontSize: 12, textTransform: 'capitalize', fontWeight: '500' }}>
                                                 {selectedVariation.angle}
@@ -887,12 +887,12 @@ export default function ExerciseDetailsScreen({
                                     )}
                                     {selectedVariation.attachment && (
                                         <View style={{
-                                            backgroundColor: 'rgba(255,255,255,0.08)',
+                                            backgroundColor: theme.bgLight,
                                             paddingHorizontal: 12,
                                             paddingVertical: 5,
                                             borderRadius: 12,
                                             borderWidth: 1,
-                                            borderColor: 'rgba(255,255,255,0.12)'
+                                            borderColor: theme.border
                                         }}>
                                             <Text style={{ color: currentColors.text, fontSize: 12, fontWeight: '500' }}>
                                                 {selectedVariation.attachment}
@@ -901,12 +901,12 @@ export default function ExerciseDetailsScreen({
                                     )}
                                     {selectedVariation.movementType && (
                                         <View style={{
-                                            backgroundColor: 'rgba(255,255,255,0.08)',
+                                            backgroundColor: theme.bgLight,
                                             paddingHorizontal: 12,
                                             paddingVertical: 5,
                                             borderRadius: 12,
                                             borderWidth: 1,
-                                            borderColor: 'rgba(255,255,255,0.12)'
+                                            borderColor: theme.border
                                         }}>
                                             <Text style={{ color: currentColors.text, fontSize: 12, textTransform: 'capitalize', fontWeight: '500' }}>
                                                 {selectedVariation.movementType}

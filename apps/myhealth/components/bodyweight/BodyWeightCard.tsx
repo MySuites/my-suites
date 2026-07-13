@@ -89,48 +89,34 @@ export function BodyWeightCard({
   return (
     <View className="mb-4">
       {/* Widget Layout on Home Screen */}
-      <RaisedCard 
-        className="p-4 active:opacity-95"
+      <RaisedCard
+        testID="bodyweight-widget-btn"
+        onPress={() => setModalVisible(true)}
+        className="p-4"
         style={{ borderRadius: 16 }}
       >
         <View className="flex-col gap-2">
           {/* Top Row: Icon, range, chevron */}
           <View className="flex-row justify-between items-center">
-            <TouchableOpacity
-              testID="bodyweight-widget-btn"
-              onPress={() => setModalVisible(true)}
-              activeOpacity={0.7}
+            <View
+              className="w-8 h-8 items-center justify-center rounded-xl"
+              style={{ backgroundColor: (primaryColor || theme.primary) + '15' }} // ~8% opacity tint
             >
-              <View 
-                className="w-8 h-8 items-center justify-center rounded-xl"
-                style={{ backgroundColor: (primaryColor || theme.primary) + '15' }} // ~8% opacity tint
-              >
-                <IconSymbol name="scalemass.fill" size={16} color={primaryColor || theme.primary} />
-              </View>
-            </TouchableOpacity>
+              <IconSymbol name="scalemass.fill" size={16} color={primaryColor || theme.primary} />
+            </View>
 
-            <TouchableOpacity
-              testID="bodyweight-widget-header-right-btn"
-              onPress={() => setModalVisible(true)}
-              activeOpacity={0.7}
-              className="flex-row items-center gap-1"
-            >
+            <View className="flex-row items-center gap-1">
               <Text className="text-[10px] text-light-muted dark:text-dark-muted font-semibold bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded">
                 {selectedRange === 'Week' ? 'Week' : selectedRange === 'Month' ? 'Month' : selectedRange === '6Month' ? '6M' : selectedRange === 'Year' ? 'Year' : selectedRange === 'Day' ? 'Day' : selectedRange}
               </Text>
               <IconSymbol name="chevron.right" size={12} color={textColor || theme.textMuted} />
-            </TouchableOpacity>
+            </View>
           </View>
-          
+
           {/* Bottom Row: Stats on left, Quick Log Action on right */}
           <View className="flex-row justify-between items-end w-full">
-            {/* Main Info (taps open details) */}
-            <TouchableOpacity
-              testID="bodyweight-widget-info-btn"
-              onPress={() => setModalVisible(true)}
-              activeOpacity={0.7}
-              className="flex-1 mr-2"
-            >
+            {/* Main Info */}
+            <View className="flex-1 mr-2">
               <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5" numberOfLines={1}>
                 Body Weight
               </Text>
@@ -140,11 +126,14 @@ export function BodyWeightCard({
                 </Text>
                 <Text className="text-[10px] text-light-muted dark:text-dark-muted ml-0.5">lbs</Text>
               </View>
-            </TouchableOpacity>
+            </View>
 
-            <TouchableOpacity 
-              testID="quick-log-weight-btn" 
-              onPress={onLogWeight}
+            <TouchableOpacity
+              testID="quick-log-weight-btn"
+              onPress={(e) => {
+                e?.stopPropagation?.();
+                onLogWeight();
+              }}
               activeOpacity={0.7}
               className="w-8 h-8 items-center justify-center bg-black/5 dark:bg-white/5 rounded-lg active:scale-95"
             >

@@ -71,11 +71,11 @@ export default function AuthScreen() {
           className={
             `mb-3 text-sm ` +
             (status.type === 'error'
-              ? 'text-red-600'
+              ? 'text-red-600 dark:text-red-400'
               : status.type === 'success'
-              ? 'text-green-600'
+              ? 'text-green-600 dark:text-green-400'
               : status.type === 'signing-in'
-              ? 'text-blue-600'
+              ? 'text-blue-600 dark:text-blue-400'
               : 'text-apptext dark:text-dark')
           }
           accessibilityLiveRegion="polite"
