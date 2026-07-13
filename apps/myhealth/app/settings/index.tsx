@@ -238,33 +238,9 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Legal</Text>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark">Privacy Policy</Text>
-            <RaisedCard 
-              onPress={() => WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL)}
-              className="w-10 h-10 active:h-9 p-0 rounded-full items-center justify-center"
-              style={{ borderRadius: 9999 }}
-            >
-              <IconSymbol name="chevron.right" size={20} color={theme.primary} />
-            </RaisedCard>
-          </View>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark">Terms of Service</Text>
-            <RaisedCard 
-              onPress={() => WebBrowser.openBrowserAsync(TERMS_OF_SERVICE_URL)}
-              className="w-10 h-10 active:h-9 p-0 rounded-full items-center justify-center"
-              style={{ borderRadius: 9999 }}
-            >
-              <IconSymbol name="chevron.right" size={20} color={theme.primary} />
-            </RaisedCard>
-          </View>
-        </View>
-
-        <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Photos</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark">Auto-Save Progress Photos</Text>
+            <Text className="text-base text-light dark:text-dark">Auto-Save Progress Photos to Library</Text>
             <Switch
               value={autoSavePhotos}
               onValueChange={async (value) => {
@@ -415,6 +391,30 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
+          <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Legal</Text>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+            <Text className="text-base text-light dark:text-dark">Privacy Policy</Text>
+            <RaisedCard 
+              onPress={() => WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL)}
+              className="w-10 h-10 active:h-9 p-0 rounded-full items-center justify-center"
+              style={{ borderRadius: 9999 }}
+            >
+              <IconSymbol name="chevron.right" size={20} color={theme.primary} />
+            </RaisedCard>
+          </View>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+            <Text className="text-base text-light dark:text-dark">Terms of Service</Text>
+            <RaisedCard 
+              onPress={() => WebBrowser.openBrowserAsync(TERMS_OF_SERVICE_URL)}
+              className="w-10 h-10 active:h-9 p-0 rounded-full items-center justify-center"
+              style={{ borderRadius: 9999 }}
+            >
+              <IconSymbol name="chevron.right" size={20} color={theme.primary} />
+            </RaisedCard>
+          </View>
+        </View>
+
+        <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 mb-2 uppercase">Developer</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Developer Mode</Text>
@@ -461,7 +461,7 @@ export default function SettingsScreen() {
           </View>
         </View>
         
-        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.5.27
+        <Text className="text-center text-xs text-gray-500 mt-6">Version 1.6.0
         </Text>
       </ScrollView>
     </View>
