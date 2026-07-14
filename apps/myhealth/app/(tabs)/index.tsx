@@ -21,11 +21,14 @@ import { useStrengthRanks } from '../../hooks/workouts/useStrengthRanks';
 import { storage } from '../../utils/storage';
 import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
 import { RANKING_SEX_STORAGE_KEY, DEFAULT_RANKING_SEX, StrengthSex } from '../../utils/strengthStandards';
+import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
+import { lbToDisplay, roundForDisplay } from '../../utils/units';
 
 export default function HomeScreen() {
   const { user } = useAuth();
   const theme = useUITheme();
   const { showToast } = useToast();
+  const { unitSystem } = useUnitPreference();
   const [menuVisible, setMenuVisible] = useState(false);
 
   const [latestWeight, setLatestWeight] = useState<number | null>(null);
@@ -181,6 +184,24 @@ export default function HomeScreen() {
 
     return { weightHistory: result, rangeAverage: avg };
   }, [allWeightHistory, selectedRange]);
+
+  // Body weight is stored in lb everywhere (BodyWeightService, strength-rank
+  // math). These are display-only conversions for BodyWeightCard — the
+  // underlying `latestWeight`/`weightHistory`/`rangeAverage` stay in lb for
+  // consumers (like StrengthRankCard's bodyweight-relative ratios) that need
+  // the canonical unit.
+  const displayLatestWeight = useMemo(
+    () => (latestWeight != null ? roundForDisplay(lbToDisplay(latestWeight, unitSystem), unitSystem) : null),
+    [latestWeight, unitSystem]
+  );
+  const displayWeightHistory = useMemo(
+    () => weightHistory.map((item) => ({ ...item, value: roundForDisplay(lbToDisplay(item.value, unitSystem), unitSystem) })),
+    [weightHistory, unitSystem]
+  );
+  const displayRangeAverage = useMemo(
+    () => (rangeAverage != null ? roundForDisplay(lbToDisplay(rangeAverage, unitSystem), unitSystem) : null),
+    [rangeAverage, unitSystem]
+  );
 
   // Memoized workout volume history & summary stats
   const { volumeHistoryData, rangeAverageVolume, rangeTotalVolume, rangeWorkoutCount } = useMemo(() => {
@@ -445,10 +466,10 @@ export default function HomeScreen() {
         </View>
         <View className="flex-row flex-wrap">
           <View className="w-1/2 pr-2 mb-6">
-             <BodyWeightCard 
-                weight={latestWeight} 
-                history={weightHistory}
-                rangeAverage={rangeAverage}
+             <BodyWeightCard
+                weight={displayLatestWeight}
+                history={displayWeightHistory}
+                rangeAverage={displayRangeAverage}
                 onLogWeight={() => setIsWeightModalVisible(true)} 
                 selectedRange={selectedRange}
                 onRangeChange={setSelectedRange}

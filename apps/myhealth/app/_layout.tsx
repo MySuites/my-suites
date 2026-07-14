@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider, useAuth } from '@mysuite/auth';
 import { AppThemeProvider } from '../providers/AppThemeProvider';
+import { UnitPreferenceProvider } from '../providers/UnitPreferenceProvider';
 import { NavigationSettingsProvider } from '../providers/NavigationSettingsProvider';
 import { useColorScheme } from '../hooks/ui/use-color-scheme';
 import * as SplashScreen from 'expo-splash-screen';
@@ -135,7 +136,9 @@ export default function RootLayout() {
         <AuthProvider>
           <NavigationSettingsProvider>
             <AppThemeProvider>
+              <UnitPreferenceProvider>
                 <RootLayoutContent isDbReady={isDbReady} setIsDbReady={setIsDbReady} />
+              </UnitPreferenceProvider>
             </AppThemeProvider>
           </NavigationSettingsProvider>
         </AuthProvider>

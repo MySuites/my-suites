@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, ScrollView, Keyboard, Pressable } from 'react-native';
 import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
+import { displayToLb } from '../../utils/units';
 
 interface WeightLogModalProps {
   visible: boolean;
   onClose: () => void;
+  // Always receives the weight in lb (canonical storage unit), regardless of
+  // what unit the user typed it in.
   onSave: (weight: number, date: Date) => void;
 }
 
@@ -14,11 +18,12 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const theme = useUITheme();
+  const { unitSystem, weightUnit } = useUnitPreference();
 
   const handleSave = () => {
     const numericWeight = parseFloat(weight);
     if (!isNaN(numericWeight)) {
-      onSave(numericWeight, date);
+      onSave(displayToLb(numericWeight, unitSystem), date);
       setWeight('');
       setDate(new Date()); // Reset to today for next time
       onClose();
@@ -128,7 +133,7 @@ export function WeightLogModal({ visible, onClose, onSave }: WeightLogModalProps
                         </View>
     
                         <View className="mt-6">
-                            <Text className="text-sm text-light-muted dark:text-dark-muted mb-2 font-medium">WEIGHT (LBS)</Text>
+                            <Text className="text-sm text-light-muted dark:text-dark-muted mb-2 font-medium">WEIGHT ({weightUnit.toUpperCase()})</Text>
                             <TextInput
                                 className={`text-2xl font-bold text-center py-4 bg-light dark:bg-dark rounded-xl ${getTextColorClass(weight)}`}
                                 value={weight}

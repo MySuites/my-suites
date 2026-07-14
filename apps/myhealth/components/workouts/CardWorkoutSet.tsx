@@ -8,10 +8,13 @@ import { formatSeconds, formatRestTime } from '../../utils/formatting';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import { IconSymbol } from "@mysuite/ui";
+import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
+import { lbToDisplay, displayToLb, roundForDisplay } from '../../utils/units';
 
 const INLINE_MIN_VALUES = Array.from({ length: 15 }, (_, i) => i);
 const INLINE_SEC_VALUES = Array.from({ length: 60 }, (_, i) => i);
-const WEIGHT_VALUES = Array.from({ length: 201 }, (_, i) => i * 2.5); // 0 to 500
+const WEIGHT_VALUES_LB = Array.from({ length: 201 }, (_, i) => i * 2.5); // 0 to 500
+const WEIGHT_VALUES_KG = Array.from({ length: 201 }, (_, i) => i * 1.25); // 0 to 250
 const WEIGHT_ITEM_WIDTH = 120;
 const REP_VALUES = Array.from({ length: 51 }, (_, i) => i); // 0 to 50
 
@@ -50,6 +53,7 @@ export function CardWorkoutSet({
 }: CardWorkoutSetProps) {
     const { height: windowHeight, width: windowWidth } = useWindowDimensions();
     const colorScheme = useColorScheme();
+    const { unitSystem, weightUnit } = useUnitPreference();
     const isSmallScreen = windowHeight < 900;
     const rowPadding = isSmallScreen ? 'py-1' : 'py-2';
     const [isDurationPickerVisible, setIsDurationPickerVisible] = React.useState(false);
@@ -136,9 +140,14 @@ export function CardWorkoutSet({
     onUpdateSetTargetRef.current = onUpdateSetTarget;
     const durationValRef = useRef(durationVal);
     durationValRef.current = durationVal;
+    const unitSystemRef = useRef(unitSystem);
+    unitSystemRef.current = unitSystem;
 
+    // The wheel operates in the user's display unit; storage always stays in
+    // lb (canonical), so convert back on every change.
     const handleWeightChange = React.useCallback((val: number) => {
-        onUpdateSetTargetRef.current?.(index, 'weight', val.toString());
+        const lbValue = displayToLb(val, unitSystemRef.current);
+        onUpdateSetTargetRef.current?.(index, 'weight', lbValue.toString());
     }, [index]);
 
     const handleRepsChange = React.useCallback((val: number) => {
@@ -261,18 +270,26 @@ export function CardWorkoutSet({
         
         const parts = [];
         const formatValue = (val: any, fallback = "0") => (val !== undefined && val !== null && val !== '') ? val : fallback;
+        // Previous-log weights are stored in lb like everything else — convert
+        // to the user's display unit before showing them.
+        const formatWeightValue = (val: any, fallback = "0") => {
+            if (val === undefined || val === null || val === '') return fallback;
+            const num = parseFloat(val);
+            if (isNaN(num)) return fallback;
+            return roundForDisplay(lbToDisplay(num, unitSystem), unitSystem);
+        };
 
         if (showWeight) {
             if (showBodyweight) {
                 const bw = prev.bodyweight ?? (showBodyweight ? latestBodyWeight : undefined);
                 const added = prev.weight;
                 if (bw != null && added != null && added > 0) {
-                    parts.push(`${bw}+${added}`);
+                    parts.push(`${formatWeightValue(bw)}+${formatWeightValue(added)}`);
                 } else {
-                    parts.push(formatValue(bw ?? added));
+                    parts.push(formatWeightValue(bw ?? added));
                 }
             } else {
-                parts.push(formatValue(prev.weight));
+                parts.push(formatWeightValue(prev.weight));
             }
         }
 
@@ -326,14 +343,14 @@ export function CardWorkoutSet({
             {/* Weight */}
             {showWeight && (
                 <View className="flex-col items-center justify-center py-2">
-                    <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Weight</Text>
+                    <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Weight ({weightUnit})</Text>
                     {wheelsReady ? (
                         <HorizontalSelectorWheel
-                            value={parseFloat(getValue('weight')) || 0}
+                            value={roundForDisplay(lbToDisplay(parseFloat(getValue('weight')) || 0, unitSystem), unitSystem)}
                             onValueChange={handleWeightChange}
-                            values={WEIGHT_VALUES}
+                            values={unitSystem === 'metric' ? WEIGHT_VALUES_KG : WEIGHT_VALUES_LB}
                             itemWidth={WEIGHT_ITEM_WIDTH}
-                            unit="lb"
+                            unit=""
                         />
                     ) : (
                         <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
@@ -345,10 +362,7 @@ export function CardWorkoutSet({
                                 style={{ width: WEIGHT_ITEM_WIDTH, height: 56, borderRadius: 12 }}
                             >
                                 <Text className="text-4xl font-black text-light dark:text-dark">
-                                    {getValue('weight') || '0'}
-                                </Text>
-                                <Text className="text-xs font-black text-light dark:text-dark ml-0.5">
-                                    lb
+                                    {roundForDisplay(lbToDisplay(parseFloat(getValue('weight')) || 0, unitSystem), unitSystem) || '0'}
                                 </Text>
                             </View>
                         </View>

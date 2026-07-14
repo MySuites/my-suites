@@ -4,6 +4,7 @@ import { BodyWeightChart } from './BodyWeightChart';
 import { SegmentedControl, SegmentedControlOption } from '../ui/SegmentedControl';
 import { HollowedCard, useUITheme, Skeleton, IconSymbol, RaisedCard } from '@mysuite/ui';
 import { DateRange } from '../ui/TimeSeriesChart';
+import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 
 const RANGE_OPTIONS: SegmentedControlOption<DateRange>[] = [
   { label: 'D', value: 'Day' },
@@ -37,6 +38,7 @@ export function BodyWeightCard({
   isLoading,
 }: BodyWeightCardProps) {
   const theme = useUITheme();
+  const { weightUnit } = useUnitPreference();
   const [modalVisible, setModalVisible] = React.useState(false);
   const [selectedPoint, setSelectedPoint] = React.useState<{ value: number; date: string } | null>(null);
 
@@ -134,7 +136,7 @@ export function BodyWeightCard({
                 <Text className="text-lg font-bold text-light dark:text-dark" numberOfLines={1}>
                   {weight ? weight.toLocaleString() : '--'}
                 </Text>
-                <Text className="text-[10px] text-light-muted dark:text-dark-muted ml-0.5">lbs</Text>
+                <Text className="text-[10px] text-light-muted dark:text-dark-muted ml-0.5">{weightUnit}</Text>
               </View>
             </TouchableOpacity>
 
@@ -218,7 +220,7 @@ export function BodyWeightCard({
                     >
                       {displayWeight.toLocaleString()}
                     </Text>
-                    <Text className="text-light-muted dark:text-dark-muted text-base mr-3">lbs</Text>
+                    <Text className="text-light-muted dark:text-dark-muted text-base mr-3">{weightUnit}</Text>
                     
                     <View className="flex-col justify-center">
                       <Text 

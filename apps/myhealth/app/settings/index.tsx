@@ -16,6 +16,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { router } from 'expo-router';
 import * as Application from 'expo-application';
 import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
+import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 
 const PRIVACY_POLICY_URL = 'https://mysuites.github.io/my-suites/privacy_policy.html';
 const TERMS_OF_SERVICE_URL = 'https://mysuites.github.io/my-suites/tos.html';
@@ -25,6 +26,11 @@ export default function SettingsScreen() {
   const { preference, setPreference } = useThemePreference();
   const { showToast } = useToast();
   const { isRpeEnabled, setIsRpeEnabled } = useWorkoutManager();
+  const { unitSystem, setUnitSystem } = useUnitPreference();
+  const handleUpdateUnitSystem = async (system: 'imperial' | 'metric') => {
+    await setUnitSystem(system);
+    showToast({ message: `Weight units set to ${system === 'imperial' ? 'lb' : 'kg'}`, type: 'success' });
+  };
   const handleDeleteData = () => {
     Alert.alert(
         "Delete All Data?",
@@ -265,6 +271,31 @@ export default function SettingsScreen() {
               trackColor={{ false: theme.card, true: theme.primary }}
               thumbColor={autoSavePhotos ? "#ffffff" : "#f4f3f4"}
             />
+          </View>
+        </View>
+
+        <View className="mb-6">
+          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Units</Text>
+          <View className="flex-row justify-between items-center py-3">
+            <Text className="text-base text-light dark:text-dark font-medium">Weight Units</Text>
+            <View className="flex-row bg-light dark:bg-dark rounded-lg p-1">
+              {(['imperial', 'metric'] as const).map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  testID={`unit-system-${option}`}
+                  onPress={() => handleUpdateUnitSystem(option)}
+                  className="px-3 py-1.5 rounded-md"
+                  style={{ backgroundColor: unitSystem === option ? theme.primary : 'transparent' }}
+                >
+                  <Text
+                    className="text-sm font-semibold"
+                    style={{ color: unitSystem === option ? '#fff' : theme.textMuted }}
+                  >
+                    {option === 'imperial' ? 'lb' : 'kg'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
 

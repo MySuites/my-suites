@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { RaisedCard, useUITheme } from '@mysuite/ui';
 import { RANKED_LIFTS, getStrengthRank, StrengthSex, StrengthTier } from '../../utils/strengthStandards';
 import { LiftBest } from '../../hooks/workouts/useStrengthRanks';
+import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
+import { lbToDisplay, roundForDisplay } from '../../utils/units';
 
 interface StrengthRankCardProps {
     bests: LiftBest[];
@@ -25,6 +27,7 @@ function tierColor(theme: any, tier: StrengthTier | null): string {
 
 export function StrengthRankCard({ bests, bodyweight, sex, onChangeSex, isLoading }: StrengthRankCardProps) {
     const theme = useUITheme();
+    const { unitSystem, weightUnit } = useUnitPreference();
 
     return (
         <RaisedCard className="p-4" style={{ borderRadius: 16 }}>
@@ -109,7 +112,7 @@ export function StrengthRankCard({ bests, bodyweight, sex, onChangeSex, isLoadin
                                             </Text>
                                         </View>
                                         <Text style={{ fontSize: 10, color: theme.textMuted, marginTop: 2 }}>
-                                            {Math.round(best)} lbs · {rank.ratio.toFixed(2)}x BW
+                                            {roundForDisplay(lbToDisplay(best, unitSystem), unitSystem)} {weightUnit} · {rank.ratio.toFixed(2)}x BW
                                         </Text>
                                     </View>
                                 )}
