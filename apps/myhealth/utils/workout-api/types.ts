@@ -19,6 +19,9 @@ export type Exercise = {
     completedIndices?: number[]; // indices of checked sets
     logs?: SetLog[];
     previousLog?: SetLog[];
+    // Average logged RPE per set index, across the last few sessions of this
+    // exercise — used to weight the progressive-overload suggestion.
+    avgRpeBySetIndex?: Record<number, number>;
     properties?: string[]; // E.g. ["Weighted", "Reps", "Bodyweight"]
     setTargets?: {
         reps?: number;

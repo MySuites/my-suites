@@ -16,6 +16,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { router } from 'expo-router';
 import * as Application from 'expo-application';
 import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
+import { REP_CEILING_MIN, REP_CEILING_MAX } from '../../utils/progressiveOverload';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 
 const PRIVACY_POLICY_URL = 'https://mysuites.github.io/my-suites/privacy_policy.html';
@@ -25,7 +26,14 @@ export default function SettingsScreen() {
   const theme = useUITheme();
   const { preference, setPreference } = useThemePreference();
   const { showToast } = useToast();
-  const { isRpeEnabled, setIsRpeEnabled } = useWorkoutManager();
+  const {
+    isRpeEnabled, setIsRpeEnabled,
+    isProgressiveOverloadEnabled, setIsProgressiveOverloadEnabled,
+    progressiveOverloadRepCeiling, setProgressiveOverloadRepCeiling,
+  } = useWorkoutManager();
+  const handleUpdateRepCeiling = async (ceiling: number) => {
+    await setProgressiveOverloadRepCeiling(ceiling);
+  };
   const { unitSystem, setUnitSystem } = useUnitPreference();
   const handleUpdateUnitSystem = async (system: 'imperial' | 'metric') => {
     await setUnitSystem(system);
@@ -430,6 +438,46 @@ export default function SettingsScreen() {
               thumbColor={isRpeEnabled ? "#ffffff" : "#f4f3f4"}
             />
           </View>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+            <Text className="text-base text-light dark:text-dark font-medium">Progressive Overload Guide</Text>
+            <Switch
+              testID="progressive-overload-switch"
+              value={isProgressiveOverloadEnabled}
+              onValueChange={async (value) => {
+                await setIsProgressiveOverloadEnabled(value);
+                showToast({
+                  message: value ? "Progressive overload guide enabled" : "Progressive overload guide disabled",
+                  type: 'success'
+                });
+              }}
+              trackColor={{ false: theme.card, true: theme.primary }}
+              thumbColor={isProgressiveOverloadEnabled ? "#ffffff" : "#f4f3f4"}
+            />
+          </View>
+          {isProgressiveOverloadEnabled && (
+            <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-6">
+              <Text className="text-base text-light dark:text-dark font-medium">Max Reps</Text>
+              <View className="flex-row items-center gap-2">
+                <TouchableOpacity
+                  testID="rep-ceiling-decrement"
+                  onPress={() => handleUpdateRepCeiling(Math.max(REP_CEILING_MIN, progressiveOverloadRepCeiling - 1))}
+                  className="px-3 py-1.5 bg-light dark:bg-dark rounded-lg"
+                >
+                  <Text className="text-base font-semibold" style={{ color: theme.primary }}>−</Text>
+                </TouchableOpacity>
+                <Text className="text-base text-light dark:text-dark font-medium w-12 text-center">
+                  {progressiveOverloadRepCeiling}
+                </Text>
+                <TouchableOpacity
+                  testID="rep-ceiling-increment"
+                  onPress={() => handleUpdateRepCeiling(Math.min(REP_CEILING_MAX, progressiveOverloadRepCeiling + 1))}
+                  className="px-3 py-1.5 bg-light dark:bg-dark rounded-lg"
+                >
+                  <Text className="text-base font-semibold" style={{ color: theme.primary }}>+</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
           <View className="flex-row justify-between items-center py-3">
             <Text className="text-base text-light dark:text-dark font-medium">Weekly Workout Goal</Text>
             <View className="flex-row items-center gap-2">

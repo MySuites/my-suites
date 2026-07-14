@@ -13,6 +13,12 @@ interface HorizontalSelectorWheelProps {
     // Pass a smaller value to fit two wheels side by side, e.g. for
     // unilateral (L/R) reps.
     containerWidth?: number;
+    // When the item at a given slot equals this value, its text renders in
+    // goalColor instead of the default — marks the progressive-overload
+    // suggestion directly on the wheel (rather than a separate tappable
+    // badge), visible even while scrolling past it as a neighbor.
+    goalValue?: number;
+    goalColor?: string;
 }
 
 function HorizontalSelectorWheelBase({
@@ -22,6 +28,8 @@ function HorizontalSelectorWheelBase({
     itemWidth,
     unit = 'lb',
     containerWidth,
+    goalValue,
+    goalColor,
 }: HorizontalSelectorWheelProps) {
     const { width: windowWidth } = useWindowDimensions();
     const width = containerWidth ?? windowWidth;
@@ -135,26 +143,35 @@ function HorizontalSelectorWheelBase({
                                 }
                             }}
                         >
-                            {item !== null && (
-                                <RNAnimated.View 
-                                    style={{ 
-                                        opacity, 
-                                        transform: [{ scale }],
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}
-                                >
-                                    <RNAnimated.Text className="font-black text-4xl text-light dark:text-dark">
-                                        {item}
-                                    </RNAnimated.Text>
-                                    {unit && (
-                                        <RNAnimated.Text className="font-black text-xs ml-0.5 text-light dark:text-dark">
-                                            {unit}
+                            {item !== null && (() => {
+                                const isGoal = goalValue !== undefined && goalColor && item === goalValue;
+                                return (
+                                    <RNAnimated.View
+                                        style={{
+                                            opacity,
+                                            transform: [{ scale }],
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}
+                                    >
+                                        <RNAnimated.Text
+                                            className="font-black text-4xl text-light dark:text-dark"
+                                            style={isGoal ? { color: goalColor } : undefined}
+                                        >
+                                            {item}
                                         </RNAnimated.Text>
-                                    )}
-                                </RNAnimated.View>
-                            )}
+                                        {unit && (
+                                            <RNAnimated.Text
+                                                className="font-black text-xs ml-0.5 text-light dark:text-dark"
+                                                style={isGoal ? { color: goalColor } : undefined}
+                                            >
+                                                {unit}
+                                            </RNAnimated.Text>
+                                        )}
+                                    </RNAnimated.View>
+                                );
+                            })()}
                         </TouchableOpacity>
                     );
                 })}

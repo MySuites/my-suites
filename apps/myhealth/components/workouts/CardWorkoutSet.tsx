@@ -9,13 +9,13 @@ import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import { IconSymbol } from "@mysuite/ui";
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
-import { lbToDisplay, displayToLb, roundForDisplay } from '../../utils/units';
+import { lbToDisplay, displayToLb, roundForDisplay, snapToValues } from '../../utils/units';
+import { getSuggestedGoal, getSuggestedUnilateralGoal, getSuggestedDurationGoal } from '../../utils/progressiveOverload';
 
 const INLINE_MIN_VALUES = Array.from({ length: 15 }, (_, i) => i);
 const INLINE_SEC_VALUES = Array.from({ length: 60 }, (_, i) => i);
 const WEIGHT_VALUES_LB = Array.from({ length: 201 }, (_, i) => i * 2.5); // 0 to 500
 const WEIGHT_VALUES_KG = Array.from({ length: 201 }, (_, i) => i * 1.25); // 0 to 250
-const WEIGHT_ITEM_WIDTH = 120;
 const REP_VALUES = Array.from({ length: 51 }, (_, i) => i); // 0 to 50
 
 import { getExerciseFields } from './SetRow';
@@ -75,7 +75,7 @@ export function CardWorkoutSet({
         }
     }, [isActiveSet]);
 
-    const { isRpeEnabled } = useWorkoutManager();
+    const { isRpeEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling } = useWorkoutManager();
     const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(exercise.properties, exercise.id);
     const showRPE = calculatedShowRPE && isRpeEnabled;
 
@@ -161,6 +161,39 @@ export function CardWorkoutSet({
     const handleRepsRightChange = React.useCallback((val: number) => {
         onUpdateSetTargetRef.current?.(index, 'reps_right', val.toString());
     }, [index]);
+
+    // Progressive-overload suggestion (double progression, RPE-adjusted when
+    // RPE tracking is on): same weight +1 rep until the rep ceiling, then
+    // reset reps and bump the weight. Marked directly on the wheel by
+    // coloring the goal value's digits (see goalColor below) rather than a
+    // separate tappable badge — scroll to it like any other value.
+    // Memoized: the wheel's touch handlers toggle state on the outer set
+    // pager (to lock its scroll during a drag — see SetPagerScrollLock),
+    // which re-renders this component on every touch start/end. Without
+    // memoizing, that recomputed this on every such re-render, including
+    // mid-gesture, which showed up as lag while actively scrolling the wheel.
+    const prevLog = exercise.previousLog?.[index];
+    const avgRpe = isRpeEnabled ? exercise.avgRpeBySetIndex?.[index] : undefined;
+    const suggestedGoal = React.useMemo(
+        () => (isProgressiveOverloadEnabled
+            ? (isUnilateral
+                ? getSuggestedUnilateralGoal(prevLog, avgRpe, progressiveOverloadRepCeiling)
+                : getSuggestedGoal(prevLog, avgRpe, progressiveOverloadRepCeiling))
+            : null),
+        [isProgressiveOverloadEnabled, isUnilateral, prevLog, avgRpe, progressiveOverloadRepCeiling]
+    );
+    // Same idea for timed holds — see getSuggestedDurationGoal. Independent
+    // from suggestedGoal above since an exercise tracks either reps or
+    // duration, not both, though it may ALSO track weight alongside either.
+    const suggestedDurationGoal = React.useMemo(
+        () => (isProgressiveOverloadEnabled ? getSuggestedDurationGoal(prevLog, avgRpe) : null),
+        [isProgressiveOverloadEnabled, prevLog, avgRpe]
+    );
+    // theme.info (hsl(217, 91%, 60%)) is identical in both themes, but 60%
+    // lightness reads as faded against the light theme's pale background —
+    // it only has good contrast against the dark theme's near-black one.
+    // Same hue/saturation, darkened for light mode.
+    const goalColor = theme.dark ? (theme.info || theme.primary) : 'hsl(217, 91%, 45%)';
 
     const handleDurationMinChange = React.useCallback((newMin: number) => {
         const currentSecs = parseInt(durationValRef.current) || 0;
@@ -344,29 +377,60 @@ export function CardWorkoutSet({
             {showWeight && (
                 <View className="flex-col items-center justify-center py-2">
                     <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Weight ({weightUnit})</Text>
-                    {wheelsReady ? (
-                        <HorizontalSelectorWheel
-                            value={roundForDisplay(lbToDisplay(parseFloat(getValue('weight')) || 0, unitSystem), unitSystem)}
-                            onValueChange={handleWeightChange}
-                            values={unitSystem === 'metric' ? WEIGHT_VALUES_KG : WEIGHT_VALUES_LB}
-                            itemWidth={WEIGHT_ITEM_WIDTH}
-                            unit=""
-                        />
-                    ) : (
-                        <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
-                            {/* Matches the wheel's resting center box so the swap
-                                to the live wheel is seamless (only the faded
-                                neighbour values slide in). */}
-                            <View
-                                className="border-l border-r border-primary/20 bg-primary/5 justify-center items-center flex-row"
-                                style={{ width: WEIGHT_ITEM_WIDTH, height: 56, borderRadius: 12 }}
-                            >
-                                <Text className="text-4xl font-black text-light dark:text-dark">
-                                    {roundForDisplay(lbToDisplay(parseFloat(getValue('weight')) || 0, unitSystem), unitSystem) || '0'}
-                                </Text>
+                    {(() => {
+                        // itemWidth = width/3 so the two side gaps each equal
+                        // exactly one item slot — same reasoning as the reps
+                        // wheel. A fixed pixel constant here only produces
+                        // symmetric one-neighbor spacing by coincidence on
+                        // whatever device it was tuned against; on other
+                        // widths the padding math ends up slightly
+                        // asymmetric, which reads as the wheel snapping
+                        // off-center.
+                        const weightItemWidth = windowWidth / 3;
+                        const weightValues = unitSystem === 'metric' ? WEIGHT_VALUES_KG : WEIGHT_VALUES_LB;
+                        // Snapped to an exact entry in weightValues, not just
+                        // rounded — see snapToValues for why that distinction
+                        // matters (a "rounded but not-a-real-step" value fed
+                        // into the wheel causes it to flicker indefinitely).
+                        const displayWeight = snapToValues(lbToDisplay(parseFloat(getValue('weight')) || 0, unitSystem), weightValues);
+                        // Weight goal comes from whichever suggestion applies
+                        // to this exercise — reps-based for rep sets,
+                        // duration-based for timed holds (which may also
+                        // track weight, e.g. a weighted plank).
+                        const weightGoalLb = suggestedGoal?.weight ?? suggestedDurationGoal?.weight;
+                        const goalDisplayWeight = weightGoalLb !== undefined
+                            ? snapToValues(lbToDisplay(weightGoalLb, unitSystem), weightValues)
+                            : undefined;
+                        const isAtGoal = goalDisplayWeight !== undefined && displayWeight === goalDisplayWeight;
+                        return wheelsReady ? (
+                            <HorizontalSelectorWheel
+                                value={displayWeight}
+                                onValueChange={handleWeightChange}
+                                values={weightValues}
+                                itemWidth={weightItemWidth}
+                                unit=""
+                                goalValue={goalDisplayWeight}
+                                goalColor={goalColor}
+                            />
+                        ) : (
+                            <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
+                                {/* Matches the wheel's resting center box so the swap
+                                    to the live wheel is seamless (only the faded
+                                    neighbour values slide in). */}
+                                <View
+                                    className="border-l border-r border-primary/20 bg-primary/5 justify-center items-center flex-row"
+                                    style={{ width: weightItemWidth, height: 56, borderRadius: 12 }}
+                                >
+                                    <Text
+                                        className="text-4xl font-black text-light dark:text-dark"
+                                        style={isAtGoal ? { color: goalColor } : undefined}
+                                    >
+                                        {displayWeight || '0'}
+                                    </Text>
+                                </View>
                             </View>
-                        </View>
-                    )}
+                        );
+                    })()}
                 </View>
             )}
 
@@ -380,20 +444,28 @@ export function CardWorkoutSet({
                         // weight wheel show exactly one neighbor per side, not a
                         // fixed constant that happens to work at one width.
                         const repsItemWidth = windowWidth / 3;
-                        const placeholder = (field: 'reps' | 'reps_left' | 'reps_right') => (
-                            <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
-                                {/* Matches the wheel's resting center box so the
-                                    swap to the live wheel is seamless. */}
-                                <View
-                                    className="border-l border-r border-primary/20 bg-primary/5 justify-center items-center"
-                                    style={{ width: repsItemWidth, height: 56, borderRadius: 12 }}
-                                >
-                                    <Text className="text-4xl font-black text-light dark:text-dark">
-                                        {getValue(field) || '0'}
-                                    </Text>
+                        const goalReps = suggestedGoal?.reps;
+                        const placeholder = (field: 'reps' | 'reps_left' | 'reps_right') => {
+                            const val = parseInt(getValue(field)) || 0;
+                            const isAtGoal = goalReps !== undefined && val === goalReps;
+                            return (
+                                <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
+                                    {/* Matches the wheel's resting center box so the
+                                        swap to the live wheel is seamless. */}
+                                    <View
+                                        className="border-l border-r border-primary/20 bg-primary/5 justify-center items-center"
+                                        style={{ width: repsItemWidth, height: 56, borderRadius: 12 }}
+                                    >
+                                        <Text
+                                            className="text-4xl font-black text-light dark:text-dark"
+                                            style={isAtGoal ? { color: goalColor } : undefined}
+                                        >
+                                            {getValue(field) || '0'}
+                                        </Text>
+                                    </View>
                                 </View>
-                            </View>
-                        );
+                            );
+                        };
 
                         if (isUnilateral) {
                             // L and R wheels are stacked, not side by side, so
@@ -415,6 +487,8 @@ export function CardWorkoutSet({
                                                 values={REP_VALUES}
                                                 itemWidth={repsItemWidth}
                                                 unit=""
+                                                goalValue={goalReps}
+                                                goalColor={goalColor}
                                             />
                                         ) : placeholder(field)}
                                     </View>
@@ -429,6 +503,8 @@ export function CardWorkoutSet({
                                 values={REP_VALUES}
                                 itemWidth={repsItemWidth}
                                 unit=""
+                                goalValue={goalReps}
+                                goalColor={goalColor}
                             />
                         ) : placeholder('reps');
                     })()}
@@ -490,67 +566,91 @@ export function CardWorkoutSet({
                                                     {isLocalPrepping ? `${localPrepSecs}s` : formatSeconds(localRemainingSecs)}
                                                 </Text>
                                             </>
-                                        ) : wheelsReady ? (
-                                            <View style={{ height: 120, flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
-                                                {/* Selection Highlight */}
-                                                <View 
-                                                    className="absolute left-0 right-0 border-t border-b border-primary/20 bg-primary/5"
-                                                    style={{ height: 40, top: 40, borderRadius: 6 }} 
-                                                    pointerEvents="none" 
-                                                />
+                                        ) : (() => {
+                                            const totalSec = parseInt(durationVal) || 0;
+                                            const currentMin = Math.floor(totalSec / 60);
+                                            const currentSec = totalSec % 60;
+                                            const goalMin = suggestedDurationGoal
+                                                ? Math.floor(suggestedDurationGoal.duration / 60)
+                                                : undefined;
+                                            const goalSec = suggestedDurationGoal
+                                                ? suggestedDurationGoal.duration % 60
+                                                : undefined;
+                                            const isMinAtGoal = goalMin !== undefined && currentMin === goalMin;
+                                            const isSecAtGoal = goalSec !== undefined && currentSec === goalSec;
 
-                                                <VerticalSelectorWheel
-                                                    value={Math.floor((parseInt(durationVal) || 0) / 60)}
-                                                    onValueChange={handleDurationMinChange}
-                                                    values={INLINE_MIN_VALUES}
-                                                    itemHeight={40}
-                                                    width={50}
-                                                />
+                                            return wheelsReady ? (
+                                                <View style={{ height: 120, flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
+                                                    {/* Selection Highlight */}
+                                                    <View
+                                                        className="absolute left-0 right-0 border-t border-b border-primary/20 bg-primary/5"
+                                                        style={{ height: 40, top: 40, borderRadius: 6 }}
+                                                        pointerEvents="none"
+                                                    />
 
-                                                {/* Stationary 'm' Label */}
-                                                <Text className="text-sm font-bold text-light dark:text-dark mr-0.5" style={{ width: 12 }}>m</Text>
+                                                    <VerticalSelectorWheel
+                                                        value={currentMin}
+                                                        onValueChange={handleDurationMinChange}
+                                                        values={INLINE_MIN_VALUES}
+                                                        itemHeight={40}
+                                                        width={50}
+                                                        goalValue={goalMin}
+                                                        goalColor={goalColor}
+                                                    />
 
-                                                {/* Colon separator */}
-                                                <Text className="text-light dark:text-dark font-bold px-1 text-3xl opacity-60">:</Text>
+                                                    {/* Stationary 'm' Label */}
+                                                    <Text className="text-sm font-bold text-light dark:text-dark mr-0.5" style={{ width: 12 }}>m</Text>
 
-                                                <VerticalSelectorWheel
-                                                    value={(parseInt(durationVal) || 0) % 60}
-                                                    onValueChange={handleDurationSecChange}
-                                                    values={INLINE_SEC_VALUES}
-                                                    itemHeight={40}
-                                                    width={50}
-                                                />
+                                                    {/* Colon separator */}
+                                                    <Text className="text-light dark:text-dark font-bold px-1 text-3xl opacity-60">:</Text>
 
-                                                {/* Stationary 's' Label */}
-                                                <Text className="text-sm font-bold text-light dark:text-dark" style={{ width: 12 }}>s</Text>
-                                            </View>
-                                        ) : (
-                                            /* Static mirror of the live wheel's resting
-                                               state so the swap is seamless — same
-                                               highlight band, columns and labels, with
-                                               the selected min/sec at the wheel's
-                                               selected font size (36). */
-                                            <View style={{ height: 120, flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
-                                                <View
-                                                    className="absolute left-0 right-0 border-t border-b border-primary/20 bg-primary/5"
-                                                    style={{ height: 40, top: 40, borderRadius: 6 }}
-                                                    pointerEvents="none"
-                                                />
-                                                <View style={{ height: 120, width: 50 }} className="items-center justify-center">
-                                                    <Text className="font-black text-light dark:text-dark" style={{ fontSize: 36 }}>
-                                                        {Math.floor((parseInt(durationVal) || 0) / 60)}
-                                                    </Text>
+                                                    <VerticalSelectorWheel
+                                                        value={currentSec}
+                                                        onValueChange={handleDurationSecChange}
+                                                        values={INLINE_SEC_VALUES}
+                                                        itemHeight={40}
+                                                        width={50}
+                                                        goalValue={goalSec}
+                                                        goalColor={goalColor}
+                                                    />
+
+                                                    {/* Stationary 's' Label */}
+                                                    <Text className="text-sm font-bold text-light dark:text-dark" style={{ width: 12 }}>s</Text>
                                                 </View>
-                                                <Text className="text-sm font-bold text-light dark:text-dark mr-0.5" style={{ width: 12 }}>m</Text>
-                                                <Text className="text-light dark:text-dark font-bold px-1 text-3xl opacity-60">:</Text>
-                                                <View style={{ height: 120, width: 50 }} className="items-center justify-center">
-                                                    <Text className="font-black text-light dark:text-dark" style={{ fontSize: 36 }}>
-                                                        {(parseInt(durationVal) || 0) % 60}
-                                                    </Text>
+                                            ) : (
+                                                /* Static mirror of the live wheel's resting
+                                                   state so the swap is seamless — same
+                                                   highlight band, columns and labels, with
+                                                   the selected min/sec at the wheel's
+                                                   selected font size (36). */
+                                                <View style={{ height: 120, flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
+                                                    <View
+                                                        className="absolute left-0 right-0 border-t border-b border-primary/20 bg-primary/5"
+                                                        style={{ height: 40, top: 40, borderRadius: 6 }}
+                                                        pointerEvents="none"
+                                                    />
+                                                    <View style={{ height: 120, width: 50 }} className="items-center justify-center">
+                                                        <Text
+                                                            className="font-black text-light dark:text-dark"
+                                                            style={{ fontSize: 36, ...(isMinAtGoal ? { color: goalColor } : null) }}
+                                                        >
+                                                            {currentMin}
+                                                        </Text>
+                                                    </View>
+                                                    <Text className="text-sm font-bold text-light dark:text-dark mr-0.5" style={{ width: 12 }}>m</Text>
+                                                    <Text className="text-light dark:text-dark font-bold px-1 text-3xl opacity-60">:</Text>
+                                                    <View style={{ height: 120, width: 50 }} className="items-center justify-center">
+                                                        <Text
+                                                            className="font-black text-light dark:text-dark"
+                                                            style={{ fontSize: 36, ...(isSecAtGoal ? { color: goalColor } : null) }}
+                                                        >
+                                                            {currentSec}
+                                                        </Text>
+                                                    </View>
+                                                    <Text className="text-sm font-bold text-light dark:text-dark" style={{ width: 12 }}>s</Text>
                                                 </View>
-                                                <Text className="text-sm font-bold text-light dark:text-dark" style={{ width: 12 }}>s</Text>
-                                            </View>
-                                        )}
+                                            );
+                                        })()}
                                     </View>
                                 </View>
 

@@ -13,11 +13,13 @@ import { ProfileRepository } from "./ProfileRepository";
 import { useSyncService } from "../hooks/useSyncService";
 import uuid from 'react-native-uuid';
 import { storage } from "../utils/storage";
+import { DEFAULT_REP_CEILING } from "../utils/progressiveOverload";
+import { REP_CEILING_STORAGE_KEY } from "../utils/progressiveOverloadSettings";
 
 
 // Re-export types for compatibility
 export type { Exercise, SetLog, WorkoutLog } from "../utils/workout-api";
-export { fetchExercises, fetchMuscleGroups, fetchExerciseStats, fetchLastExercisePerformance, getExerciseDefaultProperties, fetchWorkoutLogDetails } from "../utils/workout-api";
+export { fetchExercises, fetchMuscleGroups, fetchExerciseStats, fetchLastExercisePerformance, fetchRecentSetRpeAverages, getExerciseDefaultProperties, fetchWorkoutLogDetails } from "../utils/workout-api";
 
 interface WorkoutManagerContextType {
     savedWorkouts: any[];
@@ -51,6 +53,10 @@ interface WorkoutManagerContextType {
     reorderSavedWorkouts: (newWorkouts: any[]) => Promise<void>;
     isRpeEnabled: boolean;
     setIsRpeEnabled: (enabled: boolean) => Promise<void>;
+    isProgressiveOverloadEnabled: boolean;
+    setIsProgressiveOverloadEnabled: (enabled: boolean) => Promise<void>;
+    progressiveOverloadRepCeiling: number;
+    setProgressiveOverloadRepCeiling: (ceiling: number) => Promise<void>;
 }
 
 const WorkoutManagerContext = createContext<WorkoutManagerContextType | undefined>(undefined);
@@ -64,6 +70,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isRpeEnabled, setIsRpeEnabledState] = useState(false);
+    const [isProgressiveOverloadEnabled, setIsProgressiveOverloadEnabledState] = useState(true);
+    const [progressiveOverloadRepCeiling, setProgressiveOverloadRepCeilingState] = useState(DEFAULT_REP_CEILING);
 
     const { lastSyncedAt, sync, isSyncing } = useSyncService();
 
@@ -81,6 +89,16 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
     const setIsRpeEnabled = useCallback(async (enabled: boolean) => {
         setIsRpeEnabledState(enabled);
         await storage.setItem('setting.workout.isRpeEnabled', enabled);
+    }, []);
+
+    const setIsProgressiveOverloadEnabled = useCallback(async (enabled: boolean) => {
+        setIsProgressiveOverloadEnabledState(enabled);
+        await storage.setItem('setting.workout.isProgressiveOverloadEnabled', enabled);
+    }, []);
+
+    const setProgressiveOverloadRepCeiling = useCallback(async (ceiling: number) => {
+        setProgressiveOverloadRepCeilingState(ceiling);
+        await storage.setItem(REP_CEILING_STORAGE_KEY, ceiling);
     }, []);
 
     // Initial Load - Local First
@@ -117,6 +135,12 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
 
                 const rpeVal = await storage.getItem<boolean>('setting.workout.isRpeEnabled');
                 setIsRpeEnabledState(!!rpeVal);
+
+                const progressiveOverloadVal = await storage.getItem<boolean>('setting.workout.isProgressiveOverloadEnabled');
+                setIsProgressiveOverloadEnabledState(progressiveOverloadVal === null ? true : !!progressiveOverloadVal);
+
+                const repCeilingVal = await storage.getItem<number>(REP_CEILING_STORAGE_KEY);
+                setProgressiveOverloadRepCeilingState(repCeilingVal === null ? DEFAULT_REP_CEILING : repCeilingVal);
             } catch (e) {
                 console.error("Failed to load local data", e);
             } finally {
@@ -486,13 +510,19 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         reorderSavedWorkouts,
         isRpeEnabled,
         setIsRpeEnabled,
+        isProgressiveOverloadEnabled,
+        setIsProgressiveOverloadEnabled,
+        progressiveOverloadRepCeiling,
+        setProgressiveOverloadRepCeiling,
     }), [
         savedWorkouts, routines, activeRoutine, startActiveRoutine, setActiveRoutineIndex,
         markRoutineDayComplete, clearActiveRoutine, isSaving, isLoading, saveWorkout,
         deleteSavedWorkout, updateSavedWorkout, saveRoutineDraft, updateRoutine,
         deleteRoutine, workoutHistory, fetchWorkoutLogDetailsStable, saveCompletedWorkout,
         deleteWorkoutLog, createCustomExercise, deleteCustomExercise, lastSyncedAt,
-        sync, isSyncing, reorderSavedWorkouts, isRpeEnabled, setIsRpeEnabled
+        sync, isSyncing, reorderSavedWorkouts, isRpeEnabled, setIsRpeEnabled,
+        isProgressiveOverloadEnabled, setIsProgressiveOverloadEnabled,
+        progressiveOverloadRepCeiling, setProgressiveOverloadRepCeiling
     ]);
 
     return <WorkoutManagerContext.Provider value={value}>{children}</WorkoutManagerContext.Provider>;
@@ -530,6 +560,10 @@ export function useWorkoutManager() {
             reorderSavedWorkouts: async () => {},
             isRpeEnabled: false,
             setIsRpeEnabled: async () => {},
+            isProgressiveOverloadEnabled: true,
+            setIsProgressiveOverloadEnabled: async () => {},
+            progressiveOverloadRepCeiling: DEFAULT_REP_CEILING,
+            setProgressiveOverloadRepCeiling: async () => {},
         } as any;
     }
     return context;

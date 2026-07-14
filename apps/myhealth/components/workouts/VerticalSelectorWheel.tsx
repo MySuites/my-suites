@@ -7,6 +7,12 @@ interface VerticalSelectorWheelProps {
     values: number[];
     itemHeight: number;
     width: number;
+    // When the item at a given slot equals this value, its text renders in
+    // goalColor instead of the default — marks the progressive-overload
+    // suggestion directly on the wheel, same treatment as
+    // HorizontalSelectorWheel's weight/reps wheels.
+    goalValue?: number;
+    goalColor?: string;
 }
 
 function VerticalSelectorWheelBase({
@@ -14,7 +20,9 @@ function VerticalSelectorWheelBase({
     onValueChange,
     values,
     itemHeight,
-    width
+    width,
+    goalValue,
+    goalColor,
 }: VerticalSelectorWheelProps) {
     const inlineData = React.useMemo(() => [null, ...values, null], [values]);
     const scrollRef = React.useRef<ScrollView>(null);
@@ -83,12 +91,13 @@ function VerticalSelectorWheelBase({
                         }}
                     >
                         {item !== null && (
-                            <Text 
+                            <Text
                                 className="font-black text-light dark:text-dark"
                                 style={{
                                     fontSize: item === localSelectedValue ? 36 : 16,
                                     opacity: item === localSelectedValue ? 1.0 : 0.1,
-                                    transform: [{ scale: item === localSelectedValue ? 1.0 : 0.9 }]
+                                    transform: [{ scale: item === localSelectedValue ? 1.0 : 0.9 }],
+                                    ...(goalValue !== undefined && goalColor && item === goalValue ? { color: goalColor } : null),
                                 }}
                             >
                                 {item}

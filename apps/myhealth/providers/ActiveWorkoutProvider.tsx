@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
-import { Exercise, useWorkoutManager, fetchLastExercisePerformance } from './WorkoutManagerProvider'; 
+import { Exercise, useWorkoutManager, fetchLastExercisePerformance, fetchRecentSetRpeAverages } from './WorkoutManagerProvider';
 import { useAuth } from '@mysuite/auth';
 import { createExercise } from '../utils/workout-logic';
 import { useActiveWorkoutTimers } from '../hooks/workouts/useActiveWorkoutTimers';
@@ -116,12 +116,15 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
             let hasChanged = false;
             const updatedExercises = await Promise.all(exercises.map(async (ex) => {
                 // If it's a real exercise (UUID) and doesn't have previousLog yet
-                if (ex.id && !ex.previousLog && (ex.id.length > 20 || ex.id.includes('-'))) { 
+                if (ex.id && !ex.previousLog && (ex.id.length > 20 || ex.id.includes('-'))) {
                     try {
-                        const { data } = await fetchLastExercisePerformance(user, ex.id, ex.name);
+                        const [{ data }, avgRpeBySetIndex] = await Promise.all([
+                            fetchLastExercisePerformance(user, ex.id, ex.name),
+                            fetchRecentSetRpeAverages(user, ex.id, ex.name),
+                        ]);
                         if (data && isMounted) {
                             hasChanged = true;
-                            return { ...ex, previousLog: data };
+                            return { ...ex, previousLog: data, avgRpeBySetIndex };
                         }
                     } catch {
                         console.error("Failed to fetch previous log for", ex.name);
@@ -129,10 +132,13 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                 } else if (!ex.previousLog) {
                     // Even if it's not a UUID, we can try by name
                     try {
-                        const { data } = await fetchLastExercisePerformance(user, "", ex.name);
+                        const [{ data }, avgRpeBySetIndex] = await Promise.all([
+                            fetchLastExercisePerformance(user, "", ex.name),
+                            fetchRecentSetRpeAverages(user, "", ex.name),
+                        ]);
                         if (data && isMounted) {
                             hasChanged = true;
-                            return { ...ex, previousLog: data };
+                            return { ...ex, previousLog: data, avgRpeBySetIndex };
                         }
                     } catch { /* ignore fallback fail */ }
                 }

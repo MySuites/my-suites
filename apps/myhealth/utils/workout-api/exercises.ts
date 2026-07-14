@@ -368,6 +368,54 @@ export async function fetchLastExercisePerformance(
         return { data: null, error: e };
     }
 }
+// Average logged RPE per set index across the last few sessions of an
+// exercise — feeds the progressive-overload suggestion so it can back off
+// when recent sets have been grinding (high RPE) or push harder when recent
+// sets have been easy (low RPE), instead of blindly adding a rep every time.
+export async function fetchRecentSetRpeAverages(
+    user: any,
+    exerciseId: string,
+    exerciseName?: string,
+    sessionsToConsider: number = 3,
+): Promise<Record<number, number>> {
+    try {
+        const history = await DataRepository.getHistory();
+        const sortedHistory = [...history].sort((a: any, b: any) =>
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        // setIndex -> collected RPE values from the most recent matching sessions
+        const rpesByIndex: Record<number, number[]> = {};
+        let sessionsSeen = 0;
+
+        for (const h of sortedHistory) {
+            const ex = h.exercises.find((e: any) =>
+                e.id === exerciseId || e.name === exerciseName
+            );
+            if (!ex || !ex.logs || ex.logs.length === 0) continue;
+
+            sessionsSeen++;
+            ex.logs.forEach((log: any, idx: number) => {
+                const rpe = parseFloat(log?.rpe);
+                if (!isNaN(rpe)) {
+                    if (!rpesByIndex[idx]) rpesByIndex[idx] = [];
+                    rpesByIndex[idx].push(rpe);
+                }
+            });
+
+            if (sessionsSeen >= sessionsToConsider) break;
+        }
+
+        const averages: Record<number, number> = {};
+        Object.entries(rpesByIndex).forEach(([idx, values]) => {
+            averages[parseInt(idx, 10)] = values.reduce((a, b) => a + b, 0) / values.length;
+        });
+        return averages;
+    } catch (e) {
+        return {};
+    }
+}
+
 // Helper to get default properties for an exercise ID (to handle stale data)
 export function getExerciseDefaultProperties(id: string): string[] {
     const def = ExerciseDefaultData.find((e: any) => e.id === id);
