@@ -328,6 +328,70 @@ export const initDatabase = async () => {
         console.error("[DB] Failed running set_logs backfill migration:", e);
     }
 
+    // Migrate template default RPE of 4 -> 6 (4 was removed from the RPE
+    // picker). Only touches setTargets — the planned/default RPE for a set
+    // when starting a fresh workout from a template — never logs or
+    // previousLog, which hold actually-recorded history and must keep any
+    // RPE=4 values exactly as logged. Self-gating: the LIKE filter means
+    // re-running on later app starts is a cheap no-op once nothing matches.
+    try {
+        console.log("[DB] Running RPE 4->6 template migration...");
+
+        const migrateSetTargets = (exercisesJson: any[]): boolean => {
+            let changed = false;
+            exercisesJson.forEach((ex: any) => {
+                if (Array.isArray(ex?.setTargets)) {
+                    ex.setTargets.forEach((target: any) => {
+                        if (target && (target.rpe === 4 || target.rpe === '4')) {
+                            target.rpe = 6;
+                            changed = true;
+                        }
+                    });
+                }
+            });
+            return changed;
+        };
+
+        const workoutRows = await database.getAllAsync<any>(
+            `SELECT id, exercises FROM workouts WHERE exercises LIKE '%"rpe":4%' OR exercises LIKE '%"rpe":"4"%'`
+        );
+        for (const row of workoutRows) {
+            try {
+                const exercises = JSON.parse(row.exercises);
+                if (Array.isArray(exercises) && migrateSetTargets(exercises)) {
+                    await database.runAsync('UPDATE workouts SET exercises = ? WHERE id = ?', [JSON.stringify(exercises), row.id]);
+                }
+            } catch (e) {
+                console.error(`[DB] Failed migrating RPE for workout ${row.id}:`, e);
+            }
+        }
+
+        const routineRows = await database.getAllAsync<any>(
+            `SELECT id, sequence FROM routines WHERE sequence LIKE '%"rpe":4%' OR sequence LIKE '%"rpe":"4"%'`
+        );
+        for (const row of routineRows) {
+            try {
+                const sequence = JSON.parse(row.sequence);
+                if (!Array.isArray(sequence)) continue;
+                let routineChanged = false;
+                sequence.forEach((item: any) => {
+                    if (Array.isArray(item?.workout?.exercises) && migrateSetTargets(item.workout.exercises)) {
+                        routineChanged = true;
+                    }
+                });
+                if (routineChanged) {
+                    await database.runAsync('UPDATE routines SET sequence = ? WHERE id = ?', [JSON.stringify(sequence), row.id]);
+                }
+            } catch (e) {
+                console.error(`[DB] Failed migrating RPE for routine ${row.id}:`, e);
+            }
+        }
+
+        console.log(`[DB] RPE 4->6 template migration complete. ${workoutRows.length} workout(s), ${routineRows.length} routine(s) checked.`);
+    } catch (e) {
+        console.error("[DB] Failed running RPE 4->6 template migration:", e);
+    }
+
     // Migration for consolidated exercises
     try {
         console.log("[DB] Running consolidation migrations...");

@@ -7,7 +7,7 @@ const VISIBLE_ITEMS = 5;
 const WHEEL_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 
 // Hardcoded values to simplify selection based on user preference
-const VALUES = [1, 4, 6, 7, 8, 8.5, 9, 9.5, 10];
+const VALUES = [1, 6, 7, 8, 8.5, 9, 9.5, 10];
 
 interface RPEPickerProps {
     visible: boolean;
