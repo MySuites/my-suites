@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, useWindowDimensions, Animated as RNAnimated } from 'react-native';
+import { useSetPagerScrollLock } from '../exercises/SetPagerScrollLock';
 
 interface HorizontalSelectorWheelProps {
     value: number;
@@ -7,6 +8,11 @@ interface HorizontalSelectorWheelProps {
     values: number[];
     itemWidth: number;
     unit?: string;
+    // Width the wheel centers itself within. Defaults to the full screen
+    // width (the original single-wheel behavior, e.g. the weight wheel).
+    // Pass a smaller value to fit two wheels side by side, e.g. for
+    // unilateral (L/R) reps.
+    containerWidth?: number;
 }
 
 function HorizontalSelectorWheelBase({
@@ -14,9 +20,12 @@ function HorizontalSelectorWheelBase({
     onValueChange,
     values,
     itemWidth,
-    unit = 'lb'
+    unit = 'lb',
+    containerWidth,
 }: HorizontalSelectorWheelProps) {
-    const { width } = useWindowDimensions();
+    const { width: windowWidth } = useWindowDimensions();
+    const width = containerWidth ?? windowWidth;
+    const { lock: lockSetPager, unlock: unlockSetPager } = useSetPagerScrollLock();
     const inlineData = React.useMemo(() => [null, ...values, null], [values]);
     const scrollX = React.useRef(new RNAnimated.Value(0)).current;
     const scrollViewRef = React.useRef<any>(null);
@@ -67,6 +76,14 @@ function HorizontalSelectorWheelBase({
             <RNAnimated.ScrollView
                 ref={scrollViewRef}
                 horizontal
+                // Disable the outer set-swipe pager for the duration of any
+                // touch on this wheel. Same-axis nested horizontal
+                // ScrollViews negotiate gestures unreliably in RN — without
+                // this, the outer pager can intermittently steal part of a
+                // drag, causing the wheel to snap to the wrong value.
+                onTouchStart={lockSetPager}
+                onTouchEnd={unlockSetPager}
+                onTouchCancel={unlockSetPager}
                 onLayout={() => {
                     const offset = getScrollOffset(value);
                     // Keep scrollX in sync with the initial scroll position so the

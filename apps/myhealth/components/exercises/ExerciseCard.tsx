@@ -11,6 +11,7 @@ import { formatRestTime } from '../../utils/formatting';
 import { RPEPicker } from '../workouts/RPEPicker';
 
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
+import { SetPagerScrollLockProvider } from './SetPagerScrollLock';
 
 interface ExerciseCardProps {
     exercise: Exercise;
@@ -89,6 +90,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
     }, [onActiveSetChange]);
 
     const [cardWidth, setCardWidth] = useState(dimensions.width - 64);
+    const [isSetPagerScrollEnabled, setIsSetPagerScrollEnabled] = useState(true);
     const scrollViewRef = useRef<ScrollView>(null);
     const totalSets = Math.max(exercise.sets, exercise.logs?.length || 0);
     const prevSetsCountRef = useRef(exercise.sets);
@@ -439,6 +441,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                             ref={scrollViewRef}
                             horizontal
                             pagingEnabled
+                            scrollEnabled={isSetPagerScrollEnabled}
                             showsHorizontalScrollIndicator={false}
                             style={{ flex: 1 }}
                             onLayout={(e) => {
@@ -465,31 +468,33 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                 }
                             }}
                         >
-                            {Array.from({ length: totalSets }).map((_, i) => (
-                                <View key={`set-${i}`} style={{ width: cardWidth, flex: 1 }}>
-                                    <SetRow
-                                        index={i}
-                                        exercise={exercise}
-                                        onCompleteSet={() => handleCompleteSetAndAutoPage(i)}
-                                        onUpdateSetTarget={onUpdateSetTarget}
-                                        onDeleteSet={onDeleteSet || (() => {})}
-                                        onPressRPE={(setIdx, val) => {
-                                            setRPEPickerIndex(setIdx);
-                                            setRPEPickerValue(val);
-                                            setIsRPEPickerVisible(true);
-                                        }}
-                                        theme={theme}
-                                        latestBodyWeight={latestBodyWeight}
-                                        exercisePrepTime={exercise.prepTime}
-                                        onUpdatePrepTime={onUpdatePrepTime}
-                                        enableSwipeToDelete={false}
-                                        showCheckbox={false}
-                                        showSetNumber={false}
-                                        isActiveSet={i === activeSetIndex && ((isCurrent ?? false) || (preloadWheels ?? false))}
-                                        onPressRestTimer={() => setIsPickerVisible(true)}
-                                    />
-                                </View>
-                            ))}
+                            <SetPagerScrollLockProvider setScrollEnabled={setIsSetPagerScrollEnabled}>
+                                {Array.from({ length: totalSets }).map((_, i) => (
+                                    <View key={`set-${i}`} style={{ width: cardWidth, flex: 1 }}>
+                                        <SetRow
+                                            index={i}
+                                            exercise={exercise}
+                                            onCompleteSet={() => handleCompleteSetAndAutoPage(i)}
+                                            onUpdateSetTarget={onUpdateSetTarget}
+                                            onDeleteSet={onDeleteSet || (() => {})}
+                                            onPressRPE={(setIdx, val) => {
+                                                setRPEPickerIndex(setIdx);
+                                                setRPEPickerValue(val);
+                                                setIsRPEPickerVisible(true);
+                                            }}
+                                            theme={theme}
+                                            latestBodyWeight={latestBodyWeight}
+                                            exercisePrepTime={exercise.prepTime}
+                                            onUpdatePrepTime={onUpdatePrepTime}
+                                            enableSwipeToDelete={false}
+                                            showCheckbox={false}
+                                            showSetNumber={false}
+                                            isActiveSet={i === activeSetIndex && ((isCurrent ?? false) || (preloadWheels ?? false))}
+                                            onPressRestTimer={() => setIsPickerVisible(true)}
+                                        />
+                                    </View>
+                                ))}
+                            </SetPagerScrollLockProvider>
                         </ScrollView>
                     ) : null
                 ) : (

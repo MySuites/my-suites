@@ -13,6 +13,7 @@ const INLINE_MIN_VALUES = Array.from({ length: 15 }, (_, i) => i);
 const INLINE_SEC_VALUES = Array.from({ length: 60 }, (_, i) => i);
 const WEIGHT_VALUES = Array.from({ length: 201 }, (_, i) => i * 2.5); // 0 to 500
 const WEIGHT_ITEM_WIDTH = 120;
+const REP_VALUES = Array.from({ length: 51 }, (_, i) => i); // 0 to 50
 
 import { getExerciseFields } from './SetRow';
 
@@ -47,7 +48,7 @@ export function CardWorkoutSet({
     onPressRestTimer,
     isCompleted
 }: CardWorkoutSetProps) {
-    const { height: windowHeight } = useWindowDimensions();
+    const { height: windowHeight, width: windowWidth } = useWindowDimensions();
     const colorScheme = useColorScheme();
     const isSmallScreen = windowHeight < 900;
     const rowPadding = isSmallScreen ? 'py-1' : 'py-2';
@@ -138,6 +139,18 @@ export function CardWorkoutSet({
 
     const handleWeightChange = React.useCallback((val: number) => {
         onUpdateSetTargetRef.current?.(index, 'weight', val.toString());
+    }, [index]);
+
+    const handleRepsChange = React.useCallback((val: number) => {
+        onUpdateSetTargetRef.current?.(index, 'reps', val.toString());
+    }, [index]);
+
+    const handleRepsLeftChange = React.useCallback((val: number) => {
+        onUpdateSetTargetRef.current?.(index, 'reps_left', val.toString());
+    }, [index]);
+
+    const handleRepsRightChange = React.useCallback((val: number) => {
+        onUpdateSetTargetRef.current?.(index, 'reps_right', val.toString());
     }, [index]);
 
     const handleDurationMinChange = React.useCallback((newMin: number) => {
@@ -347,39 +360,64 @@ export function CardWorkoutSet({
             {showReps && (
                 <View className="flex-col items-center justify-center py-2">
                     <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Reps</Text>
-                    {isUnilateral ? (
-                        <View className="flex-row items-center justify-center gap-2">
-                            <TextInput 
-                                className={`w-24 h-14 bg-black/5 dark:bg-white/5 rounded-xl px-3 py-1.5 text-center text-4xl font-black ${getTextColor(getValue('reps_left'))}`}
-                                value={getValue('reps_left')}
-                                onChangeText={(t: string) => handleNumericChange(t, getValue('reps_left'), (v) => onUpdateSetTarget?.(index, 'reps_left', v))}
-                                keyboardType="numeric" 
-                                placeholder="L"
-                                placeholderTextColor={theme.placeholder || '#888'}
-                                selectTextOnFocus
+                    {(() => {
+                        // itemWidth = width/3 so the two side gaps each equal
+                        // exactly one item slot — the same ratio that makes the
+                        // weight wheel show exactly one neighbor per side, not a
+                        // fixed constant that happens to work at one width.
+                        const repsItemWidth = windowWidth / 3;
+                        const placeholder = (field: 'reps' | 'reps_left' | 'reps_right') => (
+                            <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
+                                {/* Matches the wheel's resting center box so the
+                                    swap to the live wheel is seamless. */}
+                                <View
+                                    className="border-l border-r border-primary/20 bg-primary/5 justify-center items-center"
+                                    style={{ width: repsItemWidth, height: 56, borderRadius: 12 }}
+                                >
+                                    <Text className="text-4xl font-black text-light dark:text-dark">
+                                        {getValue(field) || '0'}
+                                    </Text>
+                                </View>
+                            </View>
+                        );
+
+                        if (isUnilateral) {
+                            // L and R wheels are stacked, not side by side, so
+                            // each spans the full card width — centered exactly
+                            // like the weight wheel, not offset by a side label.
+                            return (['left', 'right'] as const).map((side) => {
+                                const field = side === 'left' ? 'reps_left' : 'reps_right';
+                                const label = side === 'left' ? 'Left' : 'Right';
+                                const onChange = side === 'left' ? handleRepsLeftChange : handleRepsRightChange;
+                                return (
+                                    <View key={side} style={{ marginTop: side === 'right' ? 12 : 0, alignItems: 'center' }}>
+                                        <Text className="text-[10px] font-bold text-light-muted dark:text-dark-muted uppercase tracking-widest mb-1">
+                                            {label}
+                                        </Text>
+                                        {wheelsReady ? (
+                                            <HorizontalSelectorWheel
+                                                value={parseInt(getValue(field)) || 0}
+                                                onValueChange={onChange}
+                                                values={REP_VALUES}
+                                                itemWidth={repsItemWidth}
+                                                unit=""
+                                            />
+                                        ) : placeholder(field)}
+                                    </View>
+                                );
+                            });
+                        }
+
+                        return wheelsReady ? (
+                            <HorizontalSelectorWheel
+                                value={parseInt(getValue('reps')) || 0}
+                                onValueChange={handleRepsChange}
+                                values={REP_VALUES}
+                                itemWidth={repsItemWidth}
+                                unit=""
                             />
-                            <Text className="text-light-muted dark:text-dark-muted text-xl font-bold">/</Text>
-                            <TextInput 
-                                className={`w-24 h-14 bg-black/5 dark:bg-white/5 rounded-xl px-3 py-1.5 text-center text-4xl font-black ${getTextColor(getValue('reps_right'))}`}
-                                value={getValue('reps_right')}
-                                onChangeText={(t: string) => handleNumericChange(t, getValue('reps_right'), (v) => onUpdateSetTarget?.(index, 'reps_right', v))}
-                                keyboardType="numeric" 
-                                placeholder="R"
-                                placeholderTextColor={theme.placeholder || '#888'}
-                                selectTextOnFocus
-                            />
-                        </View>
-                    ) : (
-                        <TextInput 
-                            className={`w-36 h-14 bg-black/5 dark:bg-white/5 rounded-xl px-4 py-1.5 text-center text-4xl font-black ${getTextColor(getValue('reps'))}`}
-                            value={getValue('reps')}
-                            onChangeText={(t: string) => handleNumericChange(t, getValue('reps'), (v) => onUpdateSetTarget?.(index, 'reps', v))}
-                            keyboardType="numeric" 
-                            placeholder="-"
-                            placeholderTextColor={theme.placeholder || '#888'}
-                            selectTextOnFocus
-                        />
-                    )}
+                        ) : placeholder('reps');
+                    })()}
                 </View>
             )}
 
