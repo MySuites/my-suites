@@ -9,6 +9,9 @@ import { lbToDisplay, roundForDisplay } from '../../utils/units';
 interface StrengthRankCardProps {
     bests: LiftBest[];
     bodyweight: number | null;
+    // Inches (canonical unit) — optional; when absent, ranks fall back to
+    // the unadjusted bodyweight-only ratio.
+    heightInches?: number | null;
     sex: StrengthSex;
     onChangeSex: (sex: StrengthSex) => void;
     isLoading?: boolean;
@@ -25,7 +28,7 @@ function tierColor(theme: any, tier: StrengthTier | null): string {
     }
 }
 
-export function StrengthRankCard({ bests, bodyweight, sex, onChangeSex, isLoading }: StrengthRankCardProps) {
+export function StrengthRankCard({ bests, bodyweight, heightInches, sex, onChangeSex, isLoading }: StrengthRankCardProps) {
     const theme = useUITheme();
     const { unitSystem, weightUnit } = useUnitPreference();
 
@@ -69,7 +72,7 @@ export function StrengthRankCard({ bests, bodyweight, sex, onChangeSex, isLoadin
                 <View style={{ marginTop: 8 }}>
                     {RANKED_LIFTS.map((lift) => {
                         const best = bests.find((b) => b.exerciseId === lift.exerciseId)?.bestEstimatedOneRepMax ?? null;
-                        const rank = best ? getStrengthRank(lift.exerciseId, best, bodyweight, sex) : null;
+                        const rank = best ? getStrengthRank(lift.exerciseId, best, bodyweight, sex, heightInches) : null;
                         const color = tierColor(theme, rank?.tier ?? null);
 
                         return (

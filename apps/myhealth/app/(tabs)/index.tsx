@@ -21,6 +21,7 @@ import { useStrengthRanks } from '../../hooks/workouts/useStrengthRanks';
 import { storage } from '../../utils/storage';
 import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
 import { RANKING_SEX_STORAGE_KEY, DEFAULT_RANKING_SEX, StrengthSex } from '../../utils/strengthStandards';
+import { HEIGHT_STORAGE_KEY } from '../../utils/height';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import { lbToDisplay, roundForDisplay } from '../../utils/units';
 
@@ -422,6 +423,22 @@ export default function HomeScreen() {
   };
   const { bests: strengthBests, isLoading: strengthLoading } = useStrengthRanks(user);
 
+  const [heightInches, setHeightInches] = useState<number | null>(null);
+  useEffect(() => {
+    storage.getItem<number>(HEIGHT_STORAGE_KEY).then((height) => {
+      if (height !== null) setHeightInches(height);
+    });
+  }, []);
+  // Re-check on focus too, same reasoning as weeklyGoal above — height is
+  // set from Settings, a separate screen.
+  useFocusEffect(
+    useCallback(() => {
+      storage.getItem<number>(HEIGHT_STORAGE_KEY).then((height) => {
+        if (height !== null) setHeightInches(height);
+      });
+    }, [])
+  );
+
   const handleSaveWeight = async (weight: number, date: Date) => {
     try {
         await BodyWeightService.saveWeight(user?.id || null, weight, date);
@@ -459,6 +476,7 @@ export default function HomeScreen() {
           <StrengthRankCard
             bests={strengthBests}
             bodyweight={latestWeight}
+            heightInches={heightInches}
             sex={rankingSex}
             onChangeSex={handleChangeRankingSex}
             isLoading={strengthLoading}

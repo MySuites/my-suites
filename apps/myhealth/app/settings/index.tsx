@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, Alert, ScrollView, Switch, InteractionManager, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, Alert, ScrollView, Switch, InteractionManager, TouchableOpacity, Platform, TextInput } from 'react-native';
 import { useUITheme, ThemeToggle, IconSymbol, useToast, RaisedCard } from '@mysuite/ui';
 
 import { DataRepository } from '../../providers/DataRepository';
@@ -18,6 +18,7 @@ import * as Application from 'expo-application';
 import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
 import { REP_CEILING_MIN, REP_CEILING_MAX } from '../../utils/progressiveOverload';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
+import { HEIGHT_STORAGE_KEY, inchesToCm, cmToInches, feetInchesToTotalInches, totalInchesToFeetInches } from '../../utils/height';
 
 const PRIVACY_POLICY_URL = 'https://mysuites.github.io/my-suites/privacy_policy.html';
 const TERMS_OF_SERVICE_URL = 'https://mysuites.github.io/my-suites/tos.html';
@@ -38,6 +39,48 @@ export default function SettingsScreen() {
   const handleUpdateUnitSystem = async (system: 'imperial' | 'metric') => {
     await setUnitSystem(system);
     showToast({ message: `Weight units set to ${system === 'imperial' ? 'lb' : 'kg'}`, type: 'success' });
+  };
+
+  // Height is a single stored value (inches, canonical) — not a history log
+  // like body weight, since it rarely changes for adults. Local input
+  // strings are kept separate from the committed value so the user can
+  // clear/retype a field without it snapping back mid-edit.
+  const [heightInches, setHeightInches] = useState<number | null>(null);
+  const [heightFeetInput, setHeightFeetInput] = useState('');
+  const [heightInchesInput, setHeightInchesInput] = useState('');
+  const [heightCmInput, setHeightCmInput] = useState('');
+
+  const syncHeightInputs = (totalInches: number) => {
+    const { feet, inches } = totalInchesToFeetInches(totalInches);
+    setHeightFeetInput(String(feet));
+    setHeightInchesInput(String(inches));
+    setHeightCmInput(String(Math.round(inchesToCm(totalInches))));
+  };
+
+  const handleChangeHeightFeet = (t: string) => {
+    if (t === '' || /^\d*$/.test(t)) setHeightFeetInput(t);
+  };
+  const handleChangeHeightInches = (t: string) => {
+    if (t === '' || /^\d*$/.test(t)) setHeightInchesInput(t);
+  };
+  const handleChangeHeightCm = (t: string) => {
+    if (t === '' || /^\d*$/.test(t)) setHeightCmInput(t);
+  };
+
+  const handleCommitHeight = async () => {
+    let totalInches: number | null = null;
+    if (unitSystem === 'imperial') {
+      const feet = parseInt(heightFeetInput) || 0;
+      const inches = parseInt(heightInchesInput) || 0;
+      if (feet > 0 || inches > 0) totalInches = feetInchesToTotalInches(feet, inches);
+    } else {
+      const cm = parseFloat(heightCmInput);
+      if (!isNaN(cm) && cm > 0) totalInches = cmToInches(cm);
+    }
+    if (totalInches === null) return;
+    setHeightInches(totalInches);
+    await storage.setItem(HEIGHT_STORAGE_KEY, totalInches);
+    syncHeightInputs(totalInches);
   };
   const handleDeleteData = () => {
     Alert.alert(
@@ -210,9 +253,21 @@ export default function SettingsScreen() {
 
       const goal = await storage.getItem<number>(WEEKLY_GOAL_STORAGE_KEY);
       if (goal !== null) setWeeklyGoal(goal);
+
+      const height = await storage.getItem<number>(HEIGHT_STORAGE_KEY);
+      if (height !== null) {
+        setHeightInches(height);
+        syncHeightInputs(height);
+      }
     }
     loadPrefs();
   }, []);
+
+  // Re-sync the display inputs (feet/in vs cm) when the unit system changes
+  // elsewhere, so the height fields don't show stale values in the old unit.
+  useEffect(() => {
+    if (heightInches !== null) syncHeightInputs(heightInches);
+  }, [unitSystem]);
 
   const checkHealthStatus = useCallback(async () => {
     const isAuth = await HealthKitService.isAuthorized();
@@ -304,6 +359,56 @@ export default function SettingsScreen() {
                 </TouchableOpacity>
               ))}
             </View>
+          </View>
+        </View>
+
+        <View className="mb-6">
+          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Body</Text>
+          <View className="flex-row justify-between items-center py-3">
+            <Text className="text-base text-light dark:text-dark font-medium">Height</Text>
+            {unitSystem === 'imperial' ? (
+              <View className="flex-row items-center gap-2">
+                <TextInput
+                  testID="height-feet-input"
+                  className="w-12 h-10 bg-light dark:bg-dark rounded-lg text-center text-base text-light dark:text-dark"
+                  value={heightFeetInput}
+                  onChangeText={handleChangeHeightFeet}
+                  onBlur={handleCommitHeight}
+                  keyboardType="numeric"
+                  placeholder="-"
+                  placeholderTextColor={theme.placeholder}
+                  maxLength={1}
+                />
+                <Text className="text-light-muted dark:text-dark-muted">ft</Text>
+                <TextInput
+                  testID="height-inches-input"
+                  className="w-12 h-10 bg-light dark:bg-dark rounded-lg text-center text-base text-light dark:text-dark"
+                  value={heightInchesInput}
+                  onChangeText={handleChangeHeightInches}
+                  onBlur={handleCommitHeight}
+                  keyboardType="numeric"
+                  placeholder="-"
+                  placeholderTextColor={theme.placeholder}
+                  maxLength={2}
+                />
+                <Text className="text-light-muted dark:text-dark-muted">in</Text>
+              </View>
+            ) : (
+              <View className="flex-row items-center gap-2">
+                <TextInput
+                  testID="height-cm-input"
+                  className="w-16 h-10 bg-light dark:bg-dark rounded-lg text-center text-base text-light dark:text-dark"
+                  value={heightCmInput}
+                  onChangeText={handleChangeHeightCm}
+                  onBlur={handleCommitHeight}
+                  keyboardType="numeric"
+                  placeholder="-"
+                  placeholderTextColor={theme.placeholder}
+                  maxLength={3}
+                />
+                <Text className="text-light-muted dark:text-dark-muted">cm</Text>
+              </View>
+            )}
           </View>
         </View>
 

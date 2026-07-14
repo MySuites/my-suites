@@ -46,15 +46,55 @@ export interface StrengthRankResult {
     progressToNextTier: number | null; // 0-1, null if no next tier
 }
 
+// Reference height each sex's STANDARDS table is implicitly calibrated
+// against (population-average adult height). Not itself a cited standard —
+// published bodyweight-relative tables don't publish a height baseline, so
+// this uses the population average as the most defensible zero-point.
+const REFERENCE_HEIGHT_INCHES: Record<StrengthSex, number> = {
+    male: 69,   // ~175cm
+    female: 64, // ~163cm
+};
+
+// Percent the required ratio shifts per inch of height difference from the
+// reference. Taller lifters move the bar/torso further per rep (longer
+// ROM, worse leverage), so the same tier should require a slightly lower
+// ratio the taller you are, and a slightly higher one the shorter you are.
+// Squat and deadlift are more ROM-sensitive to height (leg/torso length)
+// than bench (mostly arm length), hence the smaller bench coefficient.
+// These are a simplifying heuristic, not a peer-reviewed formula — same
+// caveat as the base ratio tables above.
+const HEIGHT_ADJUSTMENT_PER_INCH: Record<string, number> = {
+    bench_press: 0.004,     // 0.4%/inch
+    weighted_squat: 0.006,  // 0.6%/inch
+    deadlift: 0.006,        // 0.6%/inch
+};
+
+// Cap total adjustment so extreme heights can't push thresholds to
+// implausible values.
+const MAX_HEIGHT_ADJUSTMENT = 0.15; // ±15%
+
+function heightAdjustmentFactor(exerciseId: string, sex: StrengthSex, heightInches?: number | null): number {
+    if (!heightInches || heightInches <= 0) return 1;
+    const perInch = HEIGHT_ADJUSTMENT_PER_INCH[exerciseId];
+    if (!perInch) return 1;
+    const diff = heightInches - REFERENCE_HEIGHT_INCHES[sex];
+    const adjustment = Math.max(-MAX_HEIGHT_ADJUSTMENT, Math.min(MAX_HEIGHT_ADJUSTMENT, perInch * diff));
+    return 1 - adjustment;
+}
+
 export function getStrengthRank(
     exerciseId: string,
     estimatedOneRepMax: number,
     bodyweight: number,
-    sex: StrengthSex
+    sex: StrengthSex,
+    heightInches?: number | null
 ): StrengthRankResult | null {
     if (!bodyweight || bodyweight <= 0 || !estimatedOneRepMax || estimatedOneRepMax <= 0) return null;
-    const thresholds = STANDARDS[sex]?.[exerciseId];
-    if (!thresholds) return null;
+    const baseThresholds = STANDARDS[sex]?.[exerciseId];
+    if (!baseThresholds) return null;
+
+    const factor = heightAdjustmentFactor(exerciseId, sex, heightInches);
+    const thresholds = baseThresholds.map((t) => t * factor);
 
     const ratio = estimatedOneRepMax / bodyweight;
 
