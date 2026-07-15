@@ -200,7 +200,7 @@ function Workout() {
 			{/* Dashboard: Routines & Saved Workouts */}
 			<ScrollView 
 				className="flex-1"
-				contentContainerStyle={{paddingBottom: 100 + insets.bottom, paddingTop: 100}}
+				contentContainerStyle={{paddingBottom: 140 + insets.bottom, paddingTop: 100}}
 				showsVerticalScrollIndicator={false}
 			>
                 {/* Calendar View */}

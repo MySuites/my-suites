@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { View, ScrollView, InteractionManager } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '@mysuite/auth';
 import { RaisedCard, useUITheme, IconSymbol, useToast } from '@mysuite/ui';
@@ -28,6 +29,7 @@ import { lbToDisplay, roundForDisplay } from '../../utils/units';
 export default function HomeScreen() {
   const { user } = useAuth();
   const theme = useUITheme();
+  const insets = useSafeAreaInsets();
   const { showToast } = useToast();
   const { unitSystem } = useUnitPreference();
   const [menuVisible, setMenuVisible] = useState(false);
@@ -468,7 +470,7 @@ export default function HomeScreen() {
                 />
             </RaisedCard>} 
       />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 140 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 140, paddingBottom: 140 + insets.bottom }}>
         <View className="mb-6">
           <WeeklyCompletionRing completed={weeklyCompletedCount} goal={weeklyGoal} />
         </View>
