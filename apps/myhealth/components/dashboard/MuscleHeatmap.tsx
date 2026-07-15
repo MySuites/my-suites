@@ -21,7 +21,7 @@ export function MuscleHeatmap({ volumes, isLoading }: MuscleHeatmapProps) {
 
     const isDark = !!theme.dark;
 
-    const chartBg = isDark ? (theme.bgDark || theme.bg) : theme.bgLight;
+    const chartBg = isDark ? '#1c1c24' : '#f2f2f7';
     const bodyColor = theme.textMuted;
     const inactiveFill = isDark ? '#2e303e' : '#b0bec5';
 
@@ -116,7 +116,7 @@ export function MuscleHeatmap({ volumes, isLoading }: MuscleHeatmapProps) {
             </View>
 
             {/* Tooltip HUD */}
-            <View style={[styles.tooltip, { backgroundColor: isDark ? '#1c1c24' : '#f2f2f7' }]}>
+            <View style={styles.tooltip}>
                 {activeInfo ? (
                     <View className="items-center w-full">
                         <Text style={{ fontSize: 13, fontWeight: '700', color: theme.text }}>
