@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 
 import { ScreenHeader } from '../../../components/ui/ScreenHeader';
+import { BackButton } from '../../../components/ui/BackButton';
 import { getDb } from '../../../utils/db/database';
 
 interface TableRow {
@@ -219,15 +220,7 @@ export default function DeveloperDatabaseScreen() {
         <View className="flex-1 bg-light dark:bg-dark">
             <ScreenHeader
                 title="SQLite Database Viewer"
-                leftAction={
-                    <RaisedCard
-                        onPress={() => router.back()}
-                        className="w-12 p-0 rounded-full items-center justify-center bg-lighter dark:bg-dark"
-                        style={{ borderRadius: 9999 }}
-                    >
-                        <IconSymbol name="chevron.left" size={24} color={theme.primary} />
-                    </RaisedCard>
-                }
+                leftAction={<BackButton />}
             />
 
             <View style={{ flex: 1, paddingTop: insets.top + 80 }}>

@@ -189,7 +189,7 @@ export default function RoutineDetailsScreen() {
                     isEditing ? (
                         <RaisedCard 
                             onPress={handleCancel} 
-                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
+                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark-lighter items-center justify-center" 
                             style={{ borderRadius: 9999 }}
                         >
                              <IconSymbol name="xmark" size={24} color={theme.primary as string} />
@@ -203,7 +203,7 @@ export default function RoutineDetailsScreen() {
                         <RaisedCard 
                             onPress={handleSaveRoutine} 
                             disabled={isSaving} 
-                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
+                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark-lighter items-center justify-center" 
                             style={{ borderRadius: 9999 }}
                         >
                             {isSaving ? (
@@ -229,7 +229,7 @@ export default function RoutineDetailsScreen() {
                                         showMenu(0, 0, 44, 44, 0, 0);
                                     }
                                 }} 
-                                className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
+                                className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark-lighter items-center justify-center" 
                                 style={{ borderRadius: 9999 }}
                             >
                                 <IconSymbol name="ellipsis" size={22} color={theme.primary} />

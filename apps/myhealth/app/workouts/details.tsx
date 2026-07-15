@@ -436,7 +436,7 @@ export default function CreateWorkoutScreen() {
                     isEditing ? (
                         <RaisedCard 
                             onPress={handleCancel} 
-                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
+                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark-lighter items-center justify-center" 
                             style={{ borderRadius: 9999 }}
                         >
                              <IconSymbol name="xmark" size={24} color={theme.primary as string} />
@@ -450,7 +450,7 @@ export default function CreateWorkoutScreen() {
                         <RaisedCard 
                             onPress={handleSaveWorkoutDraft} 
                             disabled={isSaving} 
-                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
+                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark-lighter items-center justify-center" 
                             style={{ borderRadius: 9999 }}
                         >
                             {isSaving ? (
@@ -462,7 +462,7 @@ export default function CreateWorkoutScreen() {
                     ) : isLogView ? (
                         <RaisedCard 
                             onPress={handleDeleteHistoryLog} 
-                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
+                            className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark-lighter items-center justify-center" 
                             style={{ borderRadius: 9999 }}
                         >
                             <IconSymbol name="trash.fill" size={20} color={theme.options?.destructiveColor || "#ff4444"} />
@@ -479,7 +479,7 @@ export default function CreateWorkoutScreen() {
                                         setHeaderMenuVisible(true);
                                     });
                                 }} 
-                                className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark items-center justify-center" 
+                                className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark-lighter items-center justify-center" 
                                 style={{ borderRadius: 9999 }}
                             >
                                 <IconSymbol name="ellipsis" size={20} color={theme.primary as string} />

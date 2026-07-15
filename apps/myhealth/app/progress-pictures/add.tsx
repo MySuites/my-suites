@@ -17,6 +17,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { BackButton } from '../../components/ui/BackButton';
 import { ProgressPictureService } from '../../services/ProgressPictureService';
 
 export default function AddProgressPictureScreen() {
@@ -103,15 +104,7 @@ export default function AddProgressPictureScreen() {
         <View className="flex-1 bg-light dark:bg-dark">
             <ScreenHeader
                 title="Add Progress Picture"
-                leftAction={
-                    <RaisedCard
-                        onPress={() => router.back()}
-                        className="w-12 p-0 rounded-full items-center justify-center bg-lighter dark:bg-dark"
-                        style={{ borderRadius: 9999 }}
-                    >
-                        <IconSymbol name="chevron.left" size={24} color={theme.primary} />
-                    </RaisedCard>
-                }
+                leftAction={<BackButton />}
             />
 
             <ScrollView

@@ -14,6 +14,7 @@ import { useAuth } from '@mysuite/auth';
 import { RaisedCard, HollowedCard, useUITheme, IconSymbol, useToast } from '@mysuite/ui';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { BackButton } from '../../components/ui/BackButton';
 import { ProgressPictureService, ProgressPictureEntry } from '../../services/ProgressPictureService';
 
 const { width } = Dimensions.get('window');
@@ -98,25 +99,7 @@ export default function ProgressPicturesScreen() {
         <View className="flex-1 bg-light dark:bg-dark">
             <ScreenHeader 
                 title="Progress Pictures" 
-                leftAction={
-                    <RaisedCard
-                        onPress={() => {
-                            if (router.canGoBack()) {
-                                router.back();
-                            } else {
-                                router.replace('/');
-                            }
-                        }}
-                        className="w-12 p-0 rounded-full items-center justify-center bg-lighter dark:bg-dark"
-                        style={{ borderRadius: 9999 }}
-                    >
-                        <IconSymbol
-                            name="chevron.left"
-                            size={24}
-                            color={theme.primary}
-                        />
-                    </RaisedCard>
-                }
+                leftAction={<BackButton />}
                 rightAction={
                     <RaisedCard 
                         onPress={() => router.push('/progress-pictures/add' as any)}
