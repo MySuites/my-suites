@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { View, ScrollView, InteractionManager } from "react-native";
+import { View, ScrollView, InteractionManager, Text } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '@mysuite/auth';
@@ -18,6 +18,7 @@ import { TotalWorkoutsCard } from '../../components/workouts/TotalWorkoutsCard';
 import { MuscleHeatmap } from '../../components/dashboard/MuscleHeatmap';
 import { WeeklyCompletionRing, getCurrentWeekRange } from '../../components/dashboard/WeeklyCompletionRing';
 import { StrengthRankCard } from '../../components/dashboard/StrengthRankCard';
+import { WidgetGrid } from '../../components/dashboard/WidgetGrid';
 import { useStrengthRanks } from '../../hooks/workouts/useStrengthRanks';
 import { storage } from '../../utils/storage';
 import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
@@ -25,6 +26,7 @@ import { RANKING_SEX_STORAGE_KEY, DEFAULT_RANKING_SEX, StrengthSex } from '../..
 import { HEIGHT_STORAGE_KEY } from '../../utils/height';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import { lbToDisplay, roundForDisplay } from '../../utils/units';
+import { WIDGET_ORDER_STORAGE_KEY, DEFAULT_WIDGET_ORDER, WidgetId } from '../../utils/widgetOrder';
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -388,6 +390,23 @@ export default function HomeScreen() {
         return () => task.cancel();
      }, [user, fetchLatestWeight, fetchAllWeightHistory]);
 
+  const [widgetOrder, setWidgetOrder] = useState<WidgetId[]>([...DEFAULT_WIDGET_ORDER]);
+  const [isEditMode, setIsEditMode] = useState(false);
+  useEffect(() => {
+    storage.getItem<WidgetId[]>(WIDGET_ORDER_STORAGE_KEY).then((order) => {
+      if (order && order.length > 0) {
+        // Merge in any new widgets that weren't part of a previously saved order.
+        const missing = DEFAULT_WIDGET_ORDER.filter((id) => !order.includes(id));
+        setWidgetOrder([...order, ...missing]);
+      }
+    });
+  }, []);
+
+  const handleWidgetReorder = useCallback((order: WidgetId[]) => {
+    setWidgetOrder(order);
+    storage.setItem(WIDGET_ORDER_STORAGE_KEY, order);
+  }, []);
+
   const [weeklyGoal, setWeeklyGoal] = useState(DEFAULT_WEEKLY_GOAL);
   useEffect(() => {
     storage.getItem<number>(WEEKLY_GOAL_STORAGE_KEY).then((goal) => {
@@ -452,29 +471,12 @@ export default function HomeScreen() {
     }
   };
 
-  return (
-    <View className="flex-1 bg-light dark:bg-dark">
-      <ScreenHeader 
-        title="Home" 
-        leftAction={<SettingsButton />} 
-        rightAction={
-            <RaisedCard 
-                onPress={() => setMenuVisible(!menuVisible)}
-                style={{ borderRadius: 9999 }}
-                className="w-12 p-0 items-center justify-center"
-            >
-                <IconSymbol 
-                    name="line.3.horizontal" 
-                    size={24} 
-                    color={theme.primary} 
-                />
-            </RaisedCard>} 
-      />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 140, paddingBottom: 140 + insets.bottom }}>
-        <View className="mb-6">
-          <WeeklyCompletionRing completed={weeklyCompletedCount} goal={weeklyGoal} />
-        </View>
-        <View className="mb-6">
+  const renderWidgetContent = (id: WidgetId) => {
+    switch (id) {
+      case 'weeklyCompletion':
+        return <WeeklyCompletionRing completed={weeklyCompletedCount} goal={weeklyGoal} />;
+      case 'strengthRank':
+        return (
           <StrengthRankCard
             bests={strengthBests}
             bodyweight={latestWeight}
@@ -483,49 +485,95 @@ export default function HomeScreen() {
             onChangeSex={handleChangeRankingSex}
             isLoading={strengthLoading}
           />
-        </View>
-        <View className="flex-row flex-wrap">
-          <View className="w-1/2 pr-2 mb-6">
-             <BodyWeightCard
-                weight={displayLatestWeight}
-                history={displayWeightHistory}
-                rangeAverage={displayRangeAverage}
-                onLogWeight={() => setIsWeightModalVisible(true)} 
-                selectedRange={selectedRange}
-                onRangeChange={setSelectedRange}
-                primaryColor={theme.primary}
-                textColor={theme.textMuted}
-                isLoading={isLoading}
-             />
-          </View>
-          <View className="w-1/2 pl-2 mb-6">
-               <VolumeTrendCard
-                  history={volumeHistoryData}
-                  selectedRange={selectedVolumeRange}
-                  onRangeChange={setSelectedVolumeRange}
-                  rangeAverage={rangeAverageVolume}
-                  rangeTotal={rangeTotalVolume}
-                  workoutCount={rangeWorkoutCount}
-                  primaryColor={theme.primary}
-                  textColor={theme.textMuted}
-                  isLoading={isLoading}
-               />
-          </View>
-          <View className="w-1/2 pr-2 mb-6">
-               <TotalWorkoutsCard
-                  history={workoutsHistoryData}
-                  selectedRange={selectedWorkoutsRange}
-                  onRangeChange={setSelectedWorkoutsRange}
-                  workoutCount={totalWorkoutCount}
-                  primaryColor={theme.primary}
-                  textColor={theme.textMuted}
-                  isLoading={isLoading}
-               />
-          </View>
-          <View className="w-full mb-6">
-               <MuscleHeatmap volumes={muscleVolumes} isLoading={workoutsLoading} />
-          </View>
-        </View>
+        );
+      case 'bodyWeight':
+        return (
+          <BodyWeightCard
+            weight={displayLatestWeight}
+            history={displayWeightHistory}
+            rangeAverage={displayRangeAverage}
+            onLogWeight={() => setIsWeightModalVisible(true)}
+            selectedRange={selectedRange}
+            onRangeChange={setSelectedRange}
+            primaryColor={theme.primary}
+            textColor={theme.textMuted}
+            isLoading={isLoading}
+          />
+        );
+      case 'volumeTrend':
+        return (
+          <VolumeTrendCard
+            history={volumeHistoryData}
+            selectedRange={selectedVolumeRange}
+            onRangeChange={setSelectedVolumeRange}
+            rangeAverage={rangeAverageVolume}
+            rangeTotal={rangeTotalVolume}
+            workoutCount={rangeWorkoutCount}
+            primaryColor={theme.primary}
+            textColor={theme.textMuted}
+            isLoading={isLoading}
+          />
+        );
+      case 'totalWorkouts':
+        return (
+          <TotalWorkoutsCard
+            history={workoutsHistoryData}
+            selectedRange={selectedWorkoutsRange}
+            onRangeChange={setSelectedWorkoutsRange}
+            workoutCount={totalWorkoutCount}
+            primaryColor={theme.primary}
+            textColor={theme.textMuted}
+            isLoading={isLoading}
+          />
+        );
+      case 'muscleHeatmap':
+        return <MuscleHeatmap volumes={muscleVolumes} isLoading={workoutsLoading} />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <View className="flex-1 bg-light dark:bg-dark">
+      <ScreenHeader 
+        title="Home" 
+        leftAction={<SettingsButton />} 
+        rightAction={
+            isEditMode ? (
+                <RaisedCard
+                    onPress={() => setIsEditMode(false)}
+                    style={{ borderRadius: 9999 }}
+                    className="h-12 px-4 items-center justify-center"
+                >
+                    <Text className="text-base font-semibold text-primary">Done</Text>
+                </RaisedCard>
+            ) : (
+                <RaisedCard
+                    onPress={() => setMenuVisible(!menuVisible)}
+                    style={{ borderRadius: 9999 }}
+                    className="w-12 p-0 items-center justify-center"
+                >
+                    <IconSymbol
+                        name="line.3.horizontal"
+                        size={24}
+                        color={theme.primary}
+                    />
+                </RaisedCard>
+            )
+        }
+      />
+      <ScrollView
+        contentContainerStyle={{ paddingTop: 140, paddingBottom: 140 + insets.bottom }}
+        showsVerticalScrollIndicator={false}
+      >
+        <WidgetGrid
+          order={widgetOrder}
+          onReorder={handleWidgetReorder}
+          isEditMode={isEditMode}
+          onRequestEditMode={() => setIsEditMode(true)}
+          renderWidget={renderWidgetContent}
+          containerPadding={16}
+        />
       </ScrollView>
 
       <WeightLogModal
