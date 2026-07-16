@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, Modal, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { BodyWeightChart } from './BodyWeightChart';
-import { SegmentedControl, SegmentedControlOption } from '../ui/SegmentedControl';
+import { SegmentedControlOption } from '../ui/SegmentedControl';
 import { HollowedCard, useUITheme, Skeleton, IconSymbol, RaisedCard } from '@mysuite/ui';
 import { DateRange } from '../ui/TimeSeriesChart';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
+import { MetricDetailModal } from '../dashboard/MetricDetailModal';
 
 const RANGE_OPTIONS: SegmentedControlOption<DateRange>[] = [
   { label: 'D', value: 'Day' },
@@ -13,6 +14,14 @@ const RANGE_OPTIONS: SegmentedControlOption<DateRange>[] = [
   { label: '6M', value: '6Month' },
   { label: 'Y', value: 'Year' },
 ];
+
+const RANGE_BADGE_LABEL: Partial<Record<DateRange, string>> = {
+  Day: 'Day',
+  Week: 'Week',
+  Month: 'Month',
+  '6Month': '6M',
+  Year: 'Year',
+};
 
 interface BodyWeightCardProps {
   weight: number | null;
@@ -26,9 +35,9 @@ interface BodyWeightCardProps {
   isLoading?: boolean;
 }
 
-export function BodyWeightCard({ 
-  weight, 
-  history, 
+export function BodyWeightCard({
+  weight,
+  history,
   onLogWeight,
   selectedRange,
   onRangeChange,
@@ -59,10 +68,10 @@ export function BodyWeightCard({
       };
       return `${labels[selectedRange] || selectedRange} Average`;
     }
-    
+
     const d = new Date(selectedPoint.date);
     const date = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-    
+
     if (selectedRange === 'Day') {
       const timeStr = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
       return `Today at ${timeStr}`;
@@ -71,7 +80,7 @@ export function BodyWeightCard({
     if (selectedRange === 'Week' || selectedRange === 'Month') {
       return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
     }
-    
+
     if (selectedRange === '6Month') {
       const end = new Date(date);
       end.setDate(date.getDate() + 6);
@@ -79,12 +88,12 @@ export function BodyWeightCard({
       const endStr = end.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
       return `Weekly Average: ${startStr} - ${endStr}`;
     }
-    
+
     if (selectedRange === 'Year') {
       const monthStr = date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
       return `Monthly Average: ${monthStr}`;
     }
-    
+
     return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
@@ -113,7 +122,7 @@ export function BodyWeightCard({
 
             <View className="flex-row items-center gap-1">
               <Text className="text-[10px] text-light-muted dark:text-dark-muted font-semibold bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded">
-                {selectedRange === 'Week' ? 'Week' : selectedRange === 'Month' ? 'Month' : selectedRange === '6Month' ? '6M' : selectedRange === 'Year' ? 'Year' : selectedRange === 'Day' ? 'Day' : selectedRange}
+                {RANGE_BADGE_LABEL[selectedRange] ?? selectedRange}
               </Text>
               <IconSymbol name="chevron.right" size={12} color={textColor || theme.textMuted} />
             </View>
@@ -152,147 +161,88 @@ export function BodyWeightCard({
         </View>
       </RaisedCard>
 
-      {/* Chart Overlay Modal Window */}
-      <Modal
-        animationType="fade"
-        transparent={true}
+      <MetricDetailModal
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View className="flex-1 justify-center items-center bg-black/50 p-4">
-          <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-            <View className="absolute inset-0" />
-          </TouchableWithoutFeedback>
-
-          <View className="w-full bg-light dark:bg-dark-lighter rounded-2xl overflow-hidden p-6" style={{ maxHeight: '90%' }}>
-            {/* Header */}
-            <View className="flex-row justify-between items-center mb-6">
-              <View className="flex-row items-center gap-2">
-                <IconSymbol name="scalemass.fill" size={20} color={primaryColor || theme.primary} />
-                <Text className="text-lg font-bold text-light dark:text-dark">Body Weight Trends</Text>
+        onClose={() => setModalVisible(false)}
+        icon="scalemass.fill"
+        title="Body Weight Trends"
+        headerActions={
+          <RaisedCard
+            testID="modal-log-weight-btn"
+            onPress={() => {
+              // Close this modal before opening the weight-entry one.
+              // Two RN <Modal>s visible at once is unreliable (iOS in
+              // particular) — closing the top one afterward can leave
+              // the screen behind it touch-frozen.
+              setModalVisible(false);
+              onLogWeight();
+            }}
+            style={{ borderRadius: 9999 }}
+            className="w-10 h-10 p-0 items-center justify-center active:h-9"
+          >
+            <IconSymbol name="plus" size={20} color={theme.primary} />
+          </RaisedCard>
+        }
+        rangeOptions={RANGE_OPTIONS}
+        selectedRange={selectedRange}
+        onRangeChange={onRangeChange}
+        primaryValue={displayWeight ? displayWeight.toLocaleString() : '0'}
+        primaryUnit={weightUnit}
+        selectionLabel={getSelectionLabel()}
+        hasData={!!displayWeight}
+        isLoading={isLoading}
+        loadingPlaceholder={
+          isLoading && !displayWeight ? (
+            <View>
+              <View className="mb-4">
+                <View className="flex-row justify-between items-center mb-1">
+                  <View className="flex-row items-baseline">
+                    <Skeleton height={32} width={60} className="mr-2" />
+                    <Skeleton height={14} width={20} />
+                  </View>
+                  <Skeleton height={32} width={120} borderRadius={16} />
+                </View>
+                <Skeleton height={12} width={100} />
               </View>
-              
-              <View className="flex-row items-center gap-2">
-                <RaisedCard
-                  testID="modal-log-weight-btn"
-                  onPress={() => {
-                    // Close this modal before opening the weight-entry one.
-                    // Two RN <Modal>s visible at once is unreliable (iOS in
-                    // particular) — closing the top one afterward can leave
-                    // the screen behind it touch-frozen.
-                    setModalVisible(false);
-                    onLogWeight();
-                  }}
-                  style={{ borderRadius: 9999 }}
-                  className="w-10 h-10 p-0 items-center justify-center active:h-9"
-                >
-                  <IconSymbol name="plus" size={20} color={theme.primary} />
-                </RaisedCard>
-                
-                <RaisedCard 
-                  testID="close-modal-btn"
-                  onPress={() => setModalVisible(false)} 
-                  style={{ borderRadius: 9999 }}
-                  className="w-10 h-10 p-0 items-center justify-center active:h-9"
-                >
-                  <IconSymbol name="xmark" size={20} color={theme.primary} />
-                </RaisedCard>
+              <View className="h-40 items-center justify-center bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
+                <Skeleton height="70%" width="90%" borderRadius={4} />
               </View>
             </View>
-
-            {/* Modal Body */}
-            {displayWeight ? (
-              <View className="w-full">
-                <View className="mb-4">
-                  <View className="flex-row justify-between items-center mb-2">
-                    <SegmentedControl
-                      options={RANGE_OPTIONS}
-                      value={selectedRange}
-                      onChange={onRangeChange}
-                    />
-                  </View>
-                  <View className="flex-row items-baseline flex-wrap mt-2">
-                    <Text 
-                      className="text-3xl font-bold mr-1 text-light dark:text-dark shrink"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.5}
-                    >
-                      {displayWeight.toLocaleString()}
-                    </Text>
-                    <Text className="text-light-muted dark:text-dark-muted text-base mr-3">{weightUnit}</Text>
-                    
-                    <View className="flex-col justify-center">
-                      <Text 
-                        className="text-[11px] font-semibold text-light-muted dark:text-dark-muted"
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                      >
-                        {getSelectionLabel()}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                {isLoading ? (
-                  <View className="h-40 items-center justify-center bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
-                    <Skeleton height="70%" width="90%" borderRadius={4} />
-                  </View>
-                ) : history.length > 0 ? (
-                  <BodyWeightChart 
-                    data={history} 
-                    color={primaryColor}
-                    textColor={textColor}
-                    maxPoints={
-                      selectedRange === 'Day' ? 8 :
-                      selectedRange === 'Week' ? 7 : 
-                      selectedRange === 'Month' ? 31 : 
-                      selectedRange === '6Month' ? 26 : 
-                      12
-                    }
-                    selectedRange={selectedRange}
-                    aggregation="avg"
-                    onPointSelect={(point) => {
-                      if (point && selectedPoint && point.date === selectedPoint.date) {
-                        setSelectedPoint(null);
-                      } else {
-                        setSelectedPoint(point);
-                      }
-                    }}
-                  />
-                ) : (
-                  <View className="py-8 bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
-                    <Text className="text-light-muted dark:text-dark-muted text-center italic text-sm">
-                      No data for {selectedRange === 'Day' ? 'today' : selectedRange === '6Month' ? 'this period' : selectedRange === 'Week' ? 'this week' : selectedRange === 'Month' ? 'this month' : 'this year'}.
-                    </Text>
-                  </View>
-                )}
-              </View>
-            ) : isLoading ? (
-              <View>
-                <View className="mb-4">
-                  <View className="flex-row justify-between items-center mb-1">
-                    <View className="flex-row items-baseline">
-                      <Skeleton height={32} width={60} className="mr-2" />
-                      <Skeleton height={14} width={20} />
-                    </View>
-                    <Skeleton height={32} width={120} borderRadius={16} />
-                  </View>
-                  <Skeleton height={12} width={100} />
-                </View>
-                <View className="h-40 items-center justify-center bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
-                  <Skeleton height="70%" width="90%" borderRadius={4} />
-                </View>
-              </View>
-            ) : (
-              <HollowedCard className="p-8">
-                <Text className="text-light-muted dark:text-dark-muted text-center italic">
-                  No weight metrics found. Log your first weight to see your progress!
-                </Text>
-              </HollowedCard>
-            )}
+          ) : undefined
+        }
+        emptyMessage="No weight metrics found. Log your first weight to see your progress!"
+        primaryColor={primaryColor}
+      >
+        {history.length > 0 ? (
+          <BodyWeightChart
+            data={history}
+            color={primaryColor}
+            textColor={textColor}
+            maxPoints={
+              selectedRange === 'Day' ? 8 :
+              selectedRange === 'Week' ? 7 :
+              selectedRange === 'Month' ? 31 :
+              selectedRange === '6Month' ? 26 :
+              12
+            }
+            selectedRange={selectedRange}
+            aggregation="avg"
+            onPointSelect={(point) => {
+              if (point && selectedPoint && point.date === selectedPoint.date) {
+                setSelectedPoint(null);
+              } else {
+                setSelectedPoint(point);
+              }
+            }}
+          />
+        ) : (
+          <View className="py-8 bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
+            <Text className="text-light-muted dark:text-dark-muted text-center italic text-sm">
+              No data for {selectedRange === 'Day' ? 'today' : selectedRange === '6Month' ? 'this period' : selectedRange === 'Week' ? 'this week' : selectedRange === 'Month' ? 'this month' : 'this year'}.
+            </Text>
           </View>
-        </View>
-      </Modal>
+        )}
+      </MetricDetailModal>
     </View>
   );
 }
