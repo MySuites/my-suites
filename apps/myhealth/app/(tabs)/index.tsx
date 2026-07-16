@@ -1,20 +1,19 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { View, ScrollView, InteractionManager, Text } from "react-native";
+import { View, ScrollView, InteractionManager, Text, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '@mysuite/auth';
-import { RaisedCard, useUITheme, IconSymbol, useToast } from '@mysuite/ui';
+import { useUITheme, IconSymbol, useToast } from '@mysuite/ui';
 
-import { ScreenHeader } from '../../components/ui/ScreenHeader';
-import { SettingsButton } from '../../components/ui/SettingsButton';
 import { BurgerMenu } from '../../components/ui/BurgerMenu';
+import { BottomActionBar } from '../../components/ui/BottomNavBar';
+import { DashboardButton } from '../../components/ui/DashboardButton';
 import { BodyWeightCard } from '../../components/bodyweight/BodyWeightCard';
 import { WeightLogModal } from '../../components/bodyweight/WeightLogModal';
 import { BodyWeightService, BodyWeightEntry } from '../../services/BodyWeightService';
 import { DateRange } from '../../components/ui/TimeSeriesChart';
 import { useWorkoutManager, WorkoutLog, Exercise, SetLog } from '../../providers/WorkoutManagerProvider';
 import { VolumeTrendCard } from '../../components/workouts/VolumeTrendCard';
-import { TotalWorkoutsCard } from '../../components/workouts/TotalWorkoutsCard';
 import { MuscleHeatmap } from '../../components/dashboard/MuscleHeatmap';
 import { WeeklyCompletionRing, getCurrentWeekRange } from '../../components/dashboard/WeeklyCompletionRing';
 import { StrengthRankCard } from '../../components/dashboard/StrengthRankCard';
@@ -28,7 +27,7 @@ import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import { lbToDisplay, roundForDisplay } from '../../utils/units';
 import { WIDGET_ORDER_STORAGE_KEY, DEFAULT_WIDGET_ORDER, WidgetId } from '../../utils/widgetOrder';
 
-export default function HomeScreen() {
+export default function ProfileScreen() {
   const { user } = useAuth();
   const theme = useUITheme();
   const insets = useSafeAreaInsets();
@@ -43,7 +42,6 @@ export default function HomeScreen() {
   const [selectedRange, setSelectedRange] = useState<DateRange>('Week');
   const { workoutHistory, isLoading: workoutsLoading } = useWorkoutManager();
   const [selectedVolumeRange, setSelectedVolumeRange] = useState<DateRange>('Week');
-  const [selectedWorkoutsRange, setSelectedWorkoutsRange] = useState<DateRange>('Week');
 
   const fetchLatestWeight = useCallback(async () => {
     const weight = await BodyWeightService.getLatestWeight(user?.id || null);
@@ -264,42 +262,6 @@ export default function HomeScreen() {
     };
   }, [workoutHistory, selectedVolumeRange]);
 
-  // Memoized workout count history & summary stats
-  const { workoutsHistoryData, totalWorkoutCount } = useMemo(() => {
-    if (!workoutHistory || workoutHistory.length === 0) {
-      return { workoutsHistoryData: [], totalWorkoutCount: 0 };
-    }
-
-    const rawWorkoutsCount = workoutHistory.map((log: WorkoutLog) => ({
-      value: 1,
-      date: log.workoutDate,
-    }));
-
-    const now = new Date();
-    let startDate = new Date();
-    startDate.setHours(0, 0, 0, 0);
-
-    if (selectedWorkoutsRange === 'Week') {
-      startDate.setDate(now.getDate() - 6);
-    } else if (selectedWorkoutsRange === 'Month') {
-      startDate.setDate(now.getDate() - 30);
-    } else if (selectedWorkoutsRange === '6Month') {
-      startDate.setDate(now.getDate() - 180);
-    } else if (selectedWorkoutsRange === 'Year') {
-      startDate.setDate(now.getDate() - 365);
-    }
-
-    const filtered = rawWorkoutsCount.filter((item: { value: number; date: string }) => {
-      const itemDate = new Date(item.date);
-      return itemDate >= startDate;
-    });
-
-    return {
-      workoutsHistoryData: rawWorkoutsCount,
-      totalWorkoutCount: filtered.length,
-    };
-  }, [workoutHistory, selectedWorkoutsRange]);
-
   const muscleVolumes = useMemo(() => {
     const results: Record<string, { muscle: string; sets: number; exercises: string[] }> = {};
     const supportedMuscles = [
@@ -395,9 +357,11 @@ export default function HomeScreen() {
   useEffect(() => {
     storage.getItem<WidgetId[]>(WIDGET_ORDER_STORAGE_KEY).then((order) => {
       if (order && order.length > 0) {
-        // Merge in any new widgets that weren't part of a previously saved order.
-        const missing = DEFAULT_WIDGET_ORDER.filter((id) => !order.includes(id));
-        setWidgetOrder([...order, ...missing]);
+        // Drop any widgets no longer in DEFAULT_WIDGET_ORDER (removed since
+        // this order was saved), then merge in any new ones added since.
+        const known = order.filter((id) => (DEFAULT_WIDGET_ORDER as readonly string[]).includes(id));
+        const missing = DEFAULT_WIDGET_ORDER.filter((id) => !known.includes(id));
+        setWidgetOrder([...known, ...missing]);
       }
     });
   }, []);
@@ -514,18 +478,6 @@ export default function HomeScreen() {
             isLoading={isLoading}
           />
         );
-      case 'totalWorkouts':
-        return (
-          <TotalWorkoutsCard
-            history={workoutsHistoryData}
-            selectedRange={selectedWorkoutsRange}
-            onRangeChange={setSelectedWorkoutsRange}
-            workoutCount={totalWorkoutCount}
-            primaryColor={theme.primary}
-            textColor={theme.textMuted}
-            isLoading={isLoading}
-          />
-        );
       case 'muscleHeatmap':
         return <MuscleHeatmap volumes={muscleVolumes} isLoading={workoutsLoading} />;
       default:
@@ -535,35 +487,8 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-light dark:bg-dark">
-      <ScreenHeader 
-        title="Home" 
-        leftAction={<SettingsButton />} 
-        rightAction={
-            isEditMode ? (
-                <RaisedCard
-                    onPress={() => setIsEditMode(false)}
-                    style={{ borderRadius: 9999 }}
-                    className="h-12 px-4 items-center justify-center"
-                >
-                    <Text className="text-base font-semibold text-primary">Done</Text>
-                </RaisedCard>
-            ) : (
-                <RaisedCard
-                    onPress={() => setMenuVisible(!menuVisible)}
-                    style={{ borderRadius: 9999 }}
-                    className="w-12 p-0 items-center justify-center"
-                >
-                    <IconSymbol
-                        name="line.3.horizontal"
-                        size={24}
-                        color={theme.primary}
-                    />
-                </RaisedCard>
-            )
-        }
-      />
       <ScrollView
-        contentContainerStyle={{ paddingTop: 140, paddingBottom: 140 + insets.bottom }}
+        contentContainerStyle={{ paddingTop: 130, paddingBottom: 100 + insets.bottom }}
         showsVerticalScrollIndicator={false}
       >
         <WidgetGrid
@@ -581,6 +506,33 @@ export default function HomeScreen() {
         onClose={() => setIsWeightModalVisible(false)}
         onSave={handleSaveWeight}
       />
+
+      <BottomActionBar>
+        <DashboardButton dimmed={menuVisible} />
+        {isEditMode ? (
+          <TouchableOpacity
+            onPress={() => setIsEditMode(false)}
+            className="h-12 px-4 items-center justify-center"
+          >
+            <Text className="text-base font-semibold text-primary">Done</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={() => setMenuVisible(!menuVisible)}
+            className="items-center justify-center"
+            style={{ gap: 2 }}
+          >
+            <IconSymbol
+              name="line.3.horizontal"
+              size={22}
+              color={menuVisible ? theme.primary : theme.textMuted}
+            />
+            <Text style={{ fontSize: 10, fontWeight: '600', color: menuVisible ? theme.primary : theme.textMuted }}>
+              Menu
+            </Text>
+          </TouchableOpacity>
+        )}
+      </BottomActionBar>
 
       <BurgerMenu
         visible={menuVisible}

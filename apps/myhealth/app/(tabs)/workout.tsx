@@ -21,8 +21,8 @@ import { useRoutineTimeline } from '../../hooks/routines/useRoutineManager';
 import { HollowedCard, RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 
 import { SavedWorkout } from '../../types';
-import { ScreenHeader } from '../../components/ui/ScreenHeader';
-import { SettingsButton } from '../../components/ui/SettingsButton';
+import { BottomActionBar } from '../../components/ui/BottomNavBar';
+import { DashboardButton } from '../../components/ui/DashboardButton';
 import { BurgerMenu } from '../../components/ui/BurgerMenu';
 
 function Workout() {
@@ -179,28 +179,10 @@ function Workout() {
 
 	return (
 		<View className="flex-1 bg-light dark:bg-dark">
-			<ScreenHeader 
-                title="Workout" 
-                leftAction={<SettingsButton />} 
-                rightAction={
-                    <RaisedCard
-                        onPress={() => setMenuVisible(!menuVisible)}
-                        style={{ borderRadius: 9999 }}
-                        className="w-12 p-0 items-center justify-center"
-                    >
-                        <IconSymbol 
-                            name="line.3.horizontal" 
-                            size={24} 
-                            color={theme.primary} 
-                        />
-                    </RaisedCard>
-                } 
-            />
-
 			{/* Dashboard: Routines & Saved Workouts */}
-			<ScrollView 
+			<ScrollView
 				className="flex-1"
-				contentContainerStyle={{paddingBottom: 140 + insets.bottom, paddingTop: 100}}
+				contentContainerStyle={{paddingBottom: 100 + insets.bottom, paddingTop: 130}}
 				showsVerticalScrollIndicator={false}
 			>
                 {/* Calendar View */}
@@ -294,6 +276,30 @@ function Workout() {
                         </TouchableOpacity>
                     </View>
 
+                    <View className="mb-3 px-4">
+                        <View
+                            className="flex-row h-20 rounded-xl overflow-hidden"
+                            style={{ borderWidth: 2, borderStyle: 'dashed', borderColor: theme.primary }}
+                        >
+                            <TouchableOpacity
+                                onPress={() => handleStartEmpty(activeRoutineObj?.id)}
+                                className="flex-1 justify-center px-4"
+                                style={{ borderRightWidth: 2, borderStyle: 'dashed', borderRightColor: theme.primary }}
+                            >
+                                <Text style={{ color: theme.primary }} className="font-semibold text-lg" numberOfLines={2}>
+                                    Start Empty Workout
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => handleStartEmpty(activeRoutineObj?.id)}
+                                className="w-[20%] items-center justify-center"
+                            >
+                                <IconSymbol name="plus" size={24} color={theme.primary} />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
                     {savedWorkouts.length === 0 ? (
                         <HollowedCard className="p-8">
                             <Text className="text-base text-light-muted dark:text-dark-muted text-center">
@@ -355,73 +361,45 @@ function Workout() {
                     )}
                 </View>
 			</ScrollView>
-                
-            <BurgerMenu 
-                visible={menuVisible} 
-                onClose={() => setMenuVisible(false)} 
-                onStartEmpty={() => handleStartEmpty(activeRoutineObj?.id)}
-            />
 
-                {/* Quick Start Floating Button */}
-                {!hasActiveSession && (
-                     <View 
-                        className="absolute self-center"
-                        style={{ bottom: insets.bottom, width: 'auto', minWidth: 200, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8 }}
-                     >
-                        <RaisedCard
-                            onPress={() => {
-                                // Logic: If routine & today has workout -> Start that. Else -> Empty.
-                                if (activeRoutineObj && !isDayCompleted) {
-                                     const todayItem = timelineDays[0];
-                                     
-                                     if (todayItem && todayItem.type === 'workout') {
-                                         if (todayItem.workout) {
-                                             handleStartSavedWorkout(todayItem.workout, activeRoutineObj.id);
-                                             return;
-                                         }
-                                         
-                                         if (todayItem.workoutId) {
-                                              const workout = savedWorkouts.find((w: any) => w.id === todayItem.workoutId);
-                                              if (workout) {
-                                                  handleStartSavedWorkout(workout, activeRoutineObj.id);
-                                                  return;
-                                              }
-                                         }
-                                     }
-                                }
-                                
-                                // Fallback: Start Empty
-                                handleStartEmpty(activeRoutineObj?.id);
-                            }}
-                            className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
-                            style={{ borderRadius: 9999 }}
-                        >
-                            <View className="flex-row items-center justify-center">
-                                <IconSymbol name="play.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                                <Text className="text-lg font-bold text-white">
-                                    {(() => {
-                                        if (activeRoutineObj && !isDayCompleted) {
-                                            const todayItem = timelineDays[0];
-                                            if (todayItem && todayItem.type === 'workout') {
-                                                if (todayItem.workout && todayItem.workout.name) {
-                                                    return `${todayItem.workout.name}`;
-                                                }
-                                                if (todayItem.workoutId) {
-                                                    const workout = savedWorkouts.find((w: any) => w.id === todayItem.workoutId);
-                                                    if (workout && workout.name) {
-                                                        return `${workout.name}`;
-                                                    }
-                                                }
-                                                return "Start Workout";
-                                            }
-                                        }
-                                        return "Empty Workout";
-                                    })()}
-                                </Text>
-                            </View>
-                        </RaisedCard>
-                     </View>
-                )}
+            <BottomActionBar>
+                <DashboardButton dimmed={menuVisible} />
+                <TouchableOpacity
+                    onPress={() => router.navigate('/(tabs)/exercises' as any)}
+                    className="items-center justify-center"
+                    style={{ gap: 2 }}
+                >
+                    <IconSymbol name="dumbbell.fill" size={22} color={theme.textMuted} />
+                    <Text style={{ fontSize: 10, fontWeight: '600', color: theme.textMuted }}>
+                        Exercises
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => router.navigate('/(tabs)/history' as any)}
+                    className="items-center justify-center"
+                    style={{ gap: 2 }}
+                >
+                    <IconSymbol name="clock.fill" size={22} color={theme.textMuted} />
+                    <Text style={{ fontSize: 10, fontWeight: '600', color: theme.textMuted }}>
+                        History
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => setMenuVisible(!menuVisible)}
+                    className="items-center justify-center"
+                    style={{ gap: 2 }}
+                >
+                    <IconSymbol name="line.3.horizontal" size={22} color={menuVisible ? theme.primary : theme.textMuted} />
+                    <Text style={{ fontSize: 10, fontWeight: '600', color: menuVisible ? theme.primary : theme.textMuted }}>
+                        Menu
+                    </Text>
+                </TouchableOpacity>
+            </BottomActionBar>
+
+            <BurgerMenu
+                visible={menuVisible}
+                onClose={() => setMenuVisible(false)}
+            />
 
             <Modal
                 visible={isDayModalVisible}

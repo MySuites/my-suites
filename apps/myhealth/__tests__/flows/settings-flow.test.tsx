@@ -62,9 +62,6 @@ jest.mock('../../components/ui/ScreenHeader', () => ({
 jest.mock('../../components/ui/BackButton', () => ({
     BackButton: () => null
 }));
-jest.mock('../../components/ui/ProfileButton', () => ({
-    ProfileButton: () => null
-}));
 jest.mock('../../components/bodyweight/BodyWeightCard', () => ({
     BodyWeightCard: () => null
 }));

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
-import ExercisesScreen from '../../app/exercises/index';
+import ExercisesScreen from '../../app/(tabs)/exercises';
 import CreateExerciseScreen from '../../app/exercises/create';
 import { useWorkoutManager, fetchExercises, fetchMuscleGroups } from '../../providers/WorkoutManagerProvider';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';

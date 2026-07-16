@@ -5,7 +5,6 @@ export const DEFAULT_WIDGET_ORDER = [
   'strengthRank',
   'bodyWeight',
   'volumeTrend',
-  'totalWorkouts',
   'muscleHeatmap',
 ] as const;
 
@@ -20,7 +19,6 @@ export const WIDGET_COLS: Record<WidgetId, 1 | 2> = {
   strengthRank: 2,
   bodyWeight: 1,
   volumeTrend: 1,
-  totalWorkouts: 1,
   muscleHeatmap: 2,
 };
 

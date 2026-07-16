@@ -1,22 +1,26 @@
 import React from 'react';
+import { Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
+import { useUITheme, IconSymbol } from '@mysuite/ui';
 
 export function SettingsButton() {
     const router = useRouter();
     const theme = useUITheme();
 
     return (
-        <RaisedCard
+        <TouchableOpacity
             onPress={() => router.push('/settings')}
-            style={{ borderRadius: 9999 }}
-            className="w-12 p-0 my-0 rounded-full items-center justify-center"
+            className="items-center justify-center"
+            style={{ gap: 2 }}
         >
-            <IconSymbol 
-                name="gearshape.fill" 
-                size={24} 
-                color={theme.primary} 
+            <IconSymbol
+                name="gearshape.fill"
+                size={22}
+                color={theme.textMuted}
             />
-        </RaisedCard>
+            <Text style={{ fontSize: 10, fontWeight: '600', color: theme.textMuted }}>
+                Settings
+            </Text>
+        </TouchableOpacity>
     );
 }

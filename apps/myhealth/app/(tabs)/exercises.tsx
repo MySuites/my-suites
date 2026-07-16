@@ -6,10 +6,14 @@ import { useUITheme, RaisedCard, HollowedCard, Skeleton, useToast, IconSymbol } 
 import { useAuth } from '@mysuite/auth';
 import { fetchExercises } from '../../providers/WorkoutManagerProvider';
 import DefaultExercises from '../../assets/data/default-exercises';
-import ExerciseDetailsScreen from './details';
+import ExerciseDetailsScreen from '../exercises/details';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
+import { TopNavBanner } from '../../components/ui/TopNavBanner';
+import { BottomActionBar } from '../../components/ui/BottomNavBar';
+import { DashboardButton } from '../../components/ui/DashboardButton';
+import { BurgerMenu } from '../../components/ui/BurgerMenu';
 
 function getCollapsedGroupDetails(comp: any[]) {
     const ids = comp.map(e => e.id);
@@ -178,6 +182,19 @@ export default function ExercisesScreen({
   const searchInputRef = React.useRef<TextInput>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [detailsExercise, setDetailsExercise] = useState<any | null>(null);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  React.useEffect(() => {
+      const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+      const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+      const showSub = Keyboard.addListener(showEvent, () => setIsKeyboardVisible(true));
+      const hideSub = Keyboard.addListener(hideEvent, () => setIsKeyboardVisible(false));
+      return () => {
+          showSub.remove();
+          hideSub.remove();
+      };
+  }, []);
 
 
   React.useEffect(() => {
@@ -305,7 +322,6 @@ export default function ExercisesScreen({
   }, [exercises]);
 
   const uniqueMuscleGroups = React.useMemo(() => ["All", ...Array.from(new Set(processedExercises.flatMap(e => e.muscle_groups || []))).filter(Boolean).sort()], [processedExercises]);
-  const uniqueExerciseGroups = React.useMemo(() => Array.from(new Set(processedExercises.map(e => e.group))).filter(g => g && g !== "Other").sort(), [processedExercises]);
 
   const toggleCategory = (category: string) => {
       if (category === "All") {
@@ -415,23 +431,27 @@ export default function ExercisesScreen({
             onPress={() => setIsFilterVisible(false)}
           />
         )}
-        <ScreenHeader
-            title={mode === 'select' ? "Add Exercise" : "Exercises"}
-            leftAction={mode === 'select' ? <BackButton onPress={onClose} /> : <BackButton />}
-            rightAction={
-                <RaisedCard 
-                    onPress={() => router.push('/exercises/create')}
-                    className="w-12 p-0 my-0 rounded-full items-center justify-center bg-lighter dark:bg-dark-lighter"
-                >
-                    <IconSymbol 
-                        name="square.and.pencil" 
-                        size={24}
-                        color={theme.primary} 
-                    />
-                </RaisedCard>
-            }
-        />
-      
+        {mode === 'select' ? (
+            <ScreenHeader
+                title="Add Exercise"
+                leftAction={<BackButton onPress={onClose} />}
+                rightAction={
+                    <RaisedCard
+                        onPress={() => router.push('/exercises/create')}
+                        className="w-12 p-0 my-0 rounded-full items-center justify-center bg-lighter dark:bg-dark-lighter"
+                    >
+                        <IconSymbol
+                            name="square.and.pencil"
+                            size={24}
+                            color={theme.primary}
+                        />
+                    </RaisedCard>
+                }
+            />
+        ) : (
+            <TopNavBanner />
+        )}
+
         {isLoading ? (
             <View className="flex-1 px-4 mt-32">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -449,7 +469,7 @@ export default function ExercisesScreen({
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 150 }}
             keyExtractor={(item) => item.id}
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps="never"
             keyboardDismissMode="on-drag"
             ListHeaderComponent={
                 <View>
@@ -592,7 +612,7 @@ export default function ExercisesScreen({
         <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
-            className="absolute bottom-10 left-0 right-0 z-50 px-4 pb-8 pt-4 bg-transparent shadow-lg justify-end"
+            className={`absolute left-0 right-0 z-[1000] px-4 pb-8 pt-4 bg-transparent shadow-lg justify-end ${mode === 'select' ? 'bottom-10' : 'bottom-24'}`}
             pointerEvents="box-none"
         >
         {/* Filter Menu (opens upwards when search is at bottom) */}
@@ -627,22 +647,6 @@ export default function ExercisesScreen({
                         </View>
                     </View>
 
-                    <View className="mb-4">
-                        <Text className="text-light dark:text-dark font-bold mb-2 uppercase text-xs tracking-wider">Exercise Group</Text>
-                        <View className="flex-row flex-wrap gap-2">
-                            {uniqueExerciseGroups.map((group: any) => (
-                                <TouchableOpacity 
-                                    key={group} 
-                                    onPress={() => toggleCategory(group)}
-                                    className={`px-4 py-2 rounded-full border ${selectedCategories.has(group) ? 'bg-primary dark:bg-primary-dark border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
-                                >
-                                    <Text className={`font-semibold ${selectedCategories.has(group) ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
-                                        {group}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    </View>
                 </ScrollView>
             </View>
         )}
@@ -661,6 +665,19 @@ export default function ExercisesScreen({
         </View>
 
         <View className="flex-row items-center gap-2">
+            {mode === 'browse' && (
+                <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => router.push('/exercises/create')}
+                    className="w-12 h-12 rounded-full items-center justify-center border border-white/10 dark:border-highlight-dark shadow-xl bg-lighter dark:bg-dark-lighter"
+                >
+                    <IconSymbol
+                        name="square.and.pencil"
+                        size={20}
+                        color={theme.icon || theme.textMuted || '#888'}
+                    />
+                </TouchableOpacity>
+            )}
             <View className="flex-1 flex-row items-center rounded-full px-4 h-12 border border-white/10 dark:border-highlight-dark shadow-xl bg-lighter dark:bg-dark-lighter">
                 <IconSymbol name="magnifyingglass" size={20} color={theme.placeholder || theme.textMuted || '#888'} />
                 <TextInput
@@ -684,7 +701,10 @@ export default function ExercisesScreen({
             </View>
             <TouchableOpacity 
                 activeOpacity={0.7}
-                onPress={() => setIsFilterVisible(!isFilterVisible)}
+                onPress={() => {
+                    Keyboard.dismiss();
+                    setIsFilterVisible(!isFilterVisible);
+                }}
                 className={`w-12 h-12 rounded-full items-center justify-center border border-white/10 dark:border-highlight-dark shadow-xl bg-lighter dark:bg-dark-lighter ${isFilterVisible ? 'border-primary/50' : ''}`}
             >
                 <IconSymbol 
@@ -696,6 +716,56 @@ export default function ExercisesScreen({
         </View>
 
       </KeyboardAvoidingView>
+
+      {mode === 'browse' && (
+        <>
+          <BottomActionBar>
+            <DashboardButton dimmed={menuVisible} />
+            <TouchableOpacity
+                onPress={() => router.navigate('/(tabs)/exercises' as any)}
+                className="items-center justify-center"
+                style={{ gap: 2 }}
+            >
+                <IconSymbol name="dumbbell.fill" size={22} color={theme.primary} />
+                <Text style={{ fontSize: 10, fontWeight: '700', color: theme.primary }}>
+                    Exercises
+                </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => router.navigate('/(tabs)/history' as any)}
+                className="items-center justify-center"
+                style={{ gap: 2 }}
+            >
+                <IconSymbol name="clock.fill" size={22} color={theme.textMuted} />
+                <Text style={{ fontSize: 10, fontWeight: '600', color: theme.textMuted }}>
+                    History
+                </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => setMenuVisible(!menuVisible)}
+                className="items-center justify-center"
+                style={{ gap: 2 }}
+            >
+                <IconSymbol name="line.3.horizontal" size={22} color={menuVisible ? theme.primary : theme.textMuted} />
+                <Text style={{ fontSize: 10, fontWeight: '600', color: menuVisible ? theme.primary : theme.textMuted }}>
+                    Menu
+                </Text>
+            </TouchableOpacity>
+          </BottomActionBar>
+
+          <BurgerMenu
+            visible={menuVisible}
+            onClose={() => setMenuVisible(false)}
+          />
+        </>
+      )}
+
+      {isKeyboardVisible && (
+          <Pressable
+              className="absolute inset-0 z-[999]"
+              onPress={() => Keyboard.dismiss()}
+          />
+      )}
     </View>
     </TouchableWithoutFeedback>
   );

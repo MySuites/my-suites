@@ -8,7 +8,7 @@ import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { useWorkoutDraft } from '../../hooks/workouts/useWorkoutDraft';
-import { default as ExercisesScreen } from '../../app/exercises/index';
+import { default as ExercisesScreen } from '../(tabs)/exercises';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import * as MediaLibrary from 'expo-media-library';

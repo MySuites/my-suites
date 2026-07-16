@@ -70,7 +70,7 @@ jest.mock('../../components/workouts/WorkoutOverviewChart', () => {
 });
 
 // Mock ExercisesScreen
-jest.mock('../../app/exercises/index', () => {
+jest.mock('../../app/(tabs)/exercises', () => {
     return {
         __esModule: true,
         default: ({ onSelect }: any) => (

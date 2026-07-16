@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
-import { default as ExercisesScreen } from '../../app/exercises/index';
+import { default as ExercisesScreen } from '../../app/(tabs)/exercises';
 import { ExerciseCard } from '../exercises/ExerciseCard';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
