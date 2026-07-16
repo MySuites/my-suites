@@ -1,5 +1,16 @@
 import { useState } from "react";
 
+// Lazily backfill setTargets for exercises created before per-set targets
+// existed, deriving the array from the exercise's legacy sets/reps fields.
+function ensureSetTargets(ex: any): void {
+    if (!ex.setTargets) {
+        ex.setTargets = Array.from(
+            { length: ex.sets || 1 },
+            () => ({ reps: ex.reps || 0, weight: 0 }),
+        );
+    }
+}
+
 export const useWorkoutDraft = (initialExercises: any[] = []) => {
     const [workoutDraftExercises, setWorkoutDraftExercises] = useState<any[]>(
         initialExercises,
@@ -55,12 +66,7 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
         setWorkoutDraftExercises((prev) => {
             const newArr = [...prev];
             const ex = { ...newArr[exerciseIndex] };
-            if (!ex.setTargets) {
-                ex.setTargets = Array.from(
-                    { length: ex.sets || 1 },
-                    () => ({ reps: ex.reps || 0, weight: 0 }),
-                );
-            }
+            ensureSetTargets(ex);
             const newTargets = [...ex.setTargets];
             const numValue = value === '' ? undefined : Number(value);
             newTargets[setIndex] = {
@@ -87,12 +93,7 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
         setWorkoutDraftExercises((prev) => {
             const newArr = [...prev];
             const ex = { ...newArr[exerciseIndex] };
-            if (!ex.setTargets) {
-                ex.setTargets = Array.from(
-                    { length: ex.sets || 1 },
-                    () => ({ reps: ex.reps || 0, weight: 0 }),
-                );
-            }
+            ensureSetTargets(ex);
             const lastSet = ex.setTargets[ex.setTargets.length - 1] ||
                 { reps: 10, weight: 0 };
             ex.setTargets = [...ex.setTargets, { ...lastSet }];
@@ -106,12 +107,7 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
         setWorkoutDraftExercises((prev) => {
             const newArr = [...prev];
             const ex = { ...newArr[exerciseIndex] };
-            if (!ex.setTargets) {
-                ex.setTargets = Array.from(
-                    { length: ex.sets || 1 },
-                    () => ({ reps: ex.reps || 0, weight: 0 }),
-                );
-            }
+            ensureSetTargets(ex);
             if (ex.setTargets.length <= 1) {
                 return newArr;
             }
@@ -128,44 +124,32 @@ export const useWorkoutDraft = (initialExercises: any[] = []) => {
         });
     }
 
-    function updateExerciseRestTime(exerciseIndex: number, restTime: number) {
+    function patchExercise(exerciseIndex: number, patch: Record<string, any>) {
         setWorkoutDraftExercises((prev) => {
             const newArr = [...prev];
-            newArr[exerciseIndex] = { ...newArr[exerciseIndex], restTime };
+            newArr[exerciseIndex] = { ...newArr[exerciseIndex], ...patch };
             return newArr;
         });
+    }
+
+    function updateExerciseRestTime(exerciseIndex: number, restTime: number) {
+        patchExercise(exerciseIndex, { restTime });
     }
 
     function updateExercisePrepTime(exerciseIndex: number, prepTime: number) {
-        setWorkoutDraftExercises((prev) => {
-            const newArr = [...prev];
-            newArr[exerciseIndex] = { ...newArr[exerciseIndex], prepTime };
-            return newArr;
-        });
+        patchExercise(exerciseIndex, { prepTime });
     }
 
     function updateExerciseAttachment(exerciseIndex: number, attachment: string) {
-        setWorkoutDraftExercises((prev) => {
-            const newArr = [...prev];
-            newArr[exerciseIndex] = { ...newArr[exerciseIndex], attachment };
-            return newArr;
-        });
+        patchExercise(exerciseIndex, { attachment });
     }
 
     function updateExerciseEquipment(exerciseIndex: number, equipment: string) {
-        setWorkoutDraftExercises((prev) => {
-            const newArr = [...prev];
-            newArr[exerciseIndex] = { ...newArr[exerciseIndex], equipment };
-            return newArr;
-        });
+        patchExercise(exerciseIndex, { equipment });
     }
 
     function updateExerciseMovementType(exerciseIndex: number, movementType: string) {
-        setWorkoutDraftExercises((prev) => {
-            const newArr = [...prev];
-            newArr[exerciseIndex] = { ...newArr[exerciseIndex], movementType };
-            return newArr;
-        });
+        patchExercise(exerciseIndex, { movementType });
     }
 
     return {

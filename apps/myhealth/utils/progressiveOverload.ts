@@ -37,6 +37,16 @@ function num(val: string | number | null | undefined): number | null {
     return isNaN(n) ? null : n;
 }
 
+// Recent sets have been near-max effort — hold steady rather than pile on.
+function isHardRpe(avgRpe: number | null | undefined): boolean {
+    return avgRpe != null && avgRpe >= RPE_HARD_THRESHOLD;
+}
+
+// Recent sets have felt easy — push harder than the standard increment.
+function isEasyRpe(avgRpe: number | null | undefined): boolean {
+    return avgRpe != null && avgRpe <= RPE_EASY_THRESHOLD;
+}
+
 // Single-limb (or bilateral) suggestion from a previous weight/reps pair,
 // optionally weighted by recent average RPE for this set. The floor (where
 // reps reset to after a weight bump) scales with the ceiling, keeping the
@@ -51,14 +61,11 @@ function suggestFromPair(
     if (prevWeight === null || prevReps === null) return null;
     const repFloor = Math.max(1, repCeiling - 4);
 
-    // Recent sets have been near-max effort — hold steady rather than add
-    // more on top of an already-grinding set.
-    if (avgRpe !== undefined && avgRpe !== null && avgRpe >= RPE_HARD_THRESHOLD) {
+    if (isHardRpe(avgRpe)) {
         return { weight: prevWeight, reps: prevReps };
     }
 
-    // Recent sets have felt easy — push harder than the standard +1 rep.
-    const isEasy = avgRpe !== undefined && avgRpe !== null && avgRpe <= RPE_EASY_THRESHOLD;
+    const isEasy = isEasyRpe(avgRpe);
 
     if (prevReps >= repCeiling) {
         return {
@@ -123,11 +130,11 @@ export function getSuggestedDurationGoal(
     const hasWeight = prevWeight !== null;
     const durationFloor = Math.max(5, durationCeiling - 20);
 
-    if (avgRpe !== undefined && avgRpe !== null && avgRpe >= RPE_HARD_THRESHOLD) {
+    if (isHardRpe(avgRpe)) {
         return hasWeight ? { weight: prevWeight!, duration: prevDuration } : { duration: prevDuration };
     }
 
-    const isEasy = avgRpe !== undefined && avgRpe !== null && avgRpe <= RPE_EASY_THRESHOLD;
+    const isEasy = isEasyRpe(avgRpe);
     const increment = isEasy ? DURATION_INCREMENT_SEC_AGGRESSIVE : DURATION_INCREMENT_SEC;
 
     if (prevDuration >= durationCeiling) {

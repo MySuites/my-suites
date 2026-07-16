@@ -19,14 +19,6 @@ export const useNavigationSettings = () => {
 
 const KEY_IS_FAB_ENABLED = 'setting.navigation.isFabEnabled';
 
-async function getItem(key: string): Promise<string | null> {
-  return await AsyncStorage.getItem(key);
-}
-
-async function setItem(key: string, value: string): Promise<void> {
-  await AsyncStorage.setItem(key, value);
-}
-
 export function NavigationSettingsProvider({ children }: { children: React.ReactNode }) {
   const [isFabEnabled, setIsFabEnabled] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,7 +26,7 @@ export function NavigationSettingsProvider({ children }: { children: React.React
   useEffect(() => {
     async function loadSettings() {
       try {
-        const value = await getItem(KEY_IS_FAB_ENABLED);
+        const value = await AsyncStorage.getItem(KEY_IS_FAB_ENABLED);
         if (value !== null) {
           setIsFabEnabled(value === 'true');
         } else {
@@ -53,7 +45,7 @@ export function NavigationSettingsProvider({ children }: { children: React.React
   const toggleFab = async (enabled: boolean) => {
     try {
       setIsFabEnabled(enabled);
-      await setItem(KEY_IS_FAB_ENABLED, String(enabled));
+      await AsyncStorage.setItem(KEY_IS_FAB_ENABLED, String(enabled));
     } catch (error) {
       console.error('Failed to save navigation settings:', error);
     }

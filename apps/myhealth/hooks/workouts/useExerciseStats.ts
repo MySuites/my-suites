@@ -1,13 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchExerciseStats } from "../../providers/WorkoutManagerProvider";
 
+type ExerciseMetric =
+    | "weight"
+    | "reps"
+    | "duration"
+    | "distance"
+    | "volume"
+    | "max_volume"
+    | "estimated_1rm";
+
 export const useExerciseStats = (user: any, exercise: any) => {
     const [chartData, setChartData] = useState<any[]>([]);
     const [loadingChart, setLoadingChart] = useState(true);
     const [debugStr, setDebugStr] = useState<string>("");
-    const [selectedMetric, setSelectedMetric] = useState<
-        "weight" | "reps" | "duration" | "distance" | "volume" | "max_volume" | "estimated_1rm"
-    >("weight");
+    const [selectedMetric, setSelectedMetric] = useState<ExerciseMetric>("weight");
 
     const availableMetrics = useMemo(() => {
         if (!exercise || (!exercise.properties && !exercise.rawType)) return [];
@@ -15,7 +22,7 @@ export const useExerciseStats = (user: any, exercise: any) => {
             (Array.isArray(exercise.rawType)
                 ? exercise.rawType
                 : [exercise.rawType]);
-        const metrics: ("weight" | "reps" | "duration" | "distance" | "volume" | "max_volume" | "estimated_1rm")[] = [];
+        const metrics: ExerciseMetric[] = [];
         if (Array.isArray(props)) {
             props.forEach((p: string) => {
                 const lower = String(p).toLowerCase();

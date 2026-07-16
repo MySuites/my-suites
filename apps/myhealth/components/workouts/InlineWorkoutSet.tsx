@@ -6,6 +6,7 @@ import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import { IconSymbol } from "@mysuite/ui";
 import { getExerciseFields } from './SetRow';
+import { getEffectiveBodyweightLoad } from '../../utils/workout-logic';
 
 interface InlineWorkoutSetProps {
     index: number;
@@ -112,7 +113,7 @@ export function InlineWorkoutSet({
 
         if (showWeight) {
             if (showBodyweight) {
-                const bw = prev.bodyweight ?? (showBodyweight ? latestBodyWeight : undefined);
+                const bw = prev.bodyweight ?? getEffectiveBodyweightLoad(exercise, latestBodyWeight);
                 const added = prev.weight;
                 if (bw != null && added != null && added > 0) {
                     parts.push(`${bw}+${added}`);

@@ -11,6 +11,13 @@ const RANGE_OPTIONS: SegmentedControlOption<DateRange>[] = [
   { label: 'Y', value: 'Year' },
 ];
 
+// Short badge label per range; anything unlisted falls back to 'Year'.
+const RANGE_BADGE_LABEL: Partial<Record<DateRange, string>> = {
+  Week: 'Week',
+  Month: 'Month',
+  '6Month': '6M',
+};
+
 interface VolumeTrendCardProps {
   history: { value: number; label?: string; date: string; spineIndex?: number }[];
   selectedRange: DateRange;
@@ -99,7 +106,7 @@ export function VolumeTrendCard({
             </View>
             <View className="flex-row items-center gap-1">
               <Text className="text-[10px] text-light-muted dark:text-dark-muted font-semibold bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded">
-                {selectedRange === 'Week' ? 'Week' : selectedRange === 'Month' ? 'Month' : selectedRange === '6Month' ? '6M' : 'Year'}
+                {RANGE_BADGE_LABEL[selectedRange] ?? 'Year'}
               </Text>
               <IconSymbol name="chevron.right" size={12} color={textColor || theme.textMuted} />
             </View>

@@ -103,15 +103,6 @@ describe('Settings Flow', () => {
         await act(async () => {
             await deleteAction.onPress();
         });
-
-        // Verify API calls
-        // mockInvoke('delete-account') is not called in current implementation of Delete Data.
-        // expect(mockInvoke).toHaveBeenCalledWith('delete-account', {
-        //     body: { user_id: 'test-user-id' }
-        // });
-        // expect(mockSignOut).toHaveBeenCalled(); // handleDeleteData does not sign out?
-        // Actually handleDeleteData does NOT sign out. It just deletes data. 
-        // So this test expectation was also wrong for Delete Data.
     });
 
     it('toggles daily workout reminders and schedules them', async () => {

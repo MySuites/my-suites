@@ -19,6 +19,7 @@ const WEIGHT_VALUES_KG = Array.from({ length: 201 }, (_, i) => i * 1.25); // 0 t
 const REP_VALUES = Array.from({ length: 51 }, (_, i) => i); // 0 to 50
 
 import { getExerciseFields } from './SetRow';
+import { getEffectiveBodyweightLoad } from '../../utils/workout-logic';
 
 interface CardWorkoutSetProps {
     index: number;
@@ -314,7 +315,7 @@ export function CardWorkoutSet({
 
         if (showWeight) {
             if (showBodyweight) {
-                const bw = prev.bodyweight ?? (showBodyweight ? latestBodyWeight : undefined);
+                const bw = prev.bodyweight ?? getEffectiveBodyweightLoad(exercise, latestBodyWeight);
                 const added = prev.weight;
                 if (bw != null && added != null && added > 0) {
                     parts.push(`${formatWeightValue(bw)}+${formatWeightValue(added)}`);

@@ -2,6 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { Exercise } from "../../providers/WorkoutManagerProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const STORAGE_KEYS = [
+    "myhealth_workout_exercises",
+    "myhealth_workout_seconds",
+    "myhealth_workout_name",
+    "myhealth_workout_routine_id",
+    "myhealth_workout_source_id",
+    "myhealth_workout_running",
+    "myhealth_workout_last_tick",
+    "myhealth_workout_current_index",
+];
+
 interface UseActiveWorkoutPersistenceProps {
     exercises: Exercise[];
     workoutSeconds: number;
@@ -46,18 +57,7 @@ export function useActiveWorkoutPersistence({
     useEffect(() => {
         const loadState = async () => {
             try {
-                const keys = [
-                    "myhealth_workout_exercises",
-                    "myhealth_workout_seconds",
-                    "myhealth_workout_name",
-                    "myhealth_workout_routine_id",
-                    "myhealth_workout_source_id",
-                    "myhealth_workout_running",
-                    "myhealth_workout_last_tick",
-                    "myhealth_workout_current_index",
-                ];
-
-                const stores = await AsyncStorage.multiGet(keys);
+                const stores = await AsyncStorage.multiGet(STORAGE_KEYS);
                 const data: Record<string, string | null> = {};
                 stores.forEach(([key, value]) => {
                     data[key] = value;
@@ -205,17 +205,7 @@ export function useActiveWorkoutPersistence({
 
     const clearPersistence = async () => {
         try {
-            const keys = [
-                "myhealth_workout_exercises",
-                "myhealth_workout_seconds",
-                "myhealth_workout_name",
-                "myhealth_workout_routine_id",
-                "myhealth_workout_source_id",
-                "myhealth_workout_running",
-                "myhealth_workout_last_tick",
-                "myhealth_workout_current_index",
-            ];
-            await AsyncStorage.multiRemove(keys);
+            await AsyncStorage.multiRemove(STORAGE_KEYS);
         } catch (e) {
             console.error("Failed to clear workout state", e);
         }

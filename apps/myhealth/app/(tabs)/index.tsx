@@ -3,11 +3,12 @@ import { View, ScrollView, InteractionManager, Text, TouchableOpacity } from "re
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '@mysuite/auth';
-import { useUITheme, IconSymbol, useToast } from '@mysuite/ui';
+import { useUITheme, useToast } from '@mysuite/ui';
 
 import { BurgerMenu } from '../../components/ui/BurgerMenu';
 import { BottomActionBar } from '../../components/ui/BottomNavBar';
 import { DashboardButton } from '../../components/ui/DashboardButton';
+import { BottomNavButton } from '../../components/ui/BottomNavButton';
 import { BodyWeightCard } from '../../components/bodyweight/BodyWeightCard';
 import { WeightLogModal } from '../../components/bodyweight/WeightLogModal';
 import { BodyWeightService, BodyWeightEntry } from '../../services/BodyWeightService';
@@ -26,6 +27,7 @@ import { HEIGHT_STORAGE_KEY } from '../../utils/height';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import { lbToDisplay, roundForDisplay } from '../../utils/units';
 import { WIDGET_ORDER_STORAGE_KEY, DEFAULT_WIDGET_ORDER, WidgetId } from '../../utils/widgetOrder';
+import { getEffectiveSetWeight } from '../../utils/workout-logic';
 
 export default function ProfileScreen() {
   const { user } = useAuth();
@@ -218,7 +220,7 @@ export default function ProfileScreen() {
         log.exercises.forEach((ex: Exercise) => {
           if (ex.logs) {
             ex.logs.forEach((set: SetLog) => {
-              const weight = parseFloat(set.weight as any) || 0;
+              const weight = getEffectiveSetWeight(set);
               const reps = parseInt(set.reps as any) || 0;
               totalVolume += (weight * reps);
             });
@@ -517,20 +519,13 @@ export default function ProfileScreen() {
             <Text className="text-base font-semibold text-primary">Done</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity
+          <BottomNavButton
+            icon="line.3.horizontal"
+            label="Menu"
+            active={menuVisible}
+            boldWhenActive={false}
             onPress={() => setMenuVisible(!menuVisible)}
-            className="items-center justify-center"
-            style={{ gap: 2 }}
-          >
-            <IconSymbol
-              name="line.3.horizontal"
-              size={22}
-              color={menuVisible ? theme.primary : theme.textMuted}
-            />
-            <Text style={{ fontSize: 10, fontWeight: '600', color: menuVisible ? theme.primary : theme.textMuted }}>
-              Menu
-            </Text>
-          </TouchableOpacity>
+          />
         )}
       </BottomActionBar>
 

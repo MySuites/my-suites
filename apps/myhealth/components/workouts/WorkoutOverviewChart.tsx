@@ -4,6 +4,7 @@ import { TimeSeriesChart, DateRange } from '../ui/TimeSeriesChart';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { RaisedCard, useUITheme } from '@mysuite/ui';
 import { SegmentedControl, SegmentedControlOption } from '../ui/SegmentedControl';
+import { getEffectiveSetWeight } from '../../utils/workout-logic';
 
 interface WorkoutOverviewChartProps {
     workoutName: string;
@@ -30,26 +31,20 @@ export function WorkoutOverviewChart({ workoutName }: WorkoutOverviewChartProps)
     const chartData = React.useMemo(() => {
         if (!workoutName || !workoutHistory) return [];
 
-        return workoutHistory.filter(log => 
-            log.workoutName === workoutName && log.exercises && log.exercises.length > 0
-        ).map(log => {
-            let totalVolume = 0;
-            if (log.exercises) {
-                log.exercises.forEach(ex => {
-                    if (ex.logs) {
-                        ex.logs.forEach(set => {
-                            const weight = set.weight || 0;
-                            const reps = set.reps || 0;
-                            totalVolume += (weight * reps);
-                        });
-                    }
+        return workoutHistory
+            .filter(log => log.workoutName === workoutName && !!log.exercises?.length)
+            .map(log => {
+                let totalVolume = 0;
+                log.exercises?.forEach(ex => {
+                    ex.logs?.forEach(set => {
+                        totalVolume += getEffectiveSetWeight(set) * (set.reps || 0);
+                    });
                 });
-            }
-            return {
-                value: totalVolume,
-                date: log.workoutDate,
-            };
-        });
+                return {
+                    value: totalVolume,
+                    date: log.workoutDate,
+                };
+            });
     }, [workoutHistory, workoutName]);
 
     const displayValue = selectedPoint ? selectedPoint.value : (chartData.length > 0 ? chartData[chartData.length - 1].value : 0);

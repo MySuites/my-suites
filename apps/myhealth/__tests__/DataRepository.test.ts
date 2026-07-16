@@ -7,12 +7,14 @@ jest.mock("../utils/db/database", () => ({
 
 describe("DataRepository", () => {
     describe("getHistory", () => {
-        it("should populate exercise properties", async () => {
-            const mockDb = {
-                getAllAsync: jest.fn(),
-            };
-            (getDb as jest.Mock).mockResolvedValue(mockDb);
+        let mockDb: { getAllAsync: jest.Mock };
 
+        beforeEach(() => {
+            mockDb = { getAllAsync: jest.fn() };
+            (getDb as jest.Mock).mockResolvedValue(mockDb);
+        });
+
+        it("should populate exercise properties", async () => {
             // Mock DB returns
             mockDb.getAllAsync
                 .mockResolvedValueOnce([ // workout_logs
@@ -47,11 +49,6 @@ describe("DataRepository", () => {
         });
 
         it("should trim whitespace from properties", async () => {
-            const mockDb = {
-                getAllAsync: jest.fn(),
-            };
-            (getDb as jest.Mock).mockResolvedValue(mockDb);
-
             // Mock DB returns
             mockDb.getAllAsync
                 .mockResolvedValueOnce([ // workout_logs
@@ -87,11 +84,6 @@ describe("DataRepository", () => {
         });
 
         it("should map equipment and attachment from set_logs, exercises, or inference", async () => {
-            const mockDb = {
-                getAllAsync: jest.fn(),
-            };
-            (getDb as jest.Mock).mockResolvedValue(mockDb);
-
             // Mock DB returns
             mockDb.getAllAsync
                 .mockResolvedValueOnce([ // workout_logs

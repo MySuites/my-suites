@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { Exercise, useWorkoutManager, fetchLastExercisePerformance, fetchRecentSetRpeAverages } from './WorkoutManagerProvider';
 import { useAuth } from '@mysuite/auth';
-import { createExercise } from '../utils/workout-logic';
+import { createExercise, getEffectiveBodyweightLoad } from '../utils/workout-logic';
 import { useActiveWorkoutTimers } from '../hooks/workouts/useActiveWorkoutTimers';
 import { useActiveWorkoutPersistence } from '../hooks/workouts/useActiveWorkoutPersistence';
 import { useLatestBodyWeight } from '../hooks/workouts/useLatestBodyWeight';
@@ -458,7 +458,9 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                         duration: parseVal(durationValStr),
                         distance: parseVal(distanceValStr),
                         rpe: parseVal(target.rpe, true),
-                        bodyweight: target.weight === undefined ? latestBodyWeight : undefined
+                        bodyweight: target.weight === undefined
+                            ? getEffectiveBodyweightLoad(ex, latestBodyWeight)
+                            : undefined
                     };
                 }
             });

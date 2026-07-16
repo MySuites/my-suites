@@ -25,9 +25,11 @@ export function MuscleHeatmap({ volumes, isLoading }: MuscleHeatmapProps) {
     const bodyColor = theme.textMuted;
     const inactiveFill = isDark ? '#2e303e' : '#b0bec5';
 
+    // Obliques share a volume bucket with Abdominals.
+    const resolveGroup = (name: string) => (name === 'Obliques' ? 'Abdominals' : name);
+
     const getMuscleColor = (name: string): string => {
-        const lookup = name === 'Obliques' ? 'Abdominals' : name;
-        const sets = volumes[lookup]?.sets ?? 0;
+        const sets = volumes[resolveGroup(name)]?.sets ?? 0;
         if (sets === 0) return '#E5E7EB';
         if (sets <= 5)  return '#FDBA74';
         if (sets <= 10) return '#F97316';
@@ -35,16 +37,31 @@ export function MuscleHeatmap({ volumes, isLoading }: MuscleHeatmapProps) {
     };
 
     const handlePress = (name: string) => {
-        const lookup = name === 'Obliques' ? 'Abdominals' : name;
+        const lookup = resolveGroup(name);
         setSelectedMuscle(prev => prev === lookup ? null : lookup);
     };
 
-    const sel = (name: string) => {
-        const lookup = name === 'Obliques' ? 'Abdominals' : name;
-        return selectedMuscle === lookup;
-    };
+    const isGroupSelected = (name: string) => selectedMuscle === resolveGroup(name);
 
     const activeInfo = selectedMuscle ? volumes[selectedMuscle] : null;
+
+    const renderMuscle = (muscle: typeof FRONT_MUSCLES[number]) => {
+        const groupName = MUSCLE_ID_TO_GROUP[muscle.id];
+        const isSelected = groupName ? isGroupSelected(groupName) : false;
+        const color = groupName ? getMuscleColor(groupName) : inactiveFill;
+
+        return (
+            <Path
+                key={muscle.id}
+                id={muscle.id}
+                d={muscle.path}
+                fill={color}
+                stroke={isSelected ? theme.primary : bodyColor}
+                strokeWidth={isSelected ? 0.8 : 0.3}
+                onPress={() => groupName && handlePress(groupName)}
+            />
+        );
+    };
 
     return (
         <RaisedCard className="p-4" style={{ borderRadius: 16 }}>
@@ -65,44 +82,12 @@ export function MuscleHeatmap({ volumes, isLoading }: MuscleHeatmapProps) {
                         <Svg width="100%" height="100%" viewBox="0 0 70 95">
                             {/* Anterior (Front) View */}
                             <G id="anterior-view">
-                                {FRONT_MUSCLES.map((muscle) => {
-                                    const groupName = MUSCLE_ID_TO_GROUP[muscle.id];
-                                    const isSelected = groupName ? sel(groupName) : false;
-                                    const color = groupName ? getMuscleColor(groupName) : inactiveFill;
-
-                                    return (
-                                        <Path
-                                            key={muscle.id}
-                                            id={muscle.id}
-                                            d={muscle.path}
-                                            fill={color}
-                                            stroke={isSelected ? theme.primary : bodyColor}
-                                            strokeWidth={isSelected ? 0.8 : 0.3}
-                                            onPress={() => groupName && handlePress(groupName)}
-                                        />
-                                    );
-                                })}
+                                {FRONT_MUSCLES.map(renderMuscle)}
                             </G>
 
                             {/* Posterior (Back) View */}
                             <G id="posterior-view">
-                                {BACK_MUSCLES.map((muscle) => {
-                                    const groupName = MUSCLE_ID_TO_GROUP[muscle.id];
-                                    const isSelected = groupName ? sel(groupName) : false;
-                                    const color = groupName ? getMuscleColor(groupName) : inactiveFill;
-
-                                    return (
-                                        <Path
-                                            key={muscle.id}
-                                            id={muscle.id}
-                                            d={muscle.path}
-                                            fill={color}
-                                            stroke={isSelected ? theme.primary : bodyColor}
-                                            strokeWidth={isSelected ? 0.8 : 0.3}
-                                            onPress={() => groupName && handlePress(groupName)}
-                                        />
-                                    );
-                                })}
+                                {BACK_MUSCLES.map(renderMuscle)}
                             </G>
                         </Svg>
 
