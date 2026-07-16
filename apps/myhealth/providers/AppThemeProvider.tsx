@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useLayoutEffect, useState, useMemo } from 'react';
 import { useColorScheme as rnUseColorScheme, Animated, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UIThemeProvider, getAppTheme } from '@mysuite/ui';
@@ -49,16 +49,12 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
 
   const setPreference = async (p: ThemePreference) => {
     setPreferenceState(p);
+    setNWColorScheme(p === 'system' ? 'system' : p);
+
     try {
       await AsyncStorage.setItem(THEME_PREF_KEY, p);
     } catch {
       // ignore
-    }
-    
-    if (p === 'system') {
-      setNWColorScheme('system');
-    } else {
-      setNWColorScheme(p);
     }
   };
 
@@ -68,9 +64,9 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
   // Use useRef for Animated.Value to persist across renders without re-creation
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     let isMounted = true;
-    
+
     if (effectiveScheme !== prevScheme) {
       // 1. Theme changed. 
       // We are now rendering with NEW theme. 
@@ -80,7 +76,7 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
 
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 300, // 0.2s
+        duration: 100,
         useNativeDriver: true,
       }).start(() => {
         if (isMounted) {
