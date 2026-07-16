@@ -445,18 +445,17 @@ export default function SettingsScreen() {
               thumbColor={pushNotificationsEnabled ? "#ffffff" : "#f4f3f4"}
             />
           </View>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-6" style={{ opacity: pushNotificationsEnabled ? 1 : 0.5 }}>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-6">
             <Text className="text-base text-light dark:text-dark">Daily Workout Reminder</Text>
             <Switch
               testID="daily-reminder-switch"
               value={notificationsEnabled}
               onValueChange={handleToggleNotifications}
-              disabled={!pushNotificationsEnabled}
               trackColor={{ false: theme.card, true: theme.primary }}
               thumbColor={notificationsEnabled ? "#ffffff" : "#f4f3f4"}
             />
           </View>
-          {notificationsEnabled && pushNotificationsEnabled && (
+          {notificationsEnabled && (
             <>
               <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-6">
                 <Text className="text-base text-light dark:text-dark font-medium">Reminder Time</Text>
