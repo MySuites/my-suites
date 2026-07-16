@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Modal, FlatList, TouchableOpacity, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Modal, TouchableOpacity } from 'react-native';
 import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
+import { VerticalSelectorWheel } from './VerticalSelectorWheel';
 
 const ITEM_HEIGHT = 50;
 const VISIBLE_ITEMS = 5;
@@ -16,63 +17,33 @@ interface RestTimerPickerProps {
     onSave: (value: number) => void;
 }
 
+function renderUnitItem(unit: string) {
+    return (item: number, isSelected: boolean) => (
+        <>
+            <Text className={`text-2xl font-bold ${isSelected ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
+                {item}
+            </Text>
+            <Text className={`ml-1 text-sm font-bold ${isSelected ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
+                {unit}
+            </Text>
+        </>
+    );
+}
+
+const renderMinItem = renderUnitItem('min');
+const renderSecItem = renderUnitItem('sec');
+
 export function RestTimerPicker({ visible, onClose, initialValue, onSave }: RestTimerPickerProps) {
     const theme = useUITheme();
     const [selectedMin, setSelectedMin] = useState(Math.floor(initialValue / 60));
     const [selectedSec, setSelectedSec] = useState(Math.floor((initialValue % 60) / 5) * 5);
-    
-    const minListRef = useRef<FlatList>(null);
-    const secListRef = useRef<FlatList>(null);
-
-    // Pad values for centering
-    const minData = [null, null, ...MIN_VALUES, null, null];
-    const secData = [null, null, ...SEC_VALUES, null, null];
 
     useEffect(() => {
         if (visible) {
-            const m = Math.floor(initialValue / 60);
-            const s = Math.floor((initialValue % 60) / 5) * 5;
-            setSelectedMin(m);
-            setSelectedSec(s);
-            
-            // Scroll after delay
-            const timeout = setTimeout(() => {
-                const mIdx = MIN_VALUES.indexOf(m);
-                const sIdx = SEC_VALUES.indexOf(s);
-                
-                if (mIdx !== -1 && minListRef.current) {
-                    minListRef.current.scrollToOffset({ 
-                        offset: mIdx * ITEM_HEIGHT, 
-                        animated: false 
-                    });
-                }
-                if (sIdx !== -1 && secListRef.current) {
-                    secListRef.current.scrollToOffset({ 
-                        offset: sIdx * ITEM_HEIGHT, 
-                        animated: false 
-                    });
-                }
-            }, 100);
-
-            return () => clearTimeout(timeout);
+            setSelectedMin(Math.floor(initialValue / 60));
+            setSelectedSec(Math.floor((initialValue % 60) / 5) * 5);
         }
     }, [visible, initialValue]);
-
-    const handleMinScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const offset = event.nativeEvent.contentOffset.y;
-        const index = Math.round(offset / ITEM_HEIGHT);
-        if (index >= 0 && index < MIN_VALUES.length) {
-            setSelectedMin(MIN_VALUES[index]);
-        }
-    };
-
-    const handleSecScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const offset = event.nativeEvent.contentOffset.y;
-        const index = Math.round(offset / ITEM_HEIGHT);
-        if (index >= 0 && index < SEC_VALUES.length) {
-            setSelectedSec(SEC_VALUES[index]);
-        }
-    };
 
     return (
         <Modal
@@ -92,40 +63,23 @@ export function RestTimerPicker({ visible, onClose, initialValue, onSave }: Rest
 
                     <View style={{ height: WHEEL_HEIGHT }} className="relative flex-row items-center justify-center mb-8">
                         {/* Global Centering Highlight */}
-                        <View 
+                        <View
                             className="absolute left-0 right-0 border-t border-b border-primary/20 bg-primary/5"
-                            style={{ height: ITEM_HEIGHT, top: ITEM_HEIGHT * 2, borderRadius: 12 }} 
+                            style={{ height: ITEM_HEIGHT, top: ITEM_HEIGHT * 2, borderRadius: 12 }}
                             pointerEvents="none"
                         />
 
                         {/* Minutes Wheel */}
                         <View className="flex-1 items-end pr-8">
                             <View style={{ height: WHEEL_HEIGHT, width: 80 }}>
-                                <FlatList
-                                    ref={minListRef}
-                                    data={minData}
-                                    keyExtractor={(_, i) => `m-${i}`}
-                                    showsVerticalScrollIndicator={false}
-                                    snapToInterval={ITEM_HEIGHT}
-                                    snapToAlignment="start"
-                                    decelerationRate="fast"
-                                    onScroll={handleMinScroll}
-                                    onMomentumScrollEnd={handleMinScroll}
-                                    scrollEventThrottle={16}
-                                    renderItem={({ item }) => (
-                                        <View style={{ height: ITEM_HEIGHT }} className="items-center justify-center flex-row">
-                                            {item !== null && (
-                                                <>
-                                                    <Text className={`text-2xl font-bold ${item === selectedMin ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
-                                                        {item}
-                                                    </Text>
-                                                    <Text className={`ml-1 text-sm font-bold ${item === selectedMin ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
-                                                        min
-                                                    </Text>
-                                                </>
-                                            )}
-                                        </View>
-                                    )}
+                                <VerticalSelectorWheel
+                                    value={selectedMin}
+                                    onValueChange={setSelectedMin}
+                                    values={MIN_VALUES}
+                                    itemHeight={ITEM_HEIGHT}
+                                    width={80}
+                                    visibleItems={VISIBLE_ITEMS}
+                                    renderItem={renderMinItem}
                                 />
                             </View>
                         </View>
@@ -133,37 +87,20 @@ export function RestTimerPicker({ visible, onClose, initialValue, onSave }: Rest
                         {/* Seconds Wheel */}
                         <View className="flex-1 items-start pl-8">
                             <View style={{ height: WHEEL_HEIGHT, width: 80 }}>
-                                <FlatList
-                                    ref={secListRef}
-                                    data={secData}
-                                    keyExtractor={(_, i) => `s-${i}`}
-                                    showsVerticalScrollIndicator={false}
-                                    snapToInterval={ITEM_HEIGHT}
-                                    snapToAlignment="start"
-                                    decelerationRate="fast"
-                                    onScroll={handleSecScroll}
-                                    onMomentumScrollEnd={handleSecScroll}
-                                    scrollEventThrottle={16}
-                                    renderItem={({ item }) => (
-                                        <View style={{ height: ITEM_HEIGHT }} className="items-center justify-center flex-row">
-                                            {item !== null && (
-                                                <>
-                                                    <Text className={`text-2xl font-bold ${item === selectedSec ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
-                                                        {item}
-                                                    </Text>
-                                                    <Text className={`ml-1 text-sm font-bold ${item === selectedSec ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
-                                                        sec
-                                                    </Text>
-                                                </>
-                                            )}
-                                        </View>
-                                    )}
+                                <VerticalSelectorWheel
+                                    value={selectedSec}
+                                    onValueChange={setSelectedSec}
+                                    values={SEC_VALUES}
+                                    itemHeight={ITEM_HEIGHT}
+                                    width={80}
+                                    visibleItems={VISIBLE_ITEMS}
+                                    renderItem={renderSecItem}
                                 />
                             </View>
                         </View>
                     </View>
 
-                    <RaisedCard 
+                    <RaisedCard
                         onPress={() => onSave((selectedMin * 60) + selectedSec)}
                         className="py-3 px-6 bg-primary items-center justify-center"
                         style={{ backgroundColor: theme.primary, borderRadius: 9999 }}

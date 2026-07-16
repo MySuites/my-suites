@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Modal, FlatList, TouchableOpacity, NativeScrollEvent, NativeSyntheticEvent, Vibration } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Vibration } from 'react-native';
 import { IconSymbol, useUITheme, RaisedCard } from '@mysuite/ui';
 import Svg, { Circle } from 'react-native-svg';
 import { formatSeconds } from '../../utils/formatting';
+import { VerticalSelectorWheel } from './VerticalSelectorWheel';
 
 const ITEM_HEIGHT = 50;
 const VISIBLE_ITEMS = 5;
@@ -10,6 +11,22 @@ const WHEEL_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 
 const MIN_VALUES = Array.from({ length: 15 }, (_, i) => i);
 const SEC_VALUES = Array.from({ length: 60 }, (_, i) => i);
+
+function renderUnitItem(unit: string) {
+    return (item: number, isSelected: boolean) => (
+        <>
+            <Text className={`text-2xl font-bold ${isSelected ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
+                {item}
+            </Text>
+            <Text className={`text-sm font-bold ml-1 ${isSelected ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
+                {unit}
+            </Text>
+        </>
+    );
+}
+
+const renderMinItem = renderUnitItem('min');
+const renderSecItem = renderUnitItem('sec');
 
 interface DurationTimerPickerProps {
     visible: boolean;
@@ -37,13 +54,6 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
     const [isPrepping, setIsPrepping] = useState(false);
     const [prepRemaining, setPrepRemaining] = useState(0);
     const timerIntervalRef = useRef<any>(null);
-    
-    const minListRef = useRef<FlatList>(null);
-    const secListRef = useRef<FlatList>(null);
-
-    // Pad values for centering
-    const minData = [null, null, ...MIN_VALUES, null, null];
-    const secData = [null, null, ...SEC_VALUES, null, null];
 
     const totalDuration = (selectedMin * 60) + selectedSec;
     const progress = isPrepping
@@ -76,27 +86,6 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                 setIsTimerRunning(false);
                 setIsPrepping(false);
             }
-            
-            // Scroll after delay
-            const timeout = setTimeout(() => {
-                const mIdx = MIN_VALUES.indexOf(m);
-                const sIdx = SEC_VALUES.indexOf(s);
-                
-                if (mIdx !== -1 && minListRef.current) {
-                    minListRef.current.scrollToOffset({ 
-                        offset: mIdx * ITEM_HEIGHT, 
-                        animated: false 
-                    });
-                }
-                if (sIdx !== -1 && secListRef.current) {
-                    secListRef.current.scrollToOffset({ 
-                        offset: sIdx * ITEM_HEIGHT, 
-                        animated: false 
-                    });
-                }
-            }, 100);
-
-            return () => clearTimeout(timeout);
         }
     }, [visible, initialValue, prepTime, autoStart]);
 
@@ -138,27 +127,17 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
         };
     }, [isTimerRunning, isPrepping]);
 
-    const handleMinScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const offset = event.nativeEvent.contentOffset.y;
-        const index = Math.round(offset / ITEM_HEIGHT);
-        if (index >= 0 && index < MIN_VALUES.length) {
-            const newMin = MIN_VALUES[index];
-            setSelectedMin(newMin);
-            if (!isTimerRunning) {
-                setRemainingSeconds(newMin * 60 + selectedSec);
-            }
+    const handleMinChange = (newMin: number) => {
+        setSelectedMin(newMin);
+        if (!isTimerRunning) {
+            setRemainingSeconds(newMin * 60 + selectedSec);
         }
     };
 
-    const handleSecScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const offset = event.nativeEvent.contentOffset.y;
-        const index = Math.round(offset / ITEM_HEIGHT);
-        if (index >= 0 && index < SEC_VALUES.length) {
-            const newSec = SEC_VALUES[index];
-            setSelectedSec(newSec);
-            if (!isTimerRunning) {
-                setRemainingSeconds(selectedMin * 60 + newSec);
-            }
+    const handleSecChange = (newSec: number) => {
+        setSelectedSec(newSec);
+        if (!isTimerRunning) {
+            setRemainingSeconds(selectedMin * 60 + newSec);
         }
     };
 
@@ -238,31 +217,14 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                                     {/* Minutes Wheel */}
                                     <View className="flex-1 items-end pr-4">
                                         <View style={{ height: WHEEL_HEIGHT, width: 80 }}>
-                                            <FlatList
-                                                ref={minListRef}
-                                                data={minData}
-                                                keyExtractor={(_, i) => `m-${i}`}
-                                                showsVerticalScrollIndicator={false}
-                                                snapToInterval={ITEM_HEIGHT}
-                                                snapToAlignment="start"
-                                                decelerationRate="fast"
-                                                onScroll={handleMinScroll}
-                                                onMomentumScrollEnd={handleMinScroll}
-                                                scrollEventThrottle={16}
-                                                renderItem={({ item }) => (
-                                                    <View style={{ height: ITEM_HEIGHT }} className="items-center justify-center flex-row">
-                                                        {item !== null && (
-                                                            <>
-                                                                <Text className={`text-2xl font-bold ${item === selectedMin ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
-                                                                    {item}
-                                                                </Text>
-                                                                <Text className={`text-sm font-bold ml-1 ${item === selectedMin ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
-                                                                    min
-                                                                </Text>
-                                                            </>
-                                                        )}
-                                                    </View>
-                                                )}
+                                            <VerticalSelectorWheel
+                                                value={selectedMin}
+                                                onValueChange={handleMinChange}
+                                                values={MIN_VALUES}
+                                                itemHeight={ITEM_HEIGHT}
+                                                width={80}
+                                                visibleItems={VISIBLE_ITEMS}
+                                                renderItem={renderMinItem}
                                             />
                                         </View>
                                     </View>
@@ -270,31 +232,14 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                                     {/* Seconds Wheel */}
                                     <View className="flex-1 items-start pl-4">
                                         <View style={{ height: WHEEL_HEIGHT, width: 80 }}>
-                                            <FlatList
-                                                ref={secListRef}
-                                                data={secData}
-                                                keyExtractor={(_, i) => `s-${i}`}
-                                                showsVerticalScrollIndicator={false}
-                                                snapToInterval={ITEM_HEIGHT}
-                                                snapToAlignment="start"
-                                                decelerationRate="fast"
-                                                onScroll={handleSecScroll}
-                                                onMomentumScrollEnd={handleSecScroll}
-                                                scrollEventThrottle={16}
-                                                renderItem={({ item }) => (
-                                                    <View style={{ height: ITEM_HEIGHT }} className="items-center justify-center flex-row">
-                                                        {item !== null && (
-                                                            <>
-                                                                <Text className={`text-2xl font-bold ${item === selectedSec ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
-                                                                    {item}
-                                                                </Text>
-                                                                <Text className={`text-sm font-bold ml-1 ${item === selectedSec ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
-                                                                    sec
-                                                                </Text>
-                                                            </>
-                                                        )}
-                                                    </View>
-                                                )}
+                                            <VerticalSelectorWheel
+                                                value={selectedSec}
+                                                onValueChange={handleSecChange}
+                                                values={SEC_VALUES}
+                                                itemHeight={ITEM_HEIGHT}
+                                                width={80}
+                                                visibleItems={VISIBLE_ITEMS}
+                                                renderItem={renderSecItem}
                                             />
                                         </View>
                                     </View>

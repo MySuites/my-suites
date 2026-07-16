@@ -7,12 +7,18 @@ interface VerticalSelectorWheelProps {
     values: number[];
     itemHeight: number;
     width: number;
+    // Number of rows visible in the wheel's viewport (must be odd so one row
+    // centers exactly). Defaults to 3.
+    visibleItems?: number;
     // When the item at a given slot equals this value, its text renders in
     // goalColor instead of the default — marks the progressive-overload
     // suggestion directly on the wheel, same treatment as
     // HorizontalSelectorWheel's weight/reps wheels.
     goalValue?: number;
     goalColor?: string;
+    // Custom row content, e.g. a unit suffix or decimal formatting. Defaults
+    // to the plain scale/opacity-faded number rendering below.
+    renderItem?: (item: number, isSelected: boolean) => React.ReactNode;
 }
 
 function VerticalSelectorWheelBase({
@@ -21,10 +27,14 @@ function VerticalSelectorWheelBase({
     values,
     itemHeight,
     width,
+    visibleItems = 3,
     goalValue,
     goalColor,
+    renderItem,
 }: VerticalSelectorWheelProps) {
-    const inlineData = React.useMemo(() => [null, ...values, null], [values]);
+    const padCount = Math.floor(visibleItems / 2);
+    const padding = React.useMemo(() => Array(padCount).fill(null), [padCount]);
+    const inlineData = React.useMemo(() => [...padding, ...values, ...padding], [padding, values]);
     const scrollRef = React.useRef<ScrollView>(null);
     const [localSelectedValue, setLocalSelectedValue] = React.useState(value);
 
@@ -58,7 +68,7 @@ function VerticalSelectorWheelBase({
     }, [values, itemHeight, onValueChange]);
 
     return (
-        <View style={{ height: itemHeight * 3, width: width }} className="items-center">
+        <View style={{ height: itemHeight * visibleItems, width: width }} className="items-center">
             <ScrollView
                 ref={scrollRef}
                 onLayout={() => {
@@ -91,17 +101,19 @@ function VerticalSelectorWheelBase({
                         }}
                     >
                         {item !== null && (
-                            <Text
-                                className="font-black text-light dark:text-dark"
-                                style={{
-                                    fontSize: item === localSelectedValue ? 36 : 16,
-                                    opacity: item === localSelectedValue ? 1.0 : 0.1,
-                                    transform: [{ scale: item === localSelectedValue ? 1.0 : 0.9 }],
-                                    ...(goalValue !== undefined && goalColor && item === goalValue ? { color: goalColor } : null),
-                                }}
-                            >
-                                {item}
-                            </Text>
+                            renderItem ? renderItem(item, item === localSelectedValue) : (
+                                <Text
+                                    className="font-black text-light dark:text-dark"
+                                    style={{
+                                        fontSize: item === localSelectedValue ? 36 : 16,
+                                        opacity: item === localSelectedValue ? 1.0 : 0.1,
+                                        transform: [{ scale: item === localSelectedValue ? 1.0 : 0.9 }],
+                                        ...(goalValue !== undefined && goalColor && item === goalValue ? { color: goalColor } : null),
+                                    }}
+                                >
+                                    {item}
+                                </Text>
+                            )
                         )}
                     </TouchableOpacity>
                 ))}
