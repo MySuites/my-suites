@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import Animated, { 
   useAnimatedStyle, 
   useSharedValue, 
@@ -21,8 +21,6 @@ interface ToastContextValue {
 }
 
 const ToastContext = React.createContext<ToastContextValue | undefined>(undefined);
-
-const { width } = Dimensions.get('window');
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = React.useState<ToastOptions | null>(null);

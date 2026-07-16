@@ -1,4 +1,3 @@
-// apps/mycfo/app/(tabs)/profile.tsx
 import { useState, useEffect } from 'react';
 import { View, TextInput, Alert, StyleSheet, Text } from 'react-native';
 import { useAuth, supabase } from '@mysuite/auth';
@@ -48,22 +47,23 @@ export default function ProfileScreen() {
   };
   
   const theme = useUITheme();
-  const bg = theme.background;
-  const text = theme.text;
-  const border = theme.surface;
+  const inputStyle = [
+    styles.input,
+    { backgroundColor: theme.background, borderColor: theme.surface, color: theme.text },
+  ];
 
   return (
     <View className="bg-light dark:bg-dark" style={styles.container}>
       <ThemeToggle />
       <TextInput
-        style={[styles.input, { backgroundColor: bg, borderColor: border, color: text }]}
+        style={inputStyle}
         placeholder="Username"
         placeholderTextColor={'#9CA3AF'}
         value={username}
         onChangeText={setUsername}
       />
       <TextInput
-        style={[styles.input, { backgroundColor: bg, borderColor: border, color: text }]}
+        style={inputStyle}
         placeholder="Full Name"
         placeholderTextColor={'#9CA3AF'}
         value={fullName}

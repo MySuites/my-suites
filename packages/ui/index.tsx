@@ -9,7 +9,6 @@ cssInterop(Text, { className: 'style' });
 
 export * from './RaisedCard';
 
-export { RaisedCard } from './RaisedCard';
 export { HollowedCard } from './HollowedCard';
 export { ActionCard } from './ActionCard';
 export { Skeleton } from './Skeleton';

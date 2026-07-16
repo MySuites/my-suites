@@ -46,12 +46,9 @@ interface ActionCardProps extends ViewProps {
 
 export function ActionCard({ children, style, className, onPress, activeOpacity = 0.9, onDelete, onEdit, swipeGroupId, activeSwipeId, onSwipeStart, ...props }: ActionCardProps) {
   const { width } = useWindowDimensions();
-  
-  // Flat ActionCard: Simple background, border, no heavy neumorphic shadows
-  const baseClassName = `bg-light dark:bg-dark-lighter rounded-xl p-3 w-full ${className || ''}`;
 
   // Minimal shadow for separation, but flat style
-  const shadowStyle = { 
+  const shadowStyle = {
       overflow: 'hidden' as const
   };
 

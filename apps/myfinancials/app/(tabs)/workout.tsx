@@ -23,7 +23,7 @@ type Exercise = {
 	completedSets?: number;
 };
 
-function formatSeconds(s: number) {
+function formatSeconds(s: number): string {
 	const mm = Math.floor(s / 60)
 		.toString()
 		.padStart(2, "0");
@@ -49,11 +49,11 @@ export default function Workout() {
 
 	const [isRunning, setRunning] = useState(false);
 	const [workoutSeconds, setWorkoutSeconds] = useState(0);
-	const workoutTimerRef = useRef<number | null>(null as any);
+	const workoutTimerRef = useRef<number | null>(null);
 
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [restSeconds, setRestSeconds] = useState(0);
-	const restTimerRef = useRef<number | null>(null as any);
+	const restTimerRef = useRef<number | null>(null);
 
 	// Persist to localStorage when available (web). Best-effort only.
 	useEffect(() => {

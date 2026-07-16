@@ -1,14 +1,28 @@
-// apps/mycfo/app/auth.tsx
 import { useState } from 'react';
 import { View, TextInput, Text } from 'react-native';
 import { supabase } from '@mysuite/auth';
 import { RaisedCard } from '@mysuite/ui';
 
+type StatusType = 'idle' | 'typing' | 'signing-in' | 'success' | 'error' | 'info';
+
+function statusColorClass(type: StatusType): string {
+  switch (type) {
+    case 'error':
+      return 'text-red-600 dark:text-red-400';
+    case 'success':
+      return 'text-green-600 dark:text-green-400';
+    case 'signing-in':
+      return 'text-blue-600 dark:text-blue-400';
+    default:
+      return 'text-apptext dark:text-dark';
+  }
+}
+
 export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<{
-    type: 'idle' | 'typing' | 'signing-in' | 'success' | 'error' | 'info';
+    type: StatusType;
     message?: string;
   }>({ type: 'idle' });
 
@@ -68,16 +82,7 @@ export default function AuthScreen() {
       {/* Status message */}
       {status.type !== 'idle' && (
         <Text
-          className={
-            `mb-3 text-sm ` +
-            (status.type === 'error'
-              ? 'text-red-600 dark:text-red-400'
-              : status.type === 'success'
-              ? 'text-green-600 dark:text-green-400'
-              : status.type === 'signing-in'
-              ? 'text-blue-600 dark:text-blue-400'
-              : 'text-apptext dark:text-dark')
-          }
+          className={`mb-3 text-sm ${statusColorClass(status.type)}`}
           accessibilityLiveRegion="polite"
         >
           {status.message ?? (status.type === 'typing' ? 'Typing...' : '')}

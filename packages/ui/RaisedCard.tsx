@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { View, Pressable, ViewProps, PressableProps, useWindowDimensions, GestureResponderEvent } from 'react-native';
-import { cssInterop, useColorScheme } from 'nativewind';
+import { View, Pressable, ViewProps, PressableProps, GestureResponderEvent } from 'react-native';
+import { cssInterop } from 'nativewind';
 
 
 cssInterop(Pressable, { className: 'style' });
@@ -14,9 +14,7 @@ interface CardProps extends ViewProps {
 }
 
 export function RaisedCard({ children, style, className, onPress, onLongPress, delayLongPress, activeOpacity = 0.9, ...props }: CardProps) {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const hasBg = className && (className.includes('bg-') && !className.includes('bg-opacity'));
+  const hasBg = className && className.includes('bg-') && !className.includes('bg-opacity');
   // Cards with their own solid background color (e.g. bg-primary buttons) need
   // a semi-transparent BLACK bottom border — black darkens any color underneath
   // it, so the "raised button" shadow stays visible regardless of the card's
