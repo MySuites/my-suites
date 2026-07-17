@@ -451,6 +451,15 @@ export const DataRepository = {
                  }
              }
  
+             let route: LocalWorkoutLog['route'] = undefined;
+             if (log.route) {
+                 try {
+                     route = JSON.parse(log.route);
+                 } catch {
+                     route = undefined;
+                 }
+             }
+
              return {
                  id: log.id,
                  userId: log.user_id,
@@ -466,7 +475,14 @@ export const DataRepository = {
                  updatedAt: log.updated_at || new Date(log.created_at).getTime(),
                  deletedAt: log.deleted_at,
                  imageUrl: singleUrl,
-                 imageUrls: parsedUrls
+                 imageUrls: parsedUrls,
+                 healthkitUuid: log.healthkit_uuid ?? undefined,
+                 avgHeartRate: log.avg_heart_rate ?? undefined,
+                 maxHeartRate: log.max_heart_rate ?? undefined,
+                 calories: log.calories ?? undefined,
+                 distance: log.distance ?? undefined,
+                 elevationGain: log.elevation_gain ?? undefined,
+                 route,
              } as LocalWorkoutLog;
         });
     },
@@ -621,6 +637,15 @@ export const DataRepository = {
                 }
             }
 
+            let route: LocalWorkoutLog['route'] = undefined;
+            if (log.route) {
+                try {
+                    route = JSON.parse(log.route);
+                } catch {
+                    route = undefined;
+                }
+            }
+
             return {
                 id: log.id,
                 workoutId: undefined, // Template link not preserved in flat log table usually, but could add column if needed. schema has it? Schema in database.ts didn't have workout_id.
@@ -636,7 +661,14 @@ export const DataRepository = {
                 syncStatus: log.sync_status || 'synced',
                 updatedAt: log.updated_at || new Date(log.created_at).getTime(),
                 imageUrl: singleUrl,
-                imageUrls: parsedUrls
+                imageUrls: parsedUrls,
+                healthkitUuid: log.healthkit_uuid ?? undefined,
+                avgHeartRate: log.avg_heart_rate ?? undefined,
+                maxHeartRate: log.max_heart_rate ?? undefined,
+                calories: log.calories ?? undefined,
+                distance: log.distance ?? undefined,
+                elevationGain: log.elevation_gain ?? undefined,
+                route,
             };
         });
     },
@@ -722,8 +754,8 @@ export const DataRepository = {
         await db.withTransactionAsync(async () => {
             // 1. Save Header
             await db.runAsync(`
-                INSERT OR REPLACE INTO workout_logs (id, user_id, workout_date, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status, image_url)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 'pending', ?)
+                INSERT OR REPLACE INTO workout_logs (id, user_id, workout_date, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status, image_url, healthkit_uuid, avg_heart_rate, max_heart_rate, calories, distance, elevation_gain, route)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 'pending', ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
                 id,
                 log.userId || null,
@@ -733,7 +765,14 @@ export const DataRepository = {
                 log.note || null,
                 timestamp,
                 now,
-                log.imageUrls && log.imageUrls.length > 0 ? JSON.stringify(log.imageUrls) : (log.imageUrl || null)
+                log.imageUrls && log.imageUrls.length > 0 ? JSON.stringify(log.imageUrls) : (log.imageUrl || null),
+                log.healthkitUuid || null,
+                log.avgHeartRate ?? null,
+                log.maxHeartRate ?? null,
+                log.calories ?? null,
+                log.distance ?? null,
+                log.elevationGain ?? null,
+                log.route && log.route.length > 0 ? JSON.stringify(log.route) : null
             ]);
 
             // 2. Save Sets
@@ -774,7 +813,16 @@ export const DataRepository = {
             syncStatus: 'pending'
         } as LocalWorkoutLog;
     },
-    
+
+    hasWorkoutLogWithHealthKitUuid: async (healthkitUuid: string): Promise<boolean> => {
+        const db = await getDb();
+        const row = await db.getFirstAsync<{ id: string }>(
+            `SELECT id FROM workout_logs WHERE healthkit_uuid = ? AND deleted_at IS NULL LIMIT 1`,
+            [healthkitUuid]
+        );
+        return !!row;
+    },
+
     // --- Stats ---
     getExerciseStats: async (exerciseName: string) => {
         const db = await getDb();

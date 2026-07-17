@@ -17,6 +17,20 @@ export function formatRestTime(s: number): string {
     return `${secs}s`;
 }
 
+export function formatDistance(meters: number, unitSystem: 'imperial' | 'metric'): string {
+    if (unitSystem === 'imperial') {
+        return `${(meters / 1609.34).toFixed(2)} mi`;
+    }
+    return `${(meters / 1000).toFixed(2)} km`;
+}
+
+export function formatElevation(meters: number, unitSystem: 'imperial' | 'metric'): string {
+    if (unitSystem === 'imperial') {
+        return `${Math.round(meters * 3.28084)} ft`;
+    }
+    return `${Math.round(meters)} m`;
+}
+
 export function formatCompactNumber(num: number): string {
     if (num >= 1000000) {
         return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";

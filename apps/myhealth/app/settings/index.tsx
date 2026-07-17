@@ -9,6 +9,7 @@ import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { BodyWeightService } from '../../services/BodyWeightService';
 import { HealthKitService } from '../../services/HealthKitService';
+import { WorkoutHealthKitSyncService } from '../../services/WorkoutHealthKitSyncService';
 import { NotificationService } from '../../services/NotificationService';
 import { storage } from '../../utils/storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -281,6 +282,7 @@ export default function SettingsScreen() {
         timeout = setTimeout(() => {
             checkHealthStatus();
             BodyWeightService.syncWithHealthKit(null);
+            WorkoutHealthKitSyncService.syncWorkoutsFromHealthKit(null);
         }, 200);
     });
     return () => {
@@ -294,6 +296,7 @@ export default function SettingsScreen() {
       await HealthKitService.initHealthKit();
       await HealthKitService.enableSync();
       await BodyWeightService.syncWithHealthKit(null);
+      await WorkoutHealthKitSyncService.syncWorkoutsFromHealthKit(null);
       showToast({ message: "HealthKit synced successfully", type: 'success' });
       await checkHealthStatus();
     } catch (error) {
@@ -415,7 +418,7 @@ export default function SettingsScreen() {
         <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Integrations</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark">Apple Health</Text>
+            <Text className="text-base text-light dark:text-dark">Apple Health & Watch</Text>
             <Switch
               value={isHealthConnected}
               onValueChange={async (value) => {
@@ -560,7 +563,7 @@ export default function SettingsScreen() {
           </View>
           {isProgressiveOverloadEnabled && (
             <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-6">
-              <Text className="text-base text-light dark:text-dark font-medium">Max Reps</Text>
+              <Text className="text-base text-light dark:text-dark font-medium">Reps before Weight Increase</Text>
               <View className="flex-row items-center gap-2">
                 <TouchableOpacity
                   testID="rep-ceiling-decrement"

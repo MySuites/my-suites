@@ -10,6 +10,7 @@ import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { useWorkoutDraft } from '../../hooks/workouts/useWorkoutDraft';
 import { default as ExercisesScreen } from '../(tabs)/exercises';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
+import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -18,7 +19,7 @@ import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { WorkoutOverviewChart } from '../../components/workouts/WorkoutOverviewChart';
 import { WorkoutDraftExerciseItem } from '../../components/workouts/WorkoutDraftExerciseItem';
-import { formatRestTime } from '../../utils/formatting';
+import { formatRestTime, formatDistance, formatElevation } from '../../utils/formatting';
 
 const resolveImageUri = (uri: string | null | undefined): string => {
     if (!uri) return '';
@@ -36,6 +37,7 @@ export default function CreateWorkoutScreen() {
     const { id, logId } = useLocalSearchParams();
     const { setIsHidden } = useFloatingButton();
     const { latestBodyWeight, startWorkout, hasActiveSession, cancelWorkout } = useActiveWorkout();
+    const { unitSystem } = useUnitPreference();
     const insets = useSafeAreaInsets();
     
     useEffect(() => {
@@ -606,6 +608,44 @@ export default function CreateWorkoutScreen() {
                                 </Pressable>
                             </View>
                                              {!isEditing && activeTab === 'performance' && workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
+
+                        {!isEditing && activeTab === 'details' && historyItem?.healthkitUuid && (
+                            <View style={{ marginBottom: 20 }}>
+                                <Text className="font-semibold text-light dark:text-dark mb-3 text-lg">Apple Watch Stats</Text>
+                                <View className="flex-row flex-wrap" style={{ gap: 12 }}>
+                                    {historyItem.avgHeartRate != null && (
+                                        <RaisedCard className="p-3" style={{ minWidth: '30%', flexGrow: 1 }}>
+                                            <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5">Avg Heart Rate</Text>
+                                            <Text className="text-lg font-bold text-light dark:text-dark">{Math.round(historyItem.avgHeartRate)} bpm</Text>
+                                        </RaisedCard>
+                                    )}
+                                    {historyItem.maxHeartRate != null && (
+                                        <RaisedCard className="p-3" style={{ minWidth: '30%', flexGrow: 1 }}>
+                                            <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5">Max Heart Rate</Text>
+                                            <Text className="text-lg font-bold text-light dark:text-dark">{Math.round(historyItem.maxHeartRate)} bpm</Text>
+                                        </RaisedCard>
+                                    )}
+                                    {historyItem.calories != null && (
+                                        <RaisedCard className="p-3" style={{ minWidth: '30%', flexGrow: 1 }}>
+                                            <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5">Calories</Text>
+                                            <Text className="text-lg font-bold text-light dark:text-dark">{Math.round(historyItem.calories)} kcal</Text>
+                                        </RaisedCard>
+                                    )}
+                                    {historyItem.distance != null && (
+                                        <RaisedCard className="p-3" style={{ minWidth: '30%', flexGrow: 1 }}>
+                                            <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5">Distance</Text>
+                                            <Text className="text-lg font-bold text-light dark:text-dark">{formatDistance(historyItem.distance, unitSystem)}</Text>
+                                        </RaisedCard>
+                                    )}
+                                    {historyItem.elevationGain != null && (
+                                        <RaisedCard className="p-3" style={{ minWidth: '30%', flexGrow: 1 }}>
+                                            <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5">Elevation Gain</Text>
+                                            <Text className="text-lg font-bold text-light dark:text-dark">{formatElevation(historyItem.elevationGain, unitSystem)}</Text>
+                                        </RaisedCard>
+                                    )}
+                                </View>
+                            </View>
+                        )}
 
                         {!isEditing && activeTab === 'details' && workoutLogImageUrls.length > 0 && (
                             <View style={{ marginBottom: 20 }}>

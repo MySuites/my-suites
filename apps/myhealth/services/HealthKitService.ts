@@ -4,7 +4,60 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const getHealthKit = () =>
     require("@kingstinct/react-native-healthkit").default;
 
+// WorkoutActivityType is a named export (not part of the .default bundle) —
+// require the module root for it.
+const getWorkoutActivityTypeEnum = () =>
+    require("@kingstinct/react-native-healthkit").WorkoutActivityType;
+
 const HEALTH_KIT_SYNC_ENABLED_KEY = "myhealth_hk_sync_enabled";
+
+export interface HealthKitWorkoutRoutePoint {
+    latitude: number;
+    longitude: number;
+    timestamp: string; // ISO
+}
+
+export interface HealthKitWorkout {
+    uuid: string;
+    startDate: string; // ISO
+    endDate: string; // ISO
+    durationSeconds: number;
+    activityLabel: string;
+    avgHeartRate?: number; // bpm
+    maxHeartRate?: number; // bpm
+    calories?: number; // kcal
+    distance?: number; // meters
+    elevationGain?: number; // meters
+    route?: HealthKitWorkoutRoutePoint[];
+}
+
+// Best-effort statistic fetch — a missing/unsupported quantity type shouldn't fail the whole workout import.
+async function getStatisticQuantity(
+    sample: any,
+    quantityType: string,
+    field: "averageQuantity" | "maximumQuantity" | "sumQuantity",
+): Promise<number | undefined> {
+    try {
+        const stat = await sample.getStatistic?.(quantityType);
+        return stat?.[field]?.quantity;
+    } catch {
+        return undefined;
+    }
+}
+
+// Numeric HKWorkoutActivityType -> human label, e.g. "functionalStrengthTraining" -> "Functional Strength Training".
+// Falls back to "Workout" for unmapped/unknown values (e.g. `other`).
+function activityTypeLabel(activityType: number): string {
+    try {
+        const WorkoutActivityType = getWorkoutActivityTypeEnum();
+        const key: string | undefined = WorkoutActivityType?.[activityType];
+        if (!key) return "Workout";
+        const spaced = key.replace(/([A-Z])/g, " $1").trim();
+        return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+    } catch {
+        return "Workout";
+    }
+}
 
 export const HealthKitService = {
     isAvailable: async (): Promise<boolean> => {
@@ -15,7 +68,15 @@ export const HealthKitService = {
         try {
             const HealthKit = getHealthKit();
             const isRequested = await HealthKit.requestAuthorization({
-                toRead: ["HKQuantityTypeIdentifierBodyMass"],
+                toRead: [
+                    "HKQuantityTypeIdentifierBodyMass",
+                    "HKWorkoutTypeIdentifier",
+                    "HKQuantityTypeIdentifierHeartRate",
+                    "HKQuantityTypeIdentifierActiveEnergyBurned",
+                    "HKQuantityTypeIdentifierDistanceWalkingRunning",
+                    "HKQuantityTypeIdentifierDistanceCycling",
+                    "HKWorkoutRouteTypeIdentifier",
+                ],
                 toShare: ["HKQuantityTypeIdentifierBodyMass"],
             });
 
@@ -114,6 +175,75 @@ export const HealthKitService = {
         }
     },
     
+    /**
+     * Fetch workout sessions from HealthKit (e.g. logged on Apple Watch).
+     * @param startDate The start date for the query (default: 1 year ago)
+     */
+    fetchWorkouts: async (startDate?: Date): Promise<HealthKitWorkout[]> => {
+        try {
+            const start = startDate ||
+                new Date(new Date().setFullYear(new Date().getFullYear() - 1));
+            const HealthKit = getHealthKit();
+            const samples = await HealthKit.queryWorkoutSamples({
+                limit: 0,
+                filter: {
+                    date: {
+                        startDate: start,
+                    },
+                },
+            });
+
+            return await Promise.all(samples.map(async (sample: any) => {
+                const startDateObj = sample.startDate as unknown as Date;
+                const endDateObj = sample.endDate as unknown as Date;
+                const durationSeconds = sample.duration?.quantity ??
+                    Math.round((endDateObj.getTime() - startDateObj.getTime()) / 1000);
+
+                const [avgHeartRate, maxHeartRate, calories, distanceRunning, distanceCycling] = await Promise.all([
+                    getStatisticQuantity(sample, "HKQuantityTypeIdentifierHeartRate", "averageQuantity"),
+                    getStatisticQuantity(sample, "HKQuantityTypeIdentifierHeartRate", "maximumQuantity"),
+                    getStatisticQuantity(sample, "HKQuantityTypeIdentifierActiveEnergyBurned", "sumQuantity"),
+                    getStatisticQuantity(sample, "HKQuantityTypeIdentifierDistanceWalkingRunning", "sumQuantity"),
+                    getStatisticQuantity(sample, "HKQuantityTypeIdentifierDistanceCycling", "sumQuantity"),
+                ]);
+
+                let route: HealthKitWorkoutRoutePoint[] | undefined;
+                try {
+                    const routes = await sample.getWorkoutRoutes?.();
+                    const locations = routes?.flatMap((r: any) => r.locations) ?? [];
+                    if (locations.length > 0) {
+                        route = locations.map((loc: any) => ({
+                            latitude: loc.latitude,
+                            longitude: loc.longitude,
+                            timestamp: (loc.date as unknown as Date).toISOString(),
+                        }));
+                    }
+                } catch {
+                    route = undefined;
+                }
+
+                const elevationGain = sample.metadataElevationAscended?.quantity;
+
+                return {
+                    uuid: sample.uuid,
+                    startDate: startDateObj.toISOString(),
+                    endDate: endDateObj.toISOString(),
+                    durationSeconds,
+                    activityLabel: activityTypeLabel(sample.workoutActivityType),
+                    avgHeartRate,
+                    maxHeartRate,
+                    calories,
+                    distance: distanceRunning ?? distanceCycling,
+                    elevationGain,
+                    route,
+                };
+            }));
+        } catch (error) {
+            console.error("[HealthKitService] Error fetching workouts:", error);
+            return [];
+        }
+    },
+
     /**
      * Save a weight sample to HealthKit.
      * @param weight The weight in lbs

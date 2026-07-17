@@ -48,6 +48,42 @@ describe("DataRepository", () => {
             ]);
         });
 
+        it("should parse HealthKit workout metrics and route JSON", async () => {
+            const route = [
+                { latitude: 37.7749, longitude: -122.4194, timestamp: "2026-06-20T09:00:00.000Z" },
+            ];
+            mockDb.getAllAsync
+                .mockResolvedValueOnce([ // workout_logs
+                    {
+                        id: "log1",
+                        workout_date: "2026-06-20",
+                        workout_name: "Running (Apple Watch)",
+                        healthkit_uuid: "hk-1",
+                        avg_heart_rate: 142,
+                        max_heart_rate: 168,
+                        calories: 310,
+                        distance: 5230,
+                        elevation_gain: 42,
+                        route: JSON.stringify(route),
+                    },
+                ])
+                .mockResolvedValueOnce([]) // set_logs
+                .mockResolvedValueOnce([]); // exercises
+
+            const history = await DataRepository.getHistory();
+
+            expect(history).toHaveLength(1);
+            expect(history[0]).toMatchObject({
+                healthkitUuid: "hk-1",
+                avgHeartRate: 142,
+                maxHeartRate: 168,
+                calories: 310,
+                distance: 5230,
+                elevationGain: 42,
+                route,
+            });
+        });
+
         it("should trim whitespace from properties", async () => {
             // Mock DB returns
             mockDb.getAllAsync
