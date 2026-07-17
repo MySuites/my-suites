@@ -3,11 +3,13 @@ import { View, Text, Keyboard, FlatList, useWindowDimensions } from 'react-nativ
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import { useRouter } from 'expo-router';
+import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { ExerciseCard } from '../exercises/ExerciseCard';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
 import { RestTimerBar } from './ActiveWorkoutDetailScreen';
+import { default as ExercisesScreen } from '../../app/(tabs)/exercises';
 
 function ActiveScreenHeader({ onToggleView }: { onToggleView: () => void }) {
     const router = useRouter();
@@ -52,7 +54,7 @@ function ActiveScreenHeader({ onToggleView }: { onToggleView: () => void }) {
             }
             rightAction={
                 <View className="flex-row gap-2 items-center">
-                    <RaisedCard 
+                    <RaisedCard
                         onPress={() => {
                             Keyboard.dismiss();
                             if (isRunning) {
@@ -67,7 +69,7 @@ function ActiveScreenHeader({ onToggleView }: { onToggleView: () => void }) {
                         <IconSymbol name={isRunning ? 'pause.fill' : 'play.fill'} size={20} className="text-primary dark:text-primary-dark" />
                     </RaisedCard>
 
-                    <RaisedCard 
+                    <RaisedCard
                         onPress={() => {
                             Keyboard.dismiss();
                             pauseWorkout();
@@ -101,7 +103,23 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
         completeSet,
         updateExercise,
         latestBodyWeight,
+        addExercise,
     } = useActiveWorkout();
+
+    const [isAddingExercise, setIsAddingExercise] = useState(false);
+
+    function handleOpenAddExercise() {
+        Keyboard.dismiss();
+        setIsAddingExercise(true);
+    }
+
+    function handleAddExercise(newExercises: any[]) {
+        newExercises.forEach(exercise => {
+            const singleEquipment = Array.isArray(exercise.equipment) ? exercise.equipment[0] : exercise.equipment;
+            addExercise(exercise.name, "3", "10", exercise.properties, exercise.id, exercise.attachment, singleEquipment);
+        });
+        setIsAddingExercise(false);
+    }
 
     const flatListRef = useRef<FlatList>(null);
     const [containerHeight, setContainerHeight] = useState(0);
@@ -301,11 +319,11 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                             No exercises found
                         </Text>
                         <RaisedCard
-                            onPress={onToggleView}
+                            onPress={handleOpenAddExercise}
                             className="px-6 py-3 bg-primary"
                         >
                             <Text className="text-white font-bold text-center">
-                                Go to Detail view to Add Exercises
+                                + Add Exercise
                             </Text>
                         </RaisedCard>
                     </View>
@@ -433,6 +451,20 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
             </View>
 
             <RestTimerBar />
+
+            {isAddingExercise && (
+                <Animated.View
+                    className="absolute inset-0 z-[1000] bg-light dark:bg-dark"
+                    entering={SlideInDown.duration(300)}
+                    exiting={SlideOutDown.duration(300)}
+                >
+                    <ExercisesScreen
+                        mode="select"
+                        onSelect={handleAddExercise}
+                        onClose={() => setIsAddingExercise(false)}
+                    />
+                </Animated.View>
+            )}
         </View>
     );
 }
