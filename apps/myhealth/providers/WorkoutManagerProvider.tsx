@@ -318,7 +318,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         routineId?: string,
         sourceWorkoutId?: string,
         imageUrl?: string,
-        imageUrls?: string[]
+        imageUrls?: string[],
+        gpsData?: { distance: number; elevationGain?: number; route: { latitude: number; longitude: number; timestamp: string }[] }
     ) => {
          setIsSaving(true);
          try {
@@ -332,7 +333,13 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                  note: note,
                  imageUrl: imageUrl,
                  imageUrls: imageUrls,
-                 id: undefined as any
+                 id: undefined as any,
+                 ...(gpsData ? {
+                     distance: gpsData.distance,
+                     elevationGain: gpsData.elevationGain,
+                     route: gpsData.route,
+                     metricsSource: 'gps' as const,
+                 } : {})
              });
              
              const storedHistory = await DataRepository.getHistory();

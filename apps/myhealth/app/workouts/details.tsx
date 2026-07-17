@@ -610,9 +610,11 @@ export default function CreateWorkoutScreen() {
                             </View>
                                              {!isEditing && activeTab === 'performance' && workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
 
-                        {!isEditing && activeTab === 'details' && historyItem?.healthkitUuid && (
+                        {!isEditing && activeTab === 'details' && (historyItem?.healthkitUuid || historyItem?.metricsSource === 'gps') && (
                             <View style={{ marginBottom: 20 }}>
-                                <Text className="font-semibold text-light dark:text-dark mb-3 text-lg">Apple Watch Stats</Text>
+                                <Text className="font-semibold text-light dark:text-dark mb-3 text-lg">
+                                    {historyItem.metricsSource === 'gps' ? 'GPS Stats' : 'Apple Watch Stats'}
+                                </Text>
                                 <View className="flex-row flex-wrap" style={{ gap: 12 }}>
                                     {historyItem.avgHeartRate != null && (
                                         <RaisedCard className="p-3" style={{ minWidth: '30%', flexGrow: 1 }}>

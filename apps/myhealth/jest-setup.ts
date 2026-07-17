@@ -67,6 +67,25 @@ jest.mock(
     () => mockAsyncStorage,
 );
 
+jest.mock("expo-task-manager", () => ({
+    defineTask: jest.fn(),
+    isTaskDefined: jest.fn(() => false),
+    isTaskRegisteredAsync: jest.fn(() => Promise.resolve(false)),
+    unregisterTaskAsync: jest.fn(() => Promise.resolve()),
+    unregisterAllTasksAsync: jest.fn(() => Promise.resolve()),
+}));
+
+jest.mock("expo-location", () => ({
+    Accuracy: { BestForNavigation: 6 },
+    requestForegroundPermissionsAsync: jest.fn(() => Promise.resolve({ status: "granted" })),
+    requestBackgroundPermissionsAsync: jest.fn(() => Promise.resolve({ status: "granted" })),
+    getForegroundPermissionsAsync: jest.fn(() => Promise.resolve({ status: "granted" })),
+    getBackgroundPermissionsAsync: jest.fn(() => Promise.resolve({ status: "granted" })),
+    startLocationUpdatesAsync: jest.fn(() => Promise.resolve()),
+    stopLocationUpdatesAsync: jest.fn(() => Promise.resolve()),
+    hasStartedLocationUpdatesAsync: jest.fn(() => Promise.resolve(false)),
+}));
+
 jest.mock("expo-router", () => ({
     useRouter: jest.fn(() => ({
         push: jest.fn(),

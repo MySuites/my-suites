@@ -85,6 +85,15 @@
         }
       ],
       [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow MyHealth to track your route during outdoor workouts, even when your phone is locked.",
+          "locationWhenInUsePermission": "Allow MyHealth to track your route during workouts.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "MyHealth uses your camera to let you attach photos to workouts and exercises.",

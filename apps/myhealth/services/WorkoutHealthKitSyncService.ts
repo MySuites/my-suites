@@ -43,6 +43,7 @@ export const WorkoutHealthKitSyncService = {
                         createdAt: new Date().toISOString(),
                         exercises: [],
                         healthkitUuid: workout.uuid,
+                        metricsSource: "healthkit",
                         avgHeartRate: workout.avgHeartRate,
                         maxHeartRate: workout.maxHeartRate,
                         calories: workout.calories,

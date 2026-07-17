@@ -83,13 +83,17 @@ export interface LocalWorkoutLog extends Syncable {
     // Set when this log was imported from a HealthKit workout sample (e.g.
     // logged on Apple Watch); used to dedupe repeated syncs.
     healthkitUuid?: string;
-    // Metrics captured from HealthKit for watch-imported workouts.
+    // Metrics captured from HealthKit for watch-imported workouts, or from
+    // the phone's own GPS for outdoor exercises (see metricsSource).
     avgHeartRate?: number; // bpm
     maxHeartRate?: number; // bpm
     calories?: number; // kcal
     distance?: number; // meters
     elevationGain?: number; // meters
     route?: { latitude: number; longitude: number; timestamp: string }[];
+    // Where avgHeartRate/calories/distance/elevationGain/route came from.
+    // Absent for manually-logged workouts with no such metrics.
+    metricsSource?: 'healthkit' | 'gps';
 }
 
 export interface BodyWeightLog extends Syncable {

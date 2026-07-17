@@ -64,6 +64,7 @@ describe("WorkoutHealthKitSyncService", () => {
                 date: mockWorkout.startDate,
                 exercises: [],
                 healthkitUuid: "hk-workout-1",
+                metricsSource: "healthkit",
                 avgHeartRate: 142,
                 maxHeartRate: 168,
                 calories: 310,

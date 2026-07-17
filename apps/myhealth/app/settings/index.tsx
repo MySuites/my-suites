@@ -123,6 +123,7 @@ export default function SettingsScreen() {
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [longWorkoutReminderEnabled, setLongWorkoutReminderEnabled] = useState(false);
+  const [gpsTrackingEnabled, setGpsTrackingEnabled] = useState(false);
   const [longWorkoutDuration, setLongWorkoutDuration] = useState(90);
   const [weeklyGoal, setWeeklyGoal] = useState(DEFAULT_WEEKLY_GOAL);
   const [reminderHour, setReminderHour] = useState(9);
@@ -201,6 +202,15 @@ export default function SettingsScreen() {
     });
   };
 
+  const handleToggleGpsTracking = async (value: boolean) => {
+    setGpsTrackingEnabled(value);
+    await storage.setItem('gps_tracking_enabled', value);
+    showToast({
+      message: value ? "GPS route tracking enabled" : "GPS route tracking disabled",
+      type: 'success'
+    });
+  };
+
   const handleUpdateLongWorkoutDuration = async (minutes: number) => {
     setLongWorkoutDuration(minutes);
     await storage.setItem('long_workout_duration', minutes);
@@ -251,6 +261,9 @@ export default function SettingsScreen() {
       setLongWorkoutReminderEnabled(!!longWorkoutEnabled);
       const duration = await storage.getItem<number>('long_workout_duration');
       if (duration !== null) setLongWorkoutDuration(duration);
+
+      const gpsEnabled = await storage.getItem<boolean>('gps_tracking_enabled');
+      setGpsTrackingEnabled(!!gpsEnabled);
 
       const goal = await storage.getItem<number>(WEEKLY_GOAL_STORAGE_KEY);
       if (goal !== null) setWeeklyGoal(goal);
@@ -432,6 +445,16 @@ export default function SettingsScreen() {
               }}
               trackColor={{ false: theme.card, true: theme.primary }}
               thumbColor={isHealthConnected ? "#ffffff" : "#f4f3f4"}
+            />
+          </View>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+            <Text className="text-base text-light dark:text-dark">Allow GPS Route Tracking</Text>
+            <Switch
+              testID="gps-tracking-switch"
+              value={gpsTrackingEnabled}
+              onValueChange={handleToggleGpsTracking}
+              trackColor={{ false: theme.card, true: theme.primary }}
+              thumbColor={gpsTrackingEnabled ? "#ffffff" : "#f4f3f4"}
             />
           </View>
         </View>

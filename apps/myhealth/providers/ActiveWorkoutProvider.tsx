@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { Exercise, useWorkoutManager, fetchLastExercisePerformance, fetchRecentSetRpeAverages } from './WorkoutManagerProvider';
 import { useAuth } from '@mysuite/auth';
-import { createExercise, getEffectiveBodyweightLoad } from '../utils/workout-logic';
+import { createExercise, getEffectiveBodyweightLoad, workoutHasOutdoorExercise } from '../utils/workout-logic';
+import { computeRouteDistance, computeElevationGain } from '../utils/geo';
 import { useActiveWorkoutTimers } from '../hooks/workouts/useActiveWorkoutTimers';
 import { useActiveWorkoutPersistence } from '../hooks/workouts/useActiveWorkoutPersistence';
 import { useLatestBodyWeight } from '../hooks/workouts/useLatestBodyWeight';
@@ -11,6 +12,8 @@ import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import { NotificationService } from '../services/NotificationService';
 import { LiveActivityService } from '../services/LiveActivityService';
+import { WorkoutLocationTrackingService } from '../services/WorkoutLocationTrackingService';
+import { storage } from '../utils/storage';
 
 function getSetProgressLabel(ex?: Exercise): string {
     if (!ex) return '';
@@ -76,6 +79,9 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
     const [hasPromptedCompletion, setHasPromptedCompletion] = useState(false);
+    // Whether GPS route tracking was actually started for the current
+    // session (gated on the Settings toggle + an outdoor exercise present).
+    const gpsTrackingActiveRef = React.useRef(false);
 
     // Hooks
     const timerState = useActiveWorkoutTimers();
@@ -245,6 +251,17 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                 startedAt: new Date(Date.now() - workoutSeconds * 1000),
                 isPaused: false,
             });
+
+            if (workoutHasOutdoorExercise(exercisesToStart)) {
+                (async () => {
+                    const gpsEnabled = await storage.getItem<boolean>('gps_tracking_enabled');
+                    if (!gpsEnabled) return;
+                    const granted = await WorkoutLocationTrackingService.requestPermissions();
+                    if (!granted) return;
+                    await WorkoutLocationTrackingService.startTracking();
+                    gpsTrackingActiveRef.current = true;
+                })();
+            }
         } else {
             // We are resuming
             if (name !== undefined) setWorkoutName(name);
@@ -383,7 +400,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
     const { saveCompletedWorkout } = useWorkoutManager();
 
-    const handleFinishWorkout = useCallback((note?: string, imageUrl?: string, imageUrls?: string[]) => {
+    const handleFinishWorkout = useCallback(async (note?: string, imageUrl?: string, imageUrls?: string[]) => {
         // Generate logs for completed sets before saving
         const exercisesWithLogs = exercises.map(ex => {
             const logs: any[] = [];
@@ -485,8 +502,23 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
             });
         }
 
+        // Stop GPS tracking (if it was running for this session) and fold the
+        // collected route into distance/elevation stats for the saved log.
+        let gpsData: { distance: number; elevationGain?: number; route: { latitude: number; longitude: number; timestamp: string }[] } | undefined;
+        if (gpsTrackingActiveRef.current) {
+            gpsTrackingActiveRef.current = false;
+            const points = await WorkoutLocationTrackingService.stopTracking();
+            if (points.length >= 2) {
+                gpsData = {
+                    distance: computeRouteDistance(points),
+                    elevationGain: computeElevationGain(points),
+                    route: points.map(p => ({ latitude: p.latitude, longitude: p.longitude, timestamp: p.timestamp })),
+                };
+            }
+        }
+
         // Save the workout
-        saveCompletedWorkout(workoutName, exercisesWithLogs, workoutSeconds, undefined, note, routineId || undefined, sourceWorkoutId || undefined, imageUrl, imageUrls);
+        saveCompletedWorkout(workoutName, exercisesWithLogs, workoutSeconds, undefined, note, routineId || undefined, sourceWorkoutId || undefined, imageUrl, imageUrls, gpsData);
 
         // Reset state
 		setRunning(false);
@@ -514,7 +546,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         setWorkoutName("Current Workout");
         setRoutineId(null);
         setSourceWorkoutId(null);
-        
+
         setHasActiveSession(false);
         setIsExpanded(false);
 
@@ -522,6 +554,13 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         clearPersistence();
         NotificationService.cancelWorkoutTimeoutReminder();
         LiveActivityService.end();
+
+        if (gpsTrackingActiveRef.current) {
+            gpsTrackingActiveRef.current = false;
+            WorkoutLocationTrackingService.stopTracking().catch(err =>
+                console.error("Failed to stop GPS tracking on cancel:", err)
+            );
+        }
     }, [setRunning, resetTimers, clearPersistence]);
 
     const value = React.useMemo(() => ({

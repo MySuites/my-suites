@@ -483,6 +483,7 @@ export const DataRepository = {
                  distance: log.distance ?? undefined,
                  elevationGain: log.elevation_gain ?? undefined,
                  route,
+                 metricsSource: log.metrics_source ?? undefined,
              } as LocalWorkoutLog;
         });
     },
@@ -669,6 +670,7 @@ export const DataRepository = {
                 distance: log.distance ?? undefined,
                 elevationGain: log.elevation_gain ?? undefined,
                 route,
+                metricsSource: log.metrics_source ?? undefined,
             };
         });
     },
@@ -754,8 +756,8 @@ export const DataRepository = {
         await db.withTransactionAsync(async () => {
             // 1. Save Header
             await db.runAsync(`
-                INSERT OR REPLACE INTO workout_logs (id, user_id, workout_date, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status, image_url, healthkit_uuid, avg_heart_rate, max_heart_rate, calories, distance, elevation_gain, route)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 'pending', ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT OR REPLACE INTO workout_logs (id, user_id, workout_date, workout_name, duration, note, created_at, updated_at, deleted_at, sync_status, image_url, healthkit_uuid, avg_heart_rate, max_heart_rate, calories, distance, elevation_gain, route, metrics_source)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
                 id,
                 log.userId || null,
@@ -772,7 +774,8 @@ export const DataRepository = {
                 log.calories ?? null,
                 log.distance ?? null,
                 log.elevationGain ?? null,
-                log.route && log.route.length > 0 ? JSON.stringify(log.route) : null
+                log.route && log.route.length > 0 ? JSON.stringify(log.route) : null,
+                log.metricsSource || null
             ]);
 
             // 2. Save Sets

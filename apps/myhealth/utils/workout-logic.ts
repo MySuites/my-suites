@@ -145,6 +145,15 @@ export function generateSummary(workoutSeconds: number, exercises: Exercise[]) {
     );
 }
 
+// Exercise ids (from assets/data/default-exercises.ts) whose distance/route
+// is meaningfully trackable via phone GPS. Extend this set as more outdoor
+// exercise types are added.
+export const OUTDOOR_GPS_EXERCISE_IDS = new Set(['running', 'cycling']);
+
+export function workoutHasOutdoorExercise(exercises: Exercise[]): boolean {
+    return exercises.some(ex => OUTDOOR_GPS_EXERCISE_IDS.has(ex.id));
+}
+
 export function isUnilateralExercise(name: string): boolean {
     if (!name) return false;
     const lower = name.toLowerCase();

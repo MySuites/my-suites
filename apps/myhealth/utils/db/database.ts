@@ -232,6 +232,7 @@ export const initDatabase = async () => {
     await safeAddColumn("workout_logs", "distance", "REAL"); // meters
     await safeAddColumn("workout_logs", "elevation_gain", "REAL"); // meters
     await safeAddColumn("workout_logs", "route", "TEXT"); // JSON array of {latitude, longitude, timestamp}
+    await safeAddColumn("workout_logs", "metrics_source", "TEXT"); // 'healthkit' | 'gps'
     await safeAddColumn("exercises", "deleted_at", "INTEGER");
     await safeAddColumn("workouts", "sort_order", "INTEGER");
 
