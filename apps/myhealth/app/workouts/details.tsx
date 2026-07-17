@@ -19,6 +19,7 @@ import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { WorkoutOverviewChart } from '../../components/workouts/WorkoutOverviewChart';
 import { WorkoutDraftExerciseItem } from '../../components/workouts/WorkoutDraftExerciseItem';
+import { WorkoutRouteMap } from '../../components/workouts/WorkoutRouteMap';
 import { formatRestTime, formatDistance, formatElevation } from '../../utils/formatting';
 
 const resolveImageUri = (uri: string | null | undefined): string => {
@@ -644,6 +645,11 @@ export default function CreateWorkoutScreen() {
                                         </RaisedCard>
                                     )}
                                 </View>
+                                {historyItem.route && historyItem.route.length >= 2 && (
+                                    <View style={{ marginTop: 16 }}>
+                                        <WorkoutRouteMap route={historyItem.route} color={theme.primary as string} />
+                                    </View>
+                                )}
                             </View>
                         )}
 
