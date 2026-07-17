@@ -50,6 +50,7 @@ const MAPPING = {
   'arrow.counterclockwise': 'refresh',
   'checkmark.circle.fill': 'check-circle',
   'timer': 'timer',
+  'stopwatch': 'av-timer',
   'calendar': 'calendar-today',
   'moon.zzz.fill': 'nightlight',
   'sun.max.fill': 'wb-sunny',

@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Pressable, useWindowDimensions, Vibration, useColorScheme } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 import { DurationTimerPicker } from './DurationTimerPicker';
 import { HorizontalSelectorWheel } from './HorizontalSelectorWheel';
@@ -220,6 +221,19 @@ export function CardWorkoutSet({
     const [localRemainingSecs, setLocalRemainingSecs] = React.useState(0);
     const [localPrepSecs, setLocalPrepSecs] = React.useState(0);
     const [isLocalPrepping, setIsLocalPrepping] = React.useState(false);
+    // Timer (countdown to a target duration) vs Stopwatch (counts up with no
+    // target; the elapsed time becomes this set's logged duration on stop).
+    const [isStopwatchMode, setIsStopwatchMode] = React.useState(false);
+    const stopwatchTogglePos = useSharedValue(0);
+    React.useEffect(() => {
+        stopwatchTogglePos.value = withTiming(isStopwatchMode ? 1 : 0, {
+            duration: 220,
+            easing: Easing.out(Easing.quad),
+        });
+    }, [isStopwatchMode, stopwatchTogglePos]);
+    const stopwatchToggleThumbStyle = useAnimatedStyle(() => ({
+        transform: [{ translateY: stopwatchTogglePos.value * 36 }],
+    }));
     const localIntervalRef = React.useRef<any>(null);
 
     React.useEffect(() => {
@@ -230,8 +244,12 @@ export function CardWorkoutSet({
                         if (prev <= 1) {
                             setIsLocalPrepping(false);
                             const duration = parseInt(durationVal) || 0;
-                            setLocalRemainingSecs(duration);
                             Vibration.vibrate(100);
+                            if (isStopwatchMode) {
+                                setLocalRemainingSecs(0);
+                                return 0;
+                            }
+                            setLocalRemainingSecs(duration);
                             if (duration <= 0) {
                                 setIsLocalTimerRunning(false);
                                 Vibration.vibrate([0, 500, 200, 500]);
@@ -242,6 +260,8 @@ export function CardWorkoutSet({
                         Vibration.vibrate(10);
                         return prev - 1;
                     });
+                } else if (isStopwatchMode) {
+                    setLocalRemainingSecs(prev => prev + 1);
                 } else {
                     setLocalRemainingSecs(prev => {
                         if (prev <= 1) {
@@ -263,11 +283,23 @@ export function CardWorkoutSet({
                 clearInterval(localIntervalRef.current);
             }
         };
-    }, [isLocalTimerRunning, isLocalPrepping, durationVal]);
+    }, [isLocalTimerRunning, isLocalPrepping, isStopwatchMode, durationVal]);
 
     const startLocalTimer = () => {
-        const duration = parseInt(durationVal) || 0;
         const prep = selectedPrepSec;
+        if (isStopwatchMode) {
+            if (prep > 0) {
+                setIsLocalPrepping(true);
+                setLocalPrepSecs(prep);
+            } else {
+                setIsLocalPrepping(false);
+            }
+            setLocalRemainingSecs(0);
+            setIsLocalTimerRunning(true);
+            return;
+        }
+
+        const duration = parseInt(durationVal) || 0;
         if (duration > 0 || prep > 0) {
             if (prep > 0) {
                 setIsLocalPrepping(true);
@@ -284,6 +316,10 @@ export function CardWorkoutSet({
     const stopLocalTimer = () => {
         setIsLocalTimerRunning(false);
         setIsLocalPrepping(false);
+        // Log the elapsed time as this set's duration.
+        if (isStopwatchMode && !isLocalPrepping && localRemainingSecs > 0) {
+            onUpdateSetTarget?.(index, 'duration', localRemainingSecs.toString());
+        }
     };
 
     React.useEffect(() => {
@@ -526,12 +562,17 @@ export function CardWorkoutSet({
                             isLocalTimerRunning
                                 ? (isLocalPrepping
                                     ? (selectedPrepSec > 0 ? localPrepSecs / selectedPrepSec : 0)
-                                    : ((parseInt(durationVal) || 0) > 0 ? localRemainingSecs / (parseInt(durationVal) || 0) : 0))
+                                    : (isStopwatchMode
+                                        // No fixed target to count down to — sweep the ring
+                                        // once per minute instead, like a stopwatch hand.
+                                        ? (localRemainingSecs % 60) / 60
+                                        : ((parseInt(durationVal) || 0) > 0 ? localRemainingSecs / (parseInt(durationVal) || 0) : 0)))
                                 : 1.0
                         ));
 
                         return (
                             <View className="w-full items-center justify-center my-0.5">
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                                 <View style={{ width: clockSize, height: clockSize, justifyContent: 'center', alignItems: 'center' }}>
                                     <Svg width={clockSize} height={clockSize}>
                                         {/* Background Circle */}
@@ -561,10 +602,19 @@ export function CardWorkoutSet({
                                         {isLocalTimerRunning ? (
                                             <>
                                                 <Text className="text-light-muted dark:text-dark-muted uppercase tracking-wider text-[11px] font-semibold mb-0.5">
-                                                    {isLocalPrepping ? 'Prep' : 'Time'}
+                                                    {isLocalPrepping ? 'Prep' : (isStopwatchMode ? 'Elapsed' : 'Time')}
                                                 </Text>
                                                 <Text className={`font-black text-light dark:text-dark text-center ${isSmallScreen ? 'text-5xl' : 'text-6xl'}`}>
                                                     {isLocalPrepping ? `${localPrepSecs}s` : formatSeconds(localRemainingSecs)}
+                                                </Text>
+                                            </>
+                                        ) : isStopwatchMode ? (
+                                            <>
+                                                <Text className="text-light-muted dark:text-dark-muted uppercase tracking-wider text-[11px] font-semibold mb-0.5">
+                                                    Stopwatch
+                                                </Text>
+                                                <Text className={`font-black text-light dark:text-dark text-center ${isSmallScreen ? 'text-5xl' : 'text-6xl'}`}>
+                                                    00:00
                                                 </Text>
                                             </>
                                         ) : (() => {
@@ -655,18 +705,58 @@ export function CardWorkoutSet({
                                     </View>
                                 </View>
 
-                                {/* Play/Stop Action Button directly below the clock */}
+                                {/* Timer/Stopwatch mode toggle — vertical, to the right of the clock */}
                                 {wheelsReady && (
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
+                                        disabled={isLocalTimerRunning}
+                                        onPress={() => setIsStopwatchMode(prev => !prev)}
+                                        className="bg-black/10 dark:bg-white/10 rounded-full p-0.5 ml-3"
+                                        style={{ width: 32, height: 76, opacity: isLocalTimerRunning ? 0.5 : 1 }}
+                                    >
+                                        <Animated.View
+                                            style={[
+                                                stopwatchToggleThumbStyle,
+                                                {
+                                                    position: 'absolute',
+                                                    left: 2,
+                                                    top: 2,
+                                                    width: 28,
+                                                    height: 36,
+                                                    borderRadius: 14,
+                                                    backgroundColor: colorScheme === 'dark' ? '#2c2c2e' : '#fff',
+                                                },
+                                            ]}
+                                        />
+                                        <View style={{ height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                                            <IconSymbol
+                                                name="timer"
+                                                size={14}
+                                                color={!isStopwatchMode ? theme.primary : (theme.textMuted || '#888')}
+                                            />
+                                        </View>
+                                        <View style={{ height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                                            <IconSymbol
+                                                name="stopwatch"
+                                                size={14}
+                                                color={isStopwatchMode ? theme.primary : (theme.textMuted || '#888')}
+                                            />
+                                        </View>
+                                    </TouchableOpacity>
+                                )}
+                                </View>
+
+                                {/* Play/Stop Action Button */}
+                                {wheelsReady && (
+                                    <TouchableOpacity
                                         onPress={isLocalTimerRunning ? stopLocalTimer : startLocalTimer}
-                                        className={`w-12 h-12 rounded-full items-center justify-center active:opacity-90 ${showDistance ? 'mt-1' : 'mt-2'} shadow-sm ${
+                                        className={`w-12 h-12 rounded-full items-center justify-center active:opacity-90 shadow-sm ${showDistance ? 'mt-1' : 'mt-2'} ${
                                             isLocalTimerRunning ? 'bg-danger' : 'bg-primary dark:bg-primary-dark'
                                         }`}
                                     >
-                                        <IconSymbol 
-                                            name={isLocalTimerRunning ? "stop.fill" : "play.fill"} 
-                                            size={18} 
-                                            color="#fff" 
+                                        <IconSymbol
+                                            name={isLocalTimerRunning ? "stop.fill" : "play.fill"}
+                                            size={18}
+                                            color="#fff"
                                             style={!isLocalTimerRunning ? { marginLeft: 2 } : undefined}
                                         />
                                     </TouchableOpacity>
