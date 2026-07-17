@@ -514,7 +514,7 @@ export function CardWorkoutSet({
 
             {/* Duration */}
             {showDuration && (
-                <View className={`${(showDistance || showRPE) ? 'border-b border-black/5 dark:border-white/5' : ''} flex-col ${rowPadding}`}>
+                <View className={`${(showDistance || showRPE) ? 'border-b border-black/5 dark:border-white/5 pb-3' : ''} flex-col ${rowPadding}`}>
                     {/* Circular Countdown Clock */}
                     {(() => {
                         const clockSize = isSmallScreen ? 240 : 260;
@@ -659,7 +659,7 @@ export function CardWorkoutSet({
                                 {wheelsReady && (
                                     <TouchableOpacity 
                                         onPress={isLocalTimerRunning ? stopLocalTimer : startLocalTimer}
-                                        className={`w-12 h-12 rounded-full items-center justify-center active:opacity-90 mt-2 shadow-sm ${
+                                        className={`w-12 h-12 rounded-full items-center justify-center active:opacity-90 ${showDistance ? 'mt-1' : 'mt-2'} shadow-sm ${
                                             isLocalTimerRunning ? 'bg-danger' : 'bg-primary dark:bg-primary-dark'
                                         }`}
                                     >
@@ -675,8 +675,24 @@ export function CardWorkoutSet({
                         );
                     })()}
 
+                    {/* Distance (shown here, between the timer and Prep/RPE, for duration+distance exercises) */}
+                    {showDistance && (
+                        <View className="flex-row justify-between items-center mt-1.5">
+                            <Text className="text-sm font-semibold text-light-muted dark:text-dark-muted">Distance</Text>
+                            <TextInput
+                                className={`w-24 bg-black/5 dark:bg-white/5 rounded-lg px-3 py-1.5 text-right text-sm font-bold ${getTextColor(getValue('distance'))}`}
+                                value={getValue('distance')}
+                                onChangeText={(t: string) => handleNumericChange(t, getValue('distance'), (v) => onUpdateSetTarget?.(index, 'distance', v))}
+                                keyboardType="numeric"
+                                placeholder="-"
+                                placeholderTextColor={theme.placeholder || '#888'}
+                                selectTextOnFocus
+                            />
+                        </View>
+                    )}
+
                     {/* Bottom Row: Prep and RPE next to each other */}
-                    <View className="flex-row justify-between w-full px-0 mt-3">
+                    <View className={`flex-row justify-between w-full px-0 ${showDistance ? 'mt-2' : 'mt-3'}`}>
                         {/* Prep Timer inline selector */}
                         <View className="items-start justify-center p-1">
                             <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted mb-1.5 uppercase tracking-widest">Prep</Text>
@@ -727,15 +743,16 @@ export function CardWorkoutSet({
                 </View>
             )}
 
-            {/* Distance */}
-            {showDistance && (
+            {/* Distance (standalone row for distance-only exercises; duration+distance
+                exercises render it inside the showDuration block above instead) */}
+            {showDistance && !showDuration && (
                 <View className={`flex-row justify-between items-center border-b border-black/5 dark:border-white/5 ${rowPadding}`}>
                     <Text className="text-sm font-semibold text-light-muted dark:text-dark-muted">Distance</Text>
-                    <TextInput 
+                    <TextInput
                         className={`w-24 bg-black/5 dark:bg-white/5 rounded-lg px-3 py-1.5 text-right text-sm font-bold ${getTextColor(getValue('distance'))}`}
                         value={getValue('distance')}
                         onChangeText={(t: string) => handleNumericChange(t, getValue('distance'), (v) => onUpdateSetTarget?.(index, 'distance', v))}
-                        keyboardType="numeric" 
+                        keyboardType="numeric"
                         placeholder="-"
                         placeholderTextColor={theme.placeholder || '#888'}
                         selectTextOnFocus

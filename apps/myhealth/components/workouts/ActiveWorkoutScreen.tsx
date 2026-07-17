@@ -363,11 +363,12 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                         </View>
 
                         {/* Vertical Switcher Footer */}
-                        <View style={{ 
-                            flexDirection: 'column', 
-                            alignItems: 'center', 
-                            justifyContent: 'center', 
-                            paddingBottom: Math.max(16, insets.bottom) + 16,
+                        <View style={{
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            paddingTop: 4,
+                            paddingBottom: 16,
                             paddingHorizontal: 20,
                             width: '100%'
                         }}>
@@ -439,7 +440,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                                                   fontWeight: '700',
                                                   color: "#ffffff"
                                               }}>
-                                                  {isCompleted ? `Set ${activeSetIndex + 1} Completed` : `Complete Set ${activeSetIndex + 1}`}
+                                                  {isCompleted ? `Set Completed` : `Complete Set`}
                                               </Text>
                                           </RaisedCard>
                                       </>
