@@ -17,6 +17,20 @@ export function formatRestTime(s: number): string {
     return `${secs}s`;
 }
 
+// H:MM:SS once past an hour, MM:SS otherwise — for long-running stopwatches
+// (formatSeconds's 2-digit-per-unit padding breaks past 99 minutes).
+export function formatStopwatch(s: number): string {
+    const totalSecs = Math.max(0, Math.floor(s));
+    const hours = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+
+    if (hours > 0) {
+        return `${hours}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    }
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+}
+
 export function formatDistance(meters: number, unitSystem: 'imperial' | 'metric'): string {
     if (unitSystem === 'imperial') {
         return `${(meters / 1609.34).toFixed(2)} mi`;

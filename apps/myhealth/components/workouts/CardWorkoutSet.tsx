@@ -5,7 +5,9 @@ import Svg, { Circle } from 'react-native-svg';
 import { DurationTimerPicker } from './DurationTimerPicker';
 import { HorizontalSelectorWheel } from './HorizontalSelectorWheel';
 import { VerticalSelectorWheel } from './VerticalSelectorWheel';
-import { formatSeconds, formatRestTime } from '../../utils/formatting';
+import { formatSeconds, formatRestTime, formatStopwatch } from '../../utils/formatting';
+import { LiveWorkoutMap } from './LiveWorkoutMap';
+import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import { IconSymbol } from "@mysuite/ui";
@@ -20,7 +22,7 @@ const WEIGHT_VALUES_KG = Array.from({ length: 201 }, (_, i) => i * 1.25); // 0 t
 const REP_VALUES = Array.from({ length: 51 }, (_, i) => i); // 0 to 50
 
 import { getExerciseFields } from './SetRow';
-import { getEffectiveBodyweightLoad } from '../../utils/workout-logic';
+import { getEffectiveBodyweightLoad, OUTDOOR_GPS_EXERCISE_IDS } from '../../utils/workout-logic';
 
 interface CardWorkoutSetProps {
     index: number;
@@ -80,6 +82,11 @@ export function CardWorkoutSet({
     const { isRpeEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling } = useWorkoutManager();
     const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(exercise.properties, exercise.id);
     const showRPE = calculatedShowRPE && isRpeEnabled;
+    // Running/Biking get a live map + plain digital stopwatch instead of the
+    // circular timer dial — there's no target duration to count down to,
+    // only elapsed time for the run/ride actually recorded.
+    const isOutdoorGpsExercise = OUTDOOR_GPS_EXERCISE_IDS.has(exercise.id);
+    const { isGpsTrackingActive } = useActiveWorkout();
 
     const equipment = exercise.equipment || inferEquipment(exercise.name);
     const movementType = exercise.movementType || inferMovementType(exercise.name, equipment);
@@ -223,7 +230,9 @@ export function CardWorkoutSet({
     const [isLocalPrepping, setIsLocalPrepping] = React.useState(false);
     // Timer (countdown to a target duration) vs Stopwatch (counts up with no
     // target; the elapsed time becomes this set's logged duration on stop).
-    const [isStopwatchMode, setIsStopwatchMode] = React.useState(false);
+    const [isStopwatchMode, setIsStopwatchModeState] = React.useState(isOutdoorGpsExercise);
+    // Running/Biking are always stopwatch mode — no toggle rendered for them.
+    const setIsStopwatchMode = isOutdoorGpsExercise ? () => {} : setIsStopwatchModeState;
     const stopwatchTogglePos = useSharedValue(0);
     React.useEffect(() => {
         stopwatchTogglePos.value = withTiming(isStopwatchMode ? 1 : 0, {
@@ -551,8 +560,46 @@ export function CardWorkoutSet({
             {/* Duration */}
             {showDuration && (
                 <View className={`${(showDistance || showRPE) ? 'border-b border-black/5 dark:border-white/5 pb-3' : ''} flex-col ${rowPadding}`}>
-                    {/* Circular Countdown Clock */}
-                    {(() => {
+                    {/* Circular Countdown Clock (or, for Running/Biking, a live map + digital stopwatch) */}
+                    {isOutdoorGpsExercise ? (
+                        <View className="w-full items-center justify-center my-0.5">
+                            {isGpsTrackingActive ? (
+                                <LiveWorkoutMap color={theme.primary} height={isSmallScreen ? 220 : 260} />
+                            ) : (
+                                <View className="w-full items-center justify-center py-6 px-4 bg-black/5 dark:bg-white/5 rounded-2xl">
+                                    <Text className="text-sm text-center text-light-muted dark:text-dark-muted">
+                                        Enable Allow GPS Route Tracking in Settings to see your route here.
+                                    </Text>
+                                </View>
+                            )}
+
+                            <Text className={`font-black text-light dark:text-dark text-center mt-3 ${isSmallScreen ? 'text-4xl' : 'text-5xl'}`}>
+                                {isLocalPrepping ? `${localPrepSecs}s` : formatStopwatch(localRemainingSecs)}
+                            </Text>
+                            {isLocalTimerRunning && (
+                                <Text className="text-light-muted dark:text-dark-muted uppercase tracking-wider text-[11px] font-semibold mt-0.5">
+                                    {isLocalPrepping ? 'Prep' : 'Elapsed'}
+                                </Text>
+                            )}
+
+                            {/* Timer/Stopwatch toggle intentionally omitted here — Running/Biking are always stopwatch mode. */}
+                            {wheelsReady && (
+                                <TouchableOpacity
+                                    onPress={isLocalTimerRunning ? stopLocalTimer : startLocalTimer}
+                                    className={`w-12 h-12 rounded-full items-center justify-center active:opacity-90 shadow-sm mt-3 ${
+                                        isLocalTimerRunning ? 'bg-danger' : 'bg-primary dark:bg-primary-dark'
+                                    }`}
+                                >
+                                    <IconSymbol
+                                        name={isLocalTimerRunning ? "stop.fill" : "play.fill"}
+                                        size={18}
+                                        color="#fff"
+                                        style={!isLocalTimerRunning ? { marginLeft: 2 } : undefined}
+                                    />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    ) : (() => {
                         const clockSize = isSmallScreen ? 240 : 260;
                         const radius = isSmallScreen ? 100 : 110;
                         const strokeWidth = isSmallScreen ? 10 : 14;
@@ -765,7 +812,7 @@ export function CardWorkoutSet({
                         );
                     })()}
 
-                    {/* Distance (shown here, between the timer and Prep/RPE, for duration+distance exercises) */}
+                    {/* Distance (shown here, between the timer/map and Prep/RPE, for duration+distance exercises) */}
                     {showDistance && (
                         <View className="flex-row justify-between items-center mt-1.5">
                             <Text className="text-sm font-semibold text-light-muted dark:text-dark-muted">Distance</Text>

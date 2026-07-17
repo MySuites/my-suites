@@ -84,6 +84,21 @@ export const WorkoutLocationTrackingService = {
     },
 
     /**
+     * Reads the currently buffered route points without clearing them —
+     * safe to poll repeatedly while tracking is still in progress (e.g. to
+     * draw a live map), unlike stopTracking() which consumes the buffer.
+     */
+    getLiveRoute: async (): Promise<TrackedRoutePoint[]> => {
+        try {
+            const raw = await AsyncStorage.getItem(ROUTE_BUFFER_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch (error) {
+            console.error("[WorkoutLocationTrackingService] Failed to read live route:", error);
+            return [];
+        }
+    },
+
+    /**
      * Stops tracking and returns the buffered route points collected since
      * the last startTracking() call.
      */

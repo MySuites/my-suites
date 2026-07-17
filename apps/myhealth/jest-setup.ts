@@ -86,6 +86,16 @@ jest.mock("expo-location", () => ({
     hasStartedLocationUpdatesAsync: jest.fn(() => Promise.resolve(false)),
 }));
 
+jest.mock("react-native-maps", () => {
+    const { View } = require("react-native");
+    return {
+        __esModule: true,
+        default: View,
+        Marker: View,
+        Polyline: View,
+    };
+});
+
 jest.mock("expo-router", () => ({
     useRouter: jest.fn(() => ({
         push: jest.fn(),

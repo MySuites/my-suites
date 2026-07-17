@@ -1,4 +1,4 @@
-export const EXERCISE_DATA_VERSION = 51;
+export const EXERCISE_DATA_VERSION = 54;
 
 export const BarbellBenchPress = [
     {
@@ -1475,7 +1475,7 @@ export const CardioExercises = [
     {
         "id": "elliptical",
         "description": "Low-impact cardio exercise on an elliptical machine.",
-        "name": "Elliptical",
+        "name": "Elliptical Machine",
         "type": "Distance, Duration",
         "muscle_group": "Cardio",
     },
@@ -1496,7 +1496,7 @@ export const CardioExercises = [
     {
         "id": "bike",
         "description": "Stationary cycling cardio exercise.",
-        "name": "Bike",
+        "name": "Bike Machine",
         "type": "Distance, Duration",
         "muscle_group": "Cardio",
     },
@@ -1510,7 +1510,7 @@ export const CardioExercises = [
     {
         "id": "cycling",
         "description": "Outdoor or indoor cycling cardio exercise.",
-        "name": "Cycling",
+        "name": "Biking",
         "type": "Distance, Duration",
         "muscle_group": "Cardio",
     },

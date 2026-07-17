@@ -53,6 +53,7 @@ interface ActiveWorkoutContextType {
     routineId: string | null;
     sourceWorkoutId: string | null;
     latestBodyWeight: number | null;
+    isGpsTrackingActive: boolean;
 }
 
 const ActiveWorkoutContext = createContext<ActiveWorkoutContextType | undefined>(undefined);
@@ -81,7 +82,10 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     const [hasPromptedCompletion, setHasPromptedCompletion] = useState(false);
     // Whether GPS route tracking was actually started for the current
     // session (gated on the Settings toggle + an outdoor exercise present).
+    // Mirrored into real state (isGpsTrackingActive) so consumers can
+    // re-render on it — the ref alone wouldn't trigger updates.
     const gpsTrackingActiveRef = React.useRef(false);
+    const [isGpsTrackingActive, setIsGpsTrackingActive] = useState(false);
 
     // Hooks
     const timerState = useActiveWorkoutTimers();
@@ -260,6 +264,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                     if (!granted) return;
                     await WorkoutLocationTrackingService.startTracking();
                     gpsTrackingActiveRef.current = true;
+                    setIsGpsTrackingActive(true);
                 })();
             }
         } else {
@@ -507,6 +512,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         let gpsData: { distance: number; elevationGain?: number; route: { latitude: number; longitude: number; timestamp: string }[] } | undefined;
         if (gpsTrackingActiveRef.current) {
             gpsTrackingActiveRef.current = false;
+            setIsGpsTrackingActive(false);
             const points = await WorkoutLocationTrackingService.stopTracking();
             if (points.length >= 2) {
                 gpsData = {
@@ -557,6 +563,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
         if (gpsTrackingActiveRef.current) {
             gpsTrackingActiveRef.current = false;
+            setIsGpsTrackingActive(false);
             WorkoutLocationTrackingService.stopTracking().catch(err =>
                 console.error("Failed to stop GPS tracking on cancel:", err)
             );
@@ -591,11 +598,12 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         routineId,
         sourceWorkoutId,
         latestBodyWeight,
+        isGpsTrackingActive,
     }), [
-        exercises, currentIndex, setCurrentIndex, workoutName, startWorkout, pauseWorkout, resumeWorkout, resetWorkout, 
-        handleToggleSetCompletion, nextExercise, prevExercise, addExercise, updateExercise, 
-        removeExercise, reorderExercises, handleFinishWorkout, handleCancelWorkout, isExpanded, hasActiveSession, 
-        toggleExpanded, routineId, sourceWorkoutId, latestBodyWeight
+        exercises, currentIndex, setCurrentIndex, workoutName, startWorkout, pauseWorkout, resumeWorkout, resetWorkout,
+        handleToggleSetCompletion, nextExercise, prevExercise, addExercise, updateExercise,
+        removeExercise, reorderExercises, handleFinishWorkout, handleCancelWorkout, isExpanded, hasActiveSession,
+        toggleExpanded, routineId, sourceWorkoutId, latestBodyWeight, isGpsTrackingActive
     ]);
 
     if (!isLoaded) {
