@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { View, Text, useWindowDimensions, PanResponder } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { usePathname } from 'expo-router';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import Animated, { SlideInDown, SlideOutDown, FadeIn, FadeOut, useSharedValue, useAnimatedStyle, withTiming, runOnJS, Easing } from 'react-native-reanimated';
 import { RaisedCard, IconSymbol } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
+import { isOnOwnDashboard } from '../../utils/navTabs';
 import { ActiveWorkoutDetailScreen } from './ActiveWorkoutDetailScreen';
 import { ActiveWorkoutScreen } from './ActiveWorkoutScreen';
 
 export function ActiveWorkoutOverlay() {
     const insets = useSafeAreaInsets();
     const { height: windowHeight } = useWindowDimensions();
+    const pathname = usePathname();
+    // The minimized pill floats near the bottom of the screen and can
+    // overlap page content (e.g. the exercises screen's search bar) on
+    // sub-routes. Only show it on each tab's own dashboard — the expanded
+    // full-screen overlay (tapping the pill) is unaffected and still works
+    // from anywhere.
+    const showMinimizedPill = isOnOwnDashboard(pathname);
     const {
         exercises,
         isExpanded,
@@ -90,7 +99,7 @@ export function ActiveWorkoutOverlay() {
 
     return (
         <>
-            {!isExpanded && <MinimizedOverlayHeader toggleExpanded={toggleExpanded} />}
+            {!isExpanded && showMinimizedPill && <MinimizedOverlayHeader toggleExpanded={toggleExpanded} />}
             {isExpanded && (
                 <Animated.View 
                     className="absolute inset-0 z-[999] bg-light dark:bg-dark"
