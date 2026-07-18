@@ -60,27 +60,39 @@ interface SetRowProps {
     showSetNumber?: boolean;
     isActiveSet?: boolean;
     onPressRestTimer?: () => void;
+    // Distinct from isActiveSet, which is also true for preloaded off-screen
+    // neighbors (so their wheels are ready ahead of time). This is only true
+    // for the page actually visible on screen right now — needed to gate
+    // heavy native views (e.g. MapView) that must not render while merely
+    // preloaded, since native surfaces can bleed through/composite above
+    // neighboring pages regardless of RN-side layout clipping.
+    isCurrentPage?: boolean;
+    // How long to wait before mounting the heavy wheel/SVG clock, in ms.
+    // Forwarded from ExerciseCard's staggered preload delay (see there).
+    wheelsReadyDelayMs?: number;
 }
 
-export const SetRow = ({ 
-    index, 
-    exercise, 
-    onCompleteSet, 
-    onUncompleteSet, 
-    onUpdateSetTarget, 
-    onUpdateLog, 
-    onDeleteSet, 
-    onPressRPE, 
-    theme, 
-    latestBodyWeight, 
-    isActiveWorkout = true, 
-    exercisePrepTime, 
-    onUpdatePrepTime, 
-    enableSwipeToDelete = true, 
+export const SetRow = ({
+    index,
+    exercise,
+    onCompleteSet,
+    onUncompleteSet,
+    onUpdateSetTarget,
+    onUpdateLog,
+    onDeleteSet,
+    onPressRPE,
+    theme,
+    latestBodyWeight,
+    isActiveWorkout = true,
+    exercisePrepTime,
+    onUpdatePrepTime,
+    enableSwipeToDelete = true,
     showCheckbox = true,
     showSetNumber = true,
     isActiveSet = true,
-    onPressRestTimer
+    onPressRestTimer,
+    isCurrentPage = true,
+    wheelsReadyDelayMs
 }: SetRowProps) => {
     const isCompleted = exercise.completedIndices?.includes(index);
     const isEvenSet = (index + 1) % 2 === 0;
@@ -160,6 +172,8 @@ export const SetRow = ({
                       isActiveSet={isActiveSet}
                       onPressRestTimer={onPressRestTimer}
                       isCompleted={isCompleted}
+                      isCurrentPage={isCurrentPage}
+                      wheelsReadyDelayMs={wheelsReadyDelayMs}
                   />
               )}
          </Animated.View>

@@ -45,6 +45,17 @@ export function formatElevation(meters: number, unitSystem: 'imperial' | 'metric
     return `${Math.round(meters)} m`;
 }
 
+// Average pace — seconds elapsed per unit of distance already expressed in
+// the user's display unit (miles or km, not meters).
+export function formatPace(elapsedSecs: number, distance: number, unitSystem: 'imperial' | 'metric'): string {
+    if (!distance || distance <= 0) return '--';
+    const secsPerUnit = elapsedSecs / distance;
+    const mins = Math.floor(secsPerUnit / 60);
+    const secs = Math.round(secsPerUnit % 60);
+    const unit = unitSystem === 'imperial' ? 'mi' : 'km';
+    return `${mins}:${secs.toString().padStart(2, "0")} /${unit}`;
+}
+
 export function formatCompactNumber(num: number): string {
     if (num >= 1000000) {
         return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";

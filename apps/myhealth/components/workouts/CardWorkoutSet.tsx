@@ -5,8 +5,8 @@ import Svg, { Circle } from 'react-native-svg';
 import { DurationTimerPicker } from './DurationTimerPicker';
 import { HorizontalSelectorWheel } from './HorizontalSelectorWheel';
 import { VerticalSelectorWheel } from './VerticalSelectorWheel';
-import { formatSeconds, formatRestTime, formatStopwatch } from '../../utils/formatting';
-import { LiveWorkoutMap } from './LiveWorkoutMap';
+import { formatSeconds, formatRestTime } from '../../utils/formatting';
+import { OutdoorRunPanel } from './OutdoorRunPanel';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
@@ -38,6 +38,17 @@ interface CardWorkoutSetProps {
     isActiveSet?: boolean;
     onPressRestTimer?: () => void;
     isCompleted: boolean;
+    // True only while this exercise's page is actually the one visible on
+    // screen — unlike isActiveSet, which is also true for preloaded
+    // off-screen neighbors. Gates the live map (a heavy native view that can
+    // visually bleed onto neighboring pages if left mounted while merely
+    // preloaded).
+    isCurrentPage?: boolean;
+    // How long to wait before mounting the heavy wheel/SVG clock, in ms.
+    // Preloaded neighbors get a longer, staggered delay than the current
+    // page so simultaneously-preloaded cards don't all mount in one commit
+    // (see the comment where ActiveWorkoutScreen computes this).
+    wheelsReadyDelayMs?: number;
 }
 
 export function CardWorkoutSet({
@@ -53,7 +64,9 @@ export function CardWorkoutSet({
     onUpdatePrepTime,
     isActiveSet = true,
     onPressRestTimer,
-    isCompleted
+    isCompleted,
+    isCurrentPage = true,
+    wheelsReadyDelayMs = 60
 }: CardWorkoutSetProps) {
     const { height: windowHeight, width: windowWidth } = useWindowDimensions();
     const colorScheme = useColorScheme();
@@ -72,12 +85,12 @@ export function CardWorkoutSet({
     const [wheelsReady, setWheelsReady] = React.useState(false);
     React.useEffect(() => {
         if (isActiveSet) {
-            const handle = setTimeout(() => setWheelsReady(true), 60);
+            const handle = setTimeout(() => setWheelsReady(true), wheelsReadyDelayMs);
             return () => clearTimeout(handle);
         } else {
             setWheelsReady(false);
         }
-    }, [isActiveSet]);
+    }, [isActiveSet, wheelsReadyDelayMs]);
 
     const { isRpeEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling } = useWorkoutManager();
     const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(exercise.properties, exercise.id);
@@ -241,7 +254,7 @@ export function CardWorkoutSet({
         });
     }, [isStopwatchMode, stopwatchTogglePos]);
     const stopwatchToggleThumbStyle = useAnimatedStyle(() => ({
-        transform: [{ translateY: stopwatchTogglePos.value * 36 }],
+        transform: [{ translateX: stopwatchTogglePos.value * 42 }],
     }));
     const localIntervalRef = React.useRef<any>(null);
 
@@ -396,8 +409,9 @@ export function CardWorkoutSet({
     };
 
     return (
-        <View className="w-full flex-col px-0 py-1 flex-1 justify-around">
-            {/* Top Row: Previous and Rest Timer next to each other */}
+        <View className={`w-full flex-col px-0 flex-1 ${isOutdoorGpsExercise ? 'py-0 justify-start' : 'py-1 justify-around'}`}>
+            {/* Top Row: Previous and Rest Timer next to each other (not shown for Running/Biking) */}
+            {!isOutdoorGpsExercise && (
             <View className="flex-row justify-between w-full px-0 mb-3">
                 {/* Previous compact square */}
                 <View className="min-w-[80px] h-[72px] items-start justify-center p-1">
@@ -408,7 +422,7 @@ export function CardWorkoutSet({
                 </View>
 
                 {/* Rest Timer compact square */}
-                <TouchableOpacity 
+                <TouchableOpacity
                     onPress={() => onPressRestTimer?.()}
                     className="min-w-[80px] h-[72px] items-end justify-center p-1 active:opacity-75"
                 >
@@ -418,6 +432,7 @@ export function CardWorkoutSet({
                     </Text>
                 </TouchableOpacity>
             </View>
+            )}
 
             {/* Weight */}
             {showWeight && (
@@ -559,46 +574,20 @@ export function CardWorkoutSet({
 
             {/* Duration */}
             {showDuration && (
-                <View className={`${(showDistance || showRPE) ? 'border-b border-black/5 dark:border-white/5 pb-3' : ''} flex-col ${rowPadding}`}>
+                <View className={`${(showDistance || showRPE) ? 'border-b border-black/5 dark:border-white/5 pb-3' : ''} flex-col ${isOutdoorGpsExercise ? 'py-0 flex-1' : rowPadding}`}>
                     {/* Circular Countdown Clock (or, for Running/Biking, a live map + digital stopwatch) */}
                     {isOutdoorGpsExercise ? (
-                        <View className="w-full items-center justify-center my-0.5">
-                            {isGpsTrackingActive ? (
-                                <LiveWorkoutMap color={theme.primary} height={isSmallScreen ? 220 : 260} />
-                            ) : (
-                                <View className="w-full items-center justify-center py-6 px-4 bg-black/5 dark:bg-white/5 rounded-2xl">
-                                    <Text className="text-sm text-center text-light-muted dark:text-dark-muted">
-                                        Enable Allow GPS Route Tracking in Settings to see your route here.
-                                    </Text>
-                                </View>
-                            )}
-
-                            <Text className={`font-black text-light dark:text-dark text-center mt-3 ${isSmallScreen ? 'text-4xl' : 'text-5xl'}`}>
-                                {isLocalPrepping ? `${localPrepSecs}s` : formatStopwatch(localRemainingSecs)}
-                            </Text>
-                            {isLocalTimerRunning && (
-                                <Text className="text-light-muted dark:text-dark-muted uppercase tracking-wider text-[11px] font-semibold mt-0.5">
-                                    {isLocalPrepping ? 'Prep' : 'Elapsed'}
-                                </Text>
-                            )}
-
-                            {/* Timer/Stopwatch toggle intentionally omitted here — Running/Biking are always stopwatch mode. */}
-                            {wheelsReady && (
-                                <TouchableOpacity
-                                    onPress={isLocalTimerRunning ? stopLocalTimer : startLocalTimer}
-                                    className={`w-12 h-12 rounded-full items-center justify-center active:opacity-90 shadow-sm mt-3 ${
-                                        isLocalTimerRunning ? 'bg-danger' : 'bg-primary dark:bg-primary-dark'
-                                    }`}
-                                >
-                                    <IconSymbol
-                                        name={isLocalTimerRunning ? "stop.fill" : "play.fill"}
-                                        size={18}
-                                        color="#fff"
-                                        style={!isLocalTimerRunning ? { marginLeft: 2 } : undefined}
-                                    />
-                                </TouchableOpacity>
-                            )}
-                        </View>
+                        <OutdoorRunPanel
+                            index={index}
+                            exercise={exercise}
+                            onUpdateSetTarget={onUpdateSetTarget}
+                            showDistance={showDistance}
+                            isGpsTrackingActive={isGpsTrackingActive}
+                            isCurrentPage={isCurrentPage}
+                            wheelsReady={wheelsReady}
+                            exercisePrepTime={exercisePrepTime}
+                            theme={theme}
+                        />
                     ) : (() => {
                         const clockSize = isSmallScreen ? 240 : 260;
                         const radius = isSmallScreen ? 100 : 110;
@@ -619,7 +608,6 @@ export function CardWorkoutSet({
 
                         return (
                             <View className="w-full items-center justify-center my-0.5">
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                                 <View style={{ width: clockSize, height: clockSize, justifyContent: 'center', alignItems: 'center' }}>
                                     <Svg width={clockSize} height={clockSize}>
                                         {/* Background Circle */}
@@ -752,68 +740,69 @@ export function CardWorkoutSet({
                                     </View>
                                 </View>
 
-                                {/* Timer/Stopwatch mode toggle — vertical, to the right of the clock */}
+                                {/* Play/Stop Action Button + Timer/Stopwatch mode toggle, side by side, same size */}
                                 {wheelsReady && (
-                                    <TouchableOpacity
-                                        disabled={isLocalTimerRunning}
-                                        onPress={() => setIsStopwatchMode(prev => !prev)}
-                                        className="bg-black/10 dark:bg-white/10 rounded-full p-0.5 ml-3"
-                                        style={{ width: 32, height: 76, opacity: isLocalTimerRunning ? 0.5 : 1 }}
+                                    <View
+                                        className={`flex-row items-center gap-3 ${showDistance ? 'mt-1' : 'mt-2'}`}
                                     >
-                                        <Animated.View
-                                            style={[
-                                                stopwatchToggleThumbStyle,
-                                                {
-                                                    position: 'absolute',
-                                                    left: 2,
-                                                    top: 2,
-                                                    width: 28,
-                                                    height: 36,
-                                                    borderRadius: 14,
-                                                    backgroundColor: colorScheme === 'dark' ? '#2c2c2e' : '#fff',
-                                                },
-                                            ]}
-                                        />
-                                        <View style={{ height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                            <IconSymbol
-                                                name="timer"
-                                                size={14}
-                                                color={!isStopwatchMode ? theme.primary : (theme.textMuted || '#888')}
+                                        <TouchableOpacity
+                                            disabled={isLocalTimerRunning}
+                                            onPress={() => setIsStopwatchMode(prev => !prev)}
+                                            className="flex-row bg-black/10 dark:bg-white/10 rounded-full p-0.5"
+                                            style={{ width: 88, height: 48, opacity: isLocalTimerRunning ? 0.5 : 1 }}
+                                        >
+                                            <Animated.View
+                                                style={[
+                                                    stopwatchToggleThumbStyle,
+                                                    {
+                                                        position: 'absolute',
+                                                        left: 2,
+                                                        top: 2,
+                                                        width: 42,
+                                                        height: 44,
+                                                        borderRadius: 22,
+                                                        backgroundColor: colorScheme === 'dark' ? '#2c2c2e' : '#fff',
+                                                    },
+                                                ]}
                                             />
-                                        </View>
-                                        <View style={{ height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                            <IconSymbol
-                                                name="stopwatch"
-                                                size={14}
-                                                color={isStopwatchMode ? theme.primary : (theme.textMuted || '#888')}
-                                            />
-                                        </View>
-                                    </TouchableOpacity>
-                                )}
-                                </View>
+                                            <View style={{ width: 42, alignItems: 'center', justifyContent: 'center' }}>
+                                                <IconSymbol
+                                                    name="timer"
+                                                    size={14}
+                                                    color={!isStopwatchMode ? theme.primary : (theme.textMuted || '#888')}
+                                                />
+                                            </View>
+                                            <View style={{ width: 42, alignItems: 'center', justifyContent: 'center' }}>
+                                                <IconSymbol
+                                                    name="stopwatch"
+                                                    size={14}
+                                                    color={isStopwatchMode ? theme.primary : (theme.textMuted || '#888')}
+                                                />
+                                            </View>
+                                        </TouchableOpacity>
 
-                                {/* Play/Stop Action Button */}
-                                {wheelsReady && (
-                                    <TouchableOpacity
-                                        onPress={isLocalTimerRunning ? stopLocalTimer : startLocalTimer}
-                                        className={`w-12 h-12 rounded-full items-center justify-center active:opacity-90 shadow-sm ${showDistance ? 'mt-1' : 'mt-2'} ${
-                                            isLocalTimerRunning ? 'bg-danger' : 'bg-primary dark:bg-primary-dark'
-                                        }`}
-                                    >
-                                        <IconSymbol
-                                            name={isLocalTimerRunning ? "stop.fill" : "play.fill"}
-                                            size={18}
-                                            color="#fff"
-                                            style={!isLocalTimerRunning ? { marginLeft: 2 } : undefined}
-                                        />
-                                    </TouchableOpacity>
+                                        <TouchableOpacity
+                                            onPress={isLocalTimerRunning ? stopLocalTimer : startLocalTimer}
+                                            className={`w-12 h-12 rounded-full items-center justify-center active:opacity-90 shadow-sm ${
+                                                isLocalTimerRunning ? 'bg-danger' : 'bg-primary dark:bg-primary-dark'
+                                            }`}
+                                        >
+                                            <IconSymbol
+                                                name={isLocalTimerRunning ? "stop.fill" : "play.fill"}
+                                                size={18}
+                                                color="#fff"
+                                                style={!isLocalTimerRunning ? { marginLeft: 2 } : undefined}
+                                            />
+                                        </TouchableOpacity>
+                                    </View>
                                 )}
                             </View>
                         );
                     })()}
 
-                    {/* Distance (shown here, between the timer/map and Prep/RPE, for duration+distance exercises) */}
-                    {showDistance && (
+                    {/* Distance (shown here, between the timer/map and Prep/RPE, for duration+distance exercises).
+                        Outdoor GPS exercises (Running/Biking) render their own Distance tile above instead. */}
+                    {showDistance && !isOutdoorGpsExercise && (
                         <View className="flex-row justify-between items-center mt-1.5">
                             <Text className="text-sm font-semibold text-light-muted dark:text-dark-muted">Distance</Text>
                             <TextInput
@@ -828,7 +817,8 @@ export function CardWorkoutSet({
                         </View>
                     )}
 
-                    {/* Bottom Row: Prep and RPE next to each other */}
+                    {/* Bottom Row: Prep and RPE next to each other (not shown for Running/Biking) */}
+                    {!isOutdoorGpsExercise && (
                     <View className={`flex-row justify-between w-full px-0 ${showDistance ? 'mt-2' : 'mt-3'}`}>
                         {/* Prep Timer inline selector */}
                         <View className="items-start justify-center p-1">
@@ -877,6 +867,7 @@ export function CardWorkoutSet({
                             <View className="min-w-[80px] h-[72px]" />
                         )}
                     </View>
+                    )}
                 </View>
             )}
 

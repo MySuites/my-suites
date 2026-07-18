@@ -11,6 +11,7 @@ import { formatRestTime } from '../../utils/formatting';
 import { RPEPicker } from '../workouts/RPEPicker';
 
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
+import { OUTDOOR_GPS_EXERCISE_IDS } from '../../utils/workout-logic';
 import { SetPagerScrollLockProvider } from './SetPagerScrollLock';
 
 interface ExerciseCardProps {
@@ -41,9 +42,13 @@ interface ExerciseCardProps {
     // the current one. Used to preload adjacent (prev/next) exercises off-screen
     // so swiping to them shows the real wheel with no placeholder swap.
     preloadWheels?: boolean;
+    // How long to wait before mounting the heavy wheel/SVG clock, in ms.
+    // Staggered per-card by the caller (current vs. preloaded prev/next) so
+    // simultaneously-preloaded neighbors don't all mount in the same commit.
+    wheelsReadyDelayMs?: number;
 }
 
-export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange, showName, preloadWheels }: ExerciseCardProps) {
+function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange, showName, preloadWheels, wheelsReadyDelayMs }: ExerciseCardProps) {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number, right: number } | null>(null);
@@ -71,6 +76,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
     const { showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(exercise.properties, exercise.id);
     const showRPE = calculatedShowRPE && isRpeEnabled;
     
+    const isOutdoorGpsExercise = OUTDOOR_GPS_EXERCISE_IDS.has(exercise.id);
     const isAttachmentSupported = exercise.id === 'lat_pulldown' || exercise.id === 'seated_cable_row';
     const defaultAttachment = exercise.id === 'lat_pulldown' ? 'Lat Bar' : exercise.id === 'seated_cable_row' ? 'Close-Grip V-Bar' : undefined;
     const attachment = exercise.attachment || defaultAttachment;
@@ -92,7 +98,8 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
     const [cardWidth, setCardWidth] = useState(dimensions.width - 64);
     const [isSetPagerScrollEnabled, setIsSetPagerScrollEnabled] = useState(true);
     const scrollViewRef = useRef<ScrollView>(null);
-    const totalSets = Math.max(exercise.sets, exercise.logs?.length || 0);
+    // Running/Biking are one continuous GPS-tracked activity, not repeatable sets.
+    const totalSets = isOutdoorGpsExercise ? 1 : Math.max(exercise.sets, exercise.logs?.length || 0);
     const prevSetsCountRef = useRef(exercise.sets);
     const isProgrammaticScroll = useRef(false);
     const isMountedRef = useRef(true);
@@ -236,7 +243,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                             </Text>
                         )}
                         
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 2, alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 2, alignItems: 'center', display: isOutdoorGpsExercise ? 'none' : 'flex' }}>
                             {isAttachmentSupported && attachment && (
                                 <TouchableOpacity
                                     onPress={(e) => {
@@ -404,7 +411,7 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
             </Modal>
 
              <View
-                className={horizontalSets ? "py-4 flex-1" : "p-4"}
+                className={horizontalSets ? (isOutdoorGpsExercise ? "pb-4 flex-1" : "py-4 flex-1") : "p-4"}
                 style={horizontalSets ? { flex: 1 } : undefined}
                 onLayout={(e) => {
                     // No horizontal padding here in horizontalSets mode (see className
@@ -491,6 +498,8 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                                             showSetNumber={false}
                                             isActiveSet={i === activeSetIndex && ((isCurrent ?? false) || (preloadWheels ?? false))}
                                             onPressRestTimer={() => setIsPickerVisible(true)}
+                                            isCurrentPage={isCurrent ?? false}
+                                            wheelsReadyDelayMs={wheelsReadyDelayMs}
                                         />
                                     </View>
                                 ))}
@@ -521,8 +530,8 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
                     ))
                 )}
 
-                {/* Add/Delete Set Buttons */}
-                <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
+                {/* Add/Delete Set Buttons (not shown for Running/Biking — one continuous activity, not repeatable sets) */}
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 4, display: isOutdoorGpsExercise ? 'none' : 'flex' }}>
                     {onAddSet && (
                         <TouchableOpacity 
                             onPress={onAddSet}
@@ -600,3 +609,26 @@ export function ExerciseCard({ exercise, isCurrent, onCompleteSet, onUpdateSetTa
         </>
     );
 }
+
+// Callback props are recreated every render by the FlatList's renderItem
+// (they close over each exercise's index), so identity always changes —
+// comparing them would defeat memoization entirely. Bail out on the actual
+// data/display props instead; callbacks always call through to stable
+// functions from the provider, so ignoring their identity is safe as long
+// as the exercise's index doesn't change without `exercise` itself changing
+// (this list doesn't support live reordering — no onMoveUp/onDrag wired in
+// the active workout screen — and FlatList's keyExtractor includes index,
+// so an index change always remounts rather than reusing this instance).
+export const ExerciseCard = React.memo(ExerciseCardInner, (prev, next) => {
+    return (
+        prev.exercise === next.exercise &&
+        prev.isCurrent === next.isCurrent &&
+        prev.activeSetIndex === next.activeSetIndex &&
+        prev.theme === next.theme &&
+        prev.latestBodyWeight === next.latestBodyWeight &&
+        prev.horizontalSets === next.horizontalSets &&
+        prev.showName === next.showName &&
+        prev.preloadWheels === next.preloadWheels &&
+        prev.wheelsReadyDelayMs === next.wheelsReadyDelayMs
+    );
+});

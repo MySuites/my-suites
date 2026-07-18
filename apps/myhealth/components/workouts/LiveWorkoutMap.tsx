@@ -7,6 +7,9 @@ const POLL_INTERVAL_MS = 3000;
 
 interface LiveWorkoutMapProps {
     color?: string;
+    // Omit to fill whatever space the parent gives it (flex: 1) instead of a
+    // fixed pixel height — self-adjusts to available room so it never
+    // overflows its container regardless of device size.
     height?: number;
 }
 
@@ -14,7 +17,12 @@ interface LiveWorkoutMapProps {
 // buffer the background location task writes to (WorkoutLocationTrackingService),
 // drawing the route as it's recorded and following the runner, similar to
 // Strava/Nike Run Club's in-run map.
-export function LiveWorkoutMap({ color = '#3b82f6', height = 260 }: LiveWorkoutMapProps) {
+//
+// Memoized on its own props (color/height, both stable across the parent's
+// once-a-second stopwatch tick) so that tick doesn't force this component
+// (and the native MapView/Polyline it holds) to re-render 3x more often
+// than its own GPS poll actually produces new data.
+function LiveWorkoutMapInner({ color = '#3b82f6', height }: LiveWorkoutMapProps) {
     const [points, setPoints] = React.useState<TrackedRoutePoint[]>([]);
 
     React.useEffect(() => {
@@ -34,10 +42,13 @@ export function LiveWorkoutMap({ color = '#3b82f6', height = 260 }: LiveWorkoutM
     }, []);
 
     const lastPoint = points[points.length - 1];
-    const coordinates = points.map(p => ({ latitude: p.latitude, longitude: p.longitude }));
+    const coordinates = React.useMemo(
+        () => points.map(p => ({ latitude: p.latitude, longitude: p.longitude })),
+        [points]
+    );
 
     return (
-        <View style={{ height, width: '100%', borderRadius: 16, overflow: 'hidden' }}>
+        <View style={[height ? { height } : { flex: 1 }, { width: '100%', borderRadius: 16, overflow: 'hidden' }]}>
             <MapView
                 style={StyleSheet.absoluteFill}
                 showsUserLocation
@@ -53,3 +64,5 @@ export function LiveWorkoutMap({ color = '#3b82f6', height = 260 }: LiveWorkoutM
         </View>
     );
 }
+
+export const LiveWorkoutMap = React.memo(LiveWorkoutMapInner);

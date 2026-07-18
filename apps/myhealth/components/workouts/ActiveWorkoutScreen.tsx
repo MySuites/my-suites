@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Keyboard, FlatList, useWindowDimensions } from 'react-native';
+import { View, Text, Keyboard, FlatList, useWindowDimensions, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import { useRouter } from 'expo-router';
@@ -10,6 +10,7 @@ import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
 import { RestTimerBar } from './ActiveWorkoutDetailScreen';
 import { default as ExercisesScreen } from '../../app/(tabs)/exercises';
+import { OUTDOOR_GPS_EXERCISE_IDS } from '../../utils/workout-logic';
 
 function ActiveScreenHeader({ onToggleView }: { onToggleView: () => void }) {
     const router = useRouter();
@@ -130,7 +131,13 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
     // (auto-advance to next exercise) don't momentarily revert currentIndex.
     const isUserScrollingRef = useRef(false);
 
-    // Scroll to the active exercise index when it changes
+    // Scroll to the active exercise index when it changes. Deliberately only
+    // depends on currentIndex — containerHeight can jitter by a pixel or two
+    // when a page's content changes what it mounts (e.g. the outdoor
+    // exercise's native MapView mounting/unmounting causes the wrapper to
+    // re-measure), and re-running this on every such jitter reissues
+    // scrollToIndex against an already-correct position, producing a small
+    // extra "snap" right after the page has already landed correctly.
     useEffect(() => {
         if (flatListRef.current && containerHeight > 0 && exercises.length > 0) {
             if (lastSelectedIndexRef.current !== currentIndex) {
@@ -141,7 +148,8 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                 });
             }
         }
-    }, [currentIndex, containerHeight, exercises.length]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentIndex]);
 
     // Live page detection during scroll — updates currentIndex the moment the
     // scroll crosses the halfway point, instead of waiting for momentum to
@@ -197,16 +205,30 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
     const renderExerciseItem = React.useCallback(({ item: exercise, index }: { item: any; index: number }) => {
         if (containerHeight <= 0) return null;
         return (
-            <View 
-                style={{ 
-                    height: containerHeight, 
+            <View
+                style={{
+                    height: containerHeight,
                     paddingBottom: 24,
+                    overflow: 'hidden',
                 }}
             >
                 <ExerciseCard
                     exercise={exercise}
                     isCurrent={index === currentIndexRef.current}
                     preloadWheels={Math.abs(index - currentIndexRef.current) <= 1}
+                    // Preloaded neighbors (±1) mount their heavy wheels/SVG clock off
+                    // the swipe's critical path, but if both neighbors used the same
+                    // flat delay they'd still land in the same commit as each other —
+                    // exactly the "2 SVG clocks + a reps wheel all mount at once"
+                    // pile-up that trips VirtualizedList's slow-update warning.
+                    // Stagger prev/current/next onto distinct frames instead.
+                    wheelsReadyDelayMs={
+                        index === currentIndexRef.current
+                            ? 60
+                            : index < currentIndexRef.current
+                                ? 260
+                                : 460
+                    }
                     horizontalSets={true}
                     showName={false}
                     activeSetIndex={activeSetIndicesRef.current[index] || 0}
@@ -340,11 +362,31 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                             {containerHeight > 0 && (
                                 <FlatList
                                     ref={flatListRef}
+                                    style={{ flex: 1 }}
                                     data={exercises}
                                     renderItem={renderExerciseItem}
                                     extraData={listExtraData}
                                     keyExtractor={(item, index) => `${item.id}-${index}`}
-                                    pagingEnabled={true}
+                                    // Authoritative page positions, independent of each page's
+                                    // actual rendered/measured content height — without this,
+                                    // FlatList falls back to runtime-measured cell layout for
+                                    // its internal scroll bookkeeping, and a page whose content
+                                    // differs a lot from the rest (e.g. the outdoor exercise's
+                                    // map layout) can throw off where neighboring pages land,
+                                    // producing a directional, straddled-between-two-pages scroll.
+                                    getItemLayout={(_, index) => ({
+                                        length: containerHeight,
+                                        offset: containerHeight * index,
+                                        index,
+                                    })}
+                                    // Deliberately NOT pagingEnabled: that snaps to the
+                                    // scrollview's own frame height, while snapToInterval snaps
+                                    // to containerHeight. When those two differ even slightly
+                                    // (e.g. the outdoor page's native MapView re-measuring the
+                                    // frame), the two snapping mechanisms fight — the list
+                                    // settles via one, then gets yanked a few px by the other,
+                                    // which is the "lands correct, then snaps up" glitch. Use a
+                                    // single snapping mechanism (snapToInterval) instead.
                                     showsVerticalScrollIndicator={false}
                                     onScrollBeginDrag={handleScrollBeginDrag}
                                     onScroll={handleScrollLive}
@@ -354,10 +396,16 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                                     decelerationRate="fast"
                                     snapToInterval={containerHeight}
                                     snapToAlignment="start"
+                                    disableIntervalMomentum={true}
                                     initialNumToRender={1}
                                     windowSize={3}
                                     maxToRenderPerBatch={1}
-                                    removeClippedSubviews={true}
+                                    // False: this list's items each contain their own nested
+                                    // horizontal ScrollView (the sets pager) — with clipping
+                                    // enabled, iOS sometimes fails to clip the previous/next
+                                    // page correctly, letting its header bleed into view at
+                                    // the current page's edge during/after a swipe.
+                                    removeClippedSubviews={false}
                                 />
                             )}
                         </View>
@@ -377,7 +425,9 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                                   const currentExercise = exercises[currentIndex];
                                   if (!currentExercise) return null;
                                   
-                                  const totalSets = Math.max(currentExercise.sets, currentExercise.logs?.length || 0);
+                                  const totalSets = OUTDOOR_GPS_EXERCISE_IDS.has(currentExercise.id)
+                                      ? 1
+                                      : Math.max(currentExercise.sets, currentExercise.logs?.length || 0);
                                   if (totalSets === 0) return null;
                                   
                                   const activeSetIndex = activeSetIndices[currentIndex] || 0;
@@ -385,28 +435,34 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                                   
                                   return (
                                       <>
-                                          {/* Pagination Dots (Set Indicator) */}
-                                          {totalSets > 1 && (
-                                              <View style={{ flexDirection: 'row', gap: 6, justifyContent: 'center', marginBottom: 16 }}>
-                                                  {Array.from({ length: totalSets }).map((_, i) => {
-                                                      const isActive = i === activeSetIndex;
-                                                      const isCompletedSet = currentExercise.completedIndices?.includes(i);
-                                                      return (
-                                                          <View 
-                                                              key={i}
-                                                              style={{
-                                                                  width: isActive ? 16 : 6,
-                                                                  height: 6,
-                                                                  borderRadius: 3,
-                                                                  backgroundColor: isActive 
-                                                                      ? (isCompletedSet ? theme.primary : theme.text)
-                                                                      : (isCompletedSet ? `${theme.primary}50` : `${theme.textMuted}30`),
-                                                              }}
-                                                          />
-                                                      );
-                                                  })}
-                                              </View>
-                                          )}
+                                          {/* Pagination Dots (Set Indicator) — always rendered (space reserved via
+                                              opacity, not conditional mounting) so the footer's height never
+                                              changes based on which exercise is current. The outdoor exercise is
+                                              the only one with totalSets clamped to 1 (no dots to show); if this
+                                              row were unmounted instead of just hidden, swiping to/from it would
+                                              change the footer's height, which changes containerHeight (they share
+                                              the same flex parent), which desyncs the already-settled scroll
+                                              position from the newly relaid-out page heights — the exact
+                                              "lands right, then snaps" glitch reported around the outdoor exercise. */}
+                                          <View style={{ flexDirection: 'row', gap: 6, justifyContent: 'center', marginBottom: 16, height: 6, opacity: totalSets > 1 ? 1 : 0 }}>
+                                              {totalSets > 1 && Array.from({ length: totalSets }).map((_, i) => {
+                                                  const isActive = i === activeSetIndex;
+                                                  const isCompletedSet = currentExercise.completedIndices?.includes(i);
+                                                  return (
+                                                      <View
+                                                          key={i}
+                                                          style={{
+                                                              width: isActive ? 16 : 6,
+                                                              height: 6,
+                                                              borderRadius: 3,
+                                                              backgroundColor: isActive
+                                                                  ? (isCompletedSet ? theme.primary : theme.text)
+                                                                  : (isCompletedSet ? `${theme.primary}50` : `${theme.textMuted}30`),
+                                                          }}
+                                                      />
+                                                  );
+                                              })}
+                                          </View>
 
                                           <RaisedCard
                                               onPress={() => {
@@ -414,7 +470,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                                                   if (!wasCompleted) {
                                                       completeSet(currentIndex, activeSetIndex, {});
                                                   }
-                                                  
+
                                                   if (activeSetIndex < totalSets - 1) {
                                                       setTimeout(() => {
                                                           setActiveSetIndices(prev => ({
