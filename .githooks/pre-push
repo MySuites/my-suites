@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Runs the exact command GitHub Actions uses to deploy (.github/workflows/deploy.yml)
+# so a broken web export is caught locally instead of failing CI after push.
+set -e
+
+echo "[pre-push] Checking web export (expo export --platform web)..."
+pnpm --filter myhealth exec expo export --platform web > /tmp/pre-push-web-export.log 2>&1
+status=$?
+
+if [ $status -ne 0 ]; then
+    echo "[pre-push] Web export failed — this would break the GitHub Pages deploy. Aborting push."
+    echo "[pre-push] Full output:"
+    cat /tmp/pre-push-web-export.log
+    exit 1
+fi
+
+echo "[pre-push] Web export OK."
+exit 0
