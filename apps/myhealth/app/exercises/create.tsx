@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextInput, Alert, KeyboardAvoidingView, Platform, View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { TextInput, Alert, KeyboardAvoidingView, Platform, View, Text, ActivityIndicator, Keyboard, TouchableWithoutFeedback, Switch } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { SelectionModal } from '../../components/ui/SelectionModal';
@@ -22,6 +22,7 @@ export default function CreateExerciseScreen() {
   
   const [name, setName] = useState('');
   const [properties, setProperties] = useState<any[]>([EXERCISE_PROPERTIES[0], EXERCISE_PROPERTIES[2]]); // Default Weighted, Reps
+  const [locationTracking, setLocationTracking] = useState(false);
   const [muscleGroups, setMuscleGroups] = useState<any[]>([]);
   const [primaryMuscle, setPrimaryMuscle] = useState<any>(null);
   const [secondaryMuscles, setSecondaryMuscles] = useState<any[]>([]);
@@ -63,7 +64,9 @@ export default function CreateExerciseScreen() {
     setIsSubmitting(true);
     try {
         const secondaryIds = secondaryMuscles.map(m => m.id);
-        const typeString = properties.map(p => p.value).join(', ');
+        const typeValues = properties.map(p => p.value);
+        if (locationTracking) typeValues.push('Location');
+        const typeString = typeValues.join(', ');
         const { error } = await createCustomExercise(name, typeString, primaryMuscle.id, secondaryIds);
         if (error) {
             Alert.alert('Error', 'Failed to create exercise');
@@ -149,6 +152,21 @@ export default function CreateExerciseScreen() {
                     </View>
                 </RaisedCard>
             </View>
+
+            <RaisedCard className="p-4 rounded-xl bg-lighter dark:bg-dark-lighter mb-6">
+                <View className="flex-row items-center justify-between">
+                    <Text className="text-base leading-6 text-light dark:text-dark flex-1 mr-2">
+                        Allow location tracking when performing this exercise
+                    </Text>
+                    <Switch
+                        testID="location-tracking-switch"
+                        value={locationTracking}
+                        onValueChange={setLocationTracking}
+                        trackColor={{ false: theme.card, true: theme.primary }}
+                        thumbColor={locationTracking ? "#ffffff" : "#f4f3f4"}
+                    />
+                </View>
+            </RaisedCard>
 
             <View className="mb-6">
                 <Text className="text-base leading-6 font-semibold mb-2 text-light dark:text-dark">Primary Muscle Group</Text>

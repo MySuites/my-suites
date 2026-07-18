@@ -11,7 +11,7 @@ import { formatRestTime } from '../../utils/formatting';
 import { RPEPicker } from '../workouts/RPEPicker';
 
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
-import { OUTDOOR_GPS_EXERCISE_IDS } from '../../utils/workout-logic';
+import { isOutdoorGpsExercise as computeIsOutdoorGpsExercise } from '../../utils/workout-logic';
 import { SetPagerScrollLockProvider } from './SetPagerScrollLock';
 
 interface ExerciseCardProps {
@@ -76,7 +76,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
     const { showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(exercise.properties, exercise.id);
     const showRPE = calculatedShowRPE && isRpeEnabled;
     
-    const isOutdoorGpsExercise = OUTDOOR_GPS_EXERCISE_IDS.has(exercise.id);
+    const isOutdoorGpsExercise = computeIsOutdoorGpsExercise(exercise);
     const isAttachmentSupported = exercise.id === 'lat_pulldown' || exercise.id === 'seated_cable_row';
     const defaultAttachment = exercise.id === 'lat_pulldown' ? 'Lat Bar' : exercise.id === 'seated_cable_row' ? 'Close-Grip V-Bar' : undefined;
     const attachment = exercise.attachment || defaultAttachment;

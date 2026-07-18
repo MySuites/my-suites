@@ -10,7 +10,7 @@ import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
 import { RestTimerBar } from './ActiveWorkoutDetailScreen';
 import { default as ExercisesScreen } from '../../app/(tabs)/exercises';
-import { OUTDOOR_GPS_EXERCISE_IDS } from '../../utils/workout-logic';
+import { isOutdoorGpsExercise } from '../../utils/workout-logic';
 
 function ActiveScreenHeader({ onToggleView }: { onToggleView: () => void }) {
     const router = useRouter();
@@ -425,7 +425,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                                   const currentExercise = exercises[currentIndex];
                                   if (!currentExercise) return null;
                                   
-                                  const totalSets = OUTDOOR_GPS_EXERCISE_IDS.has(currentExercise.id)
+                                  const totalSets = isOutdoorGpsExercise(currentExercise)
                                       ? 1
                                       : Math.max(currentExercise.sets, currentExercise.logs?.length || 0);
                                   if (totalSets === 0) return null;

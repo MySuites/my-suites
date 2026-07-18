@@ -22,7 +22,7 @@ const WEIGHT_VALUES_KG = Array.from({ length: 201 }, (_, i) => i * 1.25); // 0 t
 const REP_VALUES = Array.from({ length: 51 }, (_, i) => i); // 0 to 50
 
 import { getExerciseFields } from './SetRow';
-import { getEffectiveBodyweightLoad, OUTDOOR_GPS_EXERCISE_IDS } from '../../utils/workout-logic';
+import { getEffectiveBodyweightLoad, isOutdoorGpsExercise as computeIsOutdoorGpsExercise } from '../../utils/workout-logic';
 
 interface CardWorkoutSetProps {
     index: number;
@@ -98,7 +98,7 @@ export function CardWorkoutSet({
     // Running/Biking get a live map + plain digital stopwatch instead of the
     // circular timer dial — there's no target duration to count down to,
     // only elapsed time for the run/ride actually recorded.
-    const isOutdoorGpsExercise = OUTDOOR_GPS_EXERCISE_IDS.has(exercise.id);
+    const isOutdoorGpsExercise = computeIsOutdoorGpsExercise(exercise);
     const { isGpsTrackingActive } = useActiveWorkout();
 
     const equipment = exercise.equipment || inferEquipment(exercise.name);

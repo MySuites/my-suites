@@ -150,8 +150,20 @@ export function generateSummary(workoutSeconds: number, exercises: Exercise[]) {
 // exercise types are added.
 export const OUTDOOR_GPS_EXERCISE_IDS = new Set(['running', 'cycling']);
 
+// Custom exercises opt into the same GPS-tracked run/stopwatch UI via the
+// "Allow location tracking" toggle on the create-exercise screen, which
+// stores a 'Location' entry in the comma-joined properties string (same
+// convention as Weighted/Bodyweight/Reps/Duration/Distance).
+export function isOutdoorGpsExercise(exercise: { id: string; properties?: string[] | string }): boolean {
+    if (OUTDOOR_GPS_EXERCISE_IDS.has(exercise.id)) return true;
+    const props = exercise.properties;
+    if (!props) return false;
+    const list = Array.isArray(props) ? props : props.split(',').map(p => p.trim());
+    return list.some(p => p.toLowerCase() === 'location');
+}
+
 export function workoutHasOutdoorExercise(exercises: Exercise[]): boolean {
-    return exercises.some(ex => OUTDOOR_GPS_EXERCISE_IDS.has(ex.id));
+    return exercises.some(ex => isOutdoorGpsExercise(ex));
 }
 
 export function isUnilateralExercise(name: string): boolean {
