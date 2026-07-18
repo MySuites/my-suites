@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useRef} from "react";
+import React, {useState, useMemo, useRef, useCallback} from "react";
 import {
  	View,
  	Text,
@@ -11,7 +11,7 @@ import {
 } from "react-native";
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
@@ -69,6 +69,10 @@ function Workout() {
         }
     };
     const [menuVisible, setMenuVisible] = useState(false);
+    // Tabs stay mounted when you switch away — without this, leaving the
+    // burger menu open and navigating elsewhere means it's still open when
+    // you come back.
+    useFocusEffect(useCallback(() => () => setMenuVisible(false), []));
     const [activeSwipedCardId, setActiveSwipedCardId] = useState<string | null>(null);
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [isDayModalVisible, setIsDayModalVisible] = useState(false);

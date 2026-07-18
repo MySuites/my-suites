@@ -36,6 +36,10 @@ export default function ProfileScreen() {
   const { showToast } = useToast();
   const { unitSystem } = useUnitPreference();
   const [menuVisible, setMenuVisible] = useState(false);
+  // Tabs stay mounted when you switch away — without this, leaving the
+  // burger menu open and navigating elsewhere means it's still open when
+  // you come back.
+  useFocusEffect(useCallback(() => () => setMenuVisible(false), []));
 
   const [latestWeight, setLatestWeight] = useState<number | null>(null);
   const [allWeightHistory, setAllWeightHistory] = useState<BodyWeightEntry[]>([]);

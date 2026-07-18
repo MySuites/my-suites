@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 
 import { BurgerMenu } from './BurgerMenu';
 import { BottomActionBar } from './BottomNavBar';
@@ -11,6 +12,10 @@ import { BottomNavButton } from './BottomNavButton';
 // its own screen later.
 export function PlaceholderScreen() {
     const [menuVisible, setMenuVisible] = useState(false);
+    // Tabs stay mounted when you switch away — without this, leaving the
+    // burger menu open and navigating elsewhere means it's still open when
+    // you come back.
+    useFocusEffect(useCallback(() => () => setMenuVisible(false), []));
 
     return (
         <View className="flex-1 bg-light dark:bg-dark">

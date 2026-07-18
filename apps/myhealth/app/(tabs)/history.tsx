@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Text, View, FlatList } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, useFocusEffect } from 'expo-router';
 
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { ActionCard, HollowedCard, Skeleton } from '@mysuite/ui';
@@ -46,6 +46,10 @@ const WorkoutHistoryItem = ({ item, onDelete, onPress }: { item: any, onDelete: 
 export default function WorkoutHistoryScreen() {
   const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
+  // Tabs stay mounted when you switch away — without this, leaving the
+  // burger menu open and navigating elsewhere means it's still open when
+  // you come back.
+  useFocusEffect(useCallback(() => () => setMenuVisible(false), []));
   const { workoutHistory, deleteWorkoutLog, isLoading } = useWorkoutManager();
 
   return (

@@ -184,6 +184,10 @@ export default function ExercisesScreen({
   const [isLoading, setIsLoading] = useState(true);
   const [detailsExercise, setDetailsExercise] = useState<any | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  // Tabs stay mounted when you switch away — without this, leaving the
+  // burger menu open and navigating elsewhere means it's still open when
+  // you come back.
+  useFocusEffect(useCallback(() => () => setMenuVisible(false), []));
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   React.useEffect(() => {
