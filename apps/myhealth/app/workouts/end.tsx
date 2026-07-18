@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
+import { RaisedCard, useUITheme, IconSymbol, useToast } from '@mysuite/ui';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
+import type MapView from 'react-native-maps';
 import { storage } from '../../utils/storage';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -12,6 +13,11 @@ import { BackButton } from '../../components/ui/BackButton';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { WorkoutNamePrompt } from '../../components/workouts/WorkoutNamePrompt';
+import { RouteSnapshotMap } from '../../components/workouts/RouteSnapshotMap';
+import { WorkoutLocationTrackingService, TrackedRoutePoint } from '../../services/WorkoutLocationTrackingService';
+import { isOutdoorGpsExercise } from '../../utils/workout-logic';
+import { formatStopwatch, formatPace } from '../../utils/formatting';
+import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 
 async function autoSaveToPhotos(uris: string[]) {
     try {
@@ -65,6 +71,8 @@ async function persistProgressPictures(uris: string[]): Promise<string[]> {
 export default function EndWorkoutScreen() {
     const router = useRouter();
     const theme = useUITheme();
+    const { unitSystem } = useUnitPreference();
+    const { showToast } = useToast();
     const { 
         workoutName,
         exercises,
@@ -87,6 +95,38 @@ export default function EndWorkoutScreen() {
 
     const [notes, setNotes] = React.useState("");
     const [imageUris, setImageUris] = React.useState<string[]>([]);
+
+    // The GPS buffer is still live at this point (finishWorkout/stopTracking
+    // hasn't run yet — that happens on Save), so read it directly for the
+    // route thumbnail next to any outdoor exercise below.
+    const [routePoints, setRoutePoints] = React.useState<TrackedRoutePoint[]>([]);
+    React.useEffect(() => {
+        WorkoutLocationTrackingService.getLiveRoute().then(setRoutePoints);
+    }, []);
+    const [showFullRoute, setShowFullRoute] = React.useState(false);
+    const [isExportingRoute, setIsExportingRoute] = React.useState(false);
+    const fullRouteMapRef = React.useRef<MapView>(null);
+
+    const handleExportRoute = async () => {
+        if (isExportingRoute) return;
+        setIsExportingRoute(true);
+        try {
+            const { status } = await MediaLibrary.requestPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert("Permission Required", "Photos access is required to save the route image.");
+                return;
+            }
+            const uri = await fullRouteMapRef.current?.takeSnapshot({ format: 'png', result: 'file' });
+            if (!uri) throw new Error("Snapshot failed");
+            await MediaLibrary.saveToLibraryAsync(uri);
+            showToast({ message: "Route saved to Photos", type: 'success' });
+        } catch (error) {
+            console.error("Failed to export route image:", error);
+            Alert.alert("Error", "Could not save the route image.");
+        } finally {
+            setIsExportingRoute(false);
+        }
+    };
 
     const handleTakePhoto = async () => {
         const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
@@ -516,11 +556,30 @@ export default function EndWorkoutScreen() {
                 <RaisedCard className="p-4 mb-6">
                     <Text className="font-semibold text-light dark:text-dark mb-4 text-lg">Detailed Summary</Text>
                     {filteredExercises.map((ex, idx) => (
-                        <View key={idx} className="flex-row justify-between mb-2">
+                        <View key={idx} className="flex-row items-center justify-between mb-2">
+                             {isOutdoorGpsExercise(ex) && routePoints.length >= 2 && (
+                                 <TouchableOpacity onPress={() => setShowFullRoute(true)} style={{ marginRight: 12 }}>
+                                     <RouteSnapshotMap points={routePoints} size={56} />
+                                 </TouchableOpacity>
+                             )}
                              <Text className="text-light dark:text-dark flex-1">{ex.name}</Text>
-                             <Text className="text-gray-500 dark:text-gray-400">
-                                {ex.completedSets || 0} / {ex.sets} sets
-                             </Text>
+                             {isOutdoorGpsExercise(ex) ? (() => {
+                                 // Running/Biking are one continuous activity, not repeatable
+                                 // sets — show elapsed time/pace/distance instead of a set count.
+                                 const target = ex.setTargets?.[0] || {};
+                                 const durationSecs = Number(target.duration) || 0;
+                                 const distance = Number(target.distance) || 0;
+                                 const unitLabel = unitSystem === 'imperial' ? 'mi' : 'km';
+                                 return (
+                                     <Text className="text-gray-500 dark:text-gray-400 text-right">
+                                         {formatPace(durationSecs, distance, unitSystem)} · {formatStopwatch(durationSecs)} · {distance.toFixed(2)} {unitLabel}
+                                     </Text>
+                                 );
+                             })() : (
+                                 <Text className="text-gray-500 dark:text-gray-400">
+                                    {ex.completedSets || 0} / {ex.sets} sets
+                                 </Text>
+                             )}
                         </View>
                     ))}
                 </RaisedCard>
@@ -534,12 +593,43 @@ export default function EndWorkoutScreen() {
                 </View>
             </ScrollView>
 
-            <WorkoutNamePrompt 
+            <WorkoutNamePrompt
                 visible={showNamePrompt}
                 onClose={handlePromptCancel}
                 onSave={handlePromptSave}
                 initialName={pendingName}
             />
+
+            {/* Full-screen route viewer — opened by tapping the route thumbnail,
+                same pattern as the progress-pictures detail view. */}
+            {showFullRoute && (
+                <View className="absolute inset-0 z-[110] bg-black justify-between">
+                    <View className="flex-row justify-between items-center px-4 pt-16 pb-4 z-10">
+                        <TouchableOpacity
+                            onPress={() => setShowFullRoute(false)}
+                            className="bg-white/10 w-10 h-10 rounded-full items-center justify-center"
+                        >
+                            <IconSymbol name="xmark" size={20} color="#fff" />
+                        </TouchableOpacity>
+                        <Text className="text-white font-bold text-base">Route</Text>
+                        <TouchableOpacity
+                            onPress={handleExportRoute}
+                            disabled={isExportingRoute}
+                            className="bg-white/10 w-10 h-10 rounded-full items-center justify-center"
+                        >
+                            {isExportingRoute ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <IconSymbol name="square.and.arrow.down" size={18} color="#fff" />
+                            )}
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={{ flex: 1 }}>
+                        <RouteSnapshotMap ref={fullRouteMapRef} points={routePoints} fill interactive />
+                    </View>
+                </View>
+            )}
         </View>
     );
 }
