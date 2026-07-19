@@ -130,6 +130,14 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
     // pager. Live index detection is gated on this so programmatic scrolls
     // (auto-advance to next exercise) don't momentarily revert currentIndex.
     const isUserScrollingRef = useRef(false);
+    // True while a scrollToIndex we issued ourselves is animating. Its
+    // onMomentumScrollEnd still fires handleScroll, which independently
+    // recomputes the index from contentOffset/containerHeight — with only two
+    // pages, a one-pixel containerHeight jitter (e.g. the outdoor exercise's
+    // MapView mounting/unmounting mid-scroll) is enough to round that back to
+    // the *other* page, fighting the index we just set and flickering the bar
+    // between the two exercises. Skip that recompute for our own scrolls.
+    const isProgrammaticScrollRef = useRef(false);
 
     // Scroll to the active exercise index when it changes. Deliberately only
     // depends on currentIndex — containerHeight can jitter by a pixel or two
@@ -142,6 +150,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
         if (flatListRef.current && containerHeight > 0 && exercises.length > 0) {
             if (lastSelectedIndexRef.current !== currentIndex) {
                 lastSelectedIndexRef.current = currentIndex;
+                isProgrammaticScrollRef.current = true;
                 flatListRef.current.scrollToIndex({
                     index: currentIndex,
                     animated: true,
@@ -167,10 +176,15 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
 
     const handleScrollBeginDrag = () => {
         isUserScrollingRef.current = true;
+        isProgrammaticScrollRef.current = false;
     };
 
     const handleScroll = (e: any) => {
         isUserScrollingRef.current = false;
+        if (isProgrammaticScrollRef.current) {
+            isProgrammaticScrollRef.current = false;
+            return;
+        }
         if (containerHeight <= 0) return;
         const yOffset = e.nativeEvent.contentOffset.y;
         const index = Math.round(yOffset / containerHeight);
