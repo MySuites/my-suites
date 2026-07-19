@@ -21,7 +21,7 @@ const WEIGHT_VALUES_LB = Array.from({ length: 201 }, (_, i) => i * 2.5); // 0 to
 const WEIGHT_VALUES_KG = Array.from({ length: 201 }, (_, i) => i * 1.25); // 0 to 250
 const REP_VALUES = Array.from({ length: 51 }, (_, i) => i); // 0 to 50
 
-import { getExerciseFields } from './SetRow';
+import { getExerciseFields } from './getExerciseFields';
 import { getEffectiveBodyweightLoad, isOutdoorGpsExercise as computeIsOutdoorGpsExercise } from '../../utils/workout-logic';
 
 interface CardWorkoutSetProps {

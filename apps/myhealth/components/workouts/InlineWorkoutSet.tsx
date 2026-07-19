@@ -5,7 +5,7 @@ import { formatSeconds } from '../../utils/formatting';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import { IconSymbol } from "@mysuite/ui";
-import { getExerciseFields } from './SetRow';
+import { getExerciseFields } from './getExerciseFields';
 import { getEffectiveBodyweightLoad } from '../../utils/workout-logic';
 
 interface InlineWorkoutSetProps {
