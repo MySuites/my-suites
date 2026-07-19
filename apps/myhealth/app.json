@@ -78,6 +78,7 @@
         "expo-build-properties",
         {
           "ios": {
+            "deploymentTarget": "17.0",
             "buildSettings": {
               "ENABLE_USER_SCRIPT_SANDBOXING": "NO"
             }
