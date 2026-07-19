@@ -10,6 +10,7 @@ import { ScreenHeader } from '../ui/ScreenHeader';
 import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 import { formatSeconds, formatRestTime } from '../../utils/formatting';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
+import { isOutdoorGpsExercise } from '../../utils/workout-logic';
 
 export function RestTimerBar() {
     const { restSeconds, startRestTimer } = useActiveWorkoutTimer();
@@ -316,7 +317,7 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
                     {exercises.map((ex, idx) => {
                         const isCurrentEx = idx === currentIndex;
                         const setsNum = typeof ex.sets === 'string' ? parseInt(ex.sets, 10) : (typeof ex.sets === 'number' ? ex.sets : 0);
-                        const exTotalSets = isNaN(setsNum) ? 0 : setsNum;
+                        const exTotalSets = isOutdoorGpsExercise(ex) ? 1 : (isNaN(setsNum) ? 0 : setsNum);
                         const exCompletedSets = ex.completedSets || 0;
                         const exProgress = exTotalSets > 0 ? (exCompletedSets / exTotalSets) : 0;
                         

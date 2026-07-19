@@ -298,7 +298,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                     {exercises.map((ex, idx) => {
                         const isCurrentEx = idx === currentIndex;
                         const setsNum = typeof ex.sets === 'string' ? parseInt(ex.sets, 10) : (typeof ex.sets === 'number' ? ex.sets : 0);
-                        const exTotalSets = isNaN(setsNum) ? 0 : setsNum;
+                        const exTotalSets = isOutdoorGpsExercise(ex) ? 1 : (isNaN(setsNum) ? 0 : setsNum);
                         const exCompletedSets = ex.completedSets || 0;
                         const exProgress = exTotalSets > 0 ? (exCompletedSets / exTotalSets) : 0;
                         
