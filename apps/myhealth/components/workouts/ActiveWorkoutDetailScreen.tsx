@@ -326,7 +326,7 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
                                 style={{
                                     flex: 1,
                                     width: isCurrentEx ? 9 : 5,
-                                    backgroundColor: 'rgba(0,0,0,0.25)',
+                                    backgroundColor: theme.dark ? '#4a4a4a' : '#c7c7c7',
                                     marginBottom: idx === exercises.length - 1 ? 0 : 3,
                                     borderRadius: 9999,
                                     overflow: 'hidden',
