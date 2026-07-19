@@ -277,6 +277,12 @@ importers:
       react-native-draggable-flatlist:
         specifier: ^4.0.3
         version: 4.0.3(@babel/core@7.28.5)(react-native-gesture-handler@2.28.0(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.1.5(@babel/core@7.28.5)(react-native-worklets@0.5.1(@babel/core@7.28.5)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))
+      react-native-executorch:
+        specifier: ^0.9.2
+        version: 0.9.2(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      react-native-executorch-expo-resource-fetcher:
+        specifier: ^0.9.1
+        version: 0.9.1(expo-asset@12.0.12(expo@54.0.30)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(expo-file-system@19.0.23(expo@54.0.30)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0)))(expo@54.0.30)(react-native-executorch@0.9.2(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))
       react-native-gesture-handler:
         specifier: ~2.28.0
         version: 2.28.0(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -1584,6 +1590,10 @@ packages:
 
   '@hapi/topo@5.1.0':
     resolution: {integrity: sha512-foQZKJig7Ob0BMAYBfcJk8d77QtOe7Wo4ox7ff1lQYoNNAb6jwcY1ncdoy2e9wQZzvNy7ODZCYJkK8kzmcAnAg==}
+
+  '@huggingface/jinja@0.5.9':
+    resolution: {integrity: sha512-uWTG+l3VJRsl7EXxYizuL3P+cCPoc3cRqbWWRcQN0FhejRfbdq0RNhCmbY/YDtnTcz9icdLYuLDjsnz4d8JMuw==}
+    engines: {node: '>=18'}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -5174,6 +5184,13 @@ packages:
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
 
+  jsonrepair@3.15.0:
+    resolution: {integrity: sha512-wy8OTjwsJwQRnQJkKnMJJ9vcytRdBPAgIF/Hy6+s1dAj42BHMKiyL8JzEieIl3JY7idt8eyHwBWTO8mh/+mtwA==}
+    hasBin: true
+
+  jsonschema@1.5.0:
+    resolution: {integrity: sha512-K+A9hhqbn0f3pJX17Q/7H6yQfD/5OXgdrR5UE12gMXCiN9D5Xq2o5mddV2QEcX/bjla99ASsAAQUyMCCRWAEhw==}
+
   jsx-ast-utils@3.3.5:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
     engines: {node: '>=4.0'}
@@ -6194,6 +6211,21 @@ packages:
       react-native: '>=0.64.0'
       react-native-gesture-handler: '>=2.0.0'
       react-native-reanimated: '>=2.8.0'
+
+  react-native-executorch-expo-resource-fetcher@0.9.1:
+    resolution: {integrity: sha512-ypHCH0ushkeExdVSJAPMBJLDx7rWl7WAN1oInznfLUwlVsDNXWQB8nNhD3UGvrHk4ajcp1/OWcwO7GIhWOghsg==}
+    peerDependencies:
+      expo: '>=54.0.0'
+      expo-asset: '>=12.0.0'
+      expo-file-system: '>=19.0.0'
+      react-native: '*'
+      react-native-executorch: '*'
+
+  react-native-executorch@0.9.2:
+    resolution: {integrity: sha512-pZ2CbVPlze342GLic4UMTnMDuglgTjHBcaKLCjGTXGTStrscqtPptoZzx7brgJtwwu7IHRz3iF0mk2a7vsKLQg==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
 
   react-native-gesture-handler@2.28.0:
     resolution: {integrity: sha512-0msfJ1vRxXKVgTgvL+1ZOoYw3/0z1R+Ked0+udoJhyplC2jbVKIJ8Z1bzWdpQRCV3QcQ87Op0zJVE5DhKK2A0A==}
@@ -7346,6 +7378,9 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
 snapshots:
 
@@ -9215,6 +9250,8 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
     optional: true
+
+  '@huggingface/jinja@0.5.9': {}
 
   '@humanfs/core@0.19.1': {}
 
@@ -14352,6 +14389,10 @@ snapshots:
       graceful-fs: 4.2.11
     optional: true
 
+  jsonrepair@3.15.0: {}
+
+  jsonschema@1.5.0: {}
+
   jsx-ast-utils@3.3.5:
     dependencies:
       array-includes: 3.1.9
@@ -15718,6 +15759,23 @@ snapshots:
       - '@babel/core'
       - supports-color
 
+  react-native-executorch-expo-resource-fetcher@0.9.1(expo-asset@12.0.12(expo@54.0.30)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(expo-file-system@19.0.23(expo@54.0.30)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0)))(expo@54.0.30)(react-native-executorch@0.9.2(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0)):
+    dependencies:
+      expo: 54.0.30(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(expo-router@6.0.21)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      expo-asset: 12.0.12(expo@54.0.30)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      expo-file-system: 19.0.23(expo@54.0.30)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))
+      react-native: 0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0)
+      react-native-executorch: 0.9.2(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+
+  react-native-executorch@0.9.2(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      '@huggingface/jinja': 0.5.9
+      jsonrepair: 3.15.0
+      jsonschema: 1.5.0
+      react: 19.1.0
+      react-native: 0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0)
+      zod: 4.4.3
+
   react-native-gesture-handler@2.28.0(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@11.3.7(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
       '@egjs/hammerjs': 2.0.17
@@ -16994,3 +17052,5 @@ snapshots:
       yargs-parser: 21.1.1
 
   yocto-queue@0.1.0: {}
+
+  zod@4.4.3: {}

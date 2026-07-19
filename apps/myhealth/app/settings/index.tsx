@@ -657,6 +657,20 @@ export default function SettingsScreen() {
         </View>
 
         <View className="mb-6">
+          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">AI</Text>
+          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
+            <Text className="text-base text-light dark:text-dark">Manage AI Models</Text>
+            <RaisedCard
+              onPress={() => router.push('/settings/ai-models' as any)}
+              className="w-10 h-10 active:h-9 p-0 rounded-full items-center justify-center"
+              style={{ borderRadius: 9999 }}
+            >
+              <IconSymbol name="chevron.right" size={20} color={theme.primary} />
+            </RaisedCard>
+          </View>
+        </View>
+
+        <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Developer</Text>
           <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
             <Text className="text-base text-light dark:text-dark">Developer Mode</Text>
