@@ -17,4 +17,8 @@ export const CloudAIProvider: AIProvider = {
     async generateInsights(_input: WorkoutSummaryInput): Promise<InsightResult> {
         throw new Error('CloudAIProvider is not available yet');
     },
+
+    interrupt(): void {
+        // No in-flight request to cancel yet - nothing to do until this provider is wired up.
+    },
 };

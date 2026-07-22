@@ -1,6 +1,7 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import uuid from 'react-native-uuid';
 import { DataRepository } from '../providers/DataRepository';
+import { MuscleGroupResult } from './ai/AIProvider';
 
 export interface ProgressPictureEntry {
     id: string;
@@ -8,6 +9,7 @@ export interface ProgressPictureEntry {
     imageUri: string;
     date: string; // YYYY-MM-DD
     notes: string;
+    muscleGroups?: MuscleGroupResult | null;
     createdAt?: string;
     updatedAt?: number;
     syncStatus?: string;
@@ -67,6 +69,13 @@ export const ProgressPictureService = {
             createdAt: new Date().toISOString(),
             syncStatus: 'pending'
         };
+    },
+
+    /**
+     * Persist muscle-group analysis results for a picture already saved.
+     */
+    async updateMuscleGroups(id: string, muscleGroups: MuscleGroupResult): Promise<void> {
+        await DataRepository.updateProgressPictureMuscleGroups(id, muscleGroups);
     },
 
     /**

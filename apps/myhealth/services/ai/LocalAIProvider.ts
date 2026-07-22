@@ -119,4 +119,8 @@ export const LocalAIProvider: AIProvider = {
         const { summary, tips } = parseInsightResponse(raw);
         return { summary, tips, source: 'local' };
     },
+
+    interrupt(): void {
+        llmInstance?.interrupt();
+    },
 };

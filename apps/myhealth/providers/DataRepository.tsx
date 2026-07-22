@@ -1149,6 +1149,7 @@ export const DataRepository = {
             imageUri: r.image_uri,
             date: r.date,
             notes: r.notes || "",
+            muscleGroups: r.muscle_groups ? JSON.parse(r.muscle_groups) : null,
             createdAt: r.created_at,
             updatedAt: r.updated_at,
             syncStatus: r.sync_status
@@ -1172,6 +1173,14 @@ export const DataRepository = {
             now,
             'pending'
         ]);
+    },
+
+    updateProgressPictureMuscleGroups: async (id: string, muscleGroups: unknown): Promise<void> => {
+        const db = await getDb();
+        await db.runAsync(
+            'UPDATE progress_pictures SET muscle_groups = ?, updated_at = ? WHERE id = ?',
+            [JSON.stringify(muscleGroups), Date.now(), id]
+        );
     },
 
     deleteProgressPicture: async (id: string): Promise<void> => {

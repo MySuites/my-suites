@@ -34,6 +34,7 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="settings/index" options={{ headerShown: false }} />
       <Stack.Screen name="settings/developer/database" options={{ headerShown: false }} />
+      <Stack.Screen name="settings/ai-models" options={{ headerShown: false }} />
       <Stack.Screen name="exercises/details" options={{ headerShown: false }} />
       <Stack.Screen name="workouts/saved" options={{ title: 'Saved Workouts', headerShown: false }} />
       <Stack.Screen name="routines/index" options={{ title: 'My Routines', headerShown: false }} />

@@ -8,6 +8,7 @@ import { useActiveWorkoutPersistence } from '../hooks/workouts/useActiveWorkoutP
 import { useLatestBodyWeight } from '../hooks/workouts/useLatestBodyWeight';
 import { DataRepository, inferEquipment, inferMovementType } from './DataRepository';
 import uuid from 'react-native-uuid';
+import { analyzeMuscleGroupsInBackground } from '../services/ai/analyzeProgressPicture';
 import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import { NotificationService } from '../services/NotificationService';
@@ -498,12 +499,15 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
             const todayStr = new Date().toISOString().split('T')[0];
             const picNotes = note ? `${workoutName}: ${note}` : `Added from workout: ${workoutName}`;
             imageUrls.forEach(url => {
+                const pictureId = uuid.v4() as string;
                 DataRepository.saveProgressPicture(user?.id || null, {
-                    id: uuid.v4() as string,
+                    id: pictureId,
                     imageUri: url,
                     date: todayStr,
                     notes: picNotes
-                }).catch(err => console.error("Failed to save progress picture from workout:", err));
+                })
+                    .then(() => analyzeMuscleGroupsInBackground(pictureId, url))
+                    .catch(err => console.error("Failed to save progress picture from workout:", err));
             });
         }
 

@@ -160,6 +160,7 @@ export const initDatabase = async () => {
                 image_uri TEXT,
                 date TEXT,
                 notes TEXT,
+                muscle_groups TEXT,
                 created_at TEXT,
                 updated_at INTEGER,
                 sync_status TEXT DEFAULT 'pending'
@@ -253,6 +254,8 @@ export const initDatabase = async () => {
     await safeAddColumn("exercises", "movement_type", "TEXT");
     await safeAddColumn("exercises", "attachment", "TEXT");
  
+    await safeAddColumn("progress_pictures", "muscle_groups", "TEXT"); // JSON: { primaryMuscles: string[], secondaryMuscles: string[], confidence: number, source: 'local' | 'cloud' }
+
     await safeAddColumn("set_logs", "rpe", "REAL");
     await safeAddColumn("set_logs", "reps_left", "INTEGER");
     await safeAddColumn("set_logs", "reps_right", "INTEGER");

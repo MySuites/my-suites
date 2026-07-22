@@ -9,7 +9,7 @@ import {
     ActivityIndicator
 } from 'react-native';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '@mysuite/auth';
 import { RaisedCard, HollowedCard, useUITheme, IconSymbol, useToast } from '@mysuite/ui';
 
@@ -49,9 +49,13 @@ export default function ProgressPicturesScreen() {
         }
     }, [user, showToast]);
 
-    useEffect(() => {
-        loadPictures();
-    }, [loadPictures]);
+    // Re-loads on mount and on focus, so muscle-group labels appear once
+    // background analysis finishes after returning from the add screen.
+    useFocusEffect(
+        useCallback(() => {
+            loadPictures();
+        }, [loadPictures])
+    );
 
 
     // Delete Picture
@@ -82,6 +86,16 @@ export default function ProgressPicturesScreen() {
 
     const handlePicturePress = (item: ProgressPictureEntry) => {
         setSelectedPicture(item);
+    };
+
+    // Muscle groups can be: undefined/null (never analyzed), an error result
+    // (analysis ran but failed), an empty result (ran, found nothing), or a
+    // populated result - each needs distinct copy so nothing looks stuck.
+    const formatMuscleGroups = (muscleGroups: ProgressPictureEntry['muscleGroups']) => {
+        if (!muscleGroups) return 'Analyzing…';
+        if (muscleGroups.error) return 'Muscle group analysis unavailable';
+        const all = [...muscleGroups.primaryMuscles, ...muscleGroups.secondaryMuscles];
+        return all.length > 0 ? all.join(', ') : 'No muscle groups detected';
     };
 
     // Format Date Helper
@@ -159,6 +173,11 @@ export default function ProgressPicturesScreen() {
                                                     {item.notes}
                                                 </Text>
                                             ) : null}
+                                            {item.muscleGroups?.primaryMuscles?.length ? (
+                                                <Text className="text-[8px] mt-0.5" numberOfLines={1} style={{ color: theme.primary }}>
+                                                    {item.muscleGroups.primaryMuscles.join(', ')}
+                                                </Text>
+                                            ) : null}
                                         </View>
                                     </RaisedCard>
                                 </TouchableOpacity>
@@ -199,6 +218,10 @@ export default function ProgressPicturesScreen() {
                     )}
 
                     <View className="px-6 pb-16 pt-4 bg-black/80">
+                        <Text className="text-white/60 text-xs mb-1">MUSCLE GROUPS</Text>
+                        <Text className="text-white text-base mb-3">
+                            {selectedPicture ? formatMuscleGroups(selectedPicture.muscleGroups) : ''}
+                        </Text>
                         <Text className="text-white/60 text-xs mb-1">NOTES</Text>
                         <Text className="text-white text-base">
                             {selectedPicture?.notes || "No notes added to this progress photo."}

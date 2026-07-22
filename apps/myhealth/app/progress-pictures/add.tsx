@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { ProgressPictureService } from '../../services/ProgressPictureService';
+import { analyzeMuscleGroupsInBackground } from '../../services/ai/analyzeProgressPicture';
 
 export default function AddProgressPictureScreen() {
     const { user } = useAuth();
@@ -83,12 +84,13 @@ export default function AddProgressPictureScreen() {
         setIsSaving(true);
         try {
             for (const uri of tempPhotoUris) {
-                await ProgressPictureService.saveProgressPicture(
+                const entry = await ProgressPictureService.saveProgressPicture(
                     user?.id || null,
                     uri,
                     photoDate,
                     photoNotes
                 );
+                analyzeMuscleGroupsInBackground(entry.id, entry.imageUri);
             }
             showToast({ message: `Successfully saved ${tempPhotoUris.length} progress picture(s)!`, type: 'success' });
             router.back();
