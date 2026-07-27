@@ -1,4 +1,5 @@
-import { LLMModule } from 'react-native-executorch';
+import { LLMModule, ResourceFetcher, ResourceSource } from 'react-native-executorch';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import {
     AIProvider,
     InsightResult,
@@ -6,22 +7,63 @@ import {
     WorkoutSummaryInput,
 } from './AIProvider';
 import { getModelOption } from './modelRegistry';
-import { getSelectedModelId } from './modelManager';
+import { getSelectedModelId, isModelDownloaded } from './modelManager';
 
-const MUSCLE_ANALYSIS_PROMPT =
-    'Look at this workout progress photo. List the visible muscle groups, ' +
-    'ranked by how prominent they are in the frame. Respond with strict JSON only, ' +
-    'no other text, in this shape: ' +
-    '{"primaryMuscles": string[], "secondaryMuscles": string[], "confidence": number between 0 and 1}';
+// Built dynamically per model - the image placeholder token varies by model
+// (e.g. "<image>" for LFM2.5-VL, "<|image|>" for Gemma) and must appear in
+// the prompt exactly once per image passed, or the native runner throws
+// "More image/audio paths provided than placeholders in prompt".
+function buildMuscleAnalysisPrompt(imageToken: string): string {
+    return (
+        `This image may or may not be a fitness progress photo. ${imageToken} ` +
+        'First check whether a human body is clearly visible. If no person, or no muscle group is ' +
+        'clearly visible (e.g. a landscape, object, or a heavily obscured/clothed body), return empty ' +
+        'arrays and confidence 0 - do not guess or invent muscle names to fill the response. Otherwise ' +
+        'list the visible muscle groups, ranked by how prominent they are in the frame. Respond with ' +
+        'strict JSON only, no other text, in this shape: ' +
+        '{"primaryMuscles": string[], "secondaryMuscles": string[], "confidence": number between 0 and 1}'
+    );
+}
 
 let loadedModelId: string | null = null;
 let llmInstance: LLMModule | null = null;
+let imageTokenCache: Map<string, string> = new Map();
+
+async function getImageToken(modelId: string, tokenizerConfigSource: ResourceSource): Promise<string> {
+    const cached = imageTokenCache.get(modelId);
+    if (cached) return cached;
+
+    const [tokenizerConfigPath] = await ResourceFetcher.fetch(undefined, tokenizerConfigSource);
+    const raw = await ResourceFetcher.fs.readAsString(tokenizerConfigPath);
+    const config = JSON.parse(raw);
+    const token = config.image_token;
+    if (!token) {
+        throw new Error('Tokenizer config is missing "image_token" - this model may not support vision input');
+    }
+    imageTokenCache.set(modelId, token);
+    return token;
+}
+
+// The native image reader (OpenCV's cv::imread) can't decode HEIC, the
+// default format for iOS camera captures - re-encoding to JPEG here makes
+// analysis work regardless of the original photo's format.
+async function toJpeg(imageUri: string): Promise<string> {
+    const result = await manipulateAsync(imageUri, [], { format: SaveFormat.JPEG });
+    return result.uri;
+}
 
 async function getLLM(): Promise<{ llm: LLMModule; capabilities: readonly ('vision' | 'audio')[] }> {
     const selectedId = await getSelectedModelId();
     const option = getModelOption(selectedId);
     if (!option) {
         throw new Error(`Unknown selected model id: ${selectedId}`);
+    }
+
+    // Fail fast instead of silently downloading ~hundreds of MB inline - that
+    // download can alone exceed the analysis timeout and just looks like a
+    // hang. Downloading is a deliberate action in AI Models settings.
+    if (loadedModelId !== selectedId && !(await isModelDownloaded(selectedId))) {
+        throw new Error(`"${option.label}" is not downloaded - download it from AI Models settings first`);
     }
 
     if (llmInstance && loadedModelId !== selectedId) {
@@ -108,7 +150,11 @@ export const LocalAIProvider: AIProvider = {
         if (!capabilities.includes('vision')) {
             throw new Error('Selected local model does not support photo analysis - pick a vision-capable model in AI settings');
         }
-        const raw = await llm.forward(MUSCLE_ANALYSIS_PROMPT, [imageUri]);
+        const selectedId = await getSelectedModelId();
+        const option = getModelOption(selectedId)!;
+        const imageToken = await getImageToken(selectedId, option.config.tokenizerConfigSource);
+        const jpegUri = await toJpeg(imageUri);
+        const raw = await llm.forward(buildMuscleAnalysisPrompt(imageToken), [jpegUri]);
         return { ...parseMuscleGroupResponse(raw), source: 'local' };
     },
 

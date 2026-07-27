@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { 
     View, 
     Text, 
@@ -16,6 +16,8 @@ import { RaisedCard, HollowedCard, useUITheme, IconSymbol, useToast } from '@mys
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { ProgressPictureService, ProgressPictureEntry } from '../../services/ProgressPictureService';
+import { analyzeMuscleGroupsInBackground, cancelAnalysis } from '../../services/ai/analyzeProgressPicture';
+import { useAnalysisStatus } from '../../hooks/ai/useActiveAnalysis';
 
 const { width } = Dimensions.get('window');
 const GAP = 10;
@@ -29,15 +31,20 @@ export default function ProgressPicturesScreen() {
     // State variables
     const [pictures, setPictures] = useState<ProgressPictureEntry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { activeId: activeAnalysisId, queuedIds } = useAnalysisStatus();
 
-    // Detail State
-    const [selectedPicture, setSelectedPicture] = useState<ProgressPictureEntry | null>(null);
-
-
+    // Detail State - tracked by id and derived from `pictures` below so it
+    // picks up muscle-group updates live, instead of freezing a stale copy
+    // from the moment the user tapped the thumbnail.
+    const [selectedPictureId, setSelectedPictureId] = useState<string | null>(null);
+    const selectedPicture = useMemo(
+        () => pictures.find((p) => p.id === selectedPictureId) ?? null,
+        [pictures, selectedPictureId]
+    );
 
     // Load pictures
-    const loadPictures = useCallback(async () => {
-        setIsLoading(true);
+    const loadPictures = useCallback(async (showSpinner = true) => {
+        if (showSpinner) setIsLoading(true);
         try {
             const data = await ProgressPictureService.getProgressPictures(user?.id || null);
             setPictures(data);
@@ -45,7 +52,7 @@ export default function ProgressPicturesScreen() {
             console.error('Failed to load progress pictures:', e);
             showToast({ message: 'Failed to load progress pictures', type: 'error' });
         } finally {
-            setIsLoading(false);
+            if (showSpinner) setIsLoading(false);
         }
     }, [user, showToast]);
 
@@ -56,6 +63,19 @@ export default function ProgressPicturesScreen() {
             loadPictures();
         }, [loadPictures])
     );
+
+    // While any picture is still awaiting analysis, poll quietly (no spinner)
+    // so labels appear without needing to leave and return to this screen.
+    const hasPendingAnalysis = pictures.some((p) => !p.muscleGroups);
+    const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    useEffect(() => {
+        if (hasPendingAnalysis) {
+            pollingRef.current = setInterval(() => loadPictures(false), 5000);
+        }
+        return () => {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+        };
+    }, [hasPendingAnalysis, loadPictures]);
 
 
     // Delete Picture
@@ -72,7 +92,7 @@ export default function ProgressPicturesScreen() {
                         try {
                             await ProgressPictureService.deleteProgressPicture(item.id, item.imageUri);
                             showToast({ message: 'Picture deleted', type: 'success' });
-                            setSelectedPicture(null);
+                            setSelectedPictureId(null);
                             loadPictures();
                         } catch (e) {
                             console.error('Failed to delete picture:', e);
@@ -84,15 +104,31 @@ export default function ProgressPicturesScreen() {
         );
     };
 
-    const handlePicturePress = (item: ProgressPictureEntry) => {
-        setSelectedPicture(item);
+    const handleAnalyze = (item: ProgressPictureEntry) => {
+        analyzeMuscleGroupsInBackground(item.id, item.imageUri);
     };
 
-    // Muscle groups can be: undefined/null (never analyzed), an error result
-    // (analysis ran but failed), an empty result (ran, found nothing), or a
-    // populated result - each needs distinct copy so nothing looks stuck.
-    const formatMuscleGroups = (muscleGroups: ProgressPictureEntry['muscleGroups']) => {
-        if (!muscleGroups) return 'Analyzing…';
+    const handleStopAnalysis = (item: ProgressPictureEntry) => {
+        const stopped = cancelAnalysis(item.id);
+        if (!stopped) {
+            showToast({ message: 'Still queued, nothing to stop yet', type: 'error' });
+        }
+    };
+
+    const handlePicturePress = (item: ProgressPictureEntry) => {
+        setSelectedPictureId(item.id);
+    };
+
+    // Muscle groups can be: undefined/null and never queued (truly untouched),
+    // undefined/null but actively running/queued, an error result (ran but
+    // failed), an empty result (ran, found nothing), or a populated result -
+    // each needs distinct copy so nothing looks stuck or implies activity
+    // that isn't actually happening.
+    const formatMuscleGroups = (item: ProgressPictureEntry) => {
+        if (activeAnalysisId === item.id) return 'Analyzing…';
+        if (queuedIds.includes(item.id)) return 'Queued…';
+        const muscleGroups = item.muscleGroups;
+        if (!muscleGroups) return 'Not analyzed yet';
         if (muscleGroups.error) return 'Muscle group analysis unavailable';
         const all = [...muscleGroups.primaryMuscles, ...muscleGroups.secondaryMuscles];
         return all.length > 0 ? all.join(', ') : 'No muscle groups detected';
@@ -151,21 +187,38 @@ export default function ProgressPicturesScreen() {
                 ) : (
                     <View className="flex-row flex-wrap" style={{ gap: GAP }}>
                         {pictures.map((item) => {
+                            const isAnalyzing = activeAnalysisId === item.id;
+                            const isQueued = queuedIds.includes(item.id);
                             return (
-                                <TouchableOpacity 
-                                    key={item.id} 
+                                <TouchableOpacity
+                                    key={item.id}
                                     onPress={() => handlePicturePress(item)}
                                     activeOpacity={0.8}
                                     style={{ width: COLUMN_WIDTH, marginBottom: 12 }}
                                     testID={`pic-card-${item.id}`}
                                 >
                                     <RaisedCard className="p-0 overflow-hidden" style={{ borderRadius: 12 }}>
-                                        <Image 
-                                            source={{ uri: item.imageUri }} 
-                                            style={{ width: '100%', height: COLUMN_WIDTH }}
-                                            contentFit="cover"
-                                            transition={200}
-                                        />
+                                        <View>
+                                            <Image
+                                                source={{ uri: item.imageUri }}
+                                                style={{ width: '100%', height: COLUMN_WIDTH }}
+                                                contentFit="cover"
+                                                transition={200}
+                                            />
+                                            {(isAnalyzing || isQueued) && (
+                                                <View
+                                                    className="absolute inset-0 items-center justify-center bg-black/40"
+                                                    testID={isAnalyzing ? `analyzing-badge-${item.id}` : `queued-badge-${item.id}`}
+                                                >
+                                                    <ActivityIndicator size="small" color="#fff" />
+                                                    {isQueued && (
+                                                        <View style={{ position: 'absolute' }}>
+                                                            <IconSymbol name="pause.fill" size={14} color="#fff" />
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            )}
+                                        </View>
                                         <View className="p-2">
                                             <Text className="font-bold text-[9px] text-light dark:text-dark">{formatDate(item.date)}</Text>
                                             {item.notes ? (
@@ -192,7 +245,7 @@ export default function ProgressPicturesScreen() {
                 <View className="absolute inset-0 z-[110] bg-black justify-between">
                     <View className="flex-row justify-between items-center px-4 pt-16 pb-4 z-10">
                         <TouchableOpacity 
-                            onPress={() => setSelectedPicture(null)}
+                            onPress={() => setSelectedPictureId(null)}
                             className="bg-white/10 w-10 h-10 rounded-full items-center justify-center"
                         >
                             <IconSymbol name="xmark" size={20} color="#fff" />
@@ -219,9 +272,28 @@ export default function ProgressPicturesScreen() {
 
                     <View className="px-6 pb-16 pt-4 bg-black/80">
                         <Text className="text-white/60 text-xs mb-1">MUSCLE GROUPS</Text>
-                        <Text className="text-white text-base mb-3">
-                            {selectedPicture ? formatMuscleGroups(selectedPicture.muscleGroups) : ''}
+                        <Text className="text-white text-base mb-2">
+                            {selectedPicture ? formatMuscleGroups(selectedPicture) : ''}
                         </Text>
+                        {selectedPicture && (
+                            <TouchableOpacity
+                                onPress={() =>
+                                    activeAnalysisId === selectedPicture.id
+                                        ? handleStopAnalysis(selectedPicture)
+                                        : handleAnalyze(selectedPicture)
+                                }
+                                className="self-start bg-white/10 px-4 py-2 rounded-full mb-3"
+                                testID="analyze-picture-btn"
+                            >
+                                <Text className="text-white text-sm font-semibold">
+                                    {activeAnalysisId === selectedPicture.id
+                                        ? 'Stop Analysis'
+                                        : selectedPicture.muscleGroups
+                                            ? 'Re-analyze'
+                                            : 'Analyze Now'}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                         <Text className="text-white/60 text-xs mb-1">NOTES</Text>
                         <Text className="text-white text-base">
                             {selectedPicture?.notes || "No notes added to this progress photo."}
