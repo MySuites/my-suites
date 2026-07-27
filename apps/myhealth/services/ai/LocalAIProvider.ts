@@ -1,4 +1,4 @@
-import { LLMModule, ResourceFetcher, ResourceSource } from 'react-native-executorch';
+import { LLMModule, LLMModelName, ResourceFetcher, ResourceSource } from 'react-native-executorch';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import {
     AIProvider,
@@ -73,7 +73,7 @@ async function getLLM(): Promise<{ llm: LLMModule; capabilities: readonly ('visi
 
     if (!llmInstance) {
         llmInstance = await LLMModule.fromModelName({
-            modelName: option.config.modelName,
+            modelName: option.config.modelName as LLMModelName,
             modelSource: option.config.modelSource,
             tokenizerSource: option.config.tokenizerSource,
             tokenizerConfigSource: option.config.tokenizerConfigSource,

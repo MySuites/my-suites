@@ -4,8 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { initExecutorch } from 'react-native-executorch';
-import { ExpoResourceFetcher } from 'react-native-executorch-expo-resource-fetcher';
+import { initExecutorchForApp } from '../services/ai/executorchInit';
 import { AuthProvider, useAuth } from '@mysuite/auth';
 import { AppThemeProvider } from '../providers/AppThemeProvider';
 import { UnitPreferenceProvider } from '../providers/UnitPreferenceProvider';
@@ -25,9 +24,7 @@ import { NotificationService } from '../services/NotificationService';
 
 SplashScreen.preventAutoHideAsync();
 
-// Must run before any react-native-executorch model/resource call, or it
-// throws "ResourceFetcher adapter is not initialized".
-initExecutorch({ resourceFetcher: ExpoResourceFetcher });
+initExecutorchForApp();
 
 export const unstable_settings = {
   anchor: '(tabs)',

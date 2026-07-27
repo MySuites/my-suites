@@ -3,29 +3,10 @@ import {
     LFM2_5_VL_1_6B_QUANTIZED,
     GEMMA4_E2B_MM,
     QWEN3_0_6B_QUANTIZED,
-    LLMModelName,
 } from 'react-native-executorch';
-import { ResourceSource } from 'react-native-executorch';
+import { AIModelOption, ResourceSourceLike } from './modelRegistry.types';
 
-export type AIModelCapability = 'vision' | 'text';
-
-export interface AIModelConfig {
-    modelName: LLMModelName;
-    modelSource: ResourceSource;
-    tokenizerSource: ResourceSource;
-    tokenizerConfigSource: ResourceSource;
-    generationConfig?: Record<string, unknown>;
-    capabilities?: readonly ('vision' | 'audio')[];
-}
-
-export interface AIModelOption {
-    id: string;
-    label: string;
-    description: string;
-    approxSizeMB: number;
-    capabilities: AIModelCapability[];
-    config: AIModelConfig;
-}
+export * from './modelRegistry.types';
 
 // Curated list only - keeps download sizes predictable and every option
 // verified to run through react-native-executorch on-device.
@@ -70,6 +51,6 @@ export function getModelOption(id: string): AIModelOption | undefined {
     return AI_MODEL_REGISTRY.find((m) => m.id === id);
 }
 
-export function getModelResourceSources(option: AIModelOption): ResourceSource[] {
+export function getModelResourceSources(option: AIModelOption): ResourceSourceLike[] {
     return [option.config.modelSource, option.config.tokenizerSource, option.config.tokenizerConfigSource];
 }
