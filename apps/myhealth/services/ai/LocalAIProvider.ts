@@ -8,21 +8,45 @@ import {
 } from './AIProvider';
 import { getModelOption } from './modelRegistry';
 import { getSelectedModelId, isModelDownloaded } from './modelManager';
+import { MUSCLE_GROUPS } from '../../assets/data/muscle-groups';
+
+const ALLOWED_MUSCLE_NAMES = MUSCLE_GROUPS.map((m) => m.name);
+// Case-insensitive lookup back to the app's canonical casing/spelling, so
+// "biceps" or "BICEPS" from the model still resolves to "Biceps".
+const MUSCLE_NAME_LOOKUP = new Map(MUSCLE_GROUPS.map((m) => [m.name.toLowerCase(), m.name]));
 
 // Built dynamically per model - the image placeholder token varies by model
 // (e.g. "<image>" for LFM2.5-VL, "<|image|>" for Gemma) and must appear in
 // the prompt exactly once per image passed, or the native runner throws
 // "More image/audio paths provided than placeholders in prompt".
+// Kept short - a verbose version pushed total prompt+image tokens over this
+// model's context window and produced a silent empty response. A literal
+// JSON example (not "string[]" type notation) matters too - without one the
+// model latched onto the muscle list itself and invented a {muscle: flag}
+// dict schema instead of the requested arrays.
 function buildMuscleAnalysisPrompt(imageToken: string): string {
     return (
-        `This image may or may not be a fitness progress photo. ${imageToken} ` +
-        'First check whether a human body is clearly visible. If no person, or no muscle group is ' +
-        'clearly visible (e.g. a landscape, object, or a heavily obscured/clothed body), return empty ' +
-        'arrays and confidence 0 - do not guess or invent muscle names to fill the response. Otherwise ' +
-        'list the visible muscle groups, ranked by how prominent they are in the frame. Respond with ' +
-        'strict JSON only, no other text, in this shape: ' +
-        '{"primaryMuscles": string[], "secondaryMuscles": string[], "confidence": number between 0 and 1}'
+        `${imageToken} Identify visible muscles in this photo (a cropped body part counts). ` +
+        `Only use names from: ${ALLOWED_MUSCLE_NAMES.join(', ')}. ` +
+        'Reply with ONLY this exact JSON shape, e.g. ' +
+        '{"primaryMuscles": ["Biceps"], "secondaryMuscles": [], "confidence": 0.9}. ' +
+        'If nothing body-related is visible, use empty arrays.'
     );
+}
+
+// Hard guardrail on top of the prompt instruction - the model has already
+// been observed inventing names (e.g. "transverse abductor") that aren't on
+// the app's list, so anything that doesn't match is dropped rather than
+// trusted to have followed instructions.
+function normalizeMuscleNames(names: string[]): string[] {
+    const result: string[] = [];
+    for (const name of names) {
+        const canonical = MUSCLE_NAME_LOOKUP.get(String(name).trim().toLowerCase());
+        if (canonical && !result.includes(canonical)) {
+            result.push(canonical);
+        }
+    }
+    return result;
 }
 
 let loadedModelId: string | null = null;
@@ -50,6 +74,50 @@ async function getImageToken(modelId: string, tokenizerConfigSource: ResourceSou
 async function toJpeg(imageUri: string): Promise<string> {
     const result = await manipulateAsync(imageUri, [], { format: SaveFormat.JPEG });
     return result.uri;
+}
+
+// Hard cap on generated characters, in case the model never produces a
+// complete JSON object at all (still observed rambling for 1000+ chars
+// without ever emitting valid JSON).
+const EARLY_STOP_MAX_CHARS = 600;
+
+function hasCompleteJsonObject(text: string): boolean {
+    // Our schema is flat (no nested braces), so a non-nested match is enough.
+    const match = text.match(/\{[^{}]*\}/);
+    if (!match) return false;
+    try {
+        JSON.parse(match[0]);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+// Some models keep generating well past a correct answer - one observed
+// response buried a valid JSON object early, then rambled for another 4000+
+// characters of incoherent text before stopping on its own. Stopping the
+// moment valid JSON appears (or a hard length cap is hit) avoids wasting
+// time/battery and avoids the tail-end rambling corrupting the response.
+async function forwardWithEarlyStop(llm: LLMModule, prompt: string, imagePaths: string[]): Promise<string> {
+    let buffer = '';
+    let stopped = false;
+    llm.setTokenCallback({
+        tokenCallback: (token: string) => {
+            if (stopped) return;
+            buffer += token;
+            if (buffer.length > EARLY_STOP_MAX_CHARS || hasCompleteJsonObject(buffer)) {
+                stopped = true;
+                llm.interrupt();
+            }
+        },
+    });
+    try {
+        return await llm.forward(prompt, imagePaths);
+    } finally {
+        // Don't leak this callback into unrelated calls (e.g. generateInsights)
+        // sharing the same underlying model instance.
+        llm.setTokenCallback({ tokenCallback: () => {} });
+    }
 }
 
 async function getLLM(): Promise<{ llm: LLMModule; capabilities: readonly ('vision' | 'audio')[] }> {
@@ -116,21 +184,52 @@ function parseInsightResponse(raw: string): { summary: string; tips: string[] } 
     return { summary, tips };
 }
 
-function parseMuscleGroupResponse(raw: string): Omit<MuscleGroupResult, 'source'> {
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-        return { primaryMuscles: [], secondaryMuscles: [], confidence: 0 };
-    }
+// Field-level fallback for when the model doesn't emit strictly valid JSON
+// (seen in practice: missing opening brace, "=" instead of ":"). Extracts
+// each field independently rather than requiring the whole blob to parse.
+function extractArrayField(raw: string, field: string): string[] {
+    const match = raw.match(new RegExp(`"?${field}"?\\s*[:=]\\s*(\\[[^\\]]*\\])`, 'i'));
+    if (!match) return [];
     try {
-        const parsed = JSON.parse(jsonMatch[0]);
-        return {
-            primaryMuscles: Array.isArray(parsed.primaryMuscles) ? parsed.primaryMuscles : [],
-            secondaryMuscles: Array.isArray(parsed.secondaryMuscles) ? parsed.secondaryMuscles : [],
-            confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0,
-        };
+        const parsed = JSON.parse(match[1]);
+        return Array.isArray(parsed) ? parsed : [];
     } catch {
-        return { primaryMuscles: [], secondaryMuscles: [], confidence: 0 };
+        return [];
     }
+}
+
+function extractNumberField(raw: string, field: string): number {
+    const match = raw.match(new RegExp(`"?${field}"?\\s*[:=]\\s*([0-9]*\\.?[0-9]+)`, 'i'));
+    return match ? parseFloat(match[1]) : 0;
+}
+
+function parseMuscleGroupResponse(raw: string): Omit<MuscleGroupResult, 'source'> {
+    // TODO(debug): remove once we've confirmed the model reliably returns
+    // populated results - this tells us whether an empty result is the model
+    // genuinely finding nothing, or us failing to parse what it said.
+    console.log('[AI] Raw muscle group response:', JSON.stringify(raw));
+
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+        try {
+            const parsed = JSON.parse(jsonMatch[0]);
+            return {
+                primaryMuscles: normalizeMuscleNames(Array.isArray(parsed.primaryMuscles) ? parsed.primaryMuscles : []),
+                secondaryMuscles: normalizeMuscleNames(Array.isArray(parsed.secondaryMuscles) ? parsed.secondaryMuscles : []),
+                confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0,
+            };
+        } catch (err) {
+            console.warn('[AI] Found a {...} block but JSON.parse failed, falling back to field extraction:', err);
+        }
+    } else {
+        console.warn('[AI] No {...} block found in muscle group response, falling back to field extraction');
+    }
+
+    return {
+        primaryMuscles: normalizeMuscleNames(extractArrayField(raw, 'primaryMuscles')),
+        secondaryMuscles: normalizeMuscleNames(extractArrayField(raw, 'secondaryMuscles')),
+        confidence: extractNumberField(raw, 'confidence'),
+    };
 }
 
 export const LocalAIProvider: AIProvider = {
@@ -154,7 +253,14 @@ export const LocalAIProvider: AIProvider = {
         const option = getModelOption(selectedId)!;
         const imageToken = await getImageToken(selectedId, option.config.tokenizerConfigSource);
         const jpegUri = await toJpeg(imageUri);
-        const raw = await llm.forward(buildMuscleAnalysisPrompt(imageToken), [jpegUri]);
+        const raw = await forwardWithEarlyStop(llm, buildMuscleAnalysisPrompt(imageToken), [jpegUri]);
+        if (!raw.trim()) {
+            // A real failure, not "the model looked and found nothing" -
+            // likely the prompt+image exceeded the model's context window.
+            // Surfacing distinctly instead of silently returning an empty
+            // result that looks identical to a legitimate empty finding.
+            throw new Error('Model produced no output - the prompt may be too long for this model\'s context window');
+        }
         return { ...parseMuscleGroupResponse(raw), source: 'local' };
     },
 
