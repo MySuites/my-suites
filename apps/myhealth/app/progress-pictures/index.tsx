@@ -33,6 +33,34 @@ export default function ProgressPicturesScreen() {
     const [isLoading, setIsLoading] = useState(true);
     const { activeId: activeAnalysisId, queuedIds } = useAnalysisStatus();
 
+    // Muscle group filter - built from tags actually present on pictures,
+    // not the full app-wide list, so there's never an empty-result filter chip.
+    const [muscleFilter, setMuscleFilter] = useState<string | null>(null);
+    const availableMuscleFilters = useMemo(() => {
+        const tags = new Set<string>();
+        pictures.forEach((p) => {
+            p.muscleGroups?.primaryMuscles?.forEach((m) => tags.add(m));
+            p.muscleGroups?.secondaryMuscles?.forEach((m) => tags.add(m));
+        });
+        return Array.from(tags).sort();
+    }, [pictures]);
+    const filteredPictures = useMemo(() => {
+        if (!muscleFilter) return pictures;
+        return pictures.filter(
+            (p) =>
+                p.muscleGroups?.primaryMuscles?.includes(muscleFilter) ||
+                p.muscleGroups?.secondaryMuscles?.includes(muscleFilter)
+        );
+    }, [pictures, muscleFilter]);
+
+    // Clear the filter if its tag no longer exists (e.g. the only tagged
+    // picture with it was deleted) rather than silently showing zero results.
+    useEffect(() => {
+        if (muscleFilter && !availableMuscleFilters.includes(muscleFilter)) {
+            setMuscleFilter(null);
+        }
+    }, [muscleFilter, availableMuscleFilters]);
+
     // Detail State - tracked by id and derived from `pictures` below so it
     // picks up muscle-group updates live, instead of freezing a stale copy
     // from the moment the user tapped the thumbnail.
@@ -290,8 +318,48 @@ export default function ProgressPicturesScreen() {
                         </RaisedCard>
                     </HollowedCard>
                 ) : (
+                    <>
+                        {availableMuscleFilters.length > 0 && (
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{ gap: 8, paddingBottom: 16 }}
+                                testID="muscle-filter-row"
+                            >
+                                <TouchableOpacity
+                                    onPress={() => setMuscleFilter(null)}
+                                    className={`px-4 py-2 rounded-full border ${!muscleFilter ? 'bg-primary border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
+                                    testID="muscle-filter-all"
+                                >
+                                    <Text className={`font-semibold text-sm ${!muscleFilter ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
+                                        All
+                                    </Text>
+                                </TouchableOpacity>
+                                {availableMuscleFilters.map((tag) => (
+                                    <TouchableOpacity
+                                        key={tag}
+                                        onPress={() => setMuscleFilter(muscleFilter === tag ? null : tag)}
+                                        className={`px-4 py-2 rounded-full border ${muscleFilter === tag ? 'bg-primary border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
+                                        testID={`muscle-filter-${tag}`}
+                                    >
+                                        <Text className={`font-semibold text-sm ${muscleFilter === tag ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
+                                            {tag}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        )}
+
+                        {filteredPictures.length === 0 ? (
+                            <HollowedCard className="p-10 mt-10 justify-center items-center" style={{ borderRadius: 20 }}>
+                                <IconSymbol name="camera.fill" size={40} color={theme.textMuted} style={{ marginBottom: 12 }} />
+                                <Text className="text-base font-bold text-center text-light dark:text-dark">
+                                    No pictures tagged "{muscleFilter}"
+                                </Text>
+                            </HollowedCard>
+                        ) : (
                     <View className="flex-row flex-wrap" style={{ gap: GAP }}>
-                        {pictures.map((item) => {
+                        {filteredPictures.map((item) => {
                             const isAnalyzing = activeAnalysisId === item.id;
                             const isQueued = queuedIds.includes(item.id);
                             const isSelected = selectedIds.has(item.id);
@@ -364,6 +432,8 @@ export default function ProgressPicturesScreen() {
                             );
                         })}
                     </View>
+                        )}
+                    </>
                 )}
             </ScrollView>
 
