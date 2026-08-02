@@ -16,12 +16,57 @@ export function getEffectiveSetWeight(set: SetLog): number {
 // given bodyweight exercise (e.g. a push-up loads roughly two-thirds of
 // bodyweight through the arms, not the full weight — the legs/toes bear the
 // rest). Keyed by exercise id; only covers exercises with well-established
-// figures. Anything not listed defaults to 1 (full bodyweight), the same
-// assumption used before this table existed.
+// figures. Anything not listed defaults to 1 (full bodyweight) - correct for
+// movements that genuinely suspend/support the whole body through a single
+// point of contact (pull-ups, dips, handstands, planche, front lever,
+// L-sits, squats), but was previously also the silent fallback for
+// variations that clearly don't (push-up progressions, planks, crunches,
+// leg raises) since only the three base exercise ids had entries.
 export const BODYWEIGHT_LOAD_PERCENTAGE: Record<string, number> = {
+    // Push-up family - hand/foot elevation and lever length change the
+    // fraction of bodyweight over the hands significantly.
+    wall_push_up: 0.10,
+    incline_push_up: 0.45,
+    knee_push_up: 0.52,
     push_up: 0.67,
-    pull_up: 0.92,
+    wide_push_up: 0.66,
+    military_push_up: 0.68,
+    diamond_push_up: 0.68,
+    pike_push_up: 0.65,
+    decline_push_up: 0.72,
+    weighted_push_up: 0.67,
+    pseudo_planche_push_up: 0.78,
+
+    // Pull-up / row family - hanging/rowing bodyweight movements. Assisted
+    // reduces the effective load via band/machine counterweight; exact
+    // amount is user/equipment-dependent, so this is a rough midpoint.
+    scapular_pull_up: 0.92,
+    assisted_pull_up: 0.5,
+    negative_pull_up: 0.92,
     chin_up: 0.92,
+    pull_up: 0.92,
+    wide_pull_up: 0.92,
+    archer_pull_up: 0.92,
+    typewriter_pull_up: 0.92,
+    explosive_pull_up: 0.92,
+    muscle_up: 0.95,
+    weighted_chin_up: 0.92,
+    weighted_pull_up: 0.92,
+    bodyweight_row: 0.70,
+    weighted_row: 0.70,
+
+    // Core - none of these lift the whole body, only a segment of it
+    // (torso, or legs, moving relative to a supported base).
+    crunch: 0.35,
+    russian_twist: 0.30,
+    leg_raise: 0.30,
+    hanging_leg_raise: 0.35,
+
+    // Isometric core holds - multi-point support (forearms/hands + toes),
+    // not fully suspended on one contact point.
+    plank: 0.75,
+    weighted_plank: 0.75,
+    side_plank: 0.65,
 };
 
 export function getBodyweightLoadPercentage(exercise: { id?: string }): number {

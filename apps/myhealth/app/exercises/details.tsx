@@ -14,6 +14,10 @@ import DefaultExercises from '../../assets/data/default-exercises';
 import { DataRepository } from '../../providers/DataRepository';
 import { Exercise } from '../../utils/workout-api/types';
 import { VariationTree } from '../../components/exercises/VariationTree';
+import { useLatestBodyWeight } from '../../hooks/workouts/useLatestBodyWeight';
+import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
+import { getBodyweightLoadPercentage, getEffectiveBodyweightLoad } from '../../utils/workout-logic';
+import { lbToDisplay, roundForDisplay } from '../../utils/units';
 
 interface ExerciseDetailsScreenProps {
     exercise?: Exercise;
@@ -214,6 +218,9 @@ export default function ExerciseDetailsScreen({
         availableMetrics
     } = useExerciseStats(user, exercise);
 
+    const { weight: latestBodyWeightLb } = useLatestBodyWeight();
+    const { unitSystem, weightUnit } = useUnitPreference();
+
     if (!exercise) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
@@ -236,8 +243,17 @@ export default function ExerciseDetailsScreen({
     // Derived UI colors
     const cardBackground = currentColors.card;
     const toggleBackground = (theme.bg || theme.bgDark) as string;
-    const activeToggleBg = theme.bgLight as string; 
+    const activeToggleBg = theme.bgLight as string;
     const activeToggleText = theme.text as string;
+
+    // Bodyweight load estimate - only meaningful for exercises tagged
+    // Bodyweight, and only known once the user has logged a body weight.
+    const isBodyweightExercise = (exercise.properties || []).includes('Bodyweight');
+    const bodyweightLoadPercentage = getBodyweightLoadPercentage(exercise);
+    const effectiveLoadLb = getEffectiveBodyweightLoad(exercise, latestBodyWeightLb);
+    const effectiveLoadDisplay = effectiveLoadLb != null
+        ? roundForDisplay(lbToDisplay(effectiveLoadLb, unitSystem), unitSystem)
+        : null;
 
     // Use base progression name if applicable
     let displayTitle = exercise.name || 'Details';
@@ -462,6 +478,54 @@ export default function ExerciseDetailsScreen({
                             );
                         })()}
                     </View>
+
+                    {/* Bodyweight Load Section */}
+                    {isBodyweightExercise && (
+                        <View style={{ marginBottom: 24 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                                <IconSymbol name="scalemass.fill" size={18} color={theme.primary} />
+                                <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700' }}>
+                                    Bodyweight Load
+                                </Text>
+                            </View>
+                            {effectiveLoadDisplay != null ? (
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    backgroundColor: theme.bgLight,
+                                    borderRadius: 12,
+                                    padding: 16,
+                                }}>
+                                    <View>
+                                        <Text style={{ color: currentColors.text, fontSize: 15, opacity: 0.8 }}>
+                                            {Math.round(bodyweightLoadPercentage * 100)}% of your bodyweight
+                                        </Text>
+                                        <Text style={{ color: currentColors.text, opacity: 0.5, fontSize: 12, marginTop: 2 }}>
+                                            Based on your latest logged weight
+                                        </Text>
+                                    </View>
+                                    <Text style={{ color: theme.primary, fontSize: 22, fontWeight: '800' }}>
+                                        {effectiveLoadDisplay} {weightUnit}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <View style={{
+                                    padding: 16,
+                                    backgroundColor: theme.bgLight,
+                                    borderRadius: 12,
+                                    borderStyle: 'dashed',
+                                    borderWidth: 1,
+                                    borderColor: theme.border,
+                                    alignItems: 'center',
+                                }}>
+                                    <Text style={{ color: currentColors.text, opacity: 0.5, fontSize: 14, textAlign: 'center' }}>
+                                        This exercise loads {Math.round(bodyweightLoadPercentage * 100)}% of your bodyweight. Log your bodyweight to see the estimated load.
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+                    )}
 
                     {/* Attachment Selection Section for Lat Pulldown / Seated Cable Row */}
                     {exercise && (exercise.id === 'lat_pulldown' || exercise.id === 'seated_cable_row') && (
