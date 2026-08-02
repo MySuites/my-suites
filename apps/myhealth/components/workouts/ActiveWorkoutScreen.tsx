@@ -521,7 +521,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                 )}
             </View>
 
-            <RestTimerBar />
+            <RestTimerBar raised={isAddingExercise} />
 
             {isAddingExercise && (
                 <Animated.View

@@ -12,20 +12,26 @@ import { formatSeconds, formatRestTime } from '../../utils/formatting';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { isOutdoorGpsExercise } from '../../utils/workout-logic';
 
-export function RestTimerBar() {
+// Search bar overlay (ExercisesScreen in select mode) sits at bottom-10 plus
+// its own content (confirm-button row + search row + padding). Raising the
+// rest timer just above that instead of overlapping it when the
+// add-exercise search is open.
+const RAISED_BOTTOM_OFFSET = 70;
+
+export function RestTimerBar({ raised = false }: { raised?: boolean }) {
     const { restSeconds, startRestTimer } = useActiveWorkoutTimer();
     const theme = useUITheme();
     const insets = useSafeAreaInsets();
-    
+
     if (restSeconds <= 0) return null;
-    
+
     return (
-        <Animated.View 
-            entering={SlideInDown.duration(300)} 
+        <Animated.View
+            entering={SlideInDown.duration(300)}
             exiting={SlideOutDown.duration(300)}
             className="absolute left-4 right-4 z-[2000] p-4 rounded-2xl flex-row items-center justify-between"
-            style={{ 
-                bottom: insets.bottom + 12,
+            style={{
+                bottom: raised ? insets.bottom + RAISED_BOTTOM_OFFSET : insets.bottom + 12,
                 backgroundColor: theme.bgLight, 
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 4 },
@@ -368,7 +374,7 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
                 onScrollOffsetChange={handleScrollOffset}
             />
 
-            <RestTimerBar />
+            <RestTimerBar raised={isAddingExercise} />
 
             {isAddingExercise && (
                 <Animated.View 
