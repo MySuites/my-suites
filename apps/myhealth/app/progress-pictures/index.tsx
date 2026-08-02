@@ -317,10 +317,17 @@ export default function ProgressPicturesScreen() {
                                                     className="absolute inset-0 items-center justify-center bg-black/40"
                                                     testID={isAnalyzing ? `analyzing-badge-${item.id}` : `queued-badge-${item.id}`}
                                                 >
-                                                    <ActivityIndicator size="small" color="#fff" />
+                                                    <ActivityIndicator size="large" color="#fff" />
                                                     {isQueued && (
-                                                        <View style={{ position: 'absolute' }}>
-                                                            <IconSymbol name="pause.fill" size={14} color="#fff" />
+                                                        <View
+                                                            className="absolute inset-0 flex-row items-center justify-center"
+                                                            pointerEvents="none"
+                                                            style={{ gap: 3 }}
+                                                        >
+                                                            {/* Two plain bars instead of the pause glyph - MaterialIcons'
+                                                                "pause" character isn't visually centered in its own box. */}
+                                                            <View style={{ width: 4, height: 14, borderRadius: 1, backgroundColor: '#fff' }} />
+                                                            <View style={{ width: 4, height: 14, borderRadius: 1, backgroundColor: '#fff' }} />
                                                         </View>
                                                     )}
                                                 </View>
