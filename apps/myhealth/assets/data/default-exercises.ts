@@ -1,4 +1,4 @@
-export const EXERCISE_DATA_VERSION = 54;
+export const EXERCISE_DATA_VERSION = 55;
 
 export const BarbellBenchPress = [
     {
@@ -408,11 +408,11 @@ export const BicepCurls = [
     {
         "id": "bicep_curl",
         "description":
-            "Standard curl targeting the biceps brachii, which can be performed using dumbbells, barbell, or cables.",
+            "Standard curl targeting the biceps brachii, which can be performed using dumbbells, barbell, cables, or a machine.",
         "name": "Bicep Curl",
         "type": "Weighted, Reps",
         "muscle_group": "Biceps",
-        equipment: ["dumbbell", "barbell", "cable"],
+        equipment: ["dumbbell", "barbell", "cable", "machine"],
         movementType: "unilateral",
         "nextVariations": [],
     },
