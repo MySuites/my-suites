@@ -42,6 +42,27 @@ export default function ProgressPicturesScreen() {
         [pictures, selectedPictureId]
     );
 
+    // Multi-select state for bulk delete/analyze on the grid.
+    const [isSelectMode, setIsSelectMode] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    const exitSelectMode = () => {
+        setIsSelectMode(false);
+        setSelectedIds(new Set());
+    };
+
+    const toggleSelected = (id: string) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    };
+
     // Load pictures
     const loadPictures = useCallback(async (showSpinner = true) => {
         if (showSpinner) setIsLoading(true);
@@ -115,8 +136,58 @@ export default function ProgressPicturesScreen() {
         }
     };
 
+    const handleBulkDelete = () => {
+        const targets = pictures.filter((p) => selectedIds.has(p.id));
+        if (targets.length === 0) return;
+
+        Alert.alert(
+            "Delete Pictures",
+            `Are you sure you want to delete ${targets.length} progress picture(s) permanently?`,
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            for (const item of targets) {
+                                await ProgressPictureService.deleteProgressPicture(item.id, item.imageUri);
+                            }
+                            showToast({ message: `${targets.length} picture(s) deleted`, type: 'success' });
+                            exitSelectMode();
+                            loadPictures();
+                        } catch (e) {
+                            console.error('Failed to bulk delete pictures:', e);
+                            showToast({ message: 'Failed to delete some pictures', type: 'error' });
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleBulkAnalyze = () => {
+        const targets = pictures.filter((p) => selectedIds.has(p.id));
+        if (targets.length === 0) return;
+
+        targets.forEach((item) => analyzeMuscleGroupsInBackground(item.id, item.imageUri));
+        showToast({ message: `Queued ${targets.length} picture(s) for analysis`, type: 'success' });
+        exitSelectMode();
+    };
+
     const handlePicturePress = (item: ProgressPictureEntry) => {
+        if (isSelectMode) {
+            toggleSelected(item.id);
+            return;
+        }
         setSelectedPictureId(item.id);
+    };
+
+    const handlePictureLongPress = (item: ProgressPictureEntry) => {
+        if (!isSelectMode) {
+            setIsSelectMode(true);
+            setSelectedIds(new Set([item.id]));
+        }
     };
 
     // Muscle groups can be: undefined/null and never queued (truly untouched),
@@ -147,18 +218,52 @@ export default function ProgressPicturesScreen() {
 
     return (
         <View className="flex-1 bg-light dark:bg-dark">
-            <ScreenHeader 
-                title="Progress Pictures" 
-                leftAction={<BackButton />}
+            <ScreenHeader
+                title={isSelectMode ? `${selectedIds.size} selected` : "Progress Pictures"}
+                leftAction={
+                    isSelectMode ? (
+                        <RaisedCard
+                            onPress={exitSelectMode}
+                            style={{ borderRadius: 9999 }}
+                            className="w-12 h-12 p-0 items-center justify-center"
+                            testID="cancel-select-btn"
+                        >
+                            <IconSymbol name="xmark" size={18} color={theme.primary} />
+                        </RaisedCard>
+                    ) : (
+                        <BackButton />
+                    )
+                }
                 rightAction={
-                    <RaisedCard 
-                        onPress={() => router.push('/progress-pictures/add' as any)}
-                        style={{ borderRadius: 9999 }}
-                        className="w-12 h-12 p-0 items-center justify-center"
-                        testID="add-picture-header-btn"
-                    >
-                        <IconSymbol name="plus" size={24} color={theme.primary} />
-                    </RaisedCard>
+                    isSelectMode ? (
+                        <View className="flex-row" style={{ gap: 8 }}>
+                            <RaisedCard
+                                onPress={handleBulkAnalyze}
+                                style={{ borderRadius: 9999, opacity: selectedIds.size === 0 ? 0.4 : 1 }}
+                                className="w-12 h-12 p-0 items-center justify-center"
+                                testID="bulk-analyze-btn"
+                            >
+                                <IconSymbol name="brain.head.profile" size={20} color={theme.primary} />
+                            </RaisedCard>
+                            <RaisedCard
+                                onPress={handleBulkDelete}
+                                style={{ borderRadius: 9999, opacity: selectedIds.size === 0 ? 0.4 : 1 }}
+                                className="w-12 h-12 p-0 items-center justify-center"
+                                testID="bulk-delete-btn"
+                            >
+                                <IconSymbol name="trash.fill" size={20} color={theme.danger} />
+                            </RaisedCard>
+                        </View>
+                    ) : (
+                        <RaisedCard
+                            onPress={() => router.push('/progress-pictures/add' as any)}
+                            style={{ borderRadius: 9999 }}
+                            className="w-12 h-12 p-0 items-center justify-center"
+                            testID="add-picture-header-btn"
+                        >
+                            <IconSymbol name="plus" size={24} color={theme.primary} />
+                        </RaisedCard>
+                    )
                 }
             />
 
@@ -189,10 +294,12 @@ export default function ProgressPicturesScreen() {
                         {pictures.map((item) => {
                             const isAnalyzing = activeAnalysisId === item.id;
                             const isQueued = queuedIds.includes(item.id);
+                            const isSelected = selectedIds.has(item.id);
                             return (
                                 <TouchableOpacity
                                     key={item.id}
                                     onPress={() => handlePicturePress(item)}
+                                    onLongPress={() => handlePictureLongPress(item)}
                                     activeOpacity={0.8}
                                     style={{ width: COLUMN_WIDTH, marginBottom: 12 }}
                                     testID={`pic-card-${item.id}`}
@@ -216,6 +323,19 @@ export default function ProgressPicturesScreen() {
                                                             <IconSymbol name="pause.fill" size={14} color="#fff" />
                                                         </View>
                                                     )}
+                                                </View>
+                                            )}
+                                            {isSelectMode && (
+                                                <View
+                                                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full items-center justify-center"
+                                                    style={{
+                                                        backgroundColor: isSelected ? theme.primary : 'rgba(0,0,0,0.4)',
+                                                        borderWidth: isSelected ? 0 : 1.5,
+                                                        borderColor: '#fff',
+                                                    }}
+                                                    testID={`select-check-${item.id}`}
+                                                >
+                                                    {isSelected && <IconSymbol name="checkmark" size={14} color="#fff" />}
                                                 </View>
                                             )}
                                         </View>
