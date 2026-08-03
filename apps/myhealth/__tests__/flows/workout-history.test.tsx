@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import WorkoutHistoryScreen from '../../app/(tabs)/history';
+import WorkoutHistoryScreen from '../../app/history/index';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import * as RN from 'react-native';
 
@@ -14,7 +14,7 @@ jest.mock('expo-router', () => {
     mockStack.Screen = Screen;
     return {
         useRouter: () => ({ push: mockRouterPush, navigate: mockRouterPush }),
-        usePathname: () => '/(tabs)/history',
+        usePathname: () => '/history',
         Stack: mockStack
     };
 });

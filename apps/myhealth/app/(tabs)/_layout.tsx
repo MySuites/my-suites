@@ -17,7 +17,6 @@ export default function TabLayout() {
           tabBarStyle: { display: 'none' },
         }}
       >
-        <Tabs.Screen name="history" />
         <Tabs.Screen name="exercises" />
         <Tabs.Screen name="sleep" />
         <Tabs.Screen name="mind" />

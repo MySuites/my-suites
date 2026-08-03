@@ -1,14 +1,19 @@
 import React, { useState, useCallback } from 'react';
 import { Text, View, FlatList } from 'react-native';
-import { Stack, useRouter, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
-import { ActionCard, HollowedCard, Skeleton } from '@mysuite/ui';
-import { TopNavBanner } from '../../components/ui/TopNavBanner';
+import { ActionCard, HollowedCard, RaisedCard, Skeleton, IconSymbol, useUITheme, useToast } from '@mysuite/ui';
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { BackButton } from '../../components/ui/BackButton';
 import { BottomActionBar } from '../../components/ui/BottomNavBar';
 import { DashboardButton } from '../../components/ui/DashboardButton';
 import { BottomNavButton } from '../../components/ui/BottomNavButton';
 import { BurgerMenu } from '../../components/ui/BurgerMenu';
+import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
+import { buildWorkoutHistoryCsv } from '../../utils/exportWorkoutHistory';
 
 const WorkoutHistoryItem = ({ item, onDelete, onPress }: { item: any, onDelete: () => void, onPress: () => void }) => {
     return (
@@ -51,13 +56,59 @@ export default function WorkoutHistoryScreen() {
   // you come back.
   useFocusEffect(useCallback(() => () => setMenuVisible(false), []));
   const { workoutHistory, deleteWorkoutLog, isLoading } = useWorkoutManager();
+  const { unitSystem } = useUnitPreference();
+  const theme = useUITheme();
+  const { showToast } = useToast();
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportCsv = useCallback(async () => {
+    if (workoutHistory.length === 0) {
+      showToast({ message: 'No workout history to export', type: 'error' });
+      return;
+    }
+    setIsExporting(true);
+    try {
+      const csv = buildWorkoutHistoryCsv(workoutHistory, unitSystem);
+      const fileUri = `${FileSystem.cacheDirectory}workout_history_${Date.now()}.csv`;
+      await FileSystem.writeAsStringAsync(fileUri, csv);
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'text/csv',
+          dialogTitle: 'Export Workout History',
+          UTI: 'public.comma-separated-values-text',
+        });
+      } else {
+        showToast({ message: 'Sharing is not available on this device', type: 'error' });
+      }
+    } catch (e) {
+      console.error('Failed to export workout history:', e);
+      showToast({ message: 'Failed to export workout history', type: 'error' });
+    } finally {
+      setIsExporting(false);
+    }
+  }, [workoutHistory, unitSystem, showToast]);
 
   return (
     <View className="flex-1 bg-light dark:bg-dark">
-      <Stack.Screen options={{ headerShown: false, animation: 'none' }} />
+      <ScreenHeader
+        title="Workout History"
+        leftAction={<BackButton />}
+        rightAction={
+          <RaisedCard
+            onPress={handleExportCsv}
+            disabled={isExporting}
+            style={{ borderRadius: 9999, opacity: isExporting ? 0.6 : 1 }}
+            className="w-12 h-12 p-0 items-center justify-center"
+            testID="export-csv-btn"
+          >
+            <IconSymbol name="square.and.arrow.down" size={20} color={theme.primary} />
+          </RaisedCard>
+        }
+      />
 
       {isLoading ? (
-        <View className="flex-1 px-4" style={{ paddingTop: 130 }}>
+        <View className="flex-1 px-4" style={{ paddingTop: 140 }}>
           {[1, 2, 3, 4, 5].map((i) => (
             <ActionCard key={i} className="mb-3">
               <View className="flex-row justify-between mb-2">
@@ -75,7 +126,7 @@ export default function WorkoutHistoryScreen() {
       <FlatList
         data={workoutHistory}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingTop: 130, padding: 16, paddingBottom: 100 }}
+        contentContainerStyle={{ paddingTop: 140, padding: 16, paddingBottom: 100 }}
         renderItem={({ item }) => (
             <WorkoutHistoryItem
                 item={item}
@@ -98,19 +149,12 @@ export default function WorkoutHistoryScreen() {
       />
       )}
 
-      <TopNavBanner />
       <BottomActionBar>
         <DashboardButton dimmed={menuVisible} />
         <BottomNavButton
             icon="dumbbell.fill"
             label="Exercises"
             onPress={() => router.navigate('/(tabs)/exercises' as any)}
-        />
-        <BottomNavButton
-            icon="clock.fill"
-            label="History"
-            active
-            onPress={() => router.navigate('/(tabs)/history' as any)}
         />
         <BottomNavButton
             icon="line.3.horizontal"

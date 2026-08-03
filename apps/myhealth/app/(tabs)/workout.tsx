@@ -375,11 +375,6 @@ function Workout() {
                     onPress={() => router.navigate('/(tabs)/exercises' as any)}
                 />
                 <BottomNavButton
-                    icon="clock.fill"
-                    label="History"
-                    onPress={() => router.navigate('/(tabs)/history' as any)}
-                />
-                <BottomNavButton
                     icon="line.3.horizontal"
                     label="Menu"
                     active={menuVisible}

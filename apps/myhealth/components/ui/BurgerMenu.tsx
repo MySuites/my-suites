@@ -41,6 +41,14 @@ export function BurgerMenu({ visible, onClose }: BurgerMenuProps) {
                 testID="burger-menu-content"
             >
                 <TouchableOpacity
+                    onPress={() => { onClose(); router.push('/history' as any); }}
+                    className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                >
+                    <IconSymbol name="clock.fill" size={20} color={theme.text} style={{ marginRight: 12 }} />
+                    <Text className="text-light dark:text-dark font-medium">Workout History</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
                     onPress={() => { onClose(); router.push('/progress-pictures' as any); }}
                     className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
                 >
