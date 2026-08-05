@@ -98,10 +98,14 @@ describe("useActiveWorkoutPersistence", () => {
             );
         });
 
-        expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-            "myhealth_workout_name",
-            "My Workout",
-        );
+        // The full-state save (including name) is debounced, so it lands
+        // after the immediate per-tick seconds save above.
+        await waitFor(() => {
+            expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+                "myhealth_workout_name",
+                "My Workout",
+            );
+        });
     });
 
     it("should save exercises to localStorage", async () => {

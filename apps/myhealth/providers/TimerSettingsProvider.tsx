@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type TimerSettingsContextType = {
@@ -42,17 +42,22 @@ export function TimerSettingsProvider({ children }: { children: React.ReactNode 
     loadSettings();
   }, []);
 
-  const setPrepCountdown = async (value: number) => {
+  const setPrepCountdown = React.useCallback(async (value: number) => {
     try {
       setPrepCountdownState(value);
       await AsyncStorage.setItem(KEY_PREP_COUNTDOWN, String(value));
     } catch (error) {
       console.error('Failed to save timer settings:', error);
     }
-  };
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({ prepCountdown, setPrepCountdown, isLoading }),
+    [prepCountdown, setPrepCountdown, isLoading]
+  );
 
   return (
-    <TimerSettingsContext.Provider value={{ prepCountdown, setPrepCountdown, isLoading }}>
+    <TimerSettingsContext.Provider value={contextValue}>
       {children}
     </TimerSettingsContext.Provider>
   );

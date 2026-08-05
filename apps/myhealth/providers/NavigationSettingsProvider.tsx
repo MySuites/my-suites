@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type NavigationSettingsContextType = {
@@ -42,17 +42,22 @@ export function NavigationSettingsProvider({ children }: { children: React.React
     loadSettings();
   }, []);
 
-  const toggleFab = async (enabled: boolean) => {
+  const toggleFab = React.useCallback(async (enabled: boolean) => {
     try {
       setIsFabEnabled(enabled);
       await AsyncStorage.setItem(KEY_IS_FAB_ENABLED, String(enabled));
     } catch (error) {
       console.error('Failed to save navigation settings:', error);
     }
-  };
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({ isFabEnabled, toggleFab, isLoading }),
+    [isFabEnabled, toggleFab, isLoading]
+  );
 
   return (
-    <NavigationSettingsContext.Provider value={{ isFabEnabled, toggleFab, isLoading }}>
+    <NavigationSettingsContext.Provider value={contextValue}>
       {children}
     </NavigationSettingsContext.Provider>
   );

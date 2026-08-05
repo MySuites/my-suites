@@ -4,7 +4,7 @@ import { AttachmentPicker } from '../workouts/AttachmentPicker';
 import { EquipmentPicker } from '../workouts/EquipmentPicker';
 import { MovementTypePicker } from '../workouts/MovementTypePicker';
 import { RestTimerPicker } from '../workouts/RestTimerPicker';
-import { Exercise, useWorkoutManager } from '../../providers/WorkoutManagerProvider';
+import { Exercise } from '../../providers/WorkoutManagerProvider';
 import { RaisedCard, IconSymbol } from '@mysuite/ui';
 import { SetRow, getExerciseFields } from '../workouts/SetRow';
 import { formatRestTime } from '../../utils/formatting';
@@ -46,9 +46,19 @@ interface ExerciseCardProps {
     // Staggered per-card by the caller (current vs. preloaded prev/next) so
     // simultaneously-preloaded neighbors don't all mount in the same commit.
     wheelsReadyDelayMs?: number;
+    // Sourced from context once at the screen level and threaded down as
+    // plain props, instead of every card/set/wheel subscribing to
+    // WorkoutManagerProvider/ActiveWorkoutContext directly - a context
+    // value changing (e.g. background sync, any set edit) would otherwise
+    // re-render every mounted card regardless of whether these actually
+    // changed, since useContext bypasses React.memo entirely.
+    isRpeEnabled?: boolean;
+    isProgressiveOverloadEnabled?: boolean;
+    progressiveOverloadRepCeiling?: number;
+    isGpsTrackingActive?: boolean;
 }
 
-function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange, showName, preloadWheels, wheelsReadyDelayMs }: ExerciseCardProps) {
+function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange, showName, preloadWheels, wheelsReadyDelayMs, isRpeEnabled = false, isProgressiveOverloadEnabled = false, progressiveOverloadRepCeiling, isGpsTrackingActive = false }: ExerciseCardProps) {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number, right: number } | null>(null);
@@ -72,7 +82,6 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
     const completedSets = exercise.completedSets || 0;
     const isFinished = completedSets >= exercise.sets;
 
-    const { isRpeEnabled } = useWorkoutManager();
     const { showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(exercise.properties, exercise.id);
     const showRPE = calculatedShowRPE && isRpeEnabled;
     
@@ -500,6 +509,10 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                             onPressRestTimer={() => setIsPickerVisible(true)}
                                             isCurrentPage={isCurrent ?? false}
                                             wheelsReadyDelayMs={wheelsReadyDelayMs}
+                                            isRpeEnabled={isRpeEnabled}
+                                            isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
+                                            progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
+                                            isGpsTrackingActive={isGpsTrackingActive}
                                         />
                                     </View>
                                 ))}
@@ -526,6 +539,10 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                             onUpdatePrepTime={onUpdatePrepTime}
                             onPressRestTimer={() => setIsPickerVisible(true)}
                             showSetNumber={!horizontalSets}
+                            isRpeEnabled={isRpeEnabled}
+                            isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
+                            progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
+                            isGpsTrackingActive={isGpsTrackingActive}
                         />
                     ))
                 )}
@@ -629,6 +646,10 @@ export const ExerciseCard = React.memo(ExerciseCardInner, (prev, next) => {
         prev.horizontalSets === next.horizontalSets &&
         prev.showName === next.showName &&
         prev.preloadWheels === next.preloadWheels &&
-        prev.wheelsReadyDelayMs === next.wheelsReadyDelayMs
+        prev.wheelsReadyDelayMs === next.wheelsReadyDelayMs &&
+        prev.isRpeEnabled === next.isRpeEnabled &&
+        prev.isProgressiveOverloadEnabled === next.isProgressiveOverloadEnabled &&
+        prev.progressiveOverloadRepCeiling === next.progressiveOverloadRepCeiling &&
+        prev.isGpsTrackingActive === next.isGpsTrackingActive
     );
 });

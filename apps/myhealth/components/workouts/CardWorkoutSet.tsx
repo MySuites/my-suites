@@ -7,8 +7,6 @@ import { HorizontalSelectorWheel } from './HorizontalSelectorWheel';
 import { VerticalSelectorWheel } from './VerticalSelectorWheel';
 import { formatSeconds, formatRestTime } from '../../utils/formatting';
 import { OutdoorRunPanel } from './OutdoorRunPanel';
-import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
-import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import { IconSymbol } from "@mysuite/ui";
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
@@ -56,9 +54,18 @@ interface CardWorkoutSetProps {
     // page so simultaneously-preloaded cards don't all mount in one commit
     // (see the comment where ActiveWorkoutScreen computes this).
     wheelsReadyDelayMs?: number;
+    // Threaded down as props instead of reading WorkoutManagerProvider/
+    // ActiveWorkoutContext directly - a context value changing (e.g. any
+    // set edit touches ActiveWorkoutContext's `exercises`) would otherwise
+    // re-render every mounted CardWorkoutSet regardless of React.memo,
+    // since useContext bypasses memo entirely.
+    isRpeEnabled?: boolean;
+    isProgressiveOverloadEnabled?: boolean;
+    progressiveOverloadRepCeiling?: number;
+    isGpsTrackingActive?: boolean;
 }
 
-export function CardWorkoutSet({
+function CardWorkoutSetInner({
     index,
     exercise,
     onUpdateSetTarget,
@@ -73,7 +80,11 @@ export function CardWorkoutSet({
     onPressRestTimer,
     isCompleted,
     isCurrentPage = true,
-    wheelsReadyDelayMs = 60
+    wheelsReadyDelayMs = 60,
+    isRpeEnabled = false,
+    isProgressiveOverloadEnabled = false,
+    progressiveOverloadRepCeiling,
+    isGpsTrackingActive = false
 }: CardWorkoutSetProps) {
     const { height: windowHeight, width: windowWidth } = useWindowDimensions();
     const colorScheme = useColorScheme();
@@ -99,14 +110,12 @@ export function CardWorkoutSet({
         }
     }, [isActiveSet, wheelsReadyDelayMs]);
 
-    const { isRpeEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling } = useWorkoutManager();
     const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(exercise.properties, exercise.id);
     const showRPE = calculatedShowRPE && isRpeEnabled;
     // Running/Biking get a live map + plain digital stopwatch instead of the
     // circular timer dial — there's no target duration to count down to,
     // only elapsed time for the run/ride actually recorded.
     const isOutdoorGpsExercise = computeIsOutdoorGpsExercise(exercise);
-    const { isGpsTrackingActive } = useActiveWorkout();
 
     const equipment = exercise.equipment || inferEquipment(exercise.name);
     const movementType = exercise.movementType || inferMovementType(exercise.name, equipment);
@@ -934,3 +943,25 @@ export function CardWorkoutSet({
         </View>
     );
 }
+
+// Same rationale as ExerciseCard/SetRow's memo: callback props are recreated
+// per render by the caller (index-closing inline functions), so their
+// identity always changes - compare data/display props instead.
+export const CardWorkoutSet = React.memo(CardWorkoutSetInner, (prev, next) => {
+    return (
+        prev.exercise === next.exercise &&
+        prev.index === next.index &&
+        prev.theme === next.theme &&
+        prev.latestBodyWeight === next.latestBodyWeight &&
+        prev.isActiveWorkout === next.isActiveWorkout &&
+        prev.exercisePrepTime === next.exercisePrepTime &&
+        prev.isActiveSet === next.isActiveSet &&
+        prev.isCompleted === next.isCompleted &&
+        prev.isCurrentPage === next.isCurrentPage &&
+        prev.wheelsReadyDelayMs === next.wheelsReadyDelayMs &&
+        prev.isRpeEnabled === next.isRpeEnabled &&
+        prev.isProgressiveOverloadEnabled === next.isProgressiveOverloadEnabled &&
+        prev.progressiveOverloadRepCeiling === next.progressiveOverloadRepCeiling &&
+        prev.isGpsTrackingActive === next.isGpsTrackingActive
+    );
+});

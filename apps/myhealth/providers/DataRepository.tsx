@@ -326,7 +326,13 @@ export const DataRepository = {
         const logs = await db.getAllAsync<any>('SELECT * FROM workout_logs WHERE sync_status = "pending" ORDER BY workout_date DESC');
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
         const exercisesDef = await db.getAllAsync<any>('SELECT * FROM exercises');
-        
+
+        const setLogsByLogId = new Map<string, any[]>();
+        setLogs.forEach(s => {
+            const arr = setLogsByLogId.get(s.workout_log_id);
+            if (arr) arr.push(s); else setLogsByLogId.set(s.workout_log_id, [s]);
+        });
+
         const exerciseMetaMap = new Map<string, { properties: string[], equipment?: string, attachment?: string, movement_type?: string }>();
         exercisesDef.forEach(e => {
             if (e.id) {
@@ -367,7 +373,7 @@ export const DataRepository = {
         
         // Helper to map DB row to object
         return logs.map(log => {
-             const sets = setLogs.filter(s => s.workout_log_id === log.id);
+             const sets = setLogsByLogId.get(log.id) || [];
              const exercisesMap = new Map<string, Exercise>();
  
              sets.forEach(set => {
@@ -509,7 +515,13 @@ export const DataRepository = {
         const logs = await db.getAllAsync<any>('SELECT * FROM workout_logs WHERE deleted_at IS NULL ORDER BY workout_date DESC');
         const setLogs = await db.getAllAsync<any>('SELECT * FROM set_logs');
         const exercisesDef = await db.getAllAsync<any>('SELECT * FROM exercises');
-        
+
+        const setLogsByLogId = new Map<string, any[]>();
+        setLogs.forEach(s => {
+            const arr = setLogsByLogId.get(s.workout_log_id);
+            if (arr) arr.push(s); else setLogsByLogId.set(s.workout_log_id, [s]);
+        });
+
         const exerciseMetaMap = new Map<string, { properties: string[], equipment?: string, attachment?: string, movement_type?: string, muscleGroups?: string[] }>();
         exercisesDef.forEach(e => {
             if (e.id) {
@@ -550,7 +562,7 @@ export const DataRepository = {
         });
         
         return logs.map(log => {
-            const sets = setLogs.filter(s => s.workout_log_id === log.id);
+            const sets = setLogsByLogId.get(log.id) || [];
 
             // Group sets by exercise
             const exercisesMap = new Map<string, Exercise>();

@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { DurationTimerPicker } from './DurationTimerPicker';
 import { formatSeconds } from '../../utils/formatting';
-import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import { IconSymbol } from "@mysuite/ui";
 import { getExerciseFields } from './getExerciseFields';
@@ -22,9 +21,12 @@ interface InlineWorkoutSetProps {
     showCheckbox?: boolean;
     showSetNumber?: boolean;
     isCompleted: boolean;
+    // Threaded down as a prop instead of reading WorkoutManagerProvider
+    // directly - see CardWorkoutSet.tsx for why.
+    isRpeEnabled?: boolean;
 }
 
-export function InlineWorkoutSet({
+function InlineWorkoutSetInner({
     index,
     exercise,
     onCompleteSet,
@@ -37,12 +39,12 @@ export function InlineWorkoutSet({
     onUpdatePrepTime,
     showCheckbox = true,
     showSetNumber = true,
-    isCompleted
+    isCompleted,
+    isRpeEnabled = false
 }: InlineWorkoutSetProps) {
     const [isDurationPickerVisible, setIsDurationPickerVisible] = React.useState(false);
     const [durationAutoStart, setDurationAutoStart] = React.useState(false);
 
-    const { isRpeEnabled } = useWorkoutManager();
     const { showBodyweight, showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(exercise.properties, exercise.id);
     const showRPE = calculatedShowRPE && isRpeEnabled;
 
@@ -296,3 +298,19 @@ export function InlineWorkoutSet({
         </>
     );
 }
+
+// Same rationale as CardWorkoutSet's memo.
+export const InlineWorkoutSet = React.memo(InlineWorkoutSetInner, (prev, next) => {
+    return (
+        prev.exercise === next.exercise &&
+        prev.index === next.index &&
+        prev.theme === next.theme &&
+        prev.latestBodyWeight === next.latestBodyWeight &&
+        prev.isActiveWorkout === next.isActiveWorkout &&
+        prev.exercisePrepTime === next.exercisePrepTime &&
+        prev.showCheckbox === next.showCheckbox &&
+        prev.showSetNumber === next.showSetNumber &&
+        prev.isCompleted === next.isCompleted &&
+        prev.isRpeEnabled === next.isRpeEnabled
+    );
+});

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { storage } from '../utils/storage';
 import {
     UnitSystem,
@@ -24,15 +24,18 @@ export function UnitPreferenceProvider({ children }: { children: React.ReactNode
         });
     }, []);
 
-    const setUnitSystem = async (system: UnitSystem) => {
+    const setUnitSystem = React.useCallback(async (system: UnitSystem) => {
         setUnitSystemState(system);
         await storage.setItem(UNIT_SYSTEM_STORAGE_KEY, system);
-    };
+    }, []);
+
+    const contextValue = useMemo(
+        () => ({ unitSystem, setUnitSystem, weightUnit: weightUnitLabel(unitSystem) }),
+        [unitSystem, setUnitSystem]
+    );
 
     return (
-        <UnitPreferenceContext.Provider
-            value={{ unitSystem, setUnitSystem, weightUnit: weightUnitLabel(unitSystem) }}
-        >
+        <UnitPreferenceContext.Provider value={contextValue}>
             {children}
         </UnitPreferenceContext.Provider>
     );

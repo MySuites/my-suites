@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Alert, TouchableOpacity, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
+import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { default as ExercisesScreen } from '../../app/(tabs)/exercises';
@@ -170,9 +171,11 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
         removeExercise,
         reorderExercises,
         addExercise,
-        latestBodyWeight
+        latestBodyWeight,
+        isGpsTrackingActive
     } = useActiveWorkout();
-    
+    const { isRpeEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling } = useWorkoutManager();
+
     const [isAddingExercise, setIsAddingExercise] = React.useState(false);
 
     const itemHeightsRef = React.useRef<{[index: number]: number}>({});
@@ -296,11 +299,15 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
                             });
                         }}
                         onDrag={drag}
+                        isRpeEnabled={isRpeEnabled}
+                        isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
+                        progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
+                        isGpsTrackingActive={isGpsTrackingActive}
                     />
                 </View>
             </ScaleDecorator>
         );
-    }, [currentIndex, completeSet, updateExercise, removeExercise, reorderExercises, exercises, latestBodyWeight, router]);
+    }, [currentIndex, completeSet, updateExercise, removeExercise, reorderExercises, exercises, latestBodyWeight, router, isRpeEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling, isGpsTrackingActive]);
 
     return (
         <View style={{ flex: 1 }}>
@@ -410,6 +417,10 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     onUpdateAttachment,
     onUpdateEquipment,
     onUpdateMovementType,
+    isRpeEnabled,
+    isProgressiveOverloadEnabled,
+    progressiveOverloadRepCeiling,
+    isGpsTrackingActive,
 }: {
     exercise: any;
     index: number;
@@ -427,6 +438,10 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     onUpdateAttachment?: (attachment: string) => void;
     onUpdateEquipment?: (equipment: string) => void;
     onUpdateMovementType?: (movementType: string) => void;
+    isRpeEnabled?: boolean;
+    isProgressiveOverloadEnabled?: boolean;
+    progressiveOverloadRepCeiling?: number;
+    isGpsTrackingActive?: boolean;
 }) {
     const theme = useUITheme();
 
@@ -487,13 +502,17 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
                     .filter(idx => idx !== setIndex)
                     .map(idx => idx > setIndex ? idx - 1 : idx);
 
-                updateExercise(index, { 
+                updateExercise(index, {
                     setTargets: currentSetTargets,
                     completedIndices: newCompletedIndices,
                     completedSets: newCompletedIndices.length,
                     sets: Math.max(0, currentTarget - 1)
                 });
             }}
+            isRpeEnabled={isRpeEnabled}
+            isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
+            progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
+            isGpsTrackingActive={isGpsTrackingActive}
         />
     );
 }, (prevProps, nextProps) => {
@@ -504,6 +523,10 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
         prevProps.latestBodyWeight === nextProps.latestBodyWeight &&
         prevProps.onMoveUp === nextProps.onMoveUp &&
         prevProps.onMoveDown === nextProps.onMoveDown &&
-        prevProps.onDrag === nextProps.onDrag
+        prevProps.onDrag === nextProps.onDrag &&
+        prevProps.isRpeEnabled === nextProps.isRpeEnabled &&
+        prevProps.isProgressiveOverloadEnabled === nextProps.isProgressiveOverloadEnabled &&
+        prevProps.progressiveOverloadRepCeiling === nextProps.progressiveOverloadRepCeiling &&
+        prevProps.isGpsTrackingActive === nextProps.isGpsTrackingActive
     );
 });

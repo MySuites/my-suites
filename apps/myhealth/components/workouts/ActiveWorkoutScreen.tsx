@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Keyboard, FlatList, useWindowDimensions, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
+import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { useRouter } from 'expo-router';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { ExerciseCard } from '../exercises/ExerciseCard';
@@ -105,7 +106,9 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
         updateExercise,
         latestBodyWeight,
         addExercise,
+        isGpsTrackingActive,
     } = useActiveWorkout();
+    const { isRpeEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling } = useWorkoutManager();
 
     const [isAddingExercise, setIsAddingExercise] = useState(false);
 
@@ -286,6 +289,10 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                     }}
                     onAddSet={undefined}
                     onDeleteSet={undefined}
+                    isRpeEnabled={isRpeEnabled}
+                    isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
+                    progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
+                    isGpsTrackingActive={isGpsTrackingActive}
                 />
             </View>
         );

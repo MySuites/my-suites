@@ -173,11 +173,12 @@ export async function fetchExerciseStats(
     user: any,
     exerciseId: string,
     metric: "weight" | "reps" | "duration" | "distance" | "volume" | "max_volume" | "estimated_1rm" = "weight",
+    preloaded?: { history?: any[]; exercises?: any[] },
 ) {
     // Local-First: Calculate from local history for ALL users (guest and auth).
     try {
-        const history = await DataRepository.getHistory();
-        const allExercises = await DataRepository.getExercises();
+        const history = preloaded?.history ?? await DataRepository.getHistory();
+        const allExercises = preloaded?.exercises ?? await DataRepository.getExercises();
         const targetExercise = allExercises.find(e => e.id === exerciseId);
         const targetName = targetExercise?.name?.toLowerCase();
 

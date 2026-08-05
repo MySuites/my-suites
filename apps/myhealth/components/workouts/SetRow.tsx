@@ -49,9 +49,15 @@ interface SetRowProps {
     // How long to wait before mounting the heavy wheel/SVG clock, in ms.
     // Forwarded from ExerciseCard's staggered preload delay (see there).
     wheelsReadyDelayMs?: number;
+    // Threaded down from the screen level - see ExerciseCardProps for why
+    // these are props instead of context reads at this depth.
+    isRpeEnabled?: boolean;
+    isProgressiveOverloadEnabled?: boolean;
+    progressiveOverloadRepCeiling?: number;
+    isGpsTrackingActive?: boolean;
 }
 
-export const SetRow = ({
+const SetRowInner = ({
     index,
     exercise,
     onCompleteSet,
@@ -71,7 +77,11 @@ export const SetRow = ({
     isActiveSet = true,
     onPressRestTimer,
     isCurrentPage = true,
-    wheelsReadyDelayMs
+    wheelsReadyDelayMs,
+    isRpeEnabled,
+    isProgressiveOverloadEnabled,
+    progressiveOverloadRepCeiling,
+    isGpsTrackingActive
 }: SetRowProps) => {
     const isCompleted = exercise.completedIndices?.includes(index);
     const isEvenSet = (index + 1) % 2 === 0;
@@ -135,6 +145,7 @@ export const SetRow = ({
                       showCheckbox={showCheckbox}
                       showSetNumber={showSetNumber}
                       isCompleted={isCompleted}
+                      isRpeEnabled={isRpeEnabled}
                   />
               ) : (
                   <CardWorkoutSet
@@ -153,6 +164,10 @@ export const SetRow = ({
                       isCompleted={isCompleted}
                       isCurrentPage={isCurrentPage}
                       wheelsReadyDelayMs={wheelsReadyDelayMs}
+                      isRpeEnabled={isRpeEnabled}
+                      isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
+                      progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
+                      isGpsTrackingActive={isGpsTrackingActive}
                   />
               )}
          </Animated.View>
@@ -193,6 +208,30 @@ export const SetRow = ({
     );
 };
 
+// Same rationale as ExerciseCard's memo: callback props are recreated per
+// render by the caller's inline closures (they close over each set's
+// index), so their identity always changes - compare data/display props
+// instead and let callbacks always call through to stable functions.
+export const SetRow = React.memo(SetRowInner, (prev, next) => {
+    return (
+        prev.exercise === next.exercise &&
+        prev.index === next.index &&
+        prev.theme === next.theme &&
+        prev.latestBodyWeight === next.latestBodyWeight &&
+        prev.isActiveWorkout === next.isActiveWorkout &&
+        prev.exercisePrepTime === next.exercisePrepTime &&
+        prev.enableSwipeToDelete === next.enableSwipeToDelete &&
+        prev.showCheckbox === next.showCheckbox &&
+        prev.showSetNumber === next.showSetNumber &&
+        prev.isActiveSet === next.isActiveSet &&
+        prev.isCurrentPage === next.isCurrentPage &&
+        prev.wheelsReadyDelayMs === next.wheelsReadyDelayMs &&
+        prev.isRpeEnabled === next.isRpeEnabled &&
+        prev.isProgressiveOverloadEnabled === next.isProgressiveOverloadEnabled &&
+        prev.progressiveOverloadRepCeiling === next.progressiveOverloadRepCeiling &&
+        prev.isGpsTrackingActive === next.isGpsTrackingActive
+    );
+});
 
 
 // Actions component that monitors drag distance (Adapted for Set Rows)

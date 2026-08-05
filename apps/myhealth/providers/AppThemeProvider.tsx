@@ -47,7 +47,7 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
     return system === 'dark' ? 'dark' : 'light';
   }, [nwColorScheme, system]);
 
-  const setPreference = async (p: ThemePreference) => {
+  const setPreference = React.useCallback(async (p: ThemePreference) => {
     setPreferenceState(p);
     setNWColorScheme(p === 'system' ? 'system' : p);
 
@@ -56,7 +56,7 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
     } catch {
       // ignore
     }
-  };
+  }, [setNWColorScheme]);
 
   /* Animation Logic */
   const [transitioning, setTransitioning] = useState(false);
@@ -100,8 +100,13 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
   // Determine color of previous theme for overlay
   const prevThemeColor = getAppTheme('myhealth', prevScheme).bg;
 
+  const contextValue = useMemo(
+    () => ({ preference, setPreference, effectiveScheme }),
+    [preference, setPreference, effectiveScheme]
+  );
+
   return (
-    <ThemePreferenceContext.Provider value={{ preference, setPreference, effectiveScheme }}>
+    <ThemePreferenceContext.Provider value={contextValue}>
       <UIThemeProvider value={theme}>
         {children}
         {transitioning && (

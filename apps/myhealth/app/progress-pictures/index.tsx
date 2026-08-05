@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { 
-    View, 
-    Text, 
-    ScrollView, 
-    TouchableOpacity, 
+import {
+    View,
+    Text,
+    ScrollView,
+    FlatList,
+    TouchableOpacity,
     Alert,
     Dimensions,
     ActivityIndicator
@@ -244,6 +245,109 @@ export default function ProgressPicturesScreen() {
         }
     };
 
+    const renderPictureItem = useCallback(({ item }: { item: ProgressPictureEntry }) => {
+        const isAnalyzing = activeAnalysisId === item.id;
+        const isQueued = queuedIds.includes(item.id);
+        const isSelected = selectedIds.has(item.id);
+        return (
+            <TouchableOpacity
+                onPress={() => handlePicturePress(item)}
+                onLongPress={() => handlePictureLongPress(item)}
+                activeOpacity={0.8}
+                style={{ width: COLUMN_WIDTH, marginBottom: 12 }}
+                testID={`pic-card-${item.id}`}
+            >
+                <RaisedCard className="p-0 overflow-hidden" style={{ borderRadius: 12 }}>
+                    <View>
+                        <Image
+                            source={{ uri: item.imageUri }}
+                            style={{ width: '100%', height: COLUMN_WIDTH }}
+                            contentFit="cover"
+                            transition={200}
+                        />
+                        {(isAnalyzing || isQueued) && (
+                            <View
+                                className="absolute inset-0 items-center justify-center bg-black/40"
+                                testID={isAnalyzing ? `analyzing-badge-${item.id}` : `queued-badge-${item.id}`}
+                            >
+                                <ActivityIndicator size="large" color="#fff" />
+                                {isQueued && (
+                                    <View
+                                        className="absolute inset-0 flex-row items-center justify-center"
+                                        pointerEvents="none"
+                                        style={{ gap: 3 }}
+                                    >
+                                        {/* Two plain bars instead of the pause glyph - MaterialIcons'
+                                            "pause" character isn't visually centered in its own box. */}
+                                        <View style={{ width: 4, height: 14, borderRadius: 1, backgroundColor: '#fff' }} />
+                                        <View style={{ width: 4, height: 14, borderRadius: 1, backgroundColor: '#fff' }} />
+                                    </View>
+                                )}
+                            </View>
+                        )}
+                        {isSelectMode && (
+                            <View
+                                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full items-center justify-center"
+                                style={{
+                                    backgroundColor: isSelected ? theme.primary : 'rgba(0,0,0,0.4)',
+                                    borderWidth: isSelected ? 0 : 1.5,
+                                    borderColor: '#fff',
+                                }}
+                                testID={`select-check-${item.id}`}
+                            >
+                                {isSelected && <IconSymbol name="checkmark" size={14} color="#fff" />}
+                            </View>
+                        )}
+                    </View>
+                    <View className="p-2">
+                        <Text className="font-bold text-[9px] text-light dark:text-dark">{formatDate(item.date)}</Text>
+                        {item.notes ? (
+                            <Text className="text-[8px] text-light-muted dark:text-dark-muted mt-0.5" numberOfLines={1}>
+                                {item.notes}
+                            </Text>
+                        ) : null}
+                        {item.muscleGroups?.primaryMuscles?.length ? (
+                            <Text className="text-[8px] mt-0.5" numberOfLines={1} style={{ color: theme.primary }}>
+                                {item.muscleGroups.primaryMuscles.join(', ')}
+                            </Text>
+                        ) : null}
+                    </View>
+                </RaisedCard>
+            </TouchableOpacity>
+        );
+    }, [activeAnalysisId, queuedIds, selectedIds, isSelectMode, theme]);
+
+    const muscleFilterRow = availableMuscleFilters.length > 0 ? (
+        <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 8, paddingBottom: 16 }}
+            testID="muscle-filter-row"
+        >
+            <TouchableOpacity
+                onPress={() => setMuscleFilter(null)}
+                className={`px-4 py-2 rounded-full border ${!muscleFilter ? 'bg-primary border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
+                testID="muscle-filter-all"
+            >
+                <Text className={`font-semibold text-sm ${!muscleFilter ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
+                    All
+                </Text>
+            </TouchableOpacity>
+            {availableMuscleFilters.map((tag) => (
+                <TouchableOpacity
+                    key={tag}
+                    onPress={() => setMuscleFilter(muscleFilter === tag ? null : tag)}
+                    className={`px-4 py-2 rounded-full border ${muscleFilter === tag ? 'bg-primary border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
+                    testID={`muscle-filter-${tag}`}
+                >
+                    <Text className={`font-semibold text-sm ${muscleFilter === tag ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
+                        {tag}
+                    </Text>
+                </TouchableOpacity>
+            ))}
+        </ScrollView>
+    ) : null;
+
     return (
         <View className="flex-1 bg-light dark:bg-dark">
             <ScreenHeader
@@ -295,147 +399,53 @@ export default function ProgressPicturesScreen() {
                 }
             />
 
-            <ScrollView 
-                contentContainerStyle={{ padding: 16, paddingTop: 140, paddingBottom: 100 }}
-                showsVerticalScrollIndicator={false}
-            >
-                {isLoading ? (
-                    <View className="py-20 justify-center items-center">
-                        <ActivityIndicator size="large" color={theme.primary} />
-                    </View>
-                ) : pictures.length === 0 ? (
+            {isLoading ? (
+                <View className="flex-1 justify-center items-center" style={{ paddingTop: 140 }}>
+                    <ActivityIndicator size="large" color={theme.primary} />
+                </View>
+            ) : pictures.length === 0 ? (
+                <ScrollView
+                    contentContainerStyle={{ padding: 16, paddingTop: 140, paddingBottom: 100 }}
+                    showsVerticalScrollIndicator={false}
+                >
                     <HollowedCard className="p-10 mt-10 justify-center items-center" style={{ borderRadius: 20 }}>
                         <IconSymbol name="camera.fill" size={48} color={theme.textMuted} style={{ marginBottom: 12 }} />
                         <Text className="text-lg font-bold text-center text-light dark:text-dark mb-2">No Pictures Yet</Text>
                         <Text className="text-sm text-center text-light-muted dark:text-dark-muted mb-6">
                             Take progress photos regularly to visualise your body transformation and track muscle gain.
                         </Text>
-                        <RaisedCard 
-                            onPress={() => router.push('/progress-pictures/add' as any)} 
+                        <RaisedCard
+                            onPress={() => router.push('/progress-pictures/add' as any)}
                             className="bg-primary py-3 px-6 rounded-full"
                         >
                             <Text className="text-white font-bold text-base">Add First Picture</Text>
                         </RaisedCard>
                     </HollowedCard>
-                ) : (
-                    <>
-                        {availableMuscleFilters.length > 0 && (
-                            <ScrollView
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={{ gap: 8, paddingBottom: 16 }}
-                                testID="muscle-filter-row"
-                            >
-                                <TouchableOpacity
-                                    onPress={() => setMuscleFilter(null)}
-                                    className={`px-4 py-2 rounded-full border ${!muscleFilter ? 'bg-primary border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
-                                    testID="muscle-filter-all"
-                                >
-                                    <Text className={`font-semibold text-sm ${!muscleFilter ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
-                                        All
-                                    </Text>
-                                </TouchableOpacity>
-                                {availableMuscleFilters.map((tag) => (
-                                    <TouchableOpacity
-                                        key={tag}
-                                        onPress={() => setMuscleFilter(muscleFilter === tag ? null : tag)}
-                                        className={`px-4 py-2 rounded-full border ${muscleFilter === tag ? 'bg-primary border-transparent' : 'bg-transparent border-light dark:border-white/10'}`}
-                                        testID={`muscle-filter-${tag}`}
-                                    >
-                                        <Text className={`font-semibold text-sm ${muscleFilter === tag ? 'text-white' : 'text-light-muted dark:text-dark-muted'}`}>
-                                            {tag}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-                        )}
-
-                        {filteredPictures.length === 0 ? (
-                            <HollowedCard className="p-10 mt-10 justify-center items-center" style={{ borderRadius: 20 }}>
-                                <IconSymbol name="camera.fill" size={40} color={theme.textMuted} style={{ marginBottom: 12 }} />
-                                <Text className="text-base font-bold text-center text-light dark:text-dark">
-                                    No pictures tagged "{muscleFilter}"
-                                </Text>
-                            </HollowedCard>
-                        ) : (
-                    <View className="flex-row flex-wrap" style={{ gap: GAP }}>
-                        {filteredPictures.map((item) => {
-                            const isAnalyzing = activeAnalysisId === item.id;
-                            const isQueued = queuedIds.includes(item.id);
-                            const isSelected = selectedIds.has(item.id);
-                            return (
-                                <TouchableOpacity
-                                    key={item.id}
-                                    onPress={() => handlePicturePress(item)}
-                                    onLongPress={() => handlePictureLongPress(item)}
-                                    activeOpacity={0.8}
-                                    style={{ width: COLUMN_WIDTH, marginBottom: 12 }}
-                                    testID={`pic-card-${item.id}`}
-                                >
-                                    <RaisedCard className="p-0 overflow-hidden" style={{ borderRadius: 12 }}>
-                                        <View>
-                                            <Image
-                                                source={{ uri: item.imageUri }}
-                                                style={{ width: '100%', height: COLUMN_WIDTH }}
-                                                contentFit="cover"
-                                                transition={200}
-                                            />
-                                            {(isAnalyzing || isQueued) && (
-                                                <View
-                                                    className="absolute inset-0 items-center justify-center bg-black/40"
-                                                    testID={isAnalyzing ? `analyzing-badge-${item.id}` : `queued-badge-${item.id}`}
-                                                >
-                                                    <ActivityIndicator size="large" color="#fff" />
-                                                    {isQueued && (
-                                                        <View
-                                                            className="absolute inset-0 flex-row items-center justify-center"
-                                                            pointerEvents="none"
-                                                            style={{ gap: 3 }}
-                                                        >
-                                                            {/* Two plain bars instead of the pause glyph - MaterialIcons'
-                                                                "pause" character isn't visually centered in its own box. */}
-                                                            <View style={{ width: 4, height: 14, borderRadius: 1, backgroundColor: '#fff' }} />
-                                                            <View style={{ width: 4, height: 14, borderRadius: 1, backgroundColor: '#fff' }} />
-                                                        </View>
-                                                    )}
-                                                </View>
-                                            )}
-                                            {isSelectMode && (
-                                                <View
-                                                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full items-center justify-center"
-                                                    style={{
-                                                        backgroundColor: isSelected ? theme.primary : 'rgba(0,0,0,0.4)',
-                                                        borderWidth: isSelected ? 0 : 1.5,
-                                                        borderColor: '#fff',
-                                                    }}
-                                                    testID={`select-check-${item.id}`}
-                                                >
-                                                    {isSelected && <IconSymbol name="checkmark" size={14} color="#fff" />}
-                                                </View>
-                                            )}
-                                        </View>
-                                        <View className="p-2">
-                                            <Text className="font-bold text-[9px] text-light dark:text-dark">{formatDate(item.date)}</Text>
-                                            {item.notes ? (
-                                                <Text className="text-[8px] text-light-muted dark:text-dark-muted mt-0.5" numberOfLines={1}>
-                                                    {item.notes}
-                                                </Text>
-                                            ) : null}
-                                            {item.muscleGroups?.primaryMuscles?.length ? (
-                                                <Text className="text-[8px] mt-0.5" numberOfLines={1} style={{ color: theme.primary }}>
-                                                    {item.muscleGroups.primaryMuscles.join(', ')}
-                                                </Text>
-                                            ) : null}
-                                        </View>
-                                    </RaisedCard>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </View>
-                        )}
-                    </>
-                )}
-            </ScrollView>
+                </ScrollView>
+            ) : (
+                <FlatList
+                    data={filteredPictures}
+                    keyExtractor={(item) => item.id}
+                    renderItem={renderPictureItem}
+                    numColumns={3}
+                    columnWrapperStyle={{ gap: GAP }}
+                    contentContainerStyle={{ padding: 16, paddingTop: 140, paddingBottom: 100 }}
+                    showsVerticalScrollIndicator={false}
+                    initialNumToRender={9}
+                    maxToRenderPerBatch={9}
+                    windowSize={5}
+                    removeClippedSubviews
+                    ListHeaderComponent={muscleFilterRow}
+                    ListEmptyComponent={
+                        <HollowedCard className="p-10 mt-10 justify-center items-center" style={{ borderRadius: 20 }}>
+                            <IconSymbol name="camera.fill" size={40} color={theme.textMuted} style={{ marginBottom: 12 }} />
+                            <Text className="text-base font-bold text-center text-light dark:text-dark">
+                                No pictures tagged "{muscleFilter}"
+                            </Text>
+                        </HollowedCard>
+                    }
+                />
+            )}
 
             {/* DETAIL VIEW MODAL */}
             {selectedPicture && (
