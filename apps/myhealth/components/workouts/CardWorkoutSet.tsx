@@ -29,6 +29,17 @@ const REP_VALUES = Array.from({ length: 51 }, (_, i) => i); // 0 to 50
 import { getExerciseFields } from './getExerciseFields';
 import { getEffectiveBodyweightLoad, isOutdoorGpsExercise as computeIsOutdoorGpsExercise } from '../../utils/workout-logic';
 
+// Weight/reps wheel tick heights: big at every 10, medium at every 5, small
+// otherwise. Module-level (not defined inline in render) so it's a stable
+// function reference across renders - the wheel is React.memo'd and a fresh
+// inline function every render would defeat that.
+const getTickSizeByTens = (val: number): 'lg' | 'md' | 'sm' => {
+    const v = Math.abs(val);
+    if (v % 10 === 0) return 'lg';
+    if (v % 5 === 0) return 'md';
+    return 'sm';
+};
+
 interface CardWorkoutSetProps {
     index: number;
     exercise: any;
@@ -86,7 +97,7 @@ function CardWorkoutSetInner({
     progressiveOverloadRepCeiling,
     isGpsTrackingActive = false
 }: CardWorkoutSetProps) {
-    const { height: windowHeight, width: windowWidth } = useWindowDimensions();
+    const { height: windowHeight } = useWindowDimensions();
     const colorScheme = useColorScheme();
     const { unitSystem, weightUnit } = useUnitPreference();
     const isSmallScreen = windowHeight < 900;
@@ -457,15 +468,13 @@ function CardWorkoutSetInner({
                 <View className="flex-col items-center justify-center py-2">
                     <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Weight ({weightUnit})</Text>
                     {(() => {
-                        // itemWidth = width/3 so the two side gaps each equal
-                        // exactly one item slot — same reasoning as the reps
-                        // wheel. A fixed pixel constant here only produces
-                        // symmetric one-neighbor spacing by coincidence on
-                        // whatever device it was tuned against; on other
-                        // widths the padding math ends up slightly
-                        // asymmetric, which reads as the wheel snapping
-                        // off-center.
-                        const weightItemWidth = windowWidth / 3;
+                        // Ruler-style ticks (not per-item numbers), so tick
+                        // spacing doesn't need to match a "one visible
+                        // neighbor" width like the old number wheel did — the
+                        // wheel's own paddingHorizontal = (width-itemWidth)/2
+                        // keeps it centered for any itemWidth. Kept tight so
+                        // dragging feels like a real meter stick.
+                        const weightItemWidth = 16;
                         const allowsAssistance = showBodyweight && showWeight;
                         const weightValues = allowsAssistance
                             ? (unitSystem === 'metric' ? ASSISTABLE_WEIGHT_VALUES_KG : ASSISTABLE_WEIGHT_VALUES_LB)
@@ -494,21 +503,25 @@ function CardWorkoutSetInner({
                                 goalValue={goalDisplayWeight}
                                 goalColor={goalColor}
                                 formatValue={allowsAssistance ? (v) => (v > 0 ? `+${v}` : `${v}`) : undefined}
+                                getTickSize={getTickSizeByTens}
                             />
                         ) : (
-                            <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
-                                {/* Matches the wheel's resting center box so the swap
-                                    to the live wheel is seamless (only the faded
-                                    neighbour values slide in). */}
-                                <View
-                                    className="border-l border-r border-primary/20 bg-primary/5 justify-center items-center flex-row"
-                                    style={{ width: weightItemWidth, height: 56, borderRadius: 12 }}
-                                >
+                            <View>
+                                {/* Matches the wheel's resting ruler + value-label layout
+                                    so the swap to the live wheel is seamless (only the
+                                    tick marks fade in). */}
+                                <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
+                                    <View
+                                        className="border-l border-r border-primary/20 bg-primary/5"
+                                        style={{ width: weightItemWidth, height: 56, borderRadius: 12 }}
+                                    />
+                                </View>
+                                <View className="items-center justify-center flex-row mt-3">
                                     <Text
-                                        className="text-4xl font-black text-light dark:text-dark"
+                                        className="font-black text-2xl text-light dark:text-dark"
                                         style={isAtGoal ? { color: goalColor } : undefined}
                                     >
-                                        {displayWeight || '0'}
+                                        {allowsAssistance ? (displayWeight > 0 ? `+${displayWeight}` : `${displayWeight}`) : (displayWeight || '0')}
                                     </Text>
                                 </View>
                             </View>
@@ -522,25 +535,25 @@ function CardWorkoutSetInner({
                 <View className="flex-col items-center justify-center py-2">
                     <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Reps</Text>
                     {(() => {
-                        // itemWidth = width/3 so the two side gaps each equal
-                        // exactly one item slot — the same ratio that makes the
-                        // weight wheel show exactly one neighbor per side, not a
-                        // fixed constant that happens to work at one width.
-                        const repsItemWidth = windowWidth / 3;
+                        // Same tight ruler-tick spacing as the weight wheel.
+                        const repsItemWidth = 16;
                         const goalReps = suggestedGoal?.reps;
                         const placeholder = (field: 'reps' | 'reps_left' | 'reps_right') => {
                             const val = parseInt(getValue(field)) || 0;
                             const isAtGoal = goalReps !== undefined && val === goalReps;
                             return (
-                                <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
-                                    {/* Matches the wheel's resting center box so the
-                                        swap to the live wheel is seamless. */}
-                                    <View
-                                        className="border-l border-r border-primary/20 bg-primary/5 justify-center items-center"
-                                        style={{ width: repsItemWidth, height: 56, borderRadius: 12 }}
-                                    >
+                                <View>
+                                    {/* Matches the wheel's resting ruler + value-label layout
+                                        so the swap to the live wheel is seamless. */}
+                                    <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
+                                        <View
+                                            className="border-l border-r border-primary/20 bg-primary/5"
+                                            style={{ width: repsItemWidth, height: 56, borderRadius: 12 }}
+                                        />
+                                    </View>
+                                    <View className="items-center justify-center flex-row mt-3">
                                         <Text
-                                            className="text-4xl font-black text-light dark:text-dark"
+                                            className="font-black text-2xl text-light dark:text-dark"
                                             style={isAtGoal ? { color: goalColor } : undefined}
                                         >
                                             {getValue(field) || '0'}
@@ -572,6 +585,7 @@ function CardWorkoutSetInner({
                                                 unit=""
                                                 goalValue={goalReps}
                                                 goalColor={goalColor}
+                                                getTickSize={getTickSizeByTens}
                                             />
                                         ) : placeholder(field)}
                                     </View>
@@ -588,6 +602,7 @@ function CardWorkoutSetInner({
                                 unit=""
                                 goalValue={goalReps}
                                 goalColor={goalColor}
+                                getTickSize={getTickSizeByTens}
                             />
                         ) : placeholder('reps');
                     })()}
