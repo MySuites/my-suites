@@ -19,6 +19,13 @@ const INLINE_MIN_VALUES = Array.from({ length: 15 }, (_, i) => i);
 const INLINE_SEC_VALUES = Array.from({ length: 60 }, (_, i) => i);
 const WEIGHT_VALUES_LB = Array.from({ length: 201 }, (_, i) => i * 2.5); // 0 to 500
 const WEIGHT_VALUES_KG = Array.from({ length: 201 }, (_, i) => i * 1.25); // 0 to 250
+// Bodyweight+Weighted combo exercises (e.g. merged pull_up) log weight
+// relative to bodyweight - negative for band/machine assistance, positive
+// for added load - so their wheel needs a negative range. Plain weighted
+// exercises (bench press, curls, ...) never need negative and keep the
+// positive-only wheel above so they can't be scrolled into a nonsense value.
+const ASSISTABLE_WEIGHT_VALUES_LB = Array.from({ length: 261 }, (_, i) => -150 + i * 2.5); // -150 to 500
+const ASSISTABLE_WEIGHT_VALUES_KG = Array.from({ length: 261 }, (_, i) => -75 + i * 1.25); // -75 to 250
 const REP_VALUES = Array.from({ length: 51 }, (_, i) => i); // 0 to 50
 
 import { getExerciseFields } from './getExerciseFields';
@@ -375,8 +382,10 @@ export function CardWorkoutSet({
             if (showBodyweight) {
                 const bw = prev.bodyweight ?? getEffectiveBodyweightLoad(exercise, latestBodyWeight);
                 const added = prev.weight;
-                if (bw != null && added != null && added > 0) {
-                    parts.push(`${formatWeightValue(bw)}+${formatWeightValue(added)}`);
+                if (bw != null && added != null && added !== 0) {
+                    // Negative = assistance (band/machine), positive = added weight.
+                    const sign = added > 0 ? '+' : '-';
+                    parts.push(`${formatWeightValue(bw)}${sign}${formatWeightValue(Math.abs(added))}`);
                 } else {
                     parts.push(formatWeightValue(bw ?? added));
                 }
@@ -448,7 +457,10 @@ export function CardWorkoutSet({
                         // asymmetric, which reads as the wheel snapping
                         // off-center.
                         const weightItemWidth = windowWidth / 3;
-                        const weightValues = unitSystem === 'metric' ? WEIGHT_VALUES_KG : WEIGHT_VALUES_LB;
+                        const allowsAssistance = showBodyweight && showWeight;
+                        const weightValues = allowsAssistance
+                            ? (unitSystem === 'metric' ? ASSISTABLE_WEIGHT_VALUES_KG : ASSISTABLE_WEIGHT_VALUES_LB)
+                            : (unitSystem === 'metric' ? WEIGHT_VALUES_KG : WEIGHT_VALUES_LB);
                         // Snapped to an exact entry in weightValues, not just
                         // rounded — see snapToValues for why that distinction
                         // matters (a "rounded but not-a-real-step" value fed
@@ -472,6 +484,7 @@ export function CardWorkoutSet({
                                 unit=""
                                 goalValue={goalDisplayWeight}
                                 goalColor={goalColor}
+                                formatValue={allowsAssistance ? (v) => (v > 0 ? `+${v}` : `${v}`) : undefined}
                             />
                         ) : (
                             <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>

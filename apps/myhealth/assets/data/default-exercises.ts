@@ -1,4 +1,4 @@
-export const EXERCISE_DATA_VERSION = 55;
+export const EXERCISE_DATA_VERSION = 58;
 
 export const BarbellBenchPress = [
     {
@@ -260,15 +260,6 @@ export const Lunges = [
         "type": "Bodyweight, Reps",
         "muscle_group": "Quadriceps",
         difficulty: 1.0,
-        "nextVariations": [],
-    },
-    {
-        "id": "weighted_lunges",
-        "description": "Lunges performed with added weight.",
-        "name": "Weighted Lunges",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Quadriceps",
-        difficulty: 1.5,
         "nextVariations": [],
     },
 ];
@@ -665,7 +656,7 @@ export const PushUps = [
             "military_push_up",
             "wide_push_up",
             "pike_push_up",
-            "weighted_push_up",
+            "pseudo_planche_push_up",
         ],
     },
     {
@@ -736,17 +727,6 @@ export const PushUps = [
         "muscle_group": "Other",
         difficulty: 3.5,
     },
-    {
-        "id": "weighted_push_up",
-        "description": "Push-up performed with added weight.",
-        "name": "Weighted Push-up",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Chest",
-        difficulty: 2.5,
-        "nextVariations": [
-            "pseudo_planche_push_up",
-        ],
-    },
 ];
 
 export const PullUps = [
@@ -758,16 +738,6 @@ export const PullUps = [
         "type": "Bodyweight, Reps",
         "muscle_group": "Lats",
         difficulty: 1.5,
-        "nextVariations": [],
-    },
-    {
-        "id": "assisted_pull_up",
-        "description":
-            "Pull-up variation using assistance from a band or partner to complete the movement.",
-        "name": "Assisted Pull-up",
-        "type": "Bodyweight, Reps",
-        "muscle_group": "Lats",
-        difficulty: 2.0,
         "nextVariations": [],
     },
     {
@@ -793,7 +763,7 @@ export const PullUps = [
     {
         "id": "pull_up",
         "description":
-            "Upper body pulling exercise targeting the lats and back.",
+            "Upper body pulling exercise targeting the lats and back. Log negative weight for band/machine assistance, positive weight for added load.",
         "name": "Pull-up",
         "type": "Bodyweight, Reps",
         "muscle_group": "Lats",
@@ -855,22 +825,6 @@ export const PullUps = [
         difficulty: 5.0,
         "nextVariations": [],
     },
-    {
-        "id": "weighted_chin_up",
-        "description": "Chin-up performed with added weight.",
-        "name": "Weighted Chin-up",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Biceps",
-        difficulty: 3.0,
-    },
-    {
-        "id": "weighted_pull_up",
-        "description": "Pull-up performed with added weight.",
-        "name": "Weighted Pull-up",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Lats",
-        difficulty: 3.5,
-    },
 ];
 
 export const Rows = [
@@ -881,14 +835,6 @@ export const Rows = [
         "type": "Bodyweight, Reps",
         "muscle_group": "Lats",
         difficulty: 1.5,
-    },
-    {
-        "id": "weighted_row",
-        "description": "Bodyweight row performed with added weight.",
-        "name": "Weighted Row",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Lats",
-        difficulty: 2.0,
     },
 ];
 
@@ -911,14 +857,6 @@ export const Planks = [
         "type": "Bodyweight, Duration",
         "muscle_group": "Abdominals",
         difficulty: 1.0,
-    },
-    {
-        "id": "weighted_plank",
-        "description": "Plank performed with added weight.",
-        "name": "Weighted Plank",
-        "type": "Weighted, Bodyweight, Duration",
-        "muscle_group": "Abdominals",
-        difficulty: 1.5,
     },
     {
         "id": "side_plank",
@@ -949,14 +887,6 @@ export const Dips = [
         "type": "Bodyweight, Reps",
         "muscle_group": "Triceps",
         difficulty: 3.0,
-    },
-    {
-        "id": "weighted_dip",
-        "description": "Bodyweight dip performed with added weight.",
-        "name": "Weighted Dip",
-        "type": "Weighted, Bodyweight, Reps",
-        "muscle_group": "Triceps",
-        difficulty: 3.5,
     },
 ];
 

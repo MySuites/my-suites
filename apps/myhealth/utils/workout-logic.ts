@@ -1,14 +1,16 @@
 import uuid from "react-native-uuid";
 import { SetLog } from "./workout-api/types";
 
-// Bodyweight sets carry no explicit `weight` (nothing was added), but
-// ActiveWorkoutProvider already stamps `bodyweight` onto them with the
-// exercise-adjusted load estimate (see getBodyweightLoadPercentage below) —
-// this is what volume/history math should treat as the set's load instead
-// of silently reading 0.
+// Bodyweight sets carry a `bodyweight` baseline (the exercise-adjusted load
+// estimate, see getBodyweightLoadPercentage below) stamped by
+// ActiveWorkoutProvider. Merged bodyweight+weighted exercises (e.g. pull_up)
+// also carry an explicit `weight` on top of that baseline - negative for
+// assistance, positive for added load - so both fields need to be summed,
+// not treated as either/or. Sets logged before that merge only ever have one
+// of the two fields set, so this still degrades correctly for old data.
 export function getEffectiveSetWeight(set: SetLog): number {
+    if (set.bodyweight != null) return set.bodyweight + (set.weight ?? 0);
     if (set.weight) return set.weight;
-    if (set.bodyweight) return set.bodyweight;
     return 0;
 }
 
@@ -34,14 +36,14 @@ export const BODYWEIGHT_LOAD_PERCENTAGE: Record<string, number> = {
     diamond_push_up: 0.68,
     pike_push_up: 0.65,
     decline_push_up: 0.72,
-    weighted_push_up: 0.67,
     pseudo_planche_push_up: 0.78,
 
-    // Pull-up / row family - hanging/rowing bodyweight movements. Assisted
-    // reduces the effective load via band/machine counterweight; exact
-    // amount is user/equipment-dependent, so this is a rough midpoint.
+    // Pull-up / row family - hanging/rowing bodyweight movements.
+    // pull_up itself is a merged exercise (regular/assisted/weighted) whose
+    // logged `weight` can be negative (band/machine assistance) or positive
+    // (added load) - this percentage is just the bodyweight baseline before
+    // that adjustment is added.
     scapular_pull_up: 0.92,
-    assisted_pull_up: 0.5,
     negative_pull_up: 0.92,
     chin_up: 0.92,
     pull_up: 0.92,
@@ -50,10 +52,7 @@ export const BODYWEIGHT_LOAD_PERCENTAGE: Record<string, number> = {
     typewriter_pull_up: 0.92,
     explosive_pull_up: 0.92,
     muscle_up: 0.95,
-    weighted_chin_up: 0.92,
-    weighted_pull_up: 0.92,
     bodyweight_row: 0.70,
-    weighted_row: 0.70,
 
     // Core - none of these lift the whole body, only a segment of it
     // (torso, or legs, moving relative to a supported base).
@@ -65,7 +64,6 @@ export const BODYWEIGHT_LOAD_PERCENTAGE: Record<string, number> = {
     // Isometric core holds - multi-point support (forearms/hands + toes),
     // not fully suspended on one contact point.
     plank: 0.75,
-    weighted_plank: 0.75,
     side_plank: 0.65,
 };
 

@@ -19,6 +19,11 @@ interface HorizontalSelectorWheelProps {
     // badge), visible even while scrolling past it as a neighbor.
     goalValue?: number;
     goalColor?: string;
+    // Overrides how each numeric value is rendered - e.g. forcing an
+    // explicit "+"/"-" sign for wheels where the values are relative to a
+    // baseline (bodyweight ± assistance/added load) rather than absolute.
+    // Defaults to plain number-to-string.
+    formatValue?: (val: number) => string;
 }
 
 function HorizontalSelectorWheelBase({
@@ -30,6 +35,7 @@ function HorizontalSelectorWheelBase({
     containerWidth,
     goalValue,
     goalColor,
+    formatValue = (v) => String(v),
 }: HorizontalSelectorWheelProps) {
     const { width: windowWidth } = useWindowDimensions();
     const width = containerWidth ?? windowWidth;
@@ -159,7 +165,7 @@ function HorizontalSelectorWheelBase({
                                             className="font-black text-4xl text-light dark:text-dark"
                                             style={isGoal ? { color: goalColor } : undefined}
                                         >
-                                            {item}
+                                            {formatValue(item)}
                                         </RNAnimated.Text>
                                         {unit && (
                                             <RNAnimated.Text

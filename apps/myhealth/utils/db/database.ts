@@ -510,10 +510,60 @@ export const initDatabase = async () => {
                 WHERE exercise_id = 'cable_curl'
             `);
 
+            // Pull-ups - regular/assisted/weighted merged into one exercise;
+            // logged weight is now negative for assistance, positive for
+            // added load. Historical rows keep whatever weight/bodyweight
+            // they already recorded (relabel only, no retroactive backfill -
+            // same approach as the other consolidations in this migration).
+            await database.runAsync(`
+                UPDATE set_logs
+                SET exercise_id = 'pull_up', exercise_name = 'Pull-up'
+                WHERE exercise_id = 'assisted_pull_up'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs
+                SET exercise_id = 'pull_up', exercise_name = 'Pull-up'
+                WHERE exercise_id = 'weighted_pull_up'
+            `);
+
+            // Every other bodyweight family gets the same treatment - the
+            // separate "weighted_X" exercise merges into its bodyweight base,
+            // whose weight wheel now always shows (see getExerciseFields.ts).
+            await database.runAsync(`
+                UPDATE set_logs
+                SET exercise_id = 'lunges', exercise_name = 'Lunges'
+                WHERE exercise_id = 'weighted_lunges'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs
+                SET exercise_id = 'push_up', exercise_name = 'Push-up'
+                WHERE exercise_id = 'weighted_push_up'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs
+                SET exercise_id = 'chin_up', exercise_name = 'Chin-up'
+                WHERE exercise_id = 'weighted_chin_up'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs
+                SET exercise_id = 'bodyweight_row', exercise_name = 'Bodyweight Row'
+                WHERE exercise_id = 'weighted_row'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs
+                SET exercise_id = 'plank', exercise_name = 'Plank'
+                WHERE exercise_id = 'weighted_plank'
+            `);
+            await database.runAsync(`
+                UPDATE set_logs
+                SET exercise_id = 'bodyweight_dip', exercise_name = 'Bodyweight Dip'
+                WHERE exercise_id = 'weighted_dip'
+            `);
+
             // Preacher Curls
             await database.runAsync(`
-                UPDATE set_logs 
-                SET exercise_id = 'preacher_curl', exercise_name = 'Preacher Curl', equipment = 'barbell', attachment = 'None' 
+                UPDATE set_logs
+                SET exercise_id = 'preacher_curl', exercise_name = 'Preacher Curl', equipment = 'barbell', attachment = 'None'
                 WHERE exercise_id = 'barbell_preacher_curl'
             `);
             await database.runAsync(`
@@ -714,7 +764,10 @@ export const initDatabase = async () => {
                     'barbell_squat', 'smith_machine_squat', 'hack_squat', 'pendulum_squat', 'goblet_squat',
                     'cable_lateral_raise', 'single_arm_cable_lateral_raise', 'machine_lateral_raise',
                     'overhead_press', 'machine_shoulder_press', 'arnold_press',
-                    'barbell_skullcrusher', 'dumbbell_skullcrusher'
+                    'barbell_skullcrusher', 'dumbbell_skullcrusher',
+                    'assisted_pull_up', 'weighted_pull_up',
+                    'weighted_lunges', 'weighted_push_up', 'weighted_chin_up',
+                    'weighted_row', 'weighted_plank', 'weighted_dip'
                 )
             `);
         });
@@ -776,6 +829,24 @@ export const initDatabase = async () => {
                     ex.id = 'seated_cable_row'; ex.name = 'Seated Cable Row'; ex.equipment = 'cable'; ex.attachment = 'Close-Grip V-Bar'; modified = true;
                 } else if (oldId === 'seated_cable_row_reverse_grip') {
                     ex.id = 'seated_cable_row'; ex.name = 'Seated Cable Row'; ex.equipment = 'cable'; ex.attachment = 'Neutral-Grip Handles'; modified = true;
+                }
+                // Pull-ups
+                else if (oldId === 'assisted_pull_up' || oldId === 'weighted_pull_up') {
+                    ex.id = 'pull_up'; ex.name = 'Pull-up'; modified = true;
+                }
+                // Other bodyweight families - weighted_X merged into base
+                else if (oldId === 'weighted_lunges') {
+                    ex.id = 'lunges'; ex.name = 'Lunges'; modified = true;
+                } else if (oldId === 'weighted_push_up') {
+                    ex.id = 'push_up'; ex.name = 'Push-up'; modified = true;
+                } else if (oldId === 'weighted_chin_up') {
+                    ex.id = 'chin_up'; ex.name = 'Chin-up'; modified = true;
+                } else if (oldId === 'weighted_row') {
+                    ex.id = 'bodyweight_row'; ex.name = 'Bodyweight Row'; modified = true;
+                } else if (oldId === 'weighted_plank') {
+                    ex.id = 'plank'; ex.name = 'Plank'; modified = true;
+                } else if (oldId === 'weighted_dip') {
+                    ex.id = 'bodyweight_dip'; ex.name = 'Bodyweight Dip'; modified = true;
                 }
                 // Bicep Curls
                 else if (oldId === 'dumbbell_curl') {

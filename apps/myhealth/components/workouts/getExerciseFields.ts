@@ -12,12 +12,17 @@ export const getExerciseFields = (properties?: string[], exerciseId?: string) =>
     }
 
     const lowerProps = props.map(p => p.toLowerCase());
+    const isBodyweight = lowerProps.includes('bodyweight');
+    // Every bodyweight exercise gets the weight wheel now (negative for
+    // assistance, positive for added load, 0 for neither) - no separate
+    // "Weighted" tag/exercise variant needed per bodyweight family anymore.
+    const showWeight = lowerProps.includes('weighted') || isBodyweight;
     return {
-        showBodyweight: lowerProps.includes('bodyweight'),
-        showWeight: lowerProps.includes('weighted'),
+        showBodyweight: isBodyweight,
+        showWeight,
         showReps: lowerProps.includes('reps'),
         showDuration: lowerProps.includes('duration'),
         showDistance: lowerProps.includes('distance'),
-        showRPE: lowerProps.includes('weighted') || lowerProps.includes('reps') || lowerProps.includes('duration') || lowerProps.includes('distance') || lowerProps.includes('rpe')
+        showRPE: showWeight || lowerProps.includes('reps') || lowerProps.includes('duration') || lowerProps.includes('distance') || lowerProps.includes('rpe')
     };
 };

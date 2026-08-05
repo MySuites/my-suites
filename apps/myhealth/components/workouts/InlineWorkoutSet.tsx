@@ -115,8 +115,10 @@ export function InlineWorkoutSet({
             if (showBodyweight) {
                 const bw = prev.bodyweight ?? getEffectiveBodyweightLoad(exercise, latestBodyWeight);
                 const added = prev.weight;
-                if (bw != null && added != null && added > 0) {
-                    parts.push(`${bw}+${added}`);
+                if (bw != null && added != null && added !== 0) {
+                    // Negative = assistance (band/machine), positive = added weight.
+                    const sign = added > 0 ? '+' : '-';
+                    parts.push(`${bw}${sign}${Math.abs(added)}`);
                 } else {
                     parts.push(formatValue(bw ?? added));
                 }

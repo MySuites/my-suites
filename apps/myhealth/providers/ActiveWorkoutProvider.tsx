@@ -481,7 +481,13 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                         duration: parseVal(durationValStr),
                         distance: parseVal(distanceValStr),
                         rpe: parseVal(target.rpe, true),
-                        bodyweight: target.weight === undefined
+                        // Stamped whenever the exercise carries a bodyweight
+                        // component, regardless of whether a weight was also
+                        // logged - merged exercises like pull_up always have
+                        // a defined `weight` (0 by default, negative for
+                        // assistance, positive for added load) on top of the
+                        // bodyweight baseline, not instead of it.
+                        bodyweight: (ex.properties || []).includes('Bodyweight')
                             ? getEffectiveBodyweightLoad(ex, latestBodyWeight)
                             : undefined
                     };
