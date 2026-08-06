@@ -213,7 +213,6 @@ export default function ProfileScreen() {
     [rangeAverage, unitSystem]
   );
 
-  // Memoized workout volume history & summary stats
   const { volumeHistoryData, rangeAverageVolume, rangeTotalVolume, rangeWorkoutCount } = useMemo(() => {
     if (!workoutHistory || workoutHistory.length === 0) {
       return { volumeHistoryData: [], rangeAverageVolume: null, rangeTotalVolume: null, rangeWorkoutCount: 0 };

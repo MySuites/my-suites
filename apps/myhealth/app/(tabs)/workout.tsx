@@ -88,7 +88,6 @@ function Workout() {
 
     const scrollViewRef = useRef<ScrollView>(null);
 
-    // Calendar rolling last 30 days helper
     const last30Days = useMemo(() => {
         const list = [];
         for (let i = 29; i >= 0; i--) {
@@ -124,14 +123,12 @@ function Workout() {
         });
     }, [selectedDay, workoutHistory]);
 
-    // Derived state for current routine
     const activeRoutineObj = routines.find((r: any) => r.id === activeRoutine?.id);
     const dayIndex = activeRoutine?.dayIndex || 0;
-    
+
     const timelineDays = useRoutineTimeline(activeRoutineObj, dayIndex, 'week');
-    
-    // Check if the current day has been completed today
-    const isDayCompleted = !!(activeRoutine?.lastCompletedDate && 
+
+    const isDayCompleted = !!(activeRoutine?.lastCompletedDate &&
         new Date(activeRoutine.lastCompletedDate).toDateString() === new Date().toDateString());
 
 

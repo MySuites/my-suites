@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, useWindowDimensions, Animated as RNAnimated } from 'react-native';
+import { View, Text, TouchableOpacity, useWindowDimensions, Animated as RNAnimated, ScrollView } from 'react-native';
 import { useUITheme } from '@mysuite/ui';
 import { useSetPagerScrollLock } from '../exercises/SetPagerScrollLock';
+
+type TickSize = 'lg' | 'md' | 'sm';
 
 interface HorizontalSelectorWheelProps {
     value: number;
@@ -10,32 +12,33 @@ interface HorizontalSelectorWheelProps {
     itemWidth: number;
     unit?: string;
     // Width the wheel centers itself within. Defaults to the full screen
-    // width (the original single-wheel behavior, e.g. the weight wheel).
-    // Pass a smaller value to fit two wheels side by side, e.g. for
-    // unilateral (L/R) reps.
+    // width (e.g. the weight wheel). Pass a smaller value to fit two wheels
+    // side by side, e.g. for unilateral (L/R) reps.
     containerWidth?: number;
-    // When the item at a given slot equals this value, its tick renders blue/
-    // light-blue instead of primary/gray (see GOAL_BLUE/GOAL_LIGHT_BLUE) —
-    // marks the progressive-overload suggestion directly on the ruler.
-    // `goalColor` is used only for the current-value label's text color.
+    // When a tick's value equals this, it renders blue/light-blue instead of
+    // primary/gray (see GOAL_BLUE/GOAL_LIGHT_BLUE) - marks the progressive-
+    // overload suggestion directly on the ruler. `goalColor` is used only for
+    // the current-value label's text color.
     goalValue?: number;
     goalColor?: string;
     // Overrides how each numeric value is rendered in the current-value
     // label below the ruler - e.g. forcing an explicit "+"/"-" sign for
-    // wheels where the values are relative to a baseline (bodyweight ±
-    // assistance/added load) rather than absolute. Defaults to plain
-    // number-to-string.
+    // wheels whose values are relative to a baseline (bodyweight ±
+    // assistance/added load) rather than absolute.
     formatValue?: (val: number) => string;
     // Every Nth tick (by position in `values`) renders taller, ruler-style.
-    // Defaults to 5. Ignored if `getTickSize` is provided.
+    // Ignored if `getTickSize` is provided.
     majorTickEvery?: number;
     // Classifies each tick's height by its actual value (e.g. big at every
     // 10, medium at every 5, small otherwise for a weight wheel) instead of
     // the plain index-based majorTickEvery. Takes precedence when provided.
-    getTickSize?: (val: number) => 'lg' | 'md' | 'sm';
+    getTickSize?: (val: number) => TickSize;
 }
 
-const TICK_DIMENSIONS: Record<'lg' | 'md' | 'sm', { width: number; height: number }> = {
+const WHEEL_HEIGHT = 56;
+const TICK_BOTTOM_INSET = 4;
+
+const TICK_DIMENSIONS: Record<TickSize, { width: number; height: number }> = {
     lg: { width: 4, height: 28 },
     md: { width: 3.5, height: 21 },
     sm: { width: 3, height: 14 },
@@ -48,20 +51,18 @@ const GOAL_BLUE = '#2563EB';
 const GOAL_LIGHT_BLUE = '#93C5FD';
 
 const FADE_MIN_OPACITY = 0.12;
-// No fade at all within the middle half of the fade distance - full opacity
-// is held flat out to this fraction before the falloff starts, so only the
-// outer quarters on each side actually fade.
+// Full opacity is held flat out to this fraction of the fade distance before
+// any falloff starts, so only the outer quarters on each side actually fade.
 const FADE_PLATEAU = 0.5;
 // Sample points from center (0) to edge (1), as a fraction of the fade
-// distance - denser near the edge. Animated.interpolate only does piecewise-
-// linear between points, so more points (rather than just [0, 1]) is how you
+// distance - denser near the edge. Animated.interpolate is piecewise-linear
+// between points, so more points (rather than just [0, 1]) is how you
 // approximate a curved falloff instead of a straight-line fade.
 const FADE_FRACTIONS = [0, FADE_PLATEAU, 0.65, 0.8, 1];
 
 // Opacity for a tick at fraction `f` (0 = center, 1 = edge): flat at full
-// opacity through the plateau, then an exponential (not linear) falloff for
-// the remainder - decays fast right after the plateau and levels off toward
-// the edge, unlike a straight linear ramp.
+// opacity through the plateau, then an exponential (not linear) falloff -
+// decays fast right after the plateau and levels off toward the edge.
 function fadeOpacityAt(f: number): number {
     if (f <= FADE_PLATEAU) return 1;
     return Math.pow(FADE_MIN_OPACITY, (f - FADE_PLATEAU) / (1 - FADE_PLATEAU));
@@ -84,44 +85,71 @@ export interface CurrentValueLabelHandle {
     setValue: (val: number) => void;
 }
 
-// Live-updating "current value" readout shown under the ruler. Isolated into
-// its own component, updated imperatively via a ref (see setValue) from the
-// parent's scroll listener, so its per-frame state updates while dragging
-// only re-render this small label, not the ~200-item tick strip above it.
-const CurrentValueLabel = React.forwardRef<CurrentValueLabelHandle, {
+interface CurrentValueLabelProps {
     unit?: string;
     formatValue: (val: number) => string;
     goalValue?: number;
     goalColor?: string;
     initialValue: number;
-}>(function CurrentValueLabel({ unit, formatValue, goalValue, goalColor, initialValue }, ref) {
-    const [displayValue, setDisplayValue] = React.useState(initialValue);
+}
 
-    React.useImperativeHandle(ref, () => ({
-        setValue: (val: number) => setDisplayValue((prev) => (prev === val ? prev : val)),
-    }), []);
+// Live-updating "current value" readout shown under the ruler. Isolated into
+// its own component, updated imperatively via a ref (see setValue) from the
+// parent's scroll listener, so its per-frame state updates while dragging
+// only re-render this small label, not the ~200-item tick strip above it.
+const CurrentValueLabel = React.forwardRef<CurrentValueLabelHandle, CurrentValueLabelProps>(
+    function CurrentValueLabel({ unit, formatValue, goalValue, goalColor, initialValue }, ref) {
+        const [displayValue, setDisplayValue] = React.useState(initialValue);
 
-    const isGoal = goalValue !== undefined && goalColor && displayValue === goalValue;
+        React.useImperativeHandle(ref, () => ({
+            setValue: (val: number) => setDisplayValue((prev) => (prev === val ? prev : val)),
+        }), []);
 
-    return (
-        <View className="items-center justify-center flex-row mt-1">
-            <Text
-                className="font-black text-2xl text-light dark:text-dark"
-                style={isGoal ? { color: goalColor } : undefined}
-            >
-                {formatValue(displayValue)}
-            </Text>
-            {unit ? (
-                <Text
-                    className="font-black text-xs ml-0.5 text-light dark:text-dark"
-                    style={isGoal ? { color: goalColor } : undefined}
-                >
-                    {unit}
+        const isGoal = goalValue !== undefined && goalColor && displayValue === goalValue;
+        const goalStyle = isGoal ? { color: goalColor } : undefined;
+
+        return (
+            <View className="items-center justify-center flex-row mt-1">
+                <Text className="font-black text-2xl text-light dark:text-dark" style={goalStyle}>
+                    {formatValue(displayValue)}
                 </Text>
-            ) : null}
-        </View>
+                {unit ? (
+                    <Text className="font-black text-xs ml-0.5 text-light dark:text-dark" style={goalStyle}>
+                        {unit}
+                    </Text>
+                ) : null}
+            </View>
+        );
+    }
+);
+
+interface TickMarkProps {
+    size: TickSize;
+    slotWidth: number;
+    color: string;
+    opacity: RNAnimated.AnimatedInterpolation<number>;
+}
+
+// A single ruler mark, absolutely positioned at a fixed bottom instead of
+// flex-end so every tick's bottom edge lands on the exact same pixel
+// regardless of its height (lg/md/sm).
+function TickMark({ size, slotWidth, color, opacity }: TickMarkProps) {
+    const { width, height } = TICK_DIMENSIONS[size];
+    return (
+        <RNAnimated.View
+            style={{
+                position: 'absolute',
+                bottom: TICK_BOTTOM_INSET,
+                left: (slotWidth - width) / 2,
+                width,
+                height,
+                borderRadius: 1,
+                backgroundColor: color,
+                opacity,
+            }}
+        />
     );
-});
+}
 
 function HorizontalSelectorWheelBase({
     value,
@@ -140,6 +168,8 @@ function HorizontalSelectorWheelBase({
     const width = containerWidth ?? windowWidth;
     const theme = useUITheme();
     const { lock: lockSetPager, unlock: unlockSetPager } = useSetPagerScrollLock();
+    // Padded either side so the first and last real values can still scroll
+    // to the centered (selected) position.
     const inlineData = React.useMemo(() => [null, ...values, null], [values]);
     // Native-driven so the fill overlay's translateX (below) tracks the
     // actual native scroll with zero lag - a JS-driven transform goes
@@ -149,66 +179,85 @@ function HorizontalSelectorWheelBase({
     // opposite direction of scroll, so it stays pixel-locked to the same
     // content as the scrolling ticks underneath.
     const overlayTranslateX = React.useMemo(() => RNAnimated.multiply(scrollX, -1), [scrollX]);
-    const scrollViewRef = React.useRef<any>(null);
+    const scrollViewRef = React.useRef<ScrollView>(null);
     const labelRef = React.useRef<CurrentValueLabelHandle>(null);
     const [localSelectedValue, setLocalSelectedValue] = React.useState(value);
 
-    // Shared per-tick metadata for both the interactive strip and the
-    // filled-color overlay, so the two stay visually identical.
+    // Per-tick metadata, shared by the interactive strip and the filled-color
+    // overlay so the two stay visually identical. `null` marks a padding slot.
     const tickMeta = React.useMemo(
         () => inlineData.map((item, i) => {
             if (item === null) return null;
             const valueIndex = i - 1;
-            const tickSize = getTickSize
+            const tickSize: TickSize = getTickSize
                 ? getTickSize(item)
                 : (valueIndex % majorTickEvery === 0 ? 'lg' : 'sm');
-            const isGoal = goalValue !== undefined && item === goalValue;
-            return { item, tickSize, isGoal };
+            return { item, tickSize, isGoal: goalValue !== undefined && item === goalValue };
         }),
         [inlineData, getTickSize, majorTickEvery, goalValue]
+    );
+
+    // Each tick fades out toward either edge of the visible window based on
+    // its distance from the centered (triangle) position - native-driven off
+    // the same scrollX used for scrolling, so it's live during drag at zero
+    // extra cost. (Unlike color, opacity IS supported by the native driver.)
+    // Built once per layout and shared by both strips rather than
+    // re-interpolated per tick per render.
+    const tickOpacities = React.useMemo(
+        () => inlineData.map((_, i) => scrollX.interpolate({
+            ...getFadeOpacityRange(i * itemWidth, width / 2),
+            extrapolate: 'clamp',
+        })),
+        [inlineData, itemWidth, width, scrollX]
     );
 
     const getScrollOffset = React.useCallback((val: number) => {
         const closest = values.reduce((prev, curr) =>
             Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev
         );
-        const idx = inlineData.indexOf(closest);
-        return idx !== -1 ? idx * itemWidth : 0;
-    }, [values, inlineData, itemWidth]);
+        // +1 for the leading padding slot in inlineData.
+        return (values.indexOf(closest) + 1) * itemWidth;
+    }, [values, itemWidth]);
 
-    // Shared by the scroll listener and the two sync points below (onLayout,
-    // and the value-prop-changed effect) so the label always reflects the
-    // nearest real value to a given raw scroll offset.
-    const updateLabelForOffset = React.useCallback((offset: number) => {
+    // Nearest real (non-padding) value to a raw scroll offset, or null.
+    const valueAtOffset = React.useCallback((offset: number) => {
         const idx = Math.round(offset / itemWidth);
-        if (idx >= 0 && idx < inlineData.length) {
-            const nearest = inlineData[idx];
-            if (nearest !== null) {
-                labelRef.current?.setValue(nearest);
-            }
-        }
+        if (idx < 0 || idx >= inlineData.length) return null;
+        return inlineData[idx];
     }, [inlineData, itemWidth]);
+
+    const updateLabelForOffset = React.useCallback((offset: number) => {
+        const nearest = valueAtOffset(offset);
+        if (nearest !== null) {
+            labelRef.current?.setValue(nearest);
+        }
+    }, [valueAtOffset]);
+
+    // Jumps the strip, the fill overlay (scrollX) and the label to `val` in
+    // one step - used both for the initial layout and whenever the parent
+    // pushes down a new value.
+    const syncToValue = React.useCallback((val: number) => {
+        const offset = getScrollOffset(val);
+        scrollX.setValue(offset);
+        updateLabelForOffset(offset);
+        scrollViewRef.current?.scrollTo({ x: offset, animated: false });
+    }, [getScrollOffset, scrollX, updateLabelForOffset]);
 
     React.useEffect(() => {
         if (value !== localSelectedValue) {
             setLocalSelectedValue(value);
-            const offset = getScrollOffset(value);
-            scrollX.setValue(offset);
-            updateLabelForOffset(offset);
-            scrollViewRef.current?.scrollTo({ x: offset, animated: false });
+            syncToValue(value);
         }
-    }, [value, localSelectedValue, getScrollOffset, scrollX, updateLabelForOffset]);
+    }, [value, localSelectedValue, syncToValue]);
 
     // Native-driven for smooth scrolling/overlay tracking, but with a
     // `listener` callback - RN's built-in mechanism for also getting a
     // JS-side callback on every scroll event even though the value itself is
     // native-driven. (A plain `scrollX.addListener` on a native-driven value
-    // only mirrors back to JS on a best-effort/throttled basis, which is why
-    // the label previously stalled during drag; composing two separate
-    // Animated.event calls doesn't work either - in this RN version,
-    // Animated.event returns an object that isn't a plain callable
-    // function.) This keeps native-driven smoothness for the overlay and a
-    // reliable per-event callback for the label from one handler.
+    // only mirrors back to JS on a throttled basis, which stalls the label
+    // during drag; and composing two separate Animated.event calls doesn't
+    // work either - in this RN version Animated.event returns an object that
+    // isn't a plain callable function.)
     const onScrollWithLabel = React.useMemo(() => RNAnimated.event(
         [{ nativeEvent: { contentOffset: { x: scrollX } } }],
         {
@@ -219,21 +268,21 @@ function HorizontalSelectorWheelBase({
         }
     ), [scrollX, updateLabelForOffset]);
 
+    const commitValue = React.useCallback((val: number) => {
+        setLocalSelectedValue(val);
+        onValueChange(val);
+    }, [onValueChange]);
+
     const handleScrollEnd = React.useCallback((event: any) => {
-        const offset = event.nativeEvent.contentOffset.x;
-        const idx = Math.round(offset / itemWidth);
-        if (idx >= 0 && idx < inlineData.length) {
-            const newVal = inlineData[idx];
-            if (newVal !== null) {
-                setLocalSelectedValue(newVal);
-                onValueChange(newVal);
-            }
+        const newVal = valueAtOffset(event.nativeEvent.contentOffset.x);
+        if (newVal !== null) {
+            commitValue(newVal);
         }
-    }, [inlineData, itemWidth, onValueChange]);
+    }, [valueAtOffset, commitValue]);
 
     return (
         <View>
-            <View style={{ height: 56, width: width, flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
+            <View style={{ height: WHEEL_HEIGHT, width, flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
                 {/* Selection indicator - a triangle centered under the ruler,
                     pointing up at whichever tick is currently centered. */}
                 <View
@@ -253,7 +302,7 @@ function HorizontalSelectorWheelBase({
                     }}
                 />
                 <RNAnimated.ScrollView
-                    ref={scrollViewRef}
+                    ref={scrollViewRef as any}
                     horizontal
                     // Disable the outer set-swipe pager for the duration of any
                     // touch on this wheel. Same-axis nested horizontal
@@ -263,15 +312,9 @@ function HorizontalSelectorWheelBase({
                     onTouchStart={lockSetPager}
                     onTouchEnd={unlockSetPager}
                     onTouchCancel={unlockSetPager}
-                    onLayout={() => {
-                        const offset = getScrollOffset(value);
-                        // Keep scrollX (the fill overlay) and the label in
-                        // sync with the initial scroll position, not left
-                        // defaulting to 0.
-                        scrollX.setValue(offset);
-                        updateLabelForOffset(offset);
-                        scrollViewRef.current?.scrollTo({ x: offset, animated: false });
-                    }}
+                    // Keep scrollX (the fill overlay) and the label in sync with
+                    // the initial scroll position, not left defaulting to 0.
+                    onLayout={() => syncToValue(value)}
                     showsHorizontalScrollIndicator={false}
                     snapToInterval={itemWidth}
                     // "start" (the default), not "center" - centering is already
@@ -294,60 +337,31 @@ function HorizontalSelectorWheelBase({
                     // up as the value teleporting to a wrong tick mid-scroll.
                     onMomentumScrollEnd={handleScrollEnd}
                     scrollEventThrottle={16}
-                    contentContainerStyle={{
-                        paddingHorizontal: (width - itemWidth) / 2
-                    }}
+                    contentContainerStyle={{ paddingHorizontal: (width - itemWidth) / 2 }}
                 >
-                    {inlineData.map((item, i) => {
-                        const meta = tickMeta[i];
-                        if (item === null || !meta) {
-                            return <View key={`pad-${i}`} style={{ width: itemWidth, height: 56 }} />;
+                    {tickMeta.map((meta, i) => {
+                        if (meta === null) {
+                            return <View key={`pad-${i}`} style={{ width: itemWidth, height: WHEEL_HEIGHT }} />;
                         }
-
-                        const { width: tickWidth, height: tickHeight } = TICK_DIMENSIONS[meta.tickSize];
-                        // Unfilled color only - the overlay below paints the
-                        // filled (primary/goal-blue) version on top wherever
-                        // the ruler has actually scrolled past. See the
-                        // overlay's comment for why coloring is split this
-                        // way instead of animating each tick's color.
-                        const backgroundColor = meta.isGoal ? GOAL_LIGHT_BLUE : (theme.textMuted ?? theme.text);
-                        // Fades out toward either edge of the visible window,
-                        // based on this tick's actual distance from the
-                        // centered (triangle) position - native-driven off
-                        // the same scrollX used for scrolling, so it's live
-                        // during drag at zero extra cost. Unlike color,
-                        // opacity IS reliably supported by the native driver.
-                        const opacity = scrollX.interpolate({
-                            ...getFadeOpacityRange(i * itemWidth, width / 2),
-                            extrapolate: 'clamp',
-                        });
-
                         return (
                             <TouchableOpacity
                                 key={`tick-${i}`}
-                                style={{ width: itemWidth, height: 56 }}
+                                style={{ width: itemWidth, height: WHEEL_HEIGHT }}
                                 onPress={() => {
-                                    const idx = inlineData.indexOf(item);
-                                    scrollViewRef.current?.scrollTo({ x: idx * itemWidth, animated: true });
-                                    setLocalSelectedValue(item);
-                                    onValueChange(item);
+                                    scrollViewRef.current?.scrollTo({ x: i * itemWidth, animated: true });
+                                    commitValue(meta.item);
                                 }}
                             >
-                                {/* Absolutely positioned at a fixed bottom instead
-                                    of flex justify-end, so every tick's bottom
-                                    edge lands on the exact same pixel regardless
-                                    of its height (lg/md/sm). */}
-                                <RNAnimated.View
-                                    style={{
-                                        position: 'absolute',
-                                        bottom: 4,
-                                        left: (itemWidth - tickWidth) / 2,
-                                        width: tickWidth,
-                                        height: tickHeight,
-                                        borderRadius: 1,
-                                        backgroundColor,
-                                        opacity,
-                                    }}
+                                {/* Unfilled color only - the overlay below paints
+                                    the filled (primary/goal-blue) version on top
+                                    wherever the ruler has scrolled past. See the
+                                    overlay's comment for why coloring is split
+                                    this way instead of animating each tick. */}
+                                <TickMark
+                                    size={meta.tickSize}
+                                    slotWidth={itemWidth}
+                                    color={meta.isGoal ? GOAL_LIGHT_BLUE : (theme.textMuted ?? theme.text)}
+                                    opacity={tickOpacities[i]}
                                 />
                             </TouchableOpacity>
                         );
@@ -377,7 +391,7 @@ function HorizontalSelectorWheelBase({
                         // width/2 sliced it in half instead of including the
                         // whole mark.
                         width: width / 2 + itemWidth / 2,
-                        height: 56,
+                        height: WHEEL_HEIGHT,
                         overflow: 'hidden',
                     }}
                 >
@@ -385,35 +399,22 @@ function HorizontalSelectorWheelBase({
                         style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            height: 56,
+                            height: WHEEL_HEIGHT,
                             paddingHorizontal: (width - itemWidth) / 2,
                             transform: [{ translateX: overlayTranslateX }],
                         }}
                     >
-                        {inlineData.map((item, i) => {
-                            const meta = tickMeta[i];
-                            if (item === null || !meta) {
-                                return <View key={`fill-pad-${i}`} style={{ width: itemWidth, height: 56 }} />;
+                        {tickMeta.map((meta, i) => {
+                            if (meta === null) {
+                                return <View key={`fill-pad-${i}`} style={{ width: itemWidth, height: WHEEL_HEIGHT }} />;
                             }
-                            const { width: tickWidth, height: tickHeight } = TICK_DIMENSIONS[meta.tickSize];
-                            const backgroundColor = meta.isGoal ? GOAL_BLUE : theme.primary;
-                            const opacity = scrollX.interpolate({
-                                ...getFadeOpacityRange(i * itemWidth, width / 2),
-                                extrapolate: 'clamp',
-                            });
                             return (
-                                <View key={`fill-${i}`} style={{ width: itemWidth, height: 56 }}>
-                                    <RNAnimated.View
-                                        style={{
-                                            position: 'absolute',
-                                            bottom: 4,
-                                            left: (itemWidth - tickWidth) / 2,
-                                            width: tickWidth,
-                                            height: tickHeight,
-                                            borderRadius: 1,
-                                            backgroundColor,
-                                            opacity,
-                                        }}
+                                <View key={`fill-${i}`} style={{ width: itemWidth, height: WHEEL_HEIGHT }}>
+                                    <TickMark
+                                        size={meta.tickSize}
+                                        slotWidth={itemWidth}
+                                        color={meta.isGoal ? GOAL_BLUE : theme.primary}
+                                        opacity={tickOpacities[i]}
                                     />
                                 </View>
                             );

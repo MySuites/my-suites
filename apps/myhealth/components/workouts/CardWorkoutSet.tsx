@@ -2,16 +2,21 @@ import React, { useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Pressable, useWindowDimensions, Vibration, useColorScheme } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
-import { DurationTimerPicker } from './DurationTimerPicker';
-import { HorizontalSelectorWheel } from './HorizontalSelectorWheel';
-import { VerticalSelectorWheel } from './VerticalSelectorWheel';
-import { formatSeconds, formatRestTime } from '../../utils/formatting';
-import { OutdoorRunPanel } from './OutdoorRunPanel';
-import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import { IconSymbol } from "@mysuite/ui";
+
+import { getExerciseFields } from './getExerciseFields';
+import { HorizontalSelectorWheel } from './HorizontalSelectorWheel';
+import { OutdoorRunPanel } from './OutdoorRunPanel';
+import { VerticalSelectorWheel } from './VerticalSelectorWheel';
+import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
-import { lbToDisplay, displayToLb, roundForDisplay, snapToValues } from '../../utils/units';
+import { formatSeconds, formatRestTime } from '../../utils/formatting';
 import { getSuggestedGoal, getSuggestedUnilateralGoal, getSuggestedDurationGoal } from '../../utils/progressiveOverload';
+import { lbToDisplay, displayToLb, roundForDisplay, snapToValues } from '../../utils/units';
+import { getEffectiveBodyweightLoad, isOutdoorGpsExercise as computeIsOutdoorGpsExercise } from '../../utils/workout-logic';
+
+type SetField = 'weight' | 'reps' | 'reps_left' | 'reps_right' | 'duration' | 'distance' | 'rpe';
+type TickSize = 'lg' | 'md' | 'sm';
 
 const INLINE_MIN_VALUES = Array.from({ length: 15 }, (_, i) => i);
 const INLINE_SEC_VALUES = Array.from({ length: 60 }, (_, i) => i);
@@ -26,24 +31,221 @@ const ASSISTABLE_WEIGHT_VALUES_LB = Array.from({ length: 261 }, (_, i) => -150 +
 const ASSISTABLE_WEIGHT_VALUES_KG = Array.from({ length: 261 }, (_, i) => -75 + i * 1.25); // -75 to 250
 const REP_VALUES = Array.from({ length: 51 }, (_, i) => i); // 0 to 50
 
-import { getExerciseFields } from './getExerciseFields';
-import { getEffectiveBodyweightLoad, isOutdoorGpsExercise as computeIsOutdoorGpsExercise } from '../../utils/workout-logic';
+// Ruler-style ticks (not per-item numbers), so tick spacing doesn't need to
+// match a "one visible neighbor" width like a number wheel would - the
+// wheel's own padding keeps it centered for any itemWidth. Kept tight so
+// dragging feels like a real meter stick.
+const WHEEL_ITEM_WIDTH = 16;
+const WHEEL_HEIGHT = 56;
+const DURATION_WHEEL_HEIGHT = 120;
+const DURATION_ITEM_HEIGHT = 40;
+const PREP_OPTIONS = [0, 3, 5, 10];
 
 // Weight/reps wheel tick heights: big at every 10, medium at every 5, small
 // otherwise. Module-level (not defined inline in render) so it's a stable
 // function reference across renders - the wheel is React.memo'd and a fresh
 // inline function every render would defeat that.
-const getTickSizeByTens = (val: number): 'lg' | 'md' | 'sm' => {
+function getTickSizeByTens(val: number): TickSize {
     const v = Math.abs(val);
     if (v % 10 === 0) return 'lg';
     if (v % 5 === 0) return 'md';
     return 'sm';
-};
+}
+
+// Fields that carry over from the previous log / exercise default when this
+// set hasn't been touched yet.
+const CARRYOVER_FIELDS: SetField[] = ['reps', 'reps_left', 'reps_right', 'duration', 'distance'];
+
+function isBlank(val: any): boolean {
+    return val === undefined || val === null || val === '';
+}
+
+function getTextColor(val: string): string {
+    return val === '' ? 'text-light-muted dark:text-dark-muted' : 'text-light dark:text-dark';
+}
+
+// Numeric text inputs only accept a (possibly decimal) number or an empty
+// string, so the field can never hold an unparseable value.
+function isNumericInput(text: string): boolean {
+    return text === '' || /^\d*\.?\d*$/.test(text);
+}
+
+// Fraction of the countdown ring left filled. Prep counts its own countdown
+// down; a stopwatch has no target to count down to, so it sweeps the ring
+// once per minute like a stopwatch hand; an idle clock shows a full ring.
+function getClockProgress({
+    isRunning,
+    isPrepping,
+    isStopwatch,
+    prepTotalSecs,
+    prepRemainingSecs,
+    seconds,
+    targetSecs,
+}: {
+    isRunning: boolean;
+    isPrepping: boolean;
+    isStopwatch: boolean;
+    prepTotalSecs: number;
+    prepRemainingSecs: number;
+    seconds: number;
+    targetSecs: number;
+}): number {
+    if (!isRunning) return 1;
+    if (isPrepping) return prepTotalSecs > 0 ? prepRemainingSecs / prepTotalSecs : 0;
+    if (isStopwatch) return (seconds % 60) / 60;
+    return targetSecs > 0 ? seconds / targetSecs : 0;
+}
+
+function formatAssistableWeight(weight: number): string {
+    return weight > 0 ? `+${weight}` : `${weight}`;
+}
+
+interface DistanceRowProps {
+    value: string;
+    onChange: (val: string) => void;
+    placeholderColor: string;
+    className?: string;
+}
+
+function DistanceRow({ value, onChange, placeholderColor, className = '' }: DistanceRowProps) {
+    return (
+        <View className={`flex-row justify-between items-center ${className}`}>
+            <Text className="text-sm font-semibold text-light-muted dark:text-dark-muted">Distance</Text>
+            <TextInput
+                className={`w-24 bg-black/5 dark:bg-white/5 rounded-lg px-3 py-1.5 text-right text-sm font-bold ${getTextColor(value)}`}
+                value={value}
+                onChangeText={(t: string) => { if (isNumericInput(t)) onChange(t); }}
+                keyboardType="numeric"
+                placeholder="-"
+                placeholderTextColor={placeholderColor}
+                selectTextOnFocus
+            />
+        </View>
+    );
+}
+
+// Resting mirror of HorizontalSelectorWheel's ruler + value label, shown
+// until the real wheel mounts so the swap is seamless (only the tick marks
+// fade in).
+function WheelPlaceholder({ text, isAtGoal, goalColor }: { text: string; isAtGoal: boolean; goalColor: string }) {
+    return (
+        <View>
+            <View style={{ height: WHEEL_HEIGHT, justifyContent: 'center', alignItems: 'center' }}>
+                <View
+                    className="border-l border-r border-primary/20 bg-primary/5"
+                    style={{ width: WHEEL_ITEM_WIDTH, height: WHEEL_HEIGHT, borderRadius: 12 }}
+                />
+            </View>
+            <View className="items-center justify-center flex-row mt-1">
+                <Text
+                    className="font-black text-2xl text-light dark:text-dark"
+                    style={isAtGoal ? { color: goalColor } : undefined}
+                >
+                    {text}
+                </Text>
+            </View>
+        </View>
+    );
+}
+
+// The band marking the selected row of the m:s duration wheels. Rendered
+// identically behind both the live wheels and their static placeholder.
+function DurationSelectionBand() {
+    return (
+        <View
+            className="absolute left-0 right-0 border-t border-b border-primary/20 bg-primary/5"
+            style={{ height: DURATION_ITEM_HEIGHT, top: DURATION_ITEM_HEIGHT, borderRadius: 6 }}
+            pointerEvents="none"
+        />
+    );
+}
+
+function DurationUnitLabel({ unit, className = '' }: { unit: string; className?: string }) {
+    return <Text className={`text-sm font-bold text-light dark:text-dark ${className}`} style={{ width: 12 }}>{unit}</Text>;
+}
+
+// Static mirror of the duration wheels' resting state so the swap to the live
+// wheels is seamless — same band, columns and labels, with the selected
+// min/sec at the wheel's selected font size.
+function StaticDurationDisplay({ currentMin, currentSec, goalMin, goalSec, goalColor }: {
+    currentMin: number;
+    currentSec: number;
+    goalMin?: number;
+    goalSec?: number;
+    goalColor: string;
+}) {
+    const renderColumn = (val: number, goal?: number) => (
+        <View style={{ height: DURATION_WHEEL_HEIGHT, width: 50 }} className="items-center justify-center">
+            <Text
+                className="font-black text-light dark:text-dark"
+                style={{ fontSize: 36, ...(goal !== undefined && val === goal ? { color: goalColor } : null) }}
+            >
+                {val}
+            </Text>
+        </View>
+    );
+
+    return (
+        <View style={{ height: DURATION_WHEEL_HEIGHT, flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
+            <DurationSelectionBand />
+            {renderColumn(currentMin, goalMin)}
+            <DurationUnitLabel unit="m" className="mr-0.5" />
+            <Text className="text-light dark:text-dark font-bold px-1 text-3xl opacity-60">:</Text>
+            {renderColumn(currentSec, goalSec)}
+            <DurationUnitLabel unit="s" />
+        </View>
+    );
+}
+
+// Prep countdown selector - flanks the clock on the left, stacked vertically
+// to match the flank's narrow column.
+function PrepTimeSelector({ selectedPrepSec, onSelect, isDark }: {
+    selectedPrepSec: number;
+    onSelect: (val: number) => void;
+    isDark: boolean;
+}) {
+    return (
+        <View style={{ marginRight: 36, alignItems: 'center' }}>
+            <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted mb-1.5 uppercase tracking-widest">Prep</Text>
+            <View className="flex-col items-center bg-black/10 dark:bg-white/10 rounded-2xl p-0.5" style={{ width: 44 }}>
+                {PREP_OPTIONS.map((val) => {
+                    const isSelected = selectedPrepSec === val;
+                    return (
+                        <Pressable
+                            key={val}
+                            onPress={() => onSelect(val)}
+                            style={{
+                                width: '100%',
+                                alignItems: 'center',
+                                paddingHorizontal: 4,
+                                paddingVertical: 12,
+                                borderRadius: 14,
+                                backgroundColor: isSelected ? (isDark ? '#2c2c2e' : '#fff') : 'transparent',
+                            }}
+                        >
+                            <Text
+                                numberOfLines={1}
+                                adjustsFontSizeToFit
+                                style={{
+                                    fontSize: 13,
+                                    fontWeight: '700',
+                                    color: isSelected ? '#f97316' : isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
+                                }}
+                            >
+                                {val === 0 ? 'None' : `${val}s`}
+                            </Text>
+                        </Pressable>
+                    );
+                })}
+            </View>
+        </View>
+    );
+}
 
 interface CardWorkoutSetProps {
     index: number;
     exercise: any;
-    onUpdateSetTarget?: (index: number, key: 'weight' | 'reps' | 'reps_left' | 'reps_right' | 'duration' | 'distance' | 'rpe', value: string) => void;
+    onUpdateSetTarget?: (index: number, key: SetField, value: string) => void;
     onDeleteSet: (index: number) => void;
     onPressRPE?: (index: number, currentVal: string) => void;
     theme: any;
@@ -102,8 +304,6 @@ function CardWorkoutSetInner({
     const { unitSystem, weightUnit } = useUnitPreference();
     const isSmallScreen = windowHeight < 900;
     const rowPadding = isSmallScreen ? 'py-1' : 'py-2';
-    const [isDurationPickerVisible, setIsDurationPickerVisible] = React.useState(false);
-    const [durationAutoStart, setDurationAutoStart] = React.useState(false);
 
     // Always start false so mounting a card never synchronously builds the
     // heavy wheel inside the same commit that swaps the current exercise —
@@ -132,13 +332,15 @@ function CardWorkoutSetInner({
     const movementType = exercise.movementType || inferMovementType(exercise.name, equipment);
     const isUnilateral = movementType === 'unilateral';
 
-    const getValue = (field: 'weight' | 'reps' | 'reps_left' | 'reps_right' | 'duration' | 'distance' | 'rpe') => {
+    const getValue = (field: SetField): string => {
         let val = exercise.setTargets?.[index]?.[field];
-        
-        if ((val === undefined || val === null || val === '') && field === 'duration' && !showReps) {
+
+        // Legacy rows stored a single-purpose value under `reps` — fall back
+        // to it for exercises that only track duration (or only distance).
+        if (isBlank(val) && field === 'duration' && !showReps) {
             val = exercise.setTargets?.[index]?.reps;
         }
-        if ((val === undefined || val === null || val === '') && field === 'distance' && !showReps && !showDuration) {
+        if (isBlank(val) && field === 'distance' && !showReps && !showDuration) {
             val = exercise.setTargets?.[index]?.reps;
         }
 
@@ -147,34 +349,15 @@ function CardWorkoutSetInner({
         // cleared field (val === '') must stay empty, otherwise the input
         // snaps back to a non-empty value the instant the user backspaces it,
         // making it impossible to clear the field or type a fresh "0".
-        if (isActiveWorkout && (val === undefined || val === null)) {
-            if (field === 'reps' || field === 'reps_left' || field === 'reps_right' || field === 'duration' || field === 'distance') {
-                const prev = exercise.previousLog?.[index];
-                if (prev) {
-                    if (field === 'reps' && prev.reps !== undefined && prev.reps !== null) {
-                        return prev.reps.toString();
-                    }
-                    if (field === 'reps_left' && prev.reps_left !== undefined && prev.reps_left !== null) {
-                        return prev.reps_left.toString();
-                    }
-                    if (field === 'reps_right' && prev.reps_right !== undefined && prev.reps_right !== null) {
-                        return prev.reps_right.toString();
-                    }
-                    if (field === 'duration' && prev.duration !== undefined && prev.duration !== null) {
-                        return prev.duration.toString();
-                    }
-                    if (field === 'distance' && prev.distance !== undefined && prev.distance !== null) {
-                        return prev.distance.toString();
-                    }
-                }
-                if (exercise.reps !== undefined && exercise.reps !== null && exercise.reps !== 0) {
-                    return exercise.reps.toString();
-                }
-                return '';
-            }
+        if (isActiveWorkout && val == null && CARRYOVER_FIELDS.includes(field)) {
+            // The previous log uses the same field names as setTargets.
+            const prevVal = exercise.previousLog?.[index]?.[field];
+            if (prevVal != null) return prevVal.toString();
+            if (exercise.reps != null && exercise.reps !== 0) return exercise.reps.toString();
+            return '';
         }
 
-        if (val === undefined || val === null) return '';
+        if (val == null) return '';
         return val.toString();
     };
 
@@ -270,9 +453,12 @@ function CardWorkoutSetInner({
     const [isLocalPrepping, setIsLocalPrepping] = React.useState(false);
     // Timer (countdown to a target duration) vs Stopwatch (counts up with no
     // target; the elapsed time becomes this set's logged duration on stop).
-    const [isStopwatchMode, setIsStopwatchModeState] = React.useState(isOutdoorGpsExercise);
-    // Running/Biking are always stopwatch mode — no toggle rendered for them.
-    const setIsStopwatchMode = isOutdoorGpsExercise ? () => {} : setIsStopwatchModeState;
+    const [isStopwatchMode, setIsStopwatchMode] = React.useState(isOutdoorGpsExercise);
+    // Running/Biking are always stopwatch mode — no toggle is rendered for
+    // them, and the mode can't be flipped away.
+    const toggleStopwatchMode = () => {
+        if (!isOutdoorGpsExercise) setIsStopwatchMode((prev) => !prev);
+    };
     const stopwatchTogglePos = useSharedValue(0);
     React.useEffect(() => {
         stopwatchTogglePos.value = withTiming(isStopwatchMode ? 1 : 0, {
@@ -283,83 +469,57 @@ function CardWorkoutSetInner({
     const stopwatchToggleThumbStyle = useAnimatedStyle(() => ({
         transform: [{ translateY: stopwatchTogglePos.value * 42 }],
     }));
-    const localIntervalRef = React.useRef<any>(null);
-
     React.useEffect(() => {
-        if (isLocalTimerRunning) {
-            localIntervalRef.current = setInterval(() => {
-                if (isLocalPrepping) {
-                    setLocalPrepSecs(prev => {
-                        if (prev <= 1) {
-                            setIsLocalPrepping(false);
-                            const duration = parseInt(durationVal) || 0;
-                            Vibration.vibrate(100);
-                            if (isStopwatchMode) {
-                                setLocalRemainingSecs(0);
-                                return 0;
-                            }
-                            setLocalRemainingSecs(duration);
-                            if (duration <= 0) {
-                                setIsLocalTimerRunning(false);
-                                Vibration.vibrate([0, 500, 200, 500]);
-                                return 0;
-                            }
-                            return 0;
-                        }
+        if (!isLocalTimerRunning) return;
+
+        const handle = setInterval(() => {
+            if (isLocalPrepping) {
+                setLocalPrepSecs(prev => {
+                    if (prev > 1) {
                         Vibration.vibrate(10);
                         return prev - 1;
-                    });
-                } else if (isStopwatchMode) {
-                    setLocalRemainingSecs(prev => prev + 1);
-                } else {
-                    setLocalRemainingSecs(prev => {
-                        if (prev <= 1) {
+                    }
+                    // Prep just finished — hand over to the timer/stopwatch.
+                    setIsLocalPrepping(false);
+                    const duration = parseInt(durationVal) || 0;
+                    Vibration.vibrate(100);
+                    if (isStopwatchMode) {
+                        setLocalRemainingSecs(0);
+                    } else {
+                        setLocalRemainingSecs(duration);
+                        if (duration <= 0) {
                             setIsLocalTimerRunning(false);
                             Vibration.vibrate([0, 500, 200, 500]);
-                            return 0;
                         }
-                        return prev - 1;
-                    });
-                }
-            }, 1000);
-        } else {
-            if (localIntervalRef.current) {
-                clearInterval(localIntervalRef.current);
+                    }
+                    return 0;
+                });
+            } else if (isStopwatchMode) {
+                setLocalRemainingSecs(prev => prev + 1);
+            } else {
+                setLocalRemainingSecs(prev => {
+                    if (prev > 1) return prev - 1;
+                    setIsLocalTimerRunning(false);
+                    Vibration.vibrate([0, 500, 200, 500]);
+                    return 0;
+                });
             }
-        }
-        return () => {
-            if (localIntervalRef.current) {
-                clearInterval(localIntervalRef.current);
-            }
-        };
+        }, 1000);
+
+        return () => clearInterval(handle);
     }, [isLocalTimerRunning, isLocalPrepping, isStopwatchMode, durationVal]);
 
     const startLocalTimer = () => {
         const prep = selectedPrepSec;
-        if (isStopwatchMode) {
-            if (prep > 0) {
-                setIsLocalPrepping(true);
-                setLocalPrepSecs(prep);
-            } else {
-                setIsLocalPrepping(false);
-            }
-            setLocalRemainingSecs(0);
-            setIsLocalTimerRunning(true);
-            return;
-        }
+        // A stopwatch always has something to count; a countdown timer needs
+        // either a target duration or a prep phase to be worth starting.
+        const duration = isStopwatchMode ? 0 : (parseInt(durationVal) || 0);
+        if (!isStopwatchMode && duration <= 0 && prep <= 0) return;
 
-        const duration = parseInt(durationVal) || 0;
-        if (duration > 0 || prep > 0) {
-            if (prep > 0) {
-                setIsLocalPrepping(true);
-                setLocalPrepSecs(prep);
-                setLocalRemainingSecs(duration);
-            } else {
-                setIsLocalPrepping(false);
-                setLocalRemainingSecs(duration);
-            }
-            setIsLocalTimerRunning(true);
-        }
+        setIsLocalPrepping(prep > 0);
+        if (prep > 0) setLocalPrepSecs(prep);
+        setLocalRemainingSecs(duration);
+        setIsLocalTimerRunning(true);
     };
 
     const stopLocalTimer = () => {
@@ -375,24 +535,16 @@ function CardWorkoutSetInner({
         setSelectedPrepSec(exercisePrepTime || 0);
     }, [exercisePrepTime]);
 
-    const getTextColor = (val: string) => (val === '') ? 'text-light-muted dark:text-dark-muted' : 'text-light dark:text-dark';
-
-    const handleNumericChange = (text: string, currentVal: string, onUpdate: (v: string) => void) => {
-        if (text === '' || /^\d*\.?\d*$/.test(text)) {
-             onUpdate(text);
-        }
-    };
-
     const getPreviousDisplay = () => {
         const prev = exercise.previousLog?.[index];
         if (!prev) return "-";
-        
+
         const parts = [];
-        const formatValue = (val: any, fallback = "0") => (val !== undefined && val !== null && val !== '') ? val : fallback;
+        const formatValue = (val: any, fallback = "0") => (isBlank(val) ? fallback : val);
         // Previous-log weights are stored in lb like everything else — convert
         // to the user's display unit before showing them.
         const formatWeightValue = (val: any, fallback = "0") => {
-            if (val === undefined || val === null || val === '') return fallback;
+            if (isBlank(val)) return fallback;
             const num = parseFloat(val);
             if (isNaN(num)) return fallback;
             return roundForDisplay(lbToDisplay(num, unitSystem), unitSystem);
@@ -439,34 +591,29 @@ function CardWorkoutSetInner({
 
     return (
         <View className={`w-full flex-col px-0 flex-1 ${isOutdoorGpsExercise ? 'py-0 justify-start' : 'py-1 justify-around'}`}>
-            {/* Top Row: Previous and Rest Timer next to each other (not shown for Running/Biking) */}
             {!isOutdoorGpsExercise && (
-            <View className="flex-row justify-between w-full px-0 mb-3">
-                {/* Previous compact square */}
-                <View className="min-w-[80px] h-[72px] items-start justify-center p-1">
-                    <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted" numberOfLines={1}>Previous</Text>
-                    <Text className="text-xl font-bold text-light dark:text-dark mt-1" numberOfLines={1}>
-                        {getPreviousDisplay() || '-'}
-                    </Text>
-                </View>
+                <View className="flex-row justify-between w-full px-0 mb-3">
+                    <View className="min-w-[80px] h-[72px] items-start justify-center p-1">
+                        <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted" numberOfLines={1}>Previous</Text>
+                        <Text className="text-xl font-bold text-light dark:text-dark mt-1" numberOfLines={1}>
+                            {getPreviousDisplay()}
+                        </Text>
+                    </View>
 
-                {/* Rest Timer compact square */}
-                <TouchableOpacity
-                    onPress={() => onPressRestTimer?.()}
-                    className="min-w-[80px] h-[72px] items-end justify-center p-1 active:opacity-75"
-                >
-                    <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted" numberOfLines={1}>Rest</Text>
-                    <Text className="text-xl font-bold text-light dark:text-dark mt-1" numberOfLines={1}>
-                        {formatRestTime(exercise.restTime ?? 90)}
-                    </Text>
-                </TouchableOpacity>
-            </View>
+                    <TouchableOpacity
+                        onPress={() => onPressRestTimer?.()}
+                        className="min-w-[80px] h-[72px] items-end justify-center p-1 active:opacity-75"
+                    >
+                        <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted" numberOfLines={1}>Rest</Text>
+                        <Text className="text-xl font-bold text-light dark:text-dark mt-1" numberOfLines={1}>
+                            {formatRestTime(exercise.restTime ?? 90)}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             )}
 
-            {/* Duration */}
             {showDuration && (
                 <View className={`${(showDistance || showRPE) ? 'border-b border-black/5 dark:border-white/5 pb-3' : ''} flex-col ${isOutdoorGpsExercise ? 'py-0 flex-1' : rowPadding}`}>
-                    {/* Circular Countdown Clock (or, for Running/Biking, a live map + digital stopwatch) */}
                     {isOutdoorGpsExercise ? (
                         <OutdoorRunPanel
                             index={index}
@@ -485,17 +632,86 @@ function CardWorkoutSetInner({
                         const strokeWidth = isSmallScreen ? 10 : 14;
                         const center = clockSize / 2;
                         const circumference = 2 * Math.PI * radius;
-                        const dashoffset = circumference * (1 - (
-                            isLocalTimerRunning
-                                ? (isLocalPrepping
-                                    ? (selectedPrepSec > 0 ? localPrepSecs / selectedPrepSec : 0)
-                                    : (isStopwatchMode
-                                        // No fixed target to count down to — sweep the ring
-                                        // once per minute instead, like a stopwatch hand.
-                                        ? (localRemainingSecs % 60) / 60
-                                        : ((parseInt(durationVal) || 0) > 0 ? localRemainingSecs / (parseInt(durationVal) || 0) : 0)))
-                                : 1.0
-                        ));
+                        const targetSecs = parseInt(durationVal) || 0;
+                        const dashoffset = circumference * (1 - getClockProgress({
+                            isRunning: isLocalTimerRunning,
+                            isPrepping: isLocalPrepping,
+                            isStopwatch: isStopwatchMode,
+                            prepTotalSecs: selectedPrepSec,
+                            prepRemainingSecs: localPrepSecs,
+                            seconds: localRemainingSecs,
+                            targetSecs,
+                        }));
+                        const currentMin = Math.floor(targetSecs / 60);
+                        const currentSec = targetSecs % 60;
+                        const goalMin = suggestedDurationGoal ? Math.floor(suggestedDurationGoal.duration / 60) : undefined;
+                        const goalSec = suggestedDurationGoal ? suggestedDurationGoal.duration % 60 : undefined;
+
+                        // What sits inside the ring: a live readout while the
+                        // timer runs, otherwise the editable m:s duration
+                        // wheels (a stopwatch has nothing to preset, so it
+                        // just shows a zeroed readout).
+                        let clockFace;
+                        if (isLocalTimerRunning) {
+                            clockFace = (
+                                <>
+                                    <Text className="text-light-muted dark:text-dark-muted uppercase tracking-wider text-[11px] font-semibold mb-0.5">
+                                        {isLocalPrepping ? 'Prep' : (isStopwatchMode ? 'Elapsed' : 'Time')}
+                                    </Text>
+                                    <Text className={`font-black text-light dark:text-dark text-center ${isSmallScreen ? 'text-5xl' : 'text-6xl'}`}>
+                                        {isLocalPrepping ? `${localPrepSecs}s` : formatSeconds(localRemainingSecs)}
+                                    </Text>
+                                </>
+                            );
+                        } else if (isStopwatchMode) {
+                            clockFace = (
+                                <>
+                                    <Text className="text-light-muted dark:text-dark-muted uppercase tracking-wider text-[11px] font-semibold mb-0.5">
+                                        Stopwatch
+                                    </Text>
+                                    <Text className={`font-black text-light dark:text-dark text-center ${isSmallScreen ? 'text-5xl' : 'text-6xl'}`}>
+                                        00:00
+                                    </Text>
+                                </>
+                            );
+                        } else if (wheelsReady) {
+                            clockFace = (
+                                <View style={{ height: DURATION_WHEEL_HEIGHT, flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
+                                    <DurationSelectionBand />
+                                    <VerticalSelectorWheel
+                                        value={currentMin}
+                                        onValueChange={handleDurationMinChange}
+                                        values={INLINE_MIN_VALUES}
+                                        itemHeight={DURATION_ITEM_HEIGHT}
+                                        width={50}
+                                        goalValue={goalMin}
+                                        goalColor={goalColor}
+                                    />
+                                    <DurationUnitLabel unit="m" className="mr-0.5" />
+                                    <Text className="text-light dark:text-dark font-bold px-1 text-3xl opacity-60">:</Text>
+                                    <VerticalSelectorWheel
+                                        value={currentSec}
+                                        onValueChange={handleDurationSecChange}
+                                        values={INLINE_SEC_VALUES}
+                                        itemHeight={DURATION_ITEM_HEIGHT}
+                                        width={50}
+                                        goalValue={goalSec}
+                                        goalColor={goalColor}
+                                    />
+                                    <DurationUnitLabel unit="s" />
+                                </View>
+                            );
+                        } else {
+                            clockFace = (
+                                <StaticDurationDisplay
+                                    currentMin={currentMin}
+                                    currentSec={currentSec}
+                                    goalMin={goalMin}
+                                    goalSec={goalSec}
+                                    goalColor={goalColor}
+                                />
+                            );
+                        }
 
                         return (
                             <View className="w-full items-center justify-center my-0.5">
@@ -507,192 +723,58 @@ function CardWorkoutSetInner({
                                     whenever the row's natural content width doesn't line
                                     up with how the parent centers it. */}
                                 <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
-                                    {/* Prep timer selector - flanks the clock on the left
-                                        (moved here from the bottom Prep/RPE row, and turned
-                                        vertical to match the flank's narrow column). */}
                                     <View style={{ width: 96, alignItems: 'flex-end' }}>
                                         {wheelsReady && (
-                                            <View style={{ marginRight: 36, alignItems: 'center' }}>
-                                                <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted mb-1.5 uppercase tracking-widest">Prep</Text>
-                                                <View className="flex-col items-center bg-black/10 dark:bg-white/10 rounded-2xl p-0.5" style={{ width: 44 }}>
-                                                    {[0, 3, 5, 10].map((val) => (
-                                                        <Pressable
-                                                            key={val}
-                                                            onPress={() => {
-                                                                setSelectedPrepSec(val);
-                                                                onUpdatePrepTime?.(val);
-                                                            }}
-                                                            style={{
-                                                                width: '100%',
-                                                                alignItems: 'center',
-                                                                paddingHorizontal: 4,
-                                                                paddingVertical: 12,
-                                                                borderRadius: 14,
-                                                                backgroundColor: selectedPrepSec === val
-                                                                    ? (colorScheme === 'dark' ? '#2c2c2e' : '#fff')
-                                                                    : 'transparent',
-                                                            }}
-                                                        >
-                                                            <Text
-                                                                numberOfLines={1}
-                                                                adjustsFontSizeToFit
-                                                                style={{
-                                                                    fontSize: 13,
-                                                                    fontWeight: '700',
-                                                                    color: selectedPrepSec === val ? '#f97316' : colorScheme === 'dark' ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                                                                }}
-                                                            >
-                                                                {val === 0 ? 'None' : `${val}s`}
-                                                            </Text>
-                                                        </Pressable>
-                                                    ))}
-                                                </View>
-                                            </View>
+                                            <PrepTimeSelector
+                                                selectedPrepSec={selectedPrepSec}
+                                                onSelect={(val) => {
+                                                    setSelectedPrepSec(val);
+                                                    onUpdatePrepTime?.(val);
+                                                }}
+                                                isDark={colorScheme === 'dark'}
+                                            />
                                         )}
                                     </View>
-                                <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 12 }}>
-                                <View style={{ width: clockSize, height: clockSize, justifyContent: 'center', alignItems: 'center' }}>
-                                    <Svg width={clockSize} height={clockSize}>
-                                        {/* Background Circle */}
-                                        <Circle
-                                            cx={center}
-                                            cy={center}
-                                            r={radius}
-                                            stroke={theme.bgDark === '#000000' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}
-                                            strokeWidth={strokeWidth}
-                                            fill="transparent"
-                                        />
-                                        {/* Foreground Progress Circle */}
-                                        <Circle
-                                            cx={center}
-                                            cy={center}
-                                            r={radius}
-                                            stroke={isLocalTimerRunning && isLocalPrepping ? '#ff9f0a' : theme.primary}
-                                            strokeWidth={strokeWidth}
-                                            fill="transparent"
-                                            strokeDasharray={circumference}
-                                            strokeDashoffset={dashoffset}
-                                            strokeLinecap="round"
-                                            transform={`rotate(-90 ${center} ${center})`}
-                                        />
-                                    </Svg>
-                                    <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', width: clockSize - 40, height: clockSize - 40 }}>
-                                        {isLocalTimerRunning ? (
-                                            <>
-                                                <Text className="text-light-muted dark:text-dark-muted uppercase tracking-wider text-[11px] font-semibold mb-0.5">
-                                                    {isLocalPrepping ? 'Prep' : (isStopwatchMode ? 'Elapsed' : 'Time')}
-                                                </Text>
-                                                <Text className={`font-black text-light dark:text-dark text-center ${isSmallScreen ? 'text-5xl' : 'text-6xl'}`}>
-                                                    {isLocalPrepping ? `${localPrepSecs}s` : formatSeconds(localRemainingSecs)}
-                                                </Text>
-                                            </>
-                                        ) : isStopwatchMode ? (
-                                            <>
-                                                <Text className="text-light-muted dark:text-dark-muted uppercase tracking-wider text-[11px] font-semibold mb-0.5">
-                                                    Stopwatch
-                                                </Text>
-                                                <Text className={`font-black text-light dark:text-dark text-center ${isSmallScreen ? 'text-5xl' : 'text-6xl'}`}>
-                                                    00:00
-                                                </Text>
-                                            </>
-                                        ) : (() => {
-                                            const totalSec = parseInt(durationVal) || 0;
-                                            const currentMin = Math.floor(totalSec / 60);
-                                            const currentSec = totalSec % 60;
-                                            const goalMin = suggestedDurationGoal
-                                                ? Math.floor(suggestedDurationGoal.duration / 60)
-                                                : undefined;
-                                            const goalSec = suggestedDurationGoal
-                                                ? suggestedDurationGoal.duration % 60
-                                                : undefined;
-                                            const isMinAtGoal = goalMin !== undefined && currentMin === goalMin;
-                                            const isSecAtGoal = goalSec !== undefined && currentSec === goalSec;
 
-                                            return wheelsReady ? (
-                                                <View style={{ height: 120, flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
-                                                    {/* Selection Highlight */}
-                                                    <View
-                                                        className="absolute left-0 right-0 border-t border-b border-primary/20 bg-primary/5"
-                                                        style={{ height: 40, top: 40, borderRadius: 6 }}
-                                                        pointerEvents="none"
-                                                    />
-
-                                                    <VerticalSelectorWheel
-                                                        value={currentMin}
-                                                        onValueChange={handleDurationMinChange}
-                                                        values={INLINE_MIN_VALUES}
-                                                        itemHeight={40}
-                                                        width={50}
-                                                        goalValue={goalMin}
-                                                        goalColor={goalColor}
-                                                    />
-
-                                                    {/* Stationary 'm' Label */}
-                                                    <Text className="text-sm font-bold text-light dark:text-dark mr-0.5" style={{ width: 12 }}>m</Text>
-
-                                                    {/* Colon separator */}
-                                                    <Text className="text-light dark:text-dark font-bold px-1 text-3xl opacity-60">:</Text>
-
-                                                    <VerticalSelectorWheel
-                                                        value={currentSec}
-                                                        onValueChange={handleDurationSecChange}
-                                                        values={INLINE_SEC_VALUES}
-                                                        itemHeight={40}
-                                                        width={50}
-                                                        goalValue={goalSec}
-                                                        goalColor={goalColor}
-                                                    />
-
-                                                    {/* Stationary 's' Label */}
-                                                    <Text className="text-sm font-bold text-light dark:text-dark" style={{ width: 12 }}>s</Text>
-                                                </View>
-                                            ) : (
-                                                /* Static mirror of the live wheel's resting
-                                                   state so the swap is seamless — same
-                                                   highlight band, columns and labels, with
-                                                   the selected min/sec at the wheel's
-                                                   selected font size (36). */
-                                                <View style={{ height: 120, flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
-                                                    <View
-                                                        className="absolute left-0 right-0 border-t border-b border-primary/20 bg-primary/5"
-                                                        style={{ height: 40, top: 40, borderRadius: 6 }}
-                                                        pointerEvents="none"
-                                                    />
-                                                    <View style={{ height: 120, width: 50 }} className="items-center justify-center">
-                                                        <Text
-                                                            className="font-black text-light dark:text-dark"
-                                                            style={{ fontSize: 36, ...(isMinAtGoal ? { color: goalColor } : null) }}
-                                                        >
-                                                            {currentMin}
-                                                        </Text>
-                                                    </View>
-                                                    <Text className="text-sm font-bold text-light dark:text-dark mr-0.5" style={{ width: 12 }}>m</Text>
-                                                    <Text className="text-light dark:text-dark font-bold px-1 text-3xl opacity-60">:</Text>
-                                                    <View style={{ height: 120, width: 50 }} className="items-center justify-center">
-                                                        <Text
-                                                            className="font-black text-light dark:text-dark"
-                                                            style={{ fontSize: 36, ...(isSecAtGoal ? { color: goalColor } : null) }}
-                                                        >
-                                                            {currentSec}
-                                                        </Text>
-                                                    </View>
-                                                    <Text className="text-sm font-bold text-light dark:text-dark" style={{ width: 12 }}>s</Text>
-                                                </View>
-                                            );
-                                        })()}
+                                    <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 12 }}>
+                                        <View style={{ width: clockSize, height: clockSize, justifyContent: 'center', alignItems: 'center' }}>
+                                            <Svg width={clockSize} height={clockSize}>
+                                                <Circle
+                                                    cx={center}
+                                                    cy={center}
+                                                    r={radius}
+                                                    stroke={theme.bgDark === '#000000' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}
+                                                    strokeWidth={strokeWidth}
+                                                    fill="transparent"
+                                                />
+                                                <Circle
+                                                    cx={center}
+                                                    cy={center}
+                                                    r={radius}
+                                                    stroke={isLocalTimerRunning && isLocalPrepping ? '#ff9f0a' : theme.primary}
+                                                    strokeWidth={strokeWidth}
+                                                    fill="transparent"
+                                                    strokeDasharray={circumference}
+                                                    strokeDashoffset={dashoffset}
+                                                    strokeLinecap="round"
+                                                    transform={`rotate(-90 ${center} ${center})`}
+                                                />
+                                            </Svg>
+                                            <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', width: clockSize - 40, height: clockSize - 40 }}>
+                                                {clockFace}
+                                            </View>
+                                        </View>
                                     </View>
-                                </View>
-                                </View>
 
                                     {/* Timer/Stopwatch mode toggle, stacked above the
                                         Play/Stop button - both flank the clock on the
-                                        right together now. */}
+                                        right. */}
                                     <View style={{ width: 96, alignItems: 'flex-start' }}>
                                         {wheelsReady && (
                                             <View style={{ marginLeft: 36, alignItems: 'center' }}>
                                                 <TouchableOpacity
                                                     disabled={isLocalTimerRunning}
-                                                    onPress={() => setIsStopwatchMode(prev => !prev)}
+                                                    onPress={toggleStopwatchMode}
                                                     className="flex-col bg-black/10 dark:bg-white/10 rounded-full p-0.5"
                                                     style={{ width: 48, height: 88, marginBottom: 16, opacity: isLocalTimerRunning ? 0.5 : 1 }}
                                                 >
@@ -750,35 +832,21 @@ function CardWorkoutSetInner({
                     {/* Distance (shown here, between the timer/map and Prep/RPE, for duration+distance exercises).
                         Outdoor GPS exercises (Running/Biking) render their own Distance tile above instead. */}
                     {showDistance && !isOutdoorGpsExercise && (
-                        <View className="flex-row justify-between items-center mt-1.5">
-                            <Text className="text-sm font-semibold text-light-muted dark:text-dark-muted">Distance</Text>
-                            <TextInput
-                                className={`w-24 bg-black/5 dark:bg-white/5 rounded-lg px-3 py-1.5 text-right text-sm font-bold ${getTextColor(getValue('distance'))}`}
-                                value={getValue('distance')}
-                                onChangeText={(t: string) => handleNumericChange(t, getValue('distance'), (v) => onUpdateSetTarget?.(index, 'distance', v))}
-                                keyboardType="numeric"
-                                placeholder="-"
-                                placeholderTextColor={theme.placeholder || '#888'}
-                                selectTextOnFocus
-                            />
-                        </View>
+                        <DistanceRow
+                            value={getValue('distance')}
+                            onChange={(v) => onUpdateSetTarget?.(index, 'distance', v)}
+                            placeholderColor={theme.placeholder || '#888'}
+                            className="mt-1.5"
+                        />
                     )}
 
                 </View>
             )}
 
-            {/* Weight */}
             {showWeight && (
                 <View className="flex-col items-center justify-center py-2">
                     <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Weight ({weightUnit})</Text>
                     {(() => {
-                        // Ruler-style ticks (not per-item numbers), so tick
-                        // spacing doesn't need to match a "one visible
-                        // neighbor" width like the old number wheel did — the
-                        // wheel's own paddingHorizontal = (width-itemWidth)/2
-                        // keeps it centered for any itemWidth. Kept tight so
-                        // dragging feels like a real meter stick.
-                        const weightItemWidth = 16;
                         const allowsAssistance = showBodyweight && showWeight;
                         const weightValues = allowsAssistance
                             ? (unitSystem === 'metric' ? ASSISTABLE_WEIGHT_VALUES_KG : ASSISTABLE_WEIGHT_VALUES_LB)
@@ -797,118 +865,83 @@ function CardWorkoutSetInner({
                             ? snapToValues(lbToDisplay(weightGoalLb, unitSystem), weightValues)
                             : undefined;
                         const isAtGoal = goalDisplayWeight !== undefined && displayWeight === goalDisplayWeight;
-                        return wheelsReady ? (
+                        if (!wheelsReady) {
+                            return (
+                                <WheelPlaceholder
+                                    text={allowsAssistance ? formatAssistableWeight(displayWeight) : String(displayWeight || 0)}
+                                    isAtGoal={isAtGoal}
+                                    goalColor={goalColor}
+                                />
+                            );
+                        }
+                        return (
                             <HorizontalSelectorWheel
                                 value={displayWeight}
                                 onValueChange={handleWeightChange}
                                 values={weightValues}
-                                itemWidth={weightItemWidth}
+                                itemWidth={WHEEL_ITEM_WIDTH}
                                 unit=""
                                 goalValue={goalDisplayWeight}
                                 goalColor={goalColor}
-                                formatValue={allowsAssistance ? (v) => (v > 0 ? `+${v}` : `${v}`) : undefined}
+                                formatValue={allowsAssistance ? formatAssistableWeight : undefined}
                                 getTickSize={getTickSizeByTens}
                             />
-                        ) : (
-                            <View>
-                                {/* Matches the wheel's resting ruler + value-label layout
-                                    so the swap to the live wheel is seamless (only the
-                                    tick marks fade in). */}
-                                <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
-                                    <View
-                                        className="border-l border-r border-primary/20 bg-primary/5"
-                                        style={{ width: weightItemWidth, height: 56, borderRadius: 12 }}
-                                    />
-                                </View>
-                                <View className="items-center justify-center flex-row mt-1">
-                                    <Text
-                                        className="font-black text-2xl text-light dark:text-dark"
-                                        style={isAtGoal ? { color: goalColor } : undefined}
-                                    >
-                                        {allowsAssistance ? (displayWeight > 0 ? `+${displayWeight}` : `${displayWeight}`) : (displayWeight || '0')}
-                                    </Text>
-                                </View>
-                            </View>
                         );
                     })()}
                 </View>
             )}
 
-            {/* Reps */}
             {showReps && (
                 <View className="flex-col items-center justify-center py-2">
                     <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Reps</Text>
                     {(() => {
-                        // Same tight ruler-tick spacing as the weight wheel.
-                        const repsItemWidth = 16;
                         const goalReps = suggestedGoal?.reps;
-                        const placeholder = (field: 'reps' | 'reps_left' | 'reps_right') => {
+                        const renderRepsWheel = (
+                            field: 'reps' | 'reps_left' | 'reps_right',
+                            onChange: (val: number) => void,
+                        ) => {
                             const val = parseInt(getValue(field)) || 0;
-                            const isAtGoal = goalReps !== undefined && val === goalReps;
+                            if (!wheelsReady) {
+                                return (
+                                    <WheelPlaceholder
+                                        text={getValue(field) || '0'}
+                                        isAtGoal={goalReps !== undefined && val === goalReps}
+                                        goalColor={goalColor}
+                                    />
+                                );
+                            }
                             return (
-                                <View>
-                                    {/* Matches the wheel's resting ruler + value-label layout
-                                        so the swap to the live wheel is seamless. */}
-                                    <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
-                                        <View
-                                            className="border-l border-r border-primary/20 bg-primary/5"
-                                            style={{ width: repsItemWidth, height: 56, borderRadius: 12 }}
-                                        />
-                                    </View>
-                                    <View className="items-center justify-center flex-row mt-1">
-                                        <Text
-                                            className="font-black text-2xl text-light dark:text-dark"
-                                            style={isAtGoal ? { color: goalColor } : undefined}
-                                        >
-                                            {getValue(field) || '0'}
-                                        </Text>
-                                    </View>
-                                </View>
+                                <HorizontalSelectorWheel
+                                    value={val}
+                                    onValueChange={onChange}
+                                    values={REP_VALUES}
+                                    itemWidth={WHEEL_ITEM_WIDTH}
+                                    unit=""
+                                    goalValue={goalReps}
+                                    goalColor={goalColor}
+                                    getTickSize={getTickSizeByTens}
+                                />
                             );
                         };
 
-                        if (isUnilateral) {
-                            // L and R wheels are stacked, not side by side, so
-                            // each spans the full card width — centered exactly
-                            // like the weight wheel, not offset by a side label.
-                            return (['left', 'right'] as const).map((side) => {
-                                const field = side === 'left' ? 'reps_left' : 'reps_right';
-                                const label = side === 'left' ? 'Left' : 'Right';
-                                const onChange = side === 'left' ? handleRepsLeftChange : handleRepsRightChange;
-                                return (
-                                    <View key={side} style={{ marginTop: side === 'right' ? 12 : 0, alignItems: 'center' }}>
-                                        <Text className="text-[10px] font-bold text-light-muted dark:text-dark-muted uppercase tracking-widest mb-1">
-                                            {label}
-                                        </Text>
-                                        {wheelsReady ? (
-                                            <HorizontalSelectorWheel
-                                                value={parseInt(getValue(field)) || 0}
-                                                onValueChange={onChange}
-                                                values={REP_VALUES}
-                                                itemWidth={repsItemWidth}
-                                                unit=""
-                                                goalValue={goalReps}
-                                                goalColor={goalColor}
-                                                getTickSize={getTickSizeByTens}
-                                            />
-                                        ) : placeholder(field)}
-                                    </View>
-                                );
-                            });
+                        if (!isUnilateral) {
+                            return renderRepsWheel('reps', handleRepsChange);
                         }
 
-                        return wheelsReady ? (
-                            <HorizontalSelectorWheel
-                                value={parseInt(getValue('reps')) || 0}
-                                onValueChange={handleRepsChange}
-                                values={REP_VALUES}
-                                itemWidth={repsItemWidth}
-                                unit=""
-                                goalValue={goalReps}
-                                goalColor={goalColor}
-                                getTickSize={getTickSizeByTens}
-                            />
-                        ) : placeholder('reps');
+                        // L and R wheels are stacked, not side by side, so
+                        // each spans the full card width — centered exactly
+                        // like the weight wheel, not offset by a side label.
+                        return ([
+                            { side: 'left', field: 'reps_left', label: 'Left', onChange: handleRepsLeftChange },
+                            { side: 'right', field: 'reps_right', label: 'Right', onChange: handleRepsRightChange },
+                        ] as const).map(({ side, field, label, onChange }) => (
+                            <View key={side} style={{ marginTop: side === 'right' ? 12 : 0, alignItems: 'center' }}>
+                                <Text className="text-[10px] font-bold text-light-muted dark:text-dark-muted uppercase tracking-widest mb-1">
+                                    {label}
+                                </Text>
+                                {renderRepsWheel(field, onChange)}
+                            </View>
+                        ));
                     })()}
                 </View>
             )}
@@ -916,24 +949,18 @@ function CardWorkoutSetInner({
             {/* Distance (standalone row for distance-only exercises; duration+distance
                 exercises render it inside the showDuration block above instead) */}
             {showDistance && !showDuration && (
-                <View className={`flex-row justify-between items-center border-b border-black/5 dark:border-white/5 ${rowPadding}`}>
-                    <Text className="text-sm font-semibold text-light-muted dark:text-dark-muted">Distance</Text>
-                    <TextInput
-                        className={`w-24 bg-black/5 dark:bg-white/5 rounded-lg px-3 py-1.5 text-right text-sm font-bold ${getTextColor(getValue('distance'))}`}
-                        value={getValue('distance')}
-                        onChangeText={(t: string) => handleNumericChange(t, getValue('distance'), (v) => onUpdateSetTarget?.(index, 'distance', v))}
-                        keyboardType="numeric"
-                        placeholder="-"
-                        placeholderTextColor={theme.placeholder || '#888'}
-                        selectTextOnFocus
-                    />
-                </View>
+                <DistanceRow
+                    value={getValue('distance')}
+                    onChange={(v) => onUpdateSetTarget?.(index, 'distance', v)}
+                    placeholderColor={theme.placeholder || '#888'}
+                    className={`border-b border-black/5 dark:border-white/5 ${rowPadding}`}
+                />
             )}
 
             {/* RPE - always last, under everything else in the set. */}
             {showRPE && !isOutdoorGpsExercise && (
                 <View className="flex-row justify-end w-full px-0 mt-1">
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         onPress={() => onPressRPE?.(index, getValue('rpe'))}
                         className="min-w-[80px] h-[72px] items-end justify-center p-1 active:opacity-75"
                     >
@@ -944,22 +971,6 @@ function CardWorkoutSetInner({
                     </TouchableOpacity>
                 </View>
             )}
-
-            <DurationTimerPicker
-                visible={isDurationPickerVisible}
-                onClose={() => {
-                    setIsDurationPickerVisible(false);
-                    setDurationAutoStart(false);
-                }}
-                initialValue={parseInt(getValue('duration')) || 0}
-                onSave={(val) => {
-                    onUpdateSetTarget?.(index, 'duration', val.toString());
-                }}
-                isActiveWorkout={isActiveWorkout}
-                autoStart={durationAutoStart}
-                prepTime={exercisePrepTime}
-                onPrepTimeChange={onUpdatePrepTime}
-            />
         </View>
     );
 }
