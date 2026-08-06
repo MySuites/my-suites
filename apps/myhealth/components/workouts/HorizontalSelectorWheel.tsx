@@ -71,7 +71,7 @@ const CurrentValueLabel = React.forwardRef<CurrentValueLabelHandle, {
     const isGoal = goalValue !== undefined && goalColor && displayValue === goalValue;
 
     return (
-        <View className="items-center justify-center flex-row mt-3">
+        <View className="items-center justify-center flex-row mt-1">
             <Text
                 className="font-black text-2xl text-light dark:text-dark"
                 style={isGoal ? { color: goalColor } : undefined}

@@ -281,7 +281,7 @@ function CardWorkoutSetInner({
         });
     }, [isStopwatchMode, stopwatchTogglePos]);
     const stopwatchToggleThumbStyle = useAnimatedStyle(() => ({
-        transform: [{ translateX: stopwatchTogglePos.value * 42 }],
+        transform: [{ translateY: stopwatchTogglePos.value * 42 }],
     }));
     const localIntervalRef = React.useRef<any>(null);
 
@@ -463,152 +463,6 @@ function CardWorkoutSetInner({
             </View>
             )}
 
-            {/* Weight */}
-            {showWeight && (
-                <View className="flex-col items-center justify-center py-2">
-                    <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Weight ({weightUnit})</Text>
-                    {(() => {
-                        // Ruler-style ticks (not per-item numbers), so tick
-                        // spacing doesn't need to match a "one visible
-                        // neighbor" width like the old number wheel did — the
-                        // wheel's own paddingHorizontal = (width-itemWidth)/2
-                        // keeps it centered for any itemWidth. Kept tight so
-                        // dragging feels like a real meter stick.
-                        const weightItemWidth = 16;
-                        const allowsAssistance = showBodyweight && showWeight;
-                        const weightValues = allowsAssistance
-                            ? (unitSystem === 'metric' ? ASSISTABLE_WEIGHT_VALUES_KG : ASSISTABLE_WEIGHT_VALUES_LB)
-                            : (unitSystem === 'metric' ? WEIGHT_VALUES_KG : WEIGHT_VALUES_LB);
-                        // Snapped to an exact entry in weightValues, not just
-                        // rounded — see snapToValues for why that distinction
-                        // matters (a "rounded but not-a-real-step" value fed
-                        // into the wheel causes it to flicker indefinitely).
-                        const displayWeight = snapToValues(lbToDisplay(parseFloat(getValue('weight')) || 0, unitSystem), weightValues);
-                        // Weight goal comes from whichever suggestion applies
-                        // to this exercise — reps-based for rep sets,
-                        // duration-based for timed holds (which may also
-                        // track weight, e.g. a weighted plank).
-                        const weightGoalLb = suggestedGoal?.weight ?? suggestedDurationGoal?.weight;
-                        const goalDisplayWeight = weightGoalLb !== undefined
-                            ? snapToValues(lbToDisplay(weightGoalLb, unitSystem), weightValues)
-                            : undefined;
-                        const isAtGoal = goalDisplayWeight !== undefined && displayWeight === goalDisplayWeight;
-                        return wheelsReady ? (
-                            <HorizontalSelectorWheel
-                                value={displayWeight}
-                                onValueChange={handleWeightChange}
-                                values={weightValues}
-                                itemWidth={weightItemWidth}
-                                unit=""
-                                goalValue={goalDisplayWeight}
-                                goalColor={goalColor}
-                                formatValue={allowsAssistance ? (v) => (v > 0 ? `+${v}` : `${v}`) : undefined}
-                                getTickSize={getTickSizeByTens}
-                            />
-                        ) : (
-                            <View>
-                                {/* Matches the wheel's resting ruler + value-label layout
-                                    so the swap to the live wheel is seamless (only the
-                                    tick marks fade in). */}
-                                <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
-                                    <View
-                                        className="border-l border-r border-primary/20 bg-primary/5"
-                                        style={{ width: weightItemWidth, height: 56, borderRadius: 12 }}
-                                    />
-                                </View>
-                                <View className="items-center justify-center flex-row mt-3">
-                                    <Text
-                                        className="font-black text-2xl text-light dark:text-dark"
-                                        style={isAtGoal ? { color: goalColor } : undefined}
-                                    >
-                                        {allowsAssistance ? (displayWeight > 0 ? `+${displayWeight}` : `${displayWeight}`) : (displayWeight || '0')}
-                                    </Text>
-                                </View>
-                            </View>
-                        );
-                    })()}
-                </View>
-            )}
-
-            {/* Reps */}
-            {showReps && (
-                <View className="flex-col items-center justify-center py-2">
-                    <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Reps</Text>
-                    {(() => {
-                        // Same tight ruler-tick spacing as the weight wheel.
-                        const repsItemWidth = 16;
-                        const goalReps = suggestedGoal?.reps;
-                        const placeholder = (field: 'reps' | 'reps_left' | 'reps_right') => {
-                            const val = parseInt(getValue(field)) || 0;
-                            const isAtGoal = goalReps !== undefined && val === goalReps;
-                            return (
-                                <View>
-                                    {/* Matches the wheel's resting ruler + value-label layout
-                                        so the swap to the live wheel is seamless. */}
-                                    <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
-                                        <View
-                                            className="border-l border-r border-primary/20 bg-primary/5"
-                                            style={{ width: repsItemWidth, height: 56, borderRadius: 12 }}
-                                        />
-                                    </View>
-                                    <View className="items-center justify-center flex-row mt-3">
-                                        <Text
-                                            className="font-black text-2xl text-light dark:text-dark"
-                                            style={isAtGoal ? { color: goalColor } : undefined}
-                                        >
-                                            {getValue(field) || '0'}
-                                        </Text>
-                                    </View>
-                                </View>
-                            );
-                        };
-
-                        if (isUnilateral) {
-                            // L and R wheels are stacked, not side by side, so
-                            // each spans the full card width — centered exactly
-                            // like the weight wheel, not offset by a side label.
-                            return (['left', 'right'] as const).map((side) => {
-                                const field = side === 'left' ? 'reps_left' : 'reps_right';
-                                const label = side === 'left' ? 'Left' : 'Right';
-                                const onChange = side === 'left' ? handleRepsLeftChange : handleRepsRightChange;
-                                return (
-                                    <View key={side} style={{ marginTop: side === 'right' ? 12 : 0, alignItems: 'center' }}>
-                                        <Text className="text-[10px] font-bold text-light-muted dark:text-dark-muted uppercase tracking-widest mb-1">
-                                            {label}
-                                        </Text>
-                                        {wheelsReady ? (
-                                            <HorizontalSelectorWheel
-                                                value={parseInt(getValue(field)) || 0}
-                                                onValueChange={onChange}
-                                                values={REP_VALUES}
-                                                itemWidth={repsItemWidth}
-                                                unit=""
-                                                goalValue={goalReps}
-                                                goalColor={goalColor}
-                                                getTickSize={getTickSizeByTens}
-                                            />
-                                        ) : placeholder(field)}
-                                    </View>
-                                );
-                            });
-                        }
-
-                        return wheelsReady ? (
-                            <HorizontalSelectorWheel
-                                value={parseInt(getValue('reps')) || 0}
-                                onValueChange={handleRepsChange}
-                                values={REP_VALUES}
-                                itemWidth={repsItemWidth}
-                                unit=""
-                                goalValue={goalReps}
-                                goalColor={goalColor}
-                                getTickSize={getTickSizeByTens}
-                            />
-                        ) : placeholder('reps');
-                    })()}
-                </View>
-            )}
-
             {/* Duration */}
             {showDuration && (
                 <View className={`${(showDistance || showRPE) ? 'border-b border-black/5 dark:border-white/5 pb-3' : ''} flex-col ${isOutdoorGpsExercise ? 'py-0 flex-1' : rowPadding}`}>
@@ -645,6 +499,58 @@ function CardWorkoutSetInner({
 
                         return (
                             <View className="w-full items-center justify-center my-0.5">
+                                {/* Explicit full width + a flex:1 middle column, not just
+                                    row content centered in the parent - with equal fixed-
+                                    width flanks either side, the middle column's own
+                                    center always lands on the row's true center regardless
+                                    of available width, instead of drifting off-center
+                                    whenever the row's natural content width doesn't line
+                                    up with how the parent centers it. */}
+                                <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
+                                    {/* Prep timer selector - flanks the clock on the left
+                                        (moved here from the bottom Prep/RPE row, and turned
+                                        vertical to match the flank's narrow column). */}
+                                    <View style={{ width: 96, alignItems: 'flex-end' }}>
+                                        {wheelsReady && (
+                                            <View style={{ marginRight: 36, alignItems: 'center' }}>
+                                                <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted mb-1.5 uppercase tracking-widest">Prep</Text>
+                                                <View className="flex-col items-center bg-black/10 dark:bg-white/10 rounded-2xl p-0.5" style={{ width: 44 }}>
+                                                    {[0, 3, 5, 10].map((val) => (
+                                                        <Pressable
+                                                            key={val}
+                                                            onPress={() => {
+                                                                setSelectedPrepSec(val);
+                                                                onUpdatePrepTime?.(val);
+                                                            }}
+                                                            style={{
+                                                                width: '100%',
+                                                                alignItems: 'center',
+                                                                paddingHorizontal: 4,
+                                                                paddingVertical: 12,
+                                                                borderRadius: 14,
+                                                                backgroundColor: selectedPrepSec === val
+                                                                    ? (colorScheme === 'dark' ? '#2c2c2e' : '#fff')
+                                                                    : 'transparent',
+                                                            }}
+                                                        >
+                                                            <Text
+                                                                numberOfLines={1}
+                                                                adjustsFontSizeToFit
+                                                                style={{
+                                                                    fontSize: 13,
+                                                                    fontWeight: '700',
+                                                                    color: selectedPrepSec === val ? '#f97316' : colorScheme === 'dark' ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
+                                                                }}
+                                                            >
+                                                                {val === 0 ? 'None' : `${val}s`}
+                                                            </Text>
+                                                        </Pressable>
+                                                    ))}
+                                                </View>
+                                            </View>
+                                        )}
+                                    </View>
+                                <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 12 }}>
                                 <View style={{ width: clockSize, height: clockSize, justifyContent: 'center', alignItems: 'center' }}>
                                     <Svg width={clockSize} height={clockSize}>
                                         {/* Background Circle */}
@@ -776,63 +682,67 @@ function CardWorkoutSetInner({
                                         })()}
                                     </View>
                                 </View>
+                                </View>
 
-                                {/* Play/Stop Action Button + Timer/Stopwatch mode toggle, side by side, same size */}
-                                {wheelsReady && (
-                                    <View
-                                        className={`flex-row items-center gap-3 ${showDistance ? 'mt-1' : 'mt-2'}`}
-                                    >
-                                        <TouchableOpacity
-                                            disabled={isLocalTimerRunning}
-                                            onPress={() => setIsStopwatchMode(prev => !prev)}
-                                            className="flex-row bg-black/10 dark:bg-white/10 rounded-full p-0.5"
-                                            style={{ width: 88, height: 48, opacity: isLocalTimerRunning ? 0.5 : 1 }}
-                                        >
-                                            <Animated.View
-                                                style={[
-                                                    stopwatchToggleThumbStyle,
-                                                    {
-                                                        position: 'absolute',
-                                                        left: 2,
-                                                        top: 2,
-                                                        width: 42,
-                                                        height: 44,
-                                                        borderRadius: 22,
-                                                        backgroundColor: colorScheme === 'dark' ? '#2c2c2e' : '#fff',
-                                                    },
-                                                ]}
-                                            />
-                                            <View style={{ width: 42, alignItems: 'center', justifyContent: 'center' }}>
-                                                <IconSymbol
-                                                    name="timer"
-                                                    size={14}
-                                                    color={!isStopwatchMode ? theme.primary : (theme.textMuted || '#888')}
-                                                />
-                                            </View>
-                                            <View style={{ width: 42, alignItems: 'center', justifyContent: 'center' }}>
-                                                <IconSymbol
-                                                    name="stopwatch"
-                                                    size={14}
-                                                    color={isStopwatchMode ? theme.primary : (theme.textMuted || '#888')}
-                                                />
-                                            </View>
-                                        </TouchableOpacity>
+                                    {/* Timer/Stopwatch mode toggle, stacked above the
+                                        Play/Stop button - both flank the clock on the
+                                        right together now. */}
+                                    <View style={{ width: 96, alignItems: 'flex-start' }}>
+                                        {wheelsReady && (
+                                            <View style={{ marginLeft: 36, alignItems: 'center' }}>
+                                                <TouchableOpacity
+                                                    disabled={isLocalTimerRunning}
+                                                    onPress={() => setIsStopwatchMode(prev => !prev)}
+                                                    className="flex-col bg-black/10 dark:bg-white/10 rounded-full p-0.5"
+                                                    style={{ width: 48, height: 88, marginBottom: 16, opacity: isLocalTimerRunning ? 0.5 : 1 }}
+                                                >
+                                                    <Animated.View
+                                                        style={[
+                                                            stopwatchToggleThumbStyle,
+                                                            {
+                                                                position: 'absolute',
+                                                                left: 2,
+                                                                top: 2,
+                                                                width: 44,
+                                                                height: 42,
+                                                                borderRadius: 22,
+                                                                backgroundColor: colorScheme === 'dark' ? '#2c2c2e' : '#fff',
+                                                            },
+                                                        ]}
+                                                    />
+                                                    <View style={{ height: 42, alignItems: 'center', justifyContent: 'center' }}>
+                                                        <IconSymbol
+                                                            name="timer"
+                                                            size={14}
+                                                            color={!isStopwatchMode ? theme.primary : (theme.textMuted || '#888')}
+                                                        />
+                                                    </View>
+                                                    <View style={{ height: 42, alignItems: 'center', justifyContent: 'center' }}>
+                                                        <IconSymbol
+                                                            name="stopwatch"
+                                                            size={14}
+                                                            color={isStopwatchMode ? theme.primary : (theme.textMuted || '#888')}
+                                                        />
+                                                    </View>
+                                                </TouchableOpacity>
 
-                                        <TouchableOpacity
-                                            onPress={isLocalTimerRunning ? stopLocalTimer : startLocalTimer}
-                                            className={`w-12 h-12 rounded-full items-center justify-center active:opacity-90 shadow-sm ${
-                                                isLocalTimerRunning ? 'bg-danger' : 'bg-primary dark:bg-primary-dark'
-                                            }`}
-                                        >
-                                            <IconSymbol
-                                                name={isLocalTimerRunning ? "stop.fill" : "play.fill"}
-                                                size={18}
-                                                color="#fff"
-                                                style={!isLocalTimerRunning ? { marginLeft: 2 } : undefined}
-                                            />
-                                        </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    onPress={isLocalTimerRunning ? stopLocalTimer : startLocalTimer}
+                                                    className={`w-12 h-12 rounded-full items-center justify-center active:opacity-90 shadow-sm ${
+                                                        isLocalTimerRunning ? 'bg-danger' : 'bg-primary dark:bg-primary-dark'
+                                                    }`}
+                                                >
+                                                    <IconSymbol
+                                                        name={isLocalTimerRunning ? "stop.fill" : "play.fill"}
+                                                        size={18}
+                                                        color="#fff"
+                                                        style={!isLocalTimerRunning ? { marginLeft: 2 } : undefined}
+                                                    />
+                                                </TouchableOpacity>
+                                            </View>
+                                        )}
                                     </View>
-                                )}
+                                </View>
                             </View>
                         );
                     })()}
@@ -854,57 +764,152 @@ function CardWorkoutSetInner({
                         </View>
                     )}
 
-                    {/* Bottom Row: Prep and RPE next to each other (not shown for Running/Biking) */}
-                    {!isOutdoorGpsExercise && (
-                    <View className={`flex-row justify-between w-full px-0 ${showDistance ? 'mt-2' : 'mt-3'}`}>
-                        {/* Prep Timer inline selector */}
-                        <View className="items-start justify-center p-1">
-                            <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted mb-1.5 uppercase tracking-widest">Prep</Text>
-                            <View className="flex-row bg-black/10 dark:bg-white/10 rounded-2xl p-0.5">
-                                {[0, 3, 5, 10].map((val) => (
-                                    <Pressable
-                                        key={val}
-                                        onPress={() => {
-                                            setSelectedPrepSec(val);
-                                            onUpdatePrepTime?.(val);
-                                        }}
-                                        style={{
-                                            paddingHorizontal: 10,
-                                            paddingVertical: 6,
-                                            borderRadius: 14,
-                                            backgroundColor: selectedPrepSec === val
-                                                ? (colorScheme === 'dark' ? '#2c2c2e' : '#fff')
-                                                : 'transparent',
-                                        }}
-                                    >
-                                        <Text style={{
-                                            fontSize: 13,
-                                            fontWeight: '700',
-                                            color: selectedPrepSec === val ? '#f97316' : colorScheme === 'dark' ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-                                        }}>
-                                            {val === 0 ? 'None' : `${val}s`}
-                                        </Text>
-                                    </Pressable>
-                                ))}
-                            </View>
-                        </View>
+                </View>
+            )}
 
-                        {/* RPE compact square */}
-                        {showRPE ? (
-                            <TouchableOpacity 
-                                onPress={() => onPressRPE?.(index, getValue('rpe'))}
-                                className="min-w-[80px] h-[72px] items-end justify-center p-1 active:opacity-75"
-                            >
-                                <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted" numberOfLines={1}>RPE</Text>
-                                <Text className={`text-xl font-bold mt-1 ${getTextColor(getValue('rpe'))}`} numberOfLines={1}>
-                                    {getValue('rpe') || '-'}
-                                </Text>
-                            </TouchableOpacity>
+            {/* Weight */}
+            {showWeight && (
+                <View className="flex-col items-center justify-center py-2">
+                    <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Weight ({weightUnit})</Text>
+                    {(() => {
+                        // Ruler-style ticks (not per-item numbers), so tick
+                        // spacing doesn't need to match a "one visible
+                        // neighbor" width like the old number wheel did — the
+                        // wheel's own paddingHorizontal = (width-itemWidth)/2
+                        // keeps it centered for any itemWidth. Kept tight so
+                        // dragging feels like a real meter stick.
+                        const weightItemWidth = 16;
+                        const allowsAssistance = showBodyweight && showWeight;
+                        const weightValues = allowsAssistance
+                            ? (unitSystem === 'metric' ? ASSISTABLE_WEIGHT_VALUES_KG : ASSISTABLE_WEIGHT_VALUES_LB)
+                            : (unitSystem === 'metric' ? WEIGHT_VALUES_KG : WEIGHT_VALUES_LB);
+                        // Snapped to an exact entry in weightValues, not just
+                        // rounded — see snapToValues for why that distinction
+                        // matters (a "rounded but not-a-real-step" value fed
+                        // into the wheel causes it to flicker indefinitely).
+                        const displayWeight = snapToValues(lbToDisplay(parseFloat(getValue('weight')) || 0, unitSystem), weightValues);
+                        // Weight goal comes from whichever suggestion applies
+                        // to this exercise — reps-based for rep sets,
+                        // duration-based for timed holds (which may also
+                        // track weight, e.g. a weighted plank).
+                        const weightGoalLb = suggestedGoal?.weight ?? suggestedDurationGoal?.weight;
+                        const goalDisplayWeight = weightGoalLb !== undefined
+                            ? snapToValues(lbToDisplay(weightGoalLb, unitSystem), weightValues)
+                            : undefined;
+                        const isAtGoal = goalDisplayWeight !== undefined && displayWeight === goalDisplayWeight;
+                        return wheelsReady ? (
+                            <HorizontalSelectorWheel
+                                value={displayWeight}
+                                onValueChange={handleWeightChange}
+                                values={weightValues}
+                                itemWidth={weightItemWidth}
+                                unit=""
+                                goalValue={goalDisplayWeight}
+                                goalColor={goalColor}
+                                formatValue={allowsAssistance ? (v) => (v > 0 ? `+${v}` : `${v}`) : undefined}
+                                getTickSize={getTickSizeByTens}
+                            />
                         ) : (
-                            <View className="min-w-[80px] h-[72px]" />
-                        )}
-                    </View>
-                    )}
+                            <View>
+                                {/* Matches the wheel's resting ruler + value-label layout
+                                    so the swap to the live wheel is seamless (only the
+                                    tick marks fade in). */}
+                                <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
+                                    <View
+                                        className="border-l border-r border-primary/20 bg-primary/5"
+                                        style={{ width: weightItemWidth, height: 56, borderRadius: 12 }}
+                                    />
+                                </View>
+                                <View className="items-center justify-center flex-row mt-1">
+                                    <Text
+                                        className="font-black text-2xl text-light dark:text-dark"
+                                        style={isAtGoal ? { color: goalColor } : undefined}
+                                    >
+                                        {allowsAssistance ? (displayWeight > 0 ? `+${displayWeight}` : `${displayWeight}`) : (displayWeight || '0')}
+                                    </Text>
+                                </View>
+                            </View>
+                        );
+                    })()}
+                </View>
+            )}
+
+            {/* Reps */}
+            {showReps && (
+                <View className="flex-col items-center justify-center py-2">
+                    <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Reps</Text>
+                    {(() => {
+                        // Same tight ruler-tick spacing as the weight wheel.
+                        const repsItemWidth = 16;
+                        const goalReps = suggestedGoal?.reps;
+                        const placeholder = (field: 'reps' | 'reps_left' | 'reps_right') => {
+                            const val = parseInt(getValue(field)) || 0;
+                            const isAtGoal = goalReps !== undefined && val === goalReps;
+                            return (
+                                <View>
+                                    {/* Matches the wheel's resting ruler + value-label layout
+                                        so the swap to the live wheel is seamless. */}
+                                    <View style={{ height: 56, justifyContent: 'center', alignItems: 'center' }}>
+                                        <View
+                                            className="border-l border-r border-primary/20 bg-primary/5"
+                                            style={{ width: repsItemWidth, height: 56, borderRadius: 12 }}
+                                        />
+                                    </View>
+                                    <View className="items-center justify-center flex-row mt-1">
+                                        <Text
+                                            className="font-black text-2xl text-light dark:text-dark"
+                                            style={isAtGoal ? { color: goalColor } : undefined}
+                                        >
+                                            {getValue(field) || '0'}
+                                        </Text>
+                                    </View>
+                                </View>
+                            );
+                        };
+
+                        if (isUnilateral) {
+                            // L and R wheels are stacked, not side by side, so
+                            // each spans the full card width — centered exactly
+                            // like the weight wheel, not offset by a side label.
+                            return (['left', 'right'] as const).map((side) => {
+                                const field = side === 'left' ? 'reps_left' : 'reps_right';
+                                const label = side === 'left' ? 'Left' : 'Right';
+                                const onChange = side === 'left' ? handleRepsLeftChange : handleRepsRightChange;
+                                return (
+                                    <View key={side} style={{ marginTop: side === 'right' ? 12 : 0, alignItems: 'center' }}>
+                                        <Text className="text-[10px] font-bold text-light-muted dark:text-dark-muted uppercase tracking-widest mb-1">
+                                            {label}
+                                        </Text>
+                                        {wheelsReady ? (
+                                            <HorizontalSelectorWheel
+                                                value={parseInt(getValue(field)) || 0}
+                                                onValueChange={onChange}
+                                                values={REP_VALUES}
+                                                itemWidth={repsItemWidth}
+                                                unit=""
+                                                goalValue={goalReps}
+                                                goalColor={goalColor}
+                                                getTickSize={getTickSizeByTens}
+                                            />
+                                        ) : placeholder(field)}
+                                    </View>
+                                );
+                            });
+                        }
+
+                        return wheelsReady ? (
+                            <HorizontalSelectorWheel
+                                value={parseInt(getValue('reps')) || 0}
+                                onValueChange={handleRepsChange}
+                                values={REP_VALUES}
+                                itemWidth={repsItemWidth}
+                                unit=""
+                                goalValue={goalReps}
+                                goalColor={goalColor}
+                                getTickSize={getTickSizeByTens}
+                            />
+                        ) : placeholder('reps');
+                    })()}
                 </View>
             )}
 
@@ -925,9 +930,9 @@ function CardWorkoutSetInner({
                 </View>
             )}
 
-            {/* RPE */}
-            {showRPE && !showDuration && (
-                <View className="flex-row justify-end w-full px-0 mt-3">
+            {/* RPE - always last, under everything else in the set. */}
+            {showRPE && !isOutdoorGpsExercise && (
+                <View className="flex-row justify-end w-full px-0 mt-1">
                     <TouchableOpacity 
                         onPress={() => onPressRPE?.(index, getValue('rpe'))}
                         className="min-w-[80px] h-[72px] items-end justify-center p-1 active:opacity-75"
@@ -940,7 +945,7 @@ function CardWorkoutSetInner({
                 </View>
             )}
 
-            <DurationTimerPicker 
+            <DurationTimerPicker
                 visible={isDurationPickerVisible}
                 onClose={() => {
                     setIsDurationPickerVisible(false);

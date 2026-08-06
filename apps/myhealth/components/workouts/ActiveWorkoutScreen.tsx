@@ -225,7 +225,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
             <View
                 style={{
                     height: containerHeight,
-                    paddingBottom: 24,
+                    paddingBottom: 0,
                     overflow: 'hidden',
                 }}
             >
