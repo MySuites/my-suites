@@ -47,6 +47,39 @@ const TICK_DIMENSIONS: Record<'lg' | 'md' | 'sm', { width: number; height: numbe
 const GOAL_BLUE = '#2563EB';
 const GOAL_LIGHT_BLUE = '#93C5FD';
 
+const FADE_MIN_OPACITY = 0.12;
+// No fade at all within the middle half of the fade distance - full opacity
+// is held flat out to this fraction before the falloff starts, so only the
+// outer quarters on each side actually fade.
+const FADE_PLATEAU = 0.5;
+// Sample points from center (0) to edge (1), as a fraction of the fade
+// distance - denser near the edge. Animated.interpolate only does piecewise-
+// linear between points, so more points (rather than just [0, 1]) is how you
+// approximate a curved falloff instead of a straight-line fade.
+const FADE_FRACTIONS = [0, FADE_PLATEAU, 0.65, 0.8, 1];
+
+// Opacity for a tick at fraction `f` (0 = center, 1 = edge): flat at full
+// opacity through the plateau, then an exponential (not linear) falloff for
+// the remainder - decays fast right after the plateau and levels off toward
+// the edge, unlike a straight linear ramp.
+function fadeOpacityAt(f: number): number {
+    if (f <= FADE_PLATEAU) return 1;
+    return Math.pow(FADE_MIN_OPACITY, (f - FADE_PLATEAU) / (1 - FADE_PLATEAU));
+}
+
+function getFadeOpacityRange(centerX: number, fadeDistance: number) {
+    const half = FADE_FRACTIONS.map((f) => ({
+        offset: f * fadeDistance,
+        opacity: fadeOpacityAt(f),
+    }));
+    const negative = half.slice(1).reverse().map((p) => ({ offset: -p.offset, opacity: p.opacity }));
+    const points = [...negative, ...half];
+    return {
+        inputRange: points.map((p) => centerX + p.offset),
+        outputRange: points.map((p) => p.opacity),
+    };
+}
+
 export interface CurrentValueLabelHandle {
     setValue: (val: number) => void;
 }
@@ -278,6 +311,16 @@ function HorizontalSelectorWheelBase({
                         // overlay's comment for why coloring is split this
                         // way instead of animating each tick's color.
                         const backgroundColor = meta.isGoal ? GOAL_LIGHT_BLUE : (theme.textMuted ?? theme.text);
+                        // Fades out toward either edge of the visible window,
+                        // based on this tick's actual distance from the
+                        // centered (triangle) position - native-driven off
+                        // the same scrollX used for scrolling, so it's live
+                        // during drag at zero extra cost. Unlike color,
+                        // opacity IS reliably supported by the native driver.
+                        const opacity = scrollX.interpolate({
+                            ...getFadeOpacityRange(i * itemWidth, width / 2),
+                            extrapolate: 'clamp',
+                        });
 
                         return (
                             <TouchableOpacity
@@ -294,7 +337,7 @@ function HorizontalSelectorWheelBase({
                                     of flex justify-end, so every tick's bottom
                                     edge lands on the exact same pixel regardless
                                     of its height (lg/md/sm). */}
-                                <View
+                                <RNAnimated.View
                                     style={{
                                         position: 'absolute',
                                         bottom: 4,
@@ -303,6 +346,7 @@ function HorizontalSelectorWheelBase({
                                         height: tickHeight,
                                         borderRadius: 1,
                                         backgroundColor,
+                                        opacity,
                                     }}
                                 />
                             </TouchableOpacity>
@@ -353,9 +397,13 @@ function HorizontalSelectorWheelBase({
                             }
                             const { width: tickWidth, height: tickHeight } = TICK_DIMENSIONS[meta.tickSize];
                             const backgroundColor = meta.isGoal ? GOAL_BLUE : theme.primary;
+                            const opacity = scrollX.interpolate({
+                                ...getFadeOpacityRange(i * itemWidth, width / 2),
+                                extrapolate: 'clamp',
+                            });
                             return (
                                 <View key={`fill-${i}`} style={{ width: itemWidth, height: 56 }}>
-                                    <View
+                                    <RNAnimated.View
                                         style={{
                                             position: 'absolute',
                                             bottom: 4,
@@ -364,6 +412,7 @@ function HorizontalSelectorWheelBase({
                                             height: tickHeight,
                                             borderRadius: 1,
                                             backgroundColor,
+                                            opacity,
                                         }}
                                     />
                                 </View>
