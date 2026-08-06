@@ -31,8 +31,7 @@ function Workout() {
 	const router = useRouter();
     const theme = useUITheme();
     const insets = useSafeAreaInsets();
-    
-	// consume shared state
+
     const {
         startWorkout,
         finishWorkout,
@@ -377,7 +376,7 @@ function Workout() {
                 />
                 <BottomNavButton
                     icon="line.3.horizontal"
-                    label="Menu"
+                    label="More"
                     active={menuVisible}
                     boldWhenActive={false}
                     onPress={() => setMenuVisible(!menuVisible)}

@@ -9,24 +9,16 @@ export interface BurgerMenuItem {
     route: string;
 }
 
-// Default items - used by any screen that doesn't pass its own `items`, and
-// matches the original single hardcoded list this component used to always
-// show everywhere.
-const DEFAULT_ITEMS: BurgerMenuItem[] = [
-    { label: 'Workout History', icon: 'clock.fill', route: '/history' },
-    { label: 'Progress Pictures', icon: 'camera.fill', route: '/progress-pictures' },
-    { label: 'Settings', icon: 'gearshape.fill', route: '/settings' },
-];
-
 interface BurgerMenuProps {
     visible: boolean;
     onClose: () => void;
-    // Per-screen menu contents - each top-nav screen passes the items
-    // relevant to it instead of every screen showing the same fixed list.
-    items?: BurgerMenuItem[];
+    // Per-section menu contents - each top-nav section passes the items
+    // relevant to it (see utils/burgerMenuItems.ts) instead of every screen
+    // showing the same fixed list.
+    items: BurgerMenuItem[];
 }
 
-export function BurgerMenu({ visible, onClose, items = DEFAULT_ITEMS }: BurgerMenuProps) {
+export function BurgerMenu({ visible, onClose, items }: BurgerMenuProps) {
     const router = useRouter();
     const theme = useUITheme();
 

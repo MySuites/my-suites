@@ -735,7 +735,7 @@ export default function ExercisesScreen({
             />
             <BottomNavButton
                 icon="line.3.horizontal"
-                label="Menu"
+                label="More"
                 active={menuVisible}
                 boldWhenActive={false}
                 onPress={() => setMenuVisible(!menuVisible)}
