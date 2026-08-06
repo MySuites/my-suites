@@ -3,12 +3,30 @@ import { Text, TouchableOpacity, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 
+export interface BurgerMenuItem {
+    label: string;
+    icon: string;
+    route: string;
+}
+
+// Default items - used by any screen that doesn't pass its own `items`, and
+// matches the original single hardcoded list this component used to always
+// show everywhere.
+const DEFAULT_ITEMS: BurgerMenuItem[] = [
+    { label: 'Workout History', icon: 'clock.fill', route: '/history' },
+    { label: 'Progress Pictures', icon: 'camera.fill', route: '/progress-pictures' },
+    { label: 'Settings', icon: 'gearshape.fill', route: '/settings' },
+];
+
 interface BurgerMenuProps {
     visible: boolean;
     onClose: () => void;
+    // Per-screen menu contents - each top-nav screen passes the items
+    // relevant to it instead of every screen showing the same fixed list.
+    items?: BurgerMenuItem[];
 }
 
-export function BurgerMenu({ visible, onClose }: BurgerMenuProps) {
+export function BurgerMenu({ visible, onClose, items = DEFAULT_ITEMS }: BurgerMenuProps) {
     const router = useRouter();
     const theme = useUITheme();
 
@@ -31,38 +49,25 @@ export function BurgerMenu({ visible, onClose }: BurgerMenuProps) {
             />
             <RaisedCard
                 className="absolute bottom-24 right-4 w-52 p-2 bg-light dark:bg-dark-lighter origin-bottom-right rounded-xl"
-                style={{ 
-                    shadowColor: '#000', 
-                    shadowOffset: { width: 0, height: 4 }, 
-                    shadowOpacity: 0.15, 
-                    shadowRadius: 12, 
-                    elevation: 5 
+                style={{
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 12,
+                    elevation: 5
                 }}
                 testID="burger-menu-content"
             >
-                <TouchableOpacity
-                    onPress={() => { onClose(); router.push('/history' as any); }}
-                    className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
-                >
-                    <IconSymbol name="clock.fill" size={20} color={theme.text} style={{ marginRight: 12 }} />
-                    <Text className="text-light dark:text-dark font-medium">Workout History</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    onPress={() => { onClose(); router.push('/progress-pictures' as any); }}
-                    className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
-                >
-                    <IconSymbol name="camera.fill" size={20} color={theme.text} style={{ marginRight: 12 }} />
-                    <Text className="text-light dark:text-dark font-medium">Progress Pictures</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    onPress={() => { onClose(); router.push('/settings' as any); }}
-                    className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
-                >
-                    <IconSymbol name="gearshape.fill" size={20} color={theme.text} style={{ marginRight: 12 }} />
-                    <Text className="text-light dark:text-dark font-medium">Settings</Text>
-                </TouchableOpacity>
+                {items.map((item) => (
+                    <TouchableOpacity
+                        key={item.route}
+                        onPress={() => { onClose(); router.push(item.route as any); }}
+                        className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                    >
+                        <IconSymbol name={item.icon as any} size={20} color={theme.text} style={{ marginRight: 12 }} />
+                        <Text className="text-light dark:text-dark font-medium">{item.label}</Text>
+                    </TouchableOpacity>
+                ))}
             </RaisedCard>
         </Modal>
     );

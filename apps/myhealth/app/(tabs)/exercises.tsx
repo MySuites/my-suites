@@ -15,6 +15,7 @@ import { BottomActionBar } from '../../components/ui/BottomNavBar';
 import { DashboardButton } from '../../components/ui/DashboardButton';
 import { BottomNavButton } from '../../components/ui/BottomNavButton';
 import { BurgerMenu } from '../../components/ui/BurgerMenu';
+import { WORKOUT_MENU_ITEMS } from '../../utils/burgerMenuItems';
 
 function getCollapsedGroupDetails(comp: any[]) {
     const ids = comp.map(e => e.id);
@@ -744,6 +745,7 @@ export default function ExercisesScreen({
           <BurgerMenu
             visible={menuVisible}
             onClose={() => setMenuVisible(false)}
+            items={WORKOUT_MENU_ITEMS}
           />
         </>
       )}

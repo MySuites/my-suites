@@ -6,6 +6,7 @@ import { useAuth } from '@mysuite/auth';
 import { useUITheme, useToast } from '@mysuite/ui';
 
 import { BurgerMenu } from '../../components/ui/BurgerMenu';
+import { PROFILE_MENU_ITEMS } from '../../utils/burgerMenuItems';
 import { BottomActionBar } from '../../components/ui/BottomNavBar';
 import { DashboardButton } from '../../components/ui/DashboardButton';
 import { BottomNavButton } from '../../components/ui/BottomNavButton';
@@ -536,6 +537,7 @@ export default function ProfileScreen() {
       <BurgerMenu
         visible={menuVisible}
         onClose={() => setMenuVisible(false)}
+        items={PROFILE_MENU_ITEMS}
       />
     </View>
   );

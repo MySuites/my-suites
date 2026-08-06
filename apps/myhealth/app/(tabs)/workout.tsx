@@ -25,6 +25,7 @@ import { BottomActionBar } from '../../components/ui/BottomNavBar';
 import { DashboardButton } from '../../components/ui/DashboardButton';
 import { BottomNavButton } from '../../components/ui/BottomNavButton';
 import { BurgerMenu } from '../../components/ui/BurgerMenu';
+import { WORKOUT_MENU_ITEMS } from '../../utils/burgerMenuItems';
 
 function Workout() {
 	const router = useRouter();
@@ -386,6 +387,7 @@ function Workout() {
             <BurgerMenu
                 visible={menuVisible}
                 onClose={() => setMenuVisible(false)}
+                items={WORKOUT_MENU_ITEMS}
             />
 
             <Modal

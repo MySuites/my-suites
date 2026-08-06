@@ -2,15 +2,17 @@ import React, { useState, useCallback } from 'react';
 import { View, Text } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 
-import { BurgerMenu } from './BurgerMenu';
+import { BurgerMenu, BurgerMenuItem } from './BurgerMenu';
 import { BottomActionBar } from './BottomNavBar';
 import { DashboardButton } from './DashboardButton';
 import { BottomNavButton } from './BottomNavButton';
 
 // Shared "To be implemented" dashboard used by the not-yet-built tabs
 // (Sleep, Mind, Nutrition). Each keeps its own route file so it can grow
-// its own screen later.
-export function PlaceholderScreen() {
+// its own screen later. `menuItems` is passed in per caller (see
+// utils/burgerMenuItems.ts) so each top-nav section's burger menu stays
+// unique even though they currently render the same placeholder body.
+export function PlaceholderScreen({ menuItems }: { menuItems: BurgerMenuItem[] }) {
     const [menuVisible, setMenuVisible] = useState(false);
     // Tabs stay mounted when you switch away — without this, leaving the
     // burger menu open and navigating elsewhere means it's still open when
@@ -35,6 +37,7 @@ export function PlaceholderScreen() {
             <BurgerMenu
                 visible={menuVisible}
                 onClose={() => setMenuVisible(false)}
+                items={menuItems}
             />
         </View>
     );

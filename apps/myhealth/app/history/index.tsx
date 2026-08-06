@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Text, View, FlatList } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 
@@ -8,10 +8,6 @@ import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { ActionCard, HollowedCard, RaisedCard, Skeleton, IconSymbol, useUITheme, useToast } from '@mysuite/ui';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
-import { BottomActionBar } from '../../components/ui/BottomNavBar';
-import { DashboardButton } from '../../components/ui/DashboardButton';
-import { BottomNavButton } from '../../components/ui/BottomNavButton';
-import { BurgerMenu } from '../../components/ui/BurgerMenu';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import { buildWorkoutHistoryCsv } from '../../utils/exportWorkoutHistory';
 
@@ -50,11 +46,6 @@ const WorkoutHistoryItem = ({ item, onDelete, onPress }: { item: any, onDelete: 
 
 export default function WorkoutHistoryScreen() {
   const router = useRouter();
-  const [menuVisible, setMenuVisible] = useState(false);
-  // Tabs stay mounted when you switch away — without this, leaving the
-  // burger menu open and navigating elsewhere means it's still open when
-  // you come back.
-  useFocusEffect(useCallback(() => () => setMenuVisible(false), []));
   const { workoutHistory, deleteWorkoutLog, isLoading } = useWorkoutManager();
   const { unitSystem } = useUnitPreference();
   const theme = useUITheme();
@@ -148,27 +139,6 @@ export default function WorkoutHistoryScreen() {
         }
       />
       )}
-
-      <BottomActionBar>
-        <DashboardButton dimmed={menuVisible} />
-        <BottomNavButton
-            icon="dumbbell.fill"
-            label="Exercises"
-            onPress={() => router.navigate('/(tabs)/exercises' as any)}
-        />
-        <BottomNavButton
-            icon="line.3.horizontal"
-            label="Menu"
-            active={menuVisible}
-            boldWhenActive={false}
-            onPress={() => setMenuVisible(!menuVisible)}
-        />
-      </BottomActionBar>
-
-      <BurgerMenu
-        visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
-      />
     </View>
   );
 }
