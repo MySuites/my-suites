@@ -66,10 +66,6 @@ jest.mock('../../components/ui/ScreenHeader', () => ({
     ScreenHeader: () => null,
 }));
 
-jest.mock('../../components/ui/SettingsButton', () => ({
-    SettingsButton: () => null,
-}));
-
 // Require Workout dynamically after the spy is defined
 const Workout = require('../../app/(tabs)/workout').default;
 

@@ -5,7 +5,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
-import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { useRoutineDraft } from '../../hooks/routines/useRoutineManager';
 import { AddDay } from '../../components/routines/AddDay';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -15,15 +14,8 @@ export default function RoutineDetailsScreen() {
     const theme = useTheme();
     const router = useRouter();
     const { id } = useLocalSearchParams();
-    const { setIsHidden } = useFloatingButton();
-    
-    // Hide floating buttons
-    useEffect(() => {
-        setIsHidden(true);
-        return () => setIsHidden(false);
-    }, [setIsHidden]);
 
-    const { 
+    const {
         routines,
         savedWorkouts, 
 

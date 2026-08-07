@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useRouter, Stack } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
-import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { useRoutineDraft } from '../../hooks/routines/useRoutineManager';
 import { AddDay } from '../../components/routines/AddDay';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -13,14 +12,6 @@ import { BackButton } from '../../components/ui/BackButton';
 export default function CreateRoutineScreen() {
     const theme = useTheme();
     const router = useRouter();
-    const { setIsHidden } = useFloatingButton();
-    
-    // Hide floating buttons
-    useEffect(() => {
-        setIsHidden(true);
-        return () => setIsHidden(false);
-    }, [setIsHidden]);
-
     const { savedWorkouts, saveRoutineDraft } = useWorkoutManager();
 
     const [routineDraftName, setRoutineDraftName] = useState("");

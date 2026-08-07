@@ -5,7 +5,6 @@ import { useUITheme, RaisedCard, HollowedCard, Skeleton, IconSymbol } from '@mys
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { SavedWorkoutItem } from '../../components/workouts/SavedWorkoutItem';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
-import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
@@ -19,12 +18,6 @@ function SavedWorkoutsScreen() {
   const { hasActiveSession, startWorkout, finishWorkout, cancelWorkout } = useActiveWorkout();
   const [activeSwipedCardId, setActiveSwipedCardId] = React.useState<string | null>(null);
   
-  // Hide floating buttons
-  const { setIsHidden } = useFloatingButton();
-  React.useEffect(() => {
-      setIsHidden(true);
-      return () => setIsHidden(false);
-  }, [setIsHidden]);
 
   const handleStart = (id: string, name: string, workoutExercises: any[]) => {
       if (hasActiveSession) {

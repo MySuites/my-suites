@@ -6,7 +6,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useUITheme as useTheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
-import { useFloatingButton } from '../../providers/FloatingButtonContext';
 import { useWorkoutDraft } from '../../hooks/workouts/useWorkoutDraft';
 import { default as ExercisesScreen } from '../(tabs)/exercises';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
@@ -36,17 +35,11 @@ export default function CreateWorkoutScreen() {
     const theme = useTheme();
     const router = useRouter();
     const { id, logId } = useLocalSearchParams();
-    const { setIsHidden } = useFloatingButton();
     const { latestBodyWeight, startWorkout, hasActiveSession, cancelWorkout } = useActiveWorkout();
     const { unitSystem } = useUnitPreference();
     const insets = useSafeAreaInsets();
-    
-    useEffect(() => {
-        setIsHidden(true);
-        return () => setIsHidden(false);
-    }, [setIsHidden]);
 
-    const { 
+    const {
         savedWorkouts, 
         workoutHistory,
         saveWorkout, 

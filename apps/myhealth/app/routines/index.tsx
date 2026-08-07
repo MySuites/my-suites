@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { useUITheme, RaisedCard, Skeleton, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
-import { useFloatingButton } from '../../providers/FloatingButtonContext';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
@@ -16,12 +15,6 @@ export default function RoutinesScreen() {
   const { hasActiveSession, setExercises } = useActiveWorkout();
   const theme = useUITheme();
 
-    // Hide floating buttons
-    const { setIsHidden } = useFloatingButton();
-    React.useEffect(() => {
-        setIsHidden(true);
-        return () => setIsHidden(false);
-    }, [setIsHidden]);
 
   const handleSetRoutine = (id: string, name: string, sequence: any[]) => {
       if (hasActiveSession) {

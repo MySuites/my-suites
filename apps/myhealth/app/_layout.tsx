@@ -8,14 +8,12 @@ import { initExecutorchForApp } from '../services/ai/executorchInit';
 import { AuthProvider, useAuth } from '@mysuite/auth';
 import { AppThemeProvider } from '../providers/AppThemeProvider';
 import { UnitPreferenceProvider } from '../providers/UnitPreferenceProvider';
-import { NavigationSettingsProvider } from '../providers/NavigationSettingsProvider';
 import { useColorScheme } from '../hooks/ui/use-color-scheme';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { initDatabase } from '../utils/db/database';
 import { ActiveWorkoutProvider } from '../providers/ActiveWorkoutProvider'; // Fixed import path
 import { WorkoutManagerProvider } from '../providers/WorkoutManagerProvider';
-import { FloatingButtonProvider } from '../providers/FloatingButtonContext';
 import { ToastProvider } from '@mysuite/ui';
 import { DataRepository } from '../providers/DataRepository';
 import { EXERCISE_DATA_VERSION } from '../assets/data/default-exercises';
@@ -120,9 +118,7 @@ function RootLayoutContent({ isDbReady, setIsDbReady }: { isDbReady: boolean, se
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <WorkoutManagerProvider>
         <ActiveWorkoutProvider>
-          <FloatingButtonProvider>
-            <RootLayoutNav />
-          </FloatingButtonProvider>
+          <RootLayoutNav />
           <StatusBar style="auto" />
         </ActiveWorkoutProvider>
       </WorkoutManagerProvider>
@@ -137,13 +133,11 @@ export default function RootLayout() {
     <GestureHandlerRootView className="flex-1">
       <ToastProvider>
         <AuthProvider>
-          <NavigationSettingsProvider>
-            <AppThemeProvider>
-              <UnitPreferenceProvider>
-                <RootLayoutContent isDbReady={isDbReady} setIsDbReady={setIsDbReady} />
-              </UnitPreferenceProvider>
-            </AppThemeProvider>
-          </NavigationSettingsProvider>
+          <AppThemeProvider>
+            <UnitPreferenceProvider>
+              <RootLayoutContent isDbReady={isDbReady} setIsDbReady={setIsDbReady} />
+            </UnitPreferenceProvider>
+          </AppThemeProvider>
         </AuthProvider>
       </ToastProvider>
     </GestureHandlerRootView>

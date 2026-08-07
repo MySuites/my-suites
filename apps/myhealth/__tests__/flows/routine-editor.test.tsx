@@ -27,10 +27,6 @@ jest.mock('../../components/ui/BackButton', () => ({
     BackButton: () => <mockRN.Text>Back</mockRN.Text>
 }));
 
-jest.mock('../../providers/FloatingButtonContext', () => ({
-    useFloatingButton: () => ({ setIsHidden: jest.fn() })
-}));
-
 jest.mock('../../providers/WorkoutManagerProvider', () => ({
     useWorkoutManager: () => ({
         routines: mockRoutines,

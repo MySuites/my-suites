@@ -20,10 +20,6 @@ jest.mock('../../providers/ActiveWorkoutProvider', () => ({
     useActiveWorkout: jest.fn()
 }));
 
-jest.mock('../../providers/FloatingButtonContext', () => ({
-    useFloatingButton: () => ({ setIsHidden: jest.fn() })
-}));
-
 jest.mock('expo-router', () => ({
     useRouter: jest.fn(),
     useLocalSearchParams: jest.fn(),
