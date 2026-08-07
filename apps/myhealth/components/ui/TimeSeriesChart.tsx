@@ -169,7 +169,225 @@ export function TimeSeriesChart({
 
   }, [data, aggregation, selectedRange, maxPoints]);
 
-  if (!processedData || processedData.length === 0) {
+  const screenWidth = Dimensions.get('window').width;
+  const yAxisWidth = 20; // Dedicated space for custom Y-axis labels
+  const availableChartWidth = screenWidth - paddingHorizontal - yAxisWidth - 8; // Subtract 8 for marginLeft
+  const targetSections = 4;
+
+  // Sort/interpolation/axis-bounds math below is O(n log n) to O(n^2) and was
+  // previously re-run on every render (including every chart-scrub touch
+  // event from onPointSelect/pointerConfig callbacks bubbling into parent
+  // state). Memoized so it only reruns when the underlying data/range/width
+  // actually changes.
+  const derived = React.useMemo(() => {
+    if (!processedData || processedData.length === 0) {
+      return null;
+    }
+
+    // Ensure chronological order
+    const sortedData = [...processedData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // We want the chart to fill the available width exactly
+    let computedWidth = availableChartWidth;
+
+    let spacing = 40;
+    let initialSpacing = 0;
+
+    // Prepare Normalized Data
+    let normalizedData: any[] = [];
+
+    if (maxPoints && sortedData.length > 0) {
+      const pointsCount = maxPoints;
+      // Strict uniform spacing
+      spacing = availableChartWidth / (pointsCount - 1);
+      initialSpacing = 0; // Starts at 0
+
+      // Create dense array
+      for (let i = 0; i < pointsCount; i++) {
+          const realPoint = sortedData.find(d => (d.spineIndex ?? -1) === i);
+          if (realPoint) {
+              normalizedData.push({ ...realPoint, isInterpolated: false });
+          } else {
+              // Interpolate
+              // Find Prev
+              let prevPoint = null;
+              let nextPoint = null;
+
+              // Search backwards
+              for (let j = i - 1; j >= 0; j--) {
+                  const found = sortedData.find(d => (d.spineIndex ?? -1) === j);
+                  if (found) { prevPoint = found; break; }
+              }
+               // Search forwards
+              for (let k = i + 1; k < pointsCount; k++) {
+                  const found = sortedData.find(d => (d.spineIndex ?? -1) === k);
+                  if (found) { nextPoint = found; break; }
+              }
+
+              let interpolatedValue = 0;
+              if (prevPoint && nextPoint) {
+                  const totalDist = (nextPoint.spineIndex ?? 0) - (prevPoint.spineIndex ?? 0);
+                  const currDist = i - (prevPoint.spineIndex ?? 0);
+                  const valDiff = nextPoint.value - prevPoint.value;
+                  interpolatedValue = prevPoint.value + (valDiff * (currDist / totalDist));
+              } else if (prevPoint) {
+                  interpolatedValue = prevPoint.value; // Clamp forward
+              } else if (nextPoint) {
+                  interpolatedValue = nextPoint.value; // Clamp backward
+              }
+
+              normalizedData.push({
+                  value: interpolatedValue,
+                  date: '', // No date for gaps
+                  label: '',
+                  isInterpolated: true,
+                  hideDataPoint: true,
+                  dataPointText: '',
+              });
+          }
+      }
+    } else {
+      // Large dataset or no maxPoints fallback
+      normalizedData = sortedData.map(d => ({ ...d, isInterpolated: false }));
+
+      if (sortedData.length > 1 && sortedData.length <= 32) {
+           // Auto-fit logic for small non-fixed datasets?
+           // For now, adhere to existing logic or just use uniform default if not maxPoints
+           const pointsCount = sortedData.length;
+           spacing = availableChartWidth / (pointsCount - 1);
+      } else {
+           spacing = 10;
+           initialSpacing = 10;
+           //  computedWidth is auto-calc handled by Gifted Charts or we set it?
+           // Reuse old logic for scrolling:
+           const contentWidth = (sortedData.length - 1) * spacing;
+           const calculatedInitialSpacing = availableChartWidth - contentWidth;
+           initialSpacing = Math.max(10, calculatedInitialSpacing);
+           computedWidth = Math.max(availableChartWidth, contentWidth + initialSpacing + 10);
+      }
+    }
+
+    // Generate Fixed Labels if in Fixed Mode
+    const fixedLabels: string[] = [];
+    if (maxPoints && selectedRange) {
+      const now = new Date();
+      const config = {
+        'Day': { count: 8, unit: 'hour' as const }, // Every 3h approx? 24h / 8 = 3h
+        'Week': { count: 7, unit: 'date' as const },
+        'Month': { count: 31, unit: 'date' as const },
+        '3Month': { count: 13, unit: 'week' as const }, // 13 weeks ~ 3 months
+        '6Month': { count: 26, unit: 'week' as const },
+        'Year': { count: 12, unit: 'month' as const },
+        'All': { count: maxPoints, unit: 'month' as const }, // Fallback
+      };
+
+      const { count, unit } = config[selectedRange] || { count: maxPoints, unit: 'date' };
+
+      if (selectedRange === 'Week') {
+          // 7 specific days for Week view
+          for (let i = 6; i >= 0; i--) {
+              const d = new Date(now);
+              d.setDate(d.getDate() - i);
+              fixedLabels.push(d.toLocaleDateString(undefined, { weekday: 'short' }));
+          }
+      } else if (selectedRange === 'Day') {
+          // 8 points for 24 hours -> every 3 hours
+          // 0h, 3h, 6h ... 21h, 24h(now)
+          // Or relative to now? Usually linear.
+          // Let's assume standard 00:00, 04:00, 08:00... or relative to "Now" - 24h?
+          // User said "Day" range. "Day" usually means Today 00:00 - 23:59.
+          // If it means "Last 24 Hours", then relative.
+          // Let's go with "Today" 00-24h for simplicity/common UX, or rely on passed data.
+          // If distinct points, let's just use 4-hour intervals for labels: 0, 4, 8, 12, 16, 20
+          [0, 4, 8, 12, 16, 20].forEach(h => {
+               const d = new Date();
+               d.setHours(h, 0, 0, 0);
+               fixedLabels.push(d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }));
+          });
+      } else {
+          // Standard distribution for others
+          [0, 0.25, 0.5, 0.75, 1].forEach(percent => {
+              const d = new Date(now);
+              const unitsAgo = Math.round((count - 1) * (1 - percent));
+              if (unit === 'date') d.setDate(d.getDate() - unitsAgo);
+              else if (unit === 'week') d.setDate(d.getDate() - unitsAgo * 7);
+              else if (unit === 'month') d.setMonth(d.getMonth() - unitsAgo);
+              else if (unit === 'hour') d.setHours(d.getHours() - unitsAgo * 3); // 3h steps roughly
+
+              if (unit === 'hour') {
+                  fixedLabels.push(d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }));
+              } else {
+                  fixedLabels.push(d.toLocaleDateString(undefined, unit === 'month' ? { month: 'short' } : { month: 'short', day: 'numeric' }));
+              }
+          });
+      }
+
+    }
+
+    // Calculate Y-Axis bounds centered on average (Use REAL values only)
+    const realValues = sortedData.map(d => d.value);
+    const minData = Math.min(...realValues);
+    const maxData = Math.max(...realValues);
+    const avg = realValues.length > 0 ? realValues.reduce((a, b) => a + b, 0) / realValues.length : 0;
+
+    let stepValue = 10;
+    let minAxis = 0;
+
+    if (realValues.length > 0) {
+        // Determine minimum step size to ensure distinct labels based on magnitude
+        let minStep = 10;
+        if (avg >= 100000) minStep = 1000;
+        else if (avg >= 10000) minStep = 100;
+
+        // Calculate required step to cover the range
+        const dataRange = maxData - minData;
+        let step = Math.max(minStep, Math.ceil(dataRange / targetSections));
+
+        // Round step to a multiple of minStep
+        step = Math.ceil(step / minStep) * minStep;
+
+        // Center the data
+        const totalChartRange = step * targetSections;
+        const midData = (minData + maxData) / 2;
+        let start = Math.floor((midData - totalChartRange / 2) / minStep) * minStep;
+        if (start < 0) start = 0;
+
+        // Ensure fit
+        while (start + step * targetSections < maxData) {
+            step += minStep;
+            start = Math.floor((midData - (step * targetSections) / 2) / minStep) * minStep;
+            if (start < 0) start = 0;
+            // Safety break to prevent infinite loops if something goes wrong, though unlikely
+            if (step > maxData && step > 1000000) break;
+        }
+        // Final adjust if clamped at 0
+        if (start + step * targetSections < maxData) {
+            step = Math.ceil(maxData / targetSections / minStep) * minStep;
+            start = 0;
+        }
+
+        minAxis = start;
+        stepValue = step;
+    }
+
+    const yAxisLabelTexts = Array.from({ length: targetSections + 1 }, (_, i) => formatCompactNumber(minAxis + i * stepValue));
+
+    // Format for gifted-charts - SUBTRACT minAxis to ensure perfect alignment
+    const chartData = normalizedData.map(item => ({
+      value: item.value - minAxis,
+      label: item.label,
+      realValue: item.value,
+      date: item.date,
+      isInterpolated: item.isInterpolated,
+      hideDataPoint: item.isInterpolated,
+      dataPointText: '',
+      // No custom spacing needed for maxPoints mode as we rely on global spacing
+    }));
+
+    return { computedWidth, spacing, initialSpacing, fixedLabels, yAxisLabelTexts, stepValue, chartData };
+  }, [processedData, maxPoints, selectedRange, availableChartWidth, targetSections]);
+
+  if (!derived) {
     return (
       <View style={{ height, justifyContent: 'center', alignItems: 'center' }}>
          <Text style={{ color: textColor, fontSize: 12, fontStyle: 'italic' }}>No data for this range</Text>
@@ -177,210 +395,7 @@ export function TimeSeriesChart({
     );
   }
 
-  // Ensure chronological order
-  const sortedData = [...processedData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  const screenWidth = Dimensions.get('window').width;
-  const yAxisWidth = 20; // Dedicated space for custom Y-axis labels
-  const availableChartWidth = screenWidth - paddingHorizontal - yAxisWidth - 8; // Subtract 8 for marginLeft
-  
-  // We want the chart to fill the available width exactly
-  let computedWidth = availableChartWidth;
-
-  let spacing = 40;
-  let initialSpacing = 0;
-  
-  // Prepare Normalized Data
-  let normalizedData: any[] = [];
-
-  if (maxPoints && sortedData.length > 0) {
-    const pointsCount = maxPoints;
-    // Strict uniform spacing
-    spacing = availableChartWidth / (pointsCount - 1);
-    initialSpacing = 0; // Starts at 0
-    
-    // Create dense array
-    for (let i = 0; i < pointsCount; i++) {
-        const realPoint = sortedData.find(d => (d.spineIndex ?? -1) === i);
-        if (realPoint) {
-            normalizedData.push({ ...realPoint, isInterpolated: false });
-        } else {
-            // Interpolate
-            // Find Prev
-            let prevPoint = null;
-            let nextPoint = null;
-            
-            // Search backwards
-            for (let j = i - 1; j >= 0; j--) {
-                const found = sortedData.find(d => (d.spineIndex ?? -1) === j);
-                if (found) { prevPoint = found; break; }
-            }
-             // Search forwards
-            for (let k = i + 1; k < pointsCount; k++) {
-                const found = sortedData.find(d => (d.spineIndex ?? -1) === k);
-                if (found) { nextPoint = found; break; }
-            }
-            
-            let interpolatedValue = 0;
-            if (prevPoint && nextPoint) {
-                const totalDist = (nextPoint.spineIndex ?? 0) - (prevPoint.spineIndex ?? 0);
-                const currDist = i - (prevPoint.spineIndex ?? 0);
-                const valDiff = nextPoint.value - prevPoint.value;
-                interpolatedValue = prevPoint.value + (valDiff * (currDist / totalDist));
-            } else if (prevPoint) {
-                interpolatedValue = prevPoint.value; // Clamp forward
-            } else if (nextPoint) {
-                interpolatedValue = nextPoint.value; // Clamp backward
-            }
-            
-            normalizedData.push({
-                value: interpolatedValue,
-                date: '', // No date for gaps
-                label: '',
-                isInterpolated: true,
-                hideDataPoint: true,
-                dataPointText: '',
-            });
-        }
-    }
-  } else {
-    // Large dataset or no maxPoints fallback
-    normalizedData = sortedData.map(d => ({ ...d, isInterpolated: false }));
-    
-    if (sortedData.length > 1 && sortedData.length <= 32) {
-         // Auto-fit logic for small non-fixed datasets? 
-         // For now, adhere to existing logic or just use uniform default if not maxPoints
-         const pointsCount = sortedData.length;
-         spacing = availableChartWidth / (pointsCount - 1);
-    } else {
-         spacing = 10;
-         initialSpacing = 10;
-         //  computedWidth is auto-calc handled by Gifted Charts or we set it?
-         // Reuse old logic for scrolling:
-         const contentWidth = (sortedData.length - 1) * spacing;
-         const calculatedInitialSpacing = availableChartWidth - contentWidth;
-         initialSpacing = Math.max(10, calculatedInitialSpacing);
-         computedWidth = Math.max(availableChartWidth, contentWidth + initialSpacing + 10);
-    }
-  }
-
-  // Generate Fixed Labels if in Fixed Mode
-  const fixedLabels: string[] = [];
-  if (maxPoints && selectedRange) {
-    const now = new Date();
-    const config = {
-      'Day': { count: 8, unit: 'hour' as const }, // Every 3h approx? 24h / 8 = 3h
-      'Week': { count: 7, unit: 'date' as const },
-      'Month': { count: 31, unit: 'date' as const },
-      '3Month': { count: 13, unit: 'week' as const }, // 13 weeks ~ 3 months
-      '6Month': { count: 26, unit: 'week' as const },
-      'Year': { count: 12, unit: 'month' as const },
-      'All': { count: maxPoints, unit: 'month' as const }, // Fallback
-    };
-    
-    const { count, unit } = config[selectedRange] || { count: maxPoints, unit: 'date' };
-    
-    if (selectedRange === 'Week') {
-        // 7 specific days for Week view
-        for (let i = 6; i >= 0; i--) {
-            const d = new Date(now);
-            d.setDate(d.getDate() - i);
-            fixedLabels.push(d.toLocaleDateString(undefined, { weekday: 'short' }));
-        }
-    } else if (selectedRange === 'Day') {
-        // 8 points for 24 hours -> every 3 hours
-        // 0h, 3h, 6h ... 21h, 24h(now)
-        // Or relative to now? Usually linear.
-        // Let's assume standard 00:00, 04:00, 08:00... or relative to "Now" - 24h?
-        // User said "Day" range. "Day" usually means Today 00:00 - 23:59.
-        // If it means "Last 24 Hours", then relative.
-        // Let's go with "Today" 00-24h for simplicity/common UX, or rely on passed data.
-        // If distinct points, let's just use 4-hour intervals for labels: 0, 4, 8, 12, 16, 20
-        [0, 4, 8, 12, 16, 20].forEach(h => {
-             const d = new Date();
-             d.setHours(h, 0, 0, 0);
-             fixedLabels.push(d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }));
-        });
-    } else {
-        // Standard distribution for others
-        [0, 0.25, 0.5, 0.75, 1].forEach(percent => {
-            const d = new Date(now);
-            const unitsAgo = Math.round((count - 1) * (1 - percent));
-            if (unit === 'date') d.setDate(d.getDate() - unitsAgo);
-            else if (unit === 'week') d.setDate(d.getDate() - unitsAgo * 7);
-            else if (unit === 'month') d.setMonth(d.getMonth() - unitsAgo);
-            else if (unit === 'hour') d.setHours(d.getHours() - unitsAgo * 3); // 3h steps roughly
-            
-            if (unit === 'hour') {
-                fixedLabels.push(d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }));
-            } else {
-                fixedLabels.push(d.toLocaleDateString(undefined, unit === 'month' ? { month: 'short' } : { month: 'short', day: 'numeric' }));
-            }
-        });
-    }
-
-  }
-
-  // Calculate Y-Axis bounds centered on average (Use REAL values only)
-  const realValues = sortedData.map(d => d.value);
-  const minData = Math.min(...realValues);
-  const maxData = Math.max(...realValues);
-  const avg = realValues.length > 0 ? realValues.reduce((a, b) => a + b, 0) / realValues.length : 0;
-  
-  const targetSections = 4;
-  let stepValue = 10;
-  let minAxis = 0;
-
-  if (realValues.length > 0) {
-      // Determine minimum step size to ensure distinct labels based on magnitude
-      let minStep = 10;
-      if (avg >= 100000) minStep = 1000;
-      else if (avg >= 10000) minStep = 100;
-
-      // Calculate required step to cover the range
-      const dataRange = maxData - minData;
-      let step = Math.max(minStep, Math.ceil(dataRange / targetSections));
-      
-      // Round step to a multiple of minStep
-      step = Math.ceil(step / minStep) * minStep;
-
-      // Center the data
-      const totalChartRange = step * targetSections;
-      const midData = (minData + maxData) / 2;
-      let start = Math.floor((midData - totalChartRange / 2) / minStep) * minStep;
-      if (start < 0) start = 0;
-
-      // Ensure fit
-      while (start + step * targetSections < maxData) {
-          step += minStep;
-          start = Math.floor((midData - (step * targetSections) / 2) / minStep) * minStep;
-          if (start < 0) start = 0;
-          // Safety break to prevent infinite loops if something goes wrong, though unlikely
-          if (step > maxData && step > 1000000) break; 
-      }
-      // Final adjust if clamped at 0
-      if (start + step * targetSections < maxData) {
-          step = Math.ceil(maxData / targetSections / minStep) * minStep;
-          start = 0;
-      }
-
-      minAxis = start;
-      stepValue = step;
-  }
-
-  const yAxisLabelTexts = Array.from({ length: targetSections + 1 }, (_, i) => formatCompactNumber(minAxis + i * stepValue));
-
-  // Format for gifted-charts - SUBTRACT minAxis to ensure perfect alignment
-  const chartData = normalizedData.map(item => ({
-    value: item.value - minAxis,
-    label: item.label,
-    realValue: item.value,
-    date: item.date,
-    isInterpolated: item.isInterpolated,
-    hideDataPoint: item.isInterpolated,
-    dataPointText: '', 
-    // No custom spacing needed for maxPoints mode as we rely on global spacing
-  }));
+  const { computedWidth, spacing, initialSpacing, fixedLabels, yAxisLabelTexts, stepValue, chartData } = derived;
 
   return (
     <TouchableWithoutFeedback onPress={() => onPointSelect?.(null)}>
