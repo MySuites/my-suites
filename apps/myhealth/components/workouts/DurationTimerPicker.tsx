@@ -12,21 +12,13 @@ const WHEEL_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 const MIN_VALUES = Array.from({ length: 15 }, (_, i) => i);
 const SEC_VALUES = Array.from({ length: 60 }, (_, i) => i);
 
-function renderUnitItem(unit: string) {
-    return (item: number, isSelected: boolean) => (
-        <>
-            <Text className={`text-2xl font-bold ${isSelected ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
-                {item}
-            </Text>
-            <Text className={`text-sm font-bold ml-1 ${isSelected ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
-                {unit}
-            </Text>
-        </>
+function renderTimeItem(item: number, isSelected: boolean) {
+    return (
+        <Text className={`text-2xl font-bold ${isSelected ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
+            {item.toString().padStart(2, '0')}
+        </Text>
     );
 }
-
-const renderMinItem = renderUnitItem('min');
-const renderSecItem = renderUnitItem('sec');
 
 interface DurationTimerPickerProps {
     visible: boolean;
@@ -215,7 +207,7 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                                     />
 
                                     {/* Minutes Wheel */}
-                                    <View className="flex-1 items-end pr-4">
+                                    <View className="flex-1 items-end pr-2">
                                         <View style={{ height: WHEEL_HEIGHT, width: 80 }}>
                                             <VerticalSelectorWheel
                                                 value={selectedMin}
@@ -224,13 +216,15 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                                                 itemHeight={ITEM_HEIGHT}
                                                 width={80}
                                                 visibleItems={VISIBLE_ITEMS}
-                                                renderItem={renderMinItem}
+                                                renderItem={renderTimeItem}
                                             />
                                         </View>
                                     </View>
 
+                                    <Text className="text-2xl font-bold text-light dark:text-dark px-1">:</Text>
+
                                     {/* Seconds Wheel */}
-                                    <View className="flex-1 items-start pl-4">
+                                    <View className="flex-1 items-start pl-2">
                                         <View style={{ height: WHEEL_HEIGHT, width: 80 }}>
                                             <VerticalSelectorWheel
                                                 value={selectedSec}
@@ -239,7 +233,7 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                                                 itemHeight={ITEM_HEIGHT}
                                                 width={80}
                                                 visibleItems={VISIBLE_ITEMS}
-                                                renderItem={renderSecItem}
+                                                renderItem={renderTimeItem}
                                             />
                                         </View>
                                     </View>
