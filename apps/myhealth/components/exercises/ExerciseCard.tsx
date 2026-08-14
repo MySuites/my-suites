@@ -420,7 +420,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
             </Modal>
 
              <View
-                className={horizontalSets ? (isOutdoorGpsExercise ? "pb-4 flex-1" : "py-4 flex-1") : "p-4"}
+                className={horizontalSets ? (isOutdoorGpsExercise ? "pb-4 flex-1" : "py-4 flex-1") : "pt-4 px-4 pb-2"}
                 style={horizontalSets ? { flex: 1 } : undefined}
                 onLayout={(e) => {
                     // No horizontal padding here in horizontalSets mode (see className

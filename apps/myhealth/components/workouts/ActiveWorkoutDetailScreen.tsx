@@ -197,7 +197,7 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
                 activeIdx = i;
                 break;
             }
-            currentY += height + 24; // card height + mb-6 margin (24px)
+            currentY += height + 8; // card height + mb-2 margin (8px)
             activeIdx = Math.min(i + 1, total - 1);
         }
         
@@ -273,7 +273,7 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
         return (
             <ScaleDecorator activeScale={1.05}>
                 <View 
-                    className={`mb-6 p-1.5 ${isActive ? 'bg-light dark:bg-dark rounded-2xl' : ''}`}
+                    className={`mb-2 px-1.5 ${isActive ? 'bg-light dark:bg-dark rounded-2xl py-1.5' : ''}`}
                     onLayout={(e) => {
                         const { height } = e.nativeEvent.layout;
                         itemHeightsRef.current[index] = height;
