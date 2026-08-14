@@ -299,11 +299,14 @@ function CardWorkoutSetInner({
     progressiveOverloadRepCeiling,
     isGpsTrackingActive = false
 }: CardWorkoutSetProps) {
-    const { height: windowHeight } = useWindowDimensions();
+    const { height: windowHeight, width: windowWidth } = useWindowDimensions();
     const colorScheme = useColorScheme();
     const { unitSystem, weightUnit } = useUnitPreference();
     const isSmallScreen = windowHeight < 900;
     const rowPadding = isSmallScreen ? 'py-1' : 'py-2';
+    // Narrower than full screen width - HorizontalSelectorWheel defaults to
+    // windowWidth, which stretched the weight/reps rulers edge to edge.
+    const wheelContainerWidth = windowWidth - 64;
 
     // Always start false so mounting a card never synchronously builds the
     // heavy wheel inside the same commit that swaps the current exercise —
@@ -880,6 +883,7 @@ function CardWorkoutSetInner({
                                 onValueChange={handleWeightChange}
                                 values={weightValues}
                                 itemWidth={WHEEL_ITEM_WIDTH}
+                                containerWidth={wheelContainerWidth}
                                 unit=""
                                 goalValue={goalDisplayWeight}
                                 goalColor={goalColor}
@@ -916,6 +920,7 @@ function CardWorkoutSetInner({
                                     onValueChange={onChange}
                                     values={REP_VALUES}
                                     itemWidth={WHEEL_ITEM_WIDTH}
+                                    containerWidth={wheelContainerWidth}
                                     unit=""
                                     goalValue={goalReps}
                                     goalColor={goalColor}
