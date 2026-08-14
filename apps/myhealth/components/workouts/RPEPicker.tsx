@@ -13,6 +13,7 @@ interface RPEPickerProps {
     onClose: () => void;
     initialValue: number | string | undefined;
     onSave: (value: number) => void;
+    isHapticsEnabled?: boolean;
 }
 
 // Safely parse initial value which can be string or number
@@ -30,7 +31,7 @@ function snapToNearest(val: number) {
     ), VALUES[0]);
 }
 
-export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerProps) {
+export function RPEPicker({ visible, onClose, initialValue, onSave, isHapticsEnabled = true }: RPEPickerProps) {
     const theme = useUITheme();
 
     const [selectedValue, setSelectedValue] = useState(snapToNearest(getParsedValue(initialValue) ?? 8.0));
@@ -72,6 +73,7 @@ export function RPEPicker({ visible, onClose, initialValue, onSave }: RPEPickerP
                             itemHeight={ITEM_HEIGHT}
                             width={200}
                             visibleItems={5}
+                            isHapticsEnabled={isHapticsEnabled}
                             renderItem={(item, isSelected) => (
                                 <Text className={`text-2xl font-bold ${
                                     isSelected

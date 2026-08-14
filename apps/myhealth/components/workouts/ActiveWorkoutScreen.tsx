@@ -108,7 +108,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
         addExercise,
         isGpsTrackingActive,
     } = useActiveWorkout();
-    const { isRpeEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling } = useWorkoutManager();
+    const { isRpeEnabled, isHapticsEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling } = useWorkoutManager();
 
     const [isAddingExercise, setIsAddingExercise] = useState(false);
 
@@ -290,6 +290,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                     onAddSet={undefined}
                     onDeleteSet={undefined}
                     isRpeEnabled={isRpeEnabled}
+                    isHapticsEnabled={isHapticsEnabled}
                     isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
                     progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
                     isGpsTrackingActive={isGpsTrackingActive}

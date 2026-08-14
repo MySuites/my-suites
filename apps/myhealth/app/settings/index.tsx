@@ -30,6 +30,7 @@ export default function SettingsScreen() {
   const { showToast } = useToast();
   const {
     isRpeEnabled, setIsRpeEnabled,
+    isHapticsEnabled, setIsHapticsEnabled,
     isProgressiveOverloadEnabled, setIsProgressiveOverloadEnabled,
     progressiveOverloadRepCeiling, setProgressiveOverloadRepCeiling,
   } = useWorkoutManager();
@@ -331,6 +332,26 @@ export default function SettingsScreen() {
         <View className="mb-6">
           <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Appearance</Text>
           <ThemeToggle preference={preference} setPreference={setPreference} />
+        </View>
+
+        <View className="mb-6">
+          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">General</Text>
+          <View className="flex-row justify-between items-center py-3">
+            <Text className="text-base text-light dark:text-dark font-medium">Allow Haptic Feedback</Text>
+            <Switch
+              testID="haptics-switch"
+              value={isHapticsEnabled}
+              onValueChange={async (value) => {
+                await setIsHapticsEnabled(value);
+                showToast({
+                  message: value ? "Haptic feedback enabled" : "Haptic feedback disabled",
+                  type: 'success'
+                });
+              }}
+              trackColor={{ false: theme.card, true: theme.primary }}
+              thumbColor={isHapticsEnabled ? "#ffffff" : "#f4f3f4"}
+            />
+          </View>
         </View>
 
         <View className="mb-6">

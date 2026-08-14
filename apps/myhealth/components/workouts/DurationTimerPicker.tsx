@@ -31,9 +31,10 @@ interface DurationTimerPickerProps {
     prepTime?: number;
     /** Called when the user changes the prep countdown for this exercise. */
     onPrepTimeChange?: (value: number) => void;
+    isHapticsEnabled?: boolean;
 }
 
-export function DurationTimerPicker({ visible, onClose, initialValue, onSave, isActiveWorkout = false, autoStart = false, prepTime = 0, onPrepTimeChange }: DurationTimerPickerProps) {
+export function DurationTimerPicker({ visible, onClose, initialValue, onSave, isActiveWorkout = false, autoStart = false, prepTime = 0, onPrepTimeChange, isHapticsEnabled = true }: DurationTimerPickerProps) {
     const theme = useUITheme();
     
     const [selectedMin, setSelectedMin] = useState(Math.floor(initialValue / 60));
@@ -90,17 +91,17 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                     setPrepRemaining(prev => {
                         if (prev <= 1) {
                             setIsPrepping(false);
-                            Vibration.vibrate(100);
+                            if (isHapticsEnabled) Vibration.vibrate(100);
                             return 0;
                         }
-                        Vibration.vibrate(10);
+                        if (isHapticsEnabled) Vibration.vibrate(10);
                         return prev - 1;
                     });
                 } else {
                     setRemainingSeconds(prev => {
                         if (prev <= 1) {
                             setIsTimerRunning(false);
-                            Vibration.vibrate([0, 500, 200, 500]);
+                            if (isHapticsEnabled) Vibration.vibrate([0, 500, 200, 500]);
                             return 0;
                         }
                         return prev - 1;
@@ -117,7 +118,7 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                 clearInterval(timerIntervalRef.current);
             }
         };
-    }, [isTimerRunning, isPrepping]);
+    }, [isTimerRunning, isPrepping, isHapticsEnabled]);
 
     const handleMinChange = (newMin: number) => {
         setSelectedMin(newMin);
@@ -217,6 +218,7 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                                                 width={80}
                                                 visibleItems={VISIBLE_ITEMS}
                                                 renderItem={renderTimeItem}
+                                                isHapticsEnabled={isHapticsEnabled}
                                             />
                                         </View>
                                     </View>
@@ -234,6 +236,7 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                                                 width={80}
                                                 visibleItems={VISIBLE_ITEMS}
                                                 renderItem={renderTimeItem}
+                                                isHapticsEnabled={isHapticsEnabled}
                                             />
                                         </View>
                                     </View>

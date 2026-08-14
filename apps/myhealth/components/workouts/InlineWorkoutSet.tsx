@@ -24,6 +24,7 @@ interface InlineWorkoutSetProps {
     // Threaded down as a prop instead of reading WorkoutManagerProvider
     // directly - see CardWorkoutSet.tsx for why.
     isRpeEnabled?: boolean;
+    isHapticsEnabled?: boolean;
 }
 
 function InlineWorkoutSetInner({
@@ -40,7 +41,8 @@ function InlineWorkoutSetInner({
     showCheckbox = true,
     showSetNumber = true,
     isCompleted,
-    isRpeEnabled = false
+    isRpeEnabled = false,
+    isHapticsEnabled = true
 }: InlineWorkoutSetProps) {
     const [isDurationPickerVisible, setIsDurationPickerVisible] = React.useState(false);
     const [durationAutoStart, setDurationAutoStart] = React.useState(false);
@@ -294,6 +296,7 @@ function InlineWorkoutSetInner({
                 autoStart={durationAutoStart}
                 prepTime={exercisePrepTime}
                 onPrepTimeChange={onUpdatePrepTime}
+                isHapticsEnabled={isHapticsEnabled}
             />
         </>
     );
@@ -311,6 +314,7 @@ export const InlineWorkoutSet = React.memo(InlineWorkoutSetInner, (prev, next) =
         prev.showCheckbox === next.showCheckbox &&
         prev.showSetNumber === next.showSetNumber &&
         prev.isCompleted === next.isCompleted &&
-        prev.isRpeEnabled === next.isRpeEnabled
+        prev.isRpeEnabled === next.isRpeEnabled &&
+        prev.isHapticsEnabled === next.isHapticsEnabled
     );
 });

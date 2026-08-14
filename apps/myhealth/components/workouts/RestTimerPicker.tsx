@@ -15,6 +15,7 @@ interface RestTimerPickerProps {
     onClose: () => void;
     initialValue: number;
     onSave: (value: number) => void;
+    isHapticsEnabled?: boolean;
 }
 
 function renderTimeItem(item: number, isSelected: boolean) {
@@ -25,7 +26,7 @@ function renderTimeItem(item: number, isSelected: boolean) {
     );
 }
 
-export function RestTimerPicker({ visible, onClose, initialValue, onSave }: RestTimerPickerProps) {
+export function RestTimerPicker({ visible, onClose, initialValue, onSave, isHapticsEnabled = true }: RestTimerPickerProps) {
     const theme = useUITheme();
     const [selectedMin, setSelectedMin] = useState(Math.floor(initialValue / 60));
     const [selectedSec, setSelectedSec] = useState(Math.floor((initialValue % 60) / 5) * 5);
@@ -72,6 +73,7 @@ export function RestTimerPicker({ visible, onClose, initialValue, onSave }: Rest
                                     width={80}
                                     visibleItems={VISIBLE_ITEMS}
                                     renderItem={renderTimeItem}
+                                    isHapticsEnabled={isHapticsEnabled}
                                 />
                             </View>
                         </View>
@@ -89,6 +91,7 @@ export function RestTimerPicker({ visible, onClose, initialValue, onSave }: Rest
                                     width={80}
                                     visibleItems={VISIBLE_ITEMS}
                                     renderItem={renderTimeItem}
+                                    isHapticsEnabled={isHapticsEnabled}
                                 />
                             </View>
                         </View>

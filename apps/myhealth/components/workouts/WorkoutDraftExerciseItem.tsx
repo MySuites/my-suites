@@ -122,7 +122,7 @@ export const WorkoutDraftExerciseItem = ({
         };
     };
 
-    const { isRpeEnabled } = useWorkoutManager();
+    const { isRpeEnabled, isHapticsEnabled } = useWorkoutManager();
     const { showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(item.properties, item.id);
     const showRPE = calculatedShowRPE && isRpeEnabled;
     
@@ -557,6 +557,7 @@ export const WorkoutDraftExerciseItem = ({
                     }
                     setIsRPEPickerVisible(false);
                 }}
+                isHapticsEnabled={isHapticsEnabled}
             />
 
             <RestTimerPicker
@@ -567,9 +568,10 @@ export const WorkoutDraftExerciseItem = ({
                     onUpdateRestTime?.(val);
                     setIsRestPickerVisible(false);
                 }}
+                isHapticsEnabled={isHapticsEnabled}
             />
 
-            <DurationTimerPicker 
+            <DurationTimerPicker
                 visible={isDurationPickerVisible}
                 onClose={() => setIsDurationPickerVisible(false)}
                 initialValue={durationPickerValue}
@@ -582,6 +584,7 @@ export const WorkoutDraftExerciseItem = ({
                 isActiveWorkout={false}
                 prepTime={item.prepTime ?? 0}
                 onPrepTimeChange={onUpdatePrepTime}
+                isHapticsEnabled={isHapticsEnabled}
             />
 
             <AttachmentPicker

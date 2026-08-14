@@ -273,6 +273,7 @@ interface CardWorkoutSetProps {
     // re-render every mounted CardWorkoutSet regardless of React.memo,
     // since useContext bypasses memo entirely.
     isRpeEnabled?: boolean;
+    isHapticsEnabled?: boolean;
     isProgressiveOverloadEnabled?: boolean;
     progressiveOverloadRepCeiling?: number;
     isGpsTrackingActive?: boolean;
@@ -295,6 +296,7 @@ function CardWorkoutSetInner({
     isCurrentPage = true,
     wheelsReadyDelayMs = 60,
     isRpeEnabled = false,
+    isHapticsEnabled = true,
     isProgressiveOverloadEnabled = false,
     progressiveOverloadRepCeiling,
     isGpsTrackingActive = false
@@ -479,20 +481,20 @@ function CardWorkoutSetInner({
             if (isLocalPrepping) {
                 setLocalPrepSecs(prev => {
                     if (prev > 1) {
-                        Vibration.vibrate(10);
+                        if (isHapticsEnabled) Vibration.vibrate(10);
                         return prev - 1;
                     }
                     // Prep just finished — hand over to the timer/stopwatch.
                     setIsLocalPrepping(false);
                     const duration = parseInt(durationVal) || 0;
-                    Vibration.vibrate(100);
+                    if (isHapticsEnabled) Vibration.vibrate(100);
                     if (isStopwatchMode) {
                         setLocalRemainingSecs(0);
                     } else {
                         setLocalRemainingSecs(duration);
                         if (duration <= 0) {
                             setIsLocalTimerRunning(false);
-                            Vibration.vibrate([0, 500, 200, 500]);
+                            if (isHapticsEnabled) Vibration.vibrate([0, 500, 200, 500]);
                         }
                     }
                     return 0;
@@ -503,14 +505,14 @@ function CardWorkoutSetInner({
                 setLocalRemainingSecs(prev => {
                     if (prev > 1) return prev - 1;
                     setIsLocalTimerRunning(false);
-                    Vibration.vibrate([0, 500, 200, 500]);
+                    if (isHapticsEnabled) Vibration.vibrate([0, 500, 200, 500]);
                     return 0;
                 });
             }
         }, 1000);
 
         return () => clearInterval(handle);
-    }, [isLocalTimerRunning, isLocalPrepping, isStopwatchMode, durationVal]);
+    }, [isLocalTimerRunning, isLocalPrepping, isStopwatchMode, durationVal, isHapticsEnabled]);
 
     const startLocalTimer = () => {
         const prep = selectedPrepSec;
@@ -689,6 +691,7 @@ function CardWorkoutSetInner({
                                         width={50}
                                         goalValue={goalMin}
                                         goalColor={goalColor}
+                                        isHapticsEnabled={isHapticsEnabled}
                                     />
                                     <DurationUnitLabel unit="m" className="mr-0.5" />
                                     <Text className="text-light dark:text-dark font-bold px-1 text-3xl opacity-60">:</Text>
@@ -700,6 +703,7 @@ function CardWorkoutSetInner({
                                         width={50}
                                         goalValue={goalSec}
                                         goalColor={goalColor}
+                                        isHapticsEnabled={isHapticsEnabled}
                                     />
                                     <DurationUnitLabel unit="s" />
                                 </View>
@@ -889,6 +893,7 @@ function CardWorkoutSetInner({
                                 goalColor={goalColor}
                                 formatValue={allowsAssistance ? formatAssistableWeight : undefined}
                                 getTickSize={getTickSizeByTens}
+                                isHapticsEnabled={isHapticsEnabled}
                             />
                         );
                     })()}
@@ -925,6 +930,7 @@ function CardWorkoutSetInner({
                                     goalValue={goalReps}
                                     goalColor={goalColor}
                                     getTickSize={getTickSizeByTens}
+                                    isHapticsEnabled={isHapticsEnabled}
                                 />
                             );
                         };
@@ -996,6 +1002,7 @@ export const CardWorkoutSet = React.memo(CardWorkoutSetInner, (prev, next) => {
         prev.isCurrentPage === next.isCurrentPage &&
         prev.wheelsReadyDelayMs === next.wheelsReadyDelayMs &&
         prev.isRpeEnabled === next.isRpeEnabled &&
+        prev.isHapticsEnabled === next.isHapticsEnabled &&
         prev.isProgressiveOverloadEnabled === next.isProgressiveOverloadEnabled &&
         prev.progressiveOverloadRepCeiling === next.progressiveOverloadRepCeiling &&
         prev.isGpsTrackingActive === next.isGpsTrackingActive

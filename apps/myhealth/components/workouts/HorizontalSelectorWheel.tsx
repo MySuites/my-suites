@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, useWindowDimensions, Animated as RNAnimated, ScrollView } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useUITheme } from '@mysuite/ui';
 import { useSetPagerScrollLock } from '../exercises/SetPagerScrollLock';
 
@@ -33,6 +34,7 @@ interface HorizontalSelectorWheelProps {
     // 10, medium at every 5, small otherwise for a weight wheel) instead of
     // the plain index-based majorTickEvery. Takes precedence when provided.
     getTickSize?: (val: number) => TickSize;
+    isHapticsEnabled?: boolean;
 }
 
 const WHEEL_HEIGHT = 56;
@@ -163,6 +165,7 @@ function HorizontalSelectorWheelBase({
     formatValue = (v) => String(v),
     majorTickEvery = 5,
     getTickSize,
+    isHapticsEnabled = true,
 }: HorizontalSelectorWheelProps) {
     const { width: windowWidth } = useWindowDimensions();
     const width = containerWidth ?? windowWidth;
@@ -233,6 +236,12 @@ function HorizontalSelectorWheelBase({
         }
     }, [valueAtOffset]);
 
+    // Tracks the last value a tick-crossing haptic fired for, so rapid scroll
+    // events landing on the same tick don't re-buzz, and so a programmatic
+    // resync (switching sets/exercises via syncToValue) doesn't itself count
+    // as a "crossing" the next time the user actually scrolls.
+    const lastHapticValueRef = React.useRef<number | null>(null);
+
     // Jumps the strip, the fill overlay (scrollX) and the label to `val` in
     // one step - used both for the initial layout and whenever the parent
     // pushes down a new value.
@@ -240,6 +249,7 @@ function HorizontalSelectorWheelBase({
         const offset = getScrollOffset(val);
         scrollX.setValue(offset);
         updateLabelForOffset(offset);
+        lastHapticValueRef.current = val;
         scrollViewRef.current?.scrollTo({ x: offset, animated: false });
     }, [getScrollOffset, scrollX, updateLabelForOffset]);
 
@@ -263,10 +273,18 @@ function HorizontalSelectorWheelBase({
         {
             useNativeDriver: true,
             listener: (event: any) => {
-                updateLabelForOffset(event.nativeEvent.contentOffset.x);
+                const offset = event.nativeEvent.contentOffset.x;
+                updateLabelForOffset(offset);
+                const nearest = valueAtOffset(offset);
+                if (nearest !== null && nearest !== lastHapticValueRef.current) {
+                    lastHapticValueRef.current = nearest;
+                    if (isHapticsEnabled) {
+                        Haptics.selectionAsync();
+                    }
+                }
             },
         }
-    ), [scrollX, updateLabelForOffset]);
+    ), [scrollX, updateLabelForOffset, valueAtOffset, isHapticsEnabled]);
 
     const commitValue = React.useCallback((val: number) => {
         setLocalSelectedValue(val);

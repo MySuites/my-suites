@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 interface VerticalSelectorWheelProps {
     value: number;
@@ -19,6 +20,7 @@ interface VerticalSelectorWheelProps {
     // Custom row content, e.g. a unit suffix or decimal formatting. Defaults
     // to the plain scale/opacity-faded number rendering below.
     renderItem?: (item: number, isSelected: boolean) => React.ReactNode;
+    isHapticsEnabled?: boolean;
 }
 
 function VerticalSelectorWheelBase({
@@ -31,6 +33,7 @@ function VerticalSelectorWheelBase({
     goalValue,
     goalColor,
     renderItem,
+    isHapticsEnabled = true,
 }: VerticalSelectorWheelProps) {
     const padCount = Math.floor(visibleItems / 2);
     const padding = React.useMemo(() => Array(padCount).fill(null), [padCount]);
@@ -54,9 +57,12 @@ function VerticalSelectorWheelBase({
             const newVal = values[idx];
             if (newVal !== localSelectedValue) {
                 setLocalSelectedValue(newVal);
+                if (isHapticsEnabled) {
+                    Haptics.selectionAsync();
+                }
             }
         }
-    }, [values, itemHeight, localSelectedValue]);
+    }, [values, itemHeight, localSelectedValue, isHapticsEnabled]);
 
     const handleScrollEnd = React.useCallback((event: any) => {
         const offset = event.nativeEvent.contentOffset.y;

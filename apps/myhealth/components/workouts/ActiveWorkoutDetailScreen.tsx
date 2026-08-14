@@ -177,7 +177,7 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
         latestBodyWeight,
         isGpsTrackingActive
     } = useActiveWorkout();
-    const { isRpeEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling } = useWorkoutManager();
+    const { isRpeEnabled, isHapticsEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling } = useWorkoutManager();
 
     const [isAddingExercise, setIsAddingExercise] = React.useState(false);
 
@@ -303,6 +303,7 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
                         }}
                         onDrag={drag}
                         isRpeEnabled={isRpeEnabled}
+                        isHapticsEnabled={isHapticsEnabled}
                         isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
                         progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
                         isGpsTrackingActive={isGpsTrackingActive}
@@ -310,7 +311,7 @@ export function ActiveWorkoutDetailScreen({ onToggleView }: ActiveWorkoutDetailS
                 </View>
             </ScaleDecorator>
         );
-    }, [currentIndex, completeSet, updateExercise, removeExercise, reorderExercises, exercises, latestBodyWeight, router, isRpeEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling, isGpsTrackingActive]);
+    }, [currentIndex, completeSet, updateExercise, removeExercise, reorderExercises, exercises, latestBodyWeight, router, isRpeEnabled, isHapticsEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling, isGpsTrackingActive]);
 
     return (
         <View style={{ flex: 1 }}>
@@ -421,6 +422,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     onUpdateEquipment,
     onUpdateMovementType,
     isRpeEnabled,
+    isHapticsEnabled,
     isProgressiveOverloadEnabled,
     progressiveOverloadRepCeiling,
     isGpsTrackingActive,
@@ -442,6 +444,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
     onUpdateEquipment?: (equipment: string) => void;
     onUpdateMovementType?: (movementType: string) => void;
     isRpeEnabled?: boolean;
+    isHapticsEnabled?: boolean;
     isProgressiveOverloadEnabled?: boolean;
     progressiveOverloadRepCeiling?: number;
     isGpsTrackingActive?: boolean;
@@ -513,6 +516,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
                 });
             }}
             isRpeEnabled={isRpeEnabled}
+            isHapticsEnabled={isHapticsEnabled}
             isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
             progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
             isGpsTrackingActive={isGpsTrackingActive}
@@ -528,6 +532,7 @@ const ActiveWorkoutExerciseItem = React.memo(function ActiveWorkoutExerciseItem(
         prevProps.onMoveDown === nextProps.onMoveDown &&
         prevProps.onDrag === nextProps.onDrag &&
         prevProps.isRpeEnabled === nextProps.isRpeEnabled &&
+        prevProps.isHapticsEnabled === nextProps.isHapticsEnabled &&
         prevProps.isProgressiveOverloadEnabled === nextProps.isProgressiveOverloadEnabled &&
         prevProps.progressiveOverloadRepCeiling === nextProps.progressiveOverloadRepCeiling &&
         prevProps.isGpsTrackingActive === nextProps.isGpsTrackingActive

@@ -53,12 +53,13 @@ interface ExerciseCardProps {
     // re-render every mounted card regardless of whether these actually
     // changed, since useContext bypasses React.memo entirely.
     isRpeEnabled?: boolean;
+    isHapticsEnabled?: boolean;
     isProgressiveOverloadEnabled?: boolean;
     progressiveOverloadRepCeiling?: number;
     isGpsTrackingActive?: boolean;
 }
 
-function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange, showName, preloadWheels, wheelsReadyDelayMs, isRpeEnabled = false, isProgressiveOverloadEnabled = false, progressiveOverloadRepCeiling, isGpsTrackingActive = false }: ExerciseCardProps) {
+function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange, showName, preloadWheels, wheelsReadyDelayMs, isRpeEnabled = false, isHapticsEnabled = true, isProgressiveOverloadEnabled = false, progressiveOverloadRepCeiling, isGpsTrackingActive = false }: ExerciseCardProps) {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number, right: number } | null>(null);
@@ -538,6 +539,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                             isCurrentPage={isCurrent ?? false}
                                             wheelsReadyDelayMs={wheelsReadyDelayMs}
                                             isRpeEnabled={isRpeEnabled}
+                                            isHapticsEnabled={isHapticsEnabled}
                                             isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
                                             progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
                                             isGpsTrackingActive={isGpsTrackingActive}
@@ -569,6 +571,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                             enableSwipeToDelete={false}
                             showSetNumber={!horizontalSets}
                             isRpeEnabled={isRpeEnabled}
+                            isHapticsEnabled={isHapticsEnabled}
                             isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
                             progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
                             isGpsTrackingActive={isGpsTrackingActive}
@@ -621,9 +624,10 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                     onUpdateRestTime?.(val);
                     setIsPickerVisible(false);
                 }}
+                isHapticsEnabled={isHapticsEnabled}
             />
 
-            <RPEPicker 
+            <RPEPicker
                 visible={isRPEPickerVisible}
                 onClose={() => setIsRPEPickerVisible(false)}
                 initialValue={rpePickerValue}
@@ -633,6 +637,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                     }
                     setIsRPEPickerVisible(false);
                 }}
+                isHapticsEnabled={isHapticsEnabled}
             />
 
             <AttachmentPicker
@@ -688,6 +693,7 @@ export const ExerciseCard = React.memo(ExerciseCardInner, (prev, next) => {
         prev.preloadWheels === next.preloadWheels &&
         prev.wheelsReadyDelayMs === next.wheelsReadyDelayMs &&
         prev.isRpeEnabled === next.isRpeEnabled &&
+        prev.isHapticsEnabled === next.isHapticsEnabled &&
         prev.isProgressiveOverloadEnabled === next.isProgressiveOverloadEnabled &&
         prev.progressiveOverloadRepCeiling === next.progressiveOverloadRepCeiling &&
         prev.isGpsTrackingActive === next.isGpsTrackingActive

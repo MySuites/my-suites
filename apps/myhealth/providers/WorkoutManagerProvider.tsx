@@ -53,6 +53,8 @@ interface WorkoutManagerContextType {
     reorderSavedWorkouts: (newWorkouts: any[]) => Promise<void>;
     isRpeEnabled: boolean;
     setIsRpeEnabled: (enabled: boolean) => Promise<void>;
+    isHapticsEnabled: boolean;
+    setIsHapticsEnabled: (enabled: boolean) => Promise<void>;
     isProgressiveOverloadEnabled: boolean;
     setIsProgressiveOverloadEnabled: (enabled: boolean) => Promise<void>;
     progressiveOverloadRepCeiling: number;
@@ -70,6 +72,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isRpeEnabled, setIsRpeEnabledState] = useState(false);
+    const [isHapticsEnabled, setIsHapticsEnabledState] = useState(true);
     const [isProgressiveOverloadEnabled, setIsProgressiveOverloadEnabledState] = useState(true);
     const [progressiveOverloadRepCeiling, setProgressiveOverloadRepCeilingState] = useState(DEFAULT_REP_CEILING);
 
@@ -89,6 +92,11 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
     const setIsRpeEnabled = useCallback(async (enabled: boolean) => {
         setIsRpeEnabledState(enabled);
         await storage.setItem('setting.workout.isRpeEnabled', enabled);
+    }, []);
+
+    const setIsHapticsEnabled = useCallback(async (enabled: boolean) => {
+        setIsHapticsEnabledState(enabled);
+        await storage.setItem('setting.workout.isHapticsEnabled', enabled);
     }, []);
 
     const setIsProgressiveOverloadEnabled = useCallback(async (enabled: boolean) => {
@@ -135,6 +143,9 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
 
                 const rpeVal = await storage.getItem<boolean>('setting.workout.isRpeEnabled');
                 setIsRpeEnabledState(!!rpeVal);
+
+                const hapticsVal = await storage.getItem<boolean>('setting.workout.isHapticsEnabled');
+                setIsHapticsEnabledState(hapticsVal === null ? true : !!hapticsVal);
 
                 const progressiveOverloadVal = await storage.getItem<boolean>('setting.workout.isProgressiveOverloadEnabled');
                 setIsProgressiveOverloadEnabledState(progressiveOverloadVal === null ? true : !!progressiveOverloadVal);
@@ -517,6 +528,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         reorderSavedWorkouts,
         isRpeEnabled,
         setIsRpeEnabled,
+        isHapticsEnabled,
+        setIsHapticsEnabled,
         isProgressiveOverloadEnabled,
         setIsProgressiveOverloadEnabled,
         progressiveOverloadRepCeiling,
@@ -528,6 +541,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         deleteRoutine, workoutHistory, fetchWorkoutLogDetailsStable, saveCompletedWorkout,
         deleteWorkoutLog, createCustomExercise, deleteCustomExercise, lastSyncedAt,
         sync, isSyncing, reorderSavedWorkouts, isRpeEnabled, setIsRpeEnabled,
+        isHapticsEnabled, setIsHapticsEnabled,
         isProgressiveOverloadEnabled, setIsProgressiveOverloadEnabled,
         progressiveOverloadRepCeiling, setProgressiveOverloadRepCeiling
     ]);
@@ -567,6 +581,8 @@ export function useWorkoutManager() {
             reorderSavedWorkouts: async () => {},
             isRpeEnabled: false,
             setIsRpeEnabled: async () => {},
+            isHapticsEnabled: true,
+            setIsHapticsEnabled: async () => {},
             isProgressiveOverloadEnabled: true,
             setIsProgressiveOverloadEnabled: async () => {},
             progressiveOverloadRepCeiling: DEFAULT_REP_CEILING,

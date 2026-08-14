@@ -52,6 +52,7 @@ interface SetRowProps {
     // Threaded down from the screen level - see ExerciseCardProps for why
     // these are props instead of context reads at this depth.
     isRpeEnabled?: boolean;
+    isHapticsEnabled?: boolean;
     isProgressiveOverloadEnabled?: boolean;
     progressiveOverloadRepCeiling?: number;
     isGpsTrackingActive?: boolean;
@@ -79,6 +80,7 @@ const SetRowInner = ({
     isCurrentPage = true,
     wheelsReadyDelayMs,
     isRpeEnabled,
+    isHapticsEnabled = true,
     isProgressiveOverloadEnabled,
     progressiveOverloadRepCeiling,
     isGpsTrackingActive
@@ -147,6 +149,7 @@ const SetRowInner = ({
                           showSetNumber={showSetNumber}
                           isCompleted={isCompleted}
                           isRpeEnabled={isRpeEnabled}
+                          isHapticsEnabled={isHapticsEnabled}
                       />
                       {/* Swipeable rows nested inside DraggableFlatList don't
                           actually receive the gesture (see react-native-
@@ -192,6 +195,7 @@ const SetRowInner = ({
                       isCurrentPage={isCurrentPage}
                       wheelsReadyDelayMs={wheelsReadyDelayMs}
                       isRpeEnabled={isRpeEnabled}
+                      isHapticsEnabled={isHapticsEnabled}
                       isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
                       progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
                       isGpsTrackingActive={isGpsTrackingActive}
@@ -208,8 +212,8 @@ const SetRowInner = ({
         <Swipeable
             ref={swipeableRef}
             renderRightActions={(_, dragX) => (
-                <SetSwipeAction 
-                    dragX={dragX} 
+                <SetSwipeAction
+                    dragX={dragX}
                     onDelete={() => {
                         swipeableRef.current?.close();
                         onDeleteSet(index);
@@ -217,6 +221,7 @@ const SetRowInner = ({
                     onSetReadyToDelete={(ready) => shouldDelete.current = ready}
                     cardOffset={cardOffset}
                     rowWidth={rowWidth}
+                    isHapticsEnabled={isHapticsEnabled}
                 />
             )}
             onSwipeableWillOpen={() => {
@@ -254,6 +259,7 @@ export const SetRow = React.memo(SetRowInner, (prev, next) => {
         prev.isCurrentPage === next.isCurrentPage &&
         prev.wheelsReadyDelayMs === next.wheelsReadyDelayMs &&
         prev.isRpeEnabled === next.isRpeEnabled &&
+        prev.isHapticsEnabled === next.isHapticsEnabled &&
         prev.isProgressiveOverloadEnabled === next.isProgressiveOverloadEnabled &&
         prev.progressiveOverloadRepCeiling === next.progressiveOverloadRepCeiling &&
         prev.isGpsTrackingActive === next.isGpsTrackingActive
@@ -262,30 +268,34 @@ export const SetRow = React.memo(SetRowInner, (prev, next) => {
 
 
 // Actions component that monitors drag distance (Adapted for Set Rows)
-function SetSwipeAction({ 
-    dragX, 
+function SetSwipeAction({
+    dragX,
     onDelete,
     onSetReadyToDelete,
     cardOffset,
-    rowWidth
-}: { 
-    dragX: SharedValue<number>; 
+    rowWidth,
+    isHapticsEnabled = true
+}: {
+    dragX: SharedValue<number>;
     onDelete: () => void;
     onSetReadyToDelete: (ready: boolean) => void;
     cardOffset: SharedValue<number>;
     rowWidth: SharedValue<number>;
+    isHapticsEnabled?: boolean;
 }) {
     const { width } = useWindowDimensions();
     const hasTriggered = useSharedValue(false);
     const TRIGGER_THRESHOLD = -width * 0.45; // 45% swipe to delete
-    
+
     // Monitor drag value to trigger haptic feedback
     useAnimatedReaction(
         () => dragX.value,
         (currentDrag) => {
             if (currentDrag < TRIGGER_THRESHOLD && !hasTriggered.value) {
                 hasTriggered.value = true;
-                runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
+                if (isHapticsEnabled) {
+                    runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
+                }
                 runOnJS(onSetReadyToDelete)(true);
                 cardOffset.value = withTiming(-width, { duration: 200, easing: Easing.linear });
             } else if (currentDrag > TRIGGER_THRESHOLD + 20 && hasTriggered.value) {
