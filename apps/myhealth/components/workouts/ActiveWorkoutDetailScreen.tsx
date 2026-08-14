@@ -16,8 +16,11 @@ import { isOutdoorGpsExercise } from '../../utils/workout-logic';
 // Search bar overlay (ExercisesScreen in select mode) sits at bottom-10 plus
 // its own content (confirm-button row + search row + padding). Raising the
 // rest timer just above that instead of overlapping it when the
-// add-exercise search is open.
-const RAISED_BOTTOM_OFFSET = 70;
+// add-exercise search is open. Needs to clear: bottom-10 (40) + pb-8 (32) +
+// search row (48) + mb-2 gap (8) + confirm-button row (48) - on a standard
+// 34pt safe-area device the old offset of 70 landed right at the button's
+// top edge with zero clearance, so it visually covered/blocked taps on it.
+const RAISED_BOTTOM_OFFSET = 120;
 
 export function RestTimerBar({ raised = false }: { raised?: boolean }) {
     const { restSeconds, startRestTimer } = useActiveWorkoutTimer();
@@ -32,7 +35,7 @@ export function RestTimerBar({ raised = false }: { raised?: boolean }) {
             exiting={SlideOutDown.duration(300)}
             className="absolute left-4 right-4 z-[2000] p-4 rounded-2xl flex-row items-center justify-between"
             style={{
-                bottom: raised ? insets.bottom + RAISED_BOTTOM_OFFSET : insets.bottom + 12,
+                bottom: raised ? insets.bottom + RAISED_BOTTOM_OFFSET : insets.bottom,
                 backgroundColor: theme.bgLight, 
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 4 },
