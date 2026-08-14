@@ -17,21 +17,13 @@ interface RestTimerPickerProps {
     onSave: (value: number) => void;
 }
 
-function renderUnitItem(unit: string) {
-    return (item: number, isSelected: boolean) => (
-        <>
-            <Text className={`text-2xl font-bold ${isSelected ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
-                {item}
-            </Text>
-            <Text className={`ml-1 text-sm font-bold ${isSelected ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
-                {unit}
-            </Text>
-        </>
+function renderTimeItem(item: number, isSelected: boolean) {
+    return (
+        <Text className={`text-2xl font-bold ${isSelected ? 'text-primary dark:text-primary-dark' : 'text-light-muted dark:text-dark-muted opacity-40'}`}>
+            {item.toString().padStart(2, '0')}
+        </Text>
     );
 }
-
-const renderMinItem = renderUnitItem('min');
-const renderSecItem = renderUnitItem('sec');
 
 export function RestTimerPicker({ visible, onClose, initialValue, onSave }: RestTimerPickerProps) {
     const theme = useUITheme();
@@ -70,7 +62,7 @@ export function RestTimerPicker({ visible, onClose, initialValue, onSave }: Rest
                         />
 
                         {/* Minutes Wheel */}
-                        <View className="flex-1 items-end pr-8">
+                        <View className="flex-1 items-end pr-2">
                             <View style={{ height: WHEEL_HEIGHT, width: 80 }}>
                                 <VerticalSelectorWheel
                                     value={selectedMin}
@@ -79,13 +71,15 @@ export function RestTimerPicker({ visible, onClose, initialValue, onSave }: Rest
                                     itemHeight={ITEM_HEIGHT}
                                     width={80}
                                     visibleItems={VISIBLE_ITEMS}
-                                    renderItem={renderMinItem}
+                                    renderItem={renderTimeItem}
                                 />
                             </View>
                         </View>
 
+                        <Text className="text-2xl font-bold text-light dark:text-dark px-1">:</Text>
+
                         {/* Seconds Wheel */}
-                        <View className="flex-1 items-start pl-8">
+                        <View className="flex-1 items-start pl-2">
                             <View style={{ height: WHEEL_HEIGHT, width: 80 }}>
                                 <VerticalSelectorWheel
                                     value={selectedSec}
@@ -94,7 +88,7 @@ export function RestTimerPicker({ visible, onClose, initialValue, onSave }: Rest
                                     itemHeight={ITEM_HEIGHT}
                                     width={80}
                                     visibleItems={VISIBLE_ITEMS}
-                                    renderItem={renderSecItem}
+                                    renderItem={renderTimeItem}
                                 />
                             </View>
                         </View>
