@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, useWindowDimensions, TouchableOpacity } from 'react-native';
+import { View, useWindowDimensions, TouchableOpacity, Alert } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { 
     useSharedValue, 
@@ -131,22 +131,49 @@ const SetRowInner = ({
               )}
 
               {showSetNumber ? (
-                  <InlineWorkoutSet
-                      index={index}
-                      exercise={exercise}
-                      onCompleteSet={onCompleteSet}
-                      onUpdateSetTarget={onUpdateSetTarget}
-                      onPressRPE={onPressRPE}
-                      theme={theme}
-                      latestBodyWeight={latestBodyWeight}
-                      isActiveWorkout={isActiveWorkout}
-                      exercisePrepTime={exercisePrepTime}
-                      onUpdatePrepTime={onUpdatePrepTime}
-                      showCheckbox={showCheckbox}
-                      showSetNumber={showSetNumber}
-                      isCompleted={isCompleted}
-                      isRpeEnabled={isRpeEnabled}
-                  />
+                  <>
+                      <InlineWorkoutSet
+                          index={index}
+                          exercise={exercise}
+                          onCompleteSet={onCompleteSet}
+                          onUpdateSetTarget={onUpdateSetTarget}
+                          onPressRPE={onPressRPE}
+                          theme={theme}
+                          latestBodyWeight={latestBodyWeight}
+                          isActiveWorkout={isActiveWorkout}
+                          exercisePrepTime={exercisePrepTime}
+                          onUpdatePrepTime={onUpdatePrepTime}
+                          showCheckbox={showCheckbox}
+                          showSetNumber={showSetNumber}
+                          isCompleted={isCompleted}
+                          isRpeEnabled={isRpeEnabled}
+                      />
+                      {/* Swipeable rows nested inside DraggableFlatList don't
+                          actually receive the gesture (see react-native-
+                          draggable-flatlist's own README: it recommends a
+                          different library for swipeable items), so this
+                          list-mode row - the only place enableSwipeToDelete
+                          is off but there's no separate delete control like
+                          the pager view has - needs its own tap target. */}
+                      {!enableSwipeToDelete && (
+                          <TouchableOpacity
+                              className="w-6 h-6 items-center justify-center ml-1"
+                              onPress={() => {
+                                  Alert.alert(
+                                      'Delete Set',
+                                      `Delete set ${index + 1}? This can't be undone.`,
+                                      [
+                                          { text: 'Cancel', style: 'cancel' },
+                                          { text: 'Delete', style: 'destructive', onPress: () => onDeleteSet(index) },
+                                      ]
+                                  );
+                              }}
+                              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                          >
+                              <IconSymbol name="trash.fill" size={14} color={theme.danger} />
+                          </TouchableOpacity>
+                      )}
+                  </>
               ) : (
                   <CardWorkoutSet
                       index={index}

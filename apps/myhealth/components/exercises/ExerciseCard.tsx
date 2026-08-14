@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, Modal, Pressable, ScrollView, useWindowDimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Pressable, ScrollView, useWindowDimensions, Alert } from 'react-native';
 import { AttachmentPicker } from '../workouts/AttachmentPicker';
 import { EquipmentPicker } from '../workouts/EquipmentPicker';
 import { MovementTypePicker } from '../workouts/MovementTypePicker';
@@ -440,11 +440,14 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                         <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted flex-1">PREVIOUS</Text>
 
                         {showWeight && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">LBS</Text>}
-                        {showReps && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">{isUnilateral ? 'L / R' : 'REPS'}</Text>}
+                        {showReps && <Text className={`text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted mx-0.5 ${isUnilateral ? 'w-[54px]' : 'w-[52px]'}`}>{isUnilateral ? 'L / R' : 'REPS'}</Text>}
                         {showDuration && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">TIME</Text>}
                         {showDistance && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">DIST</Text>}
                         {showRPE && <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[40px] ml-2 mr-0.5 text-light-muted dark:text-dark-muted">RPE</Text>}
-                        <View className="w-[30px] items-center" />
+                        {/* Matches the checkbox (w-7 ml-1) + list-mode delete
+                            icon (w-6 ml-1) trailing each row - see SetRow. */}
+                        <View className="w-7 ml-1" />
+                        <View className="w-6 ml-1" />
                     </View>
                 )}
 
@@ -538,6 +541,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                             exercisePrepTime={exercise.prepTime}
                             onUpdatePrepTime={onUpdatePrepTime}
                             onPressRestTimer={() => setIsPickerVisible(true)}
+                            enableSwipeToDelete={false}
                             showSetNumber={!horizontalSets}
                             isRpeEnabled={isRpeEnabled}
                             isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
@@ -561,8 +565,17 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                     )}
 
                     {onDeleteSet && horizontalSets && totalSets > 0 && (
-                        <TouchableOpacity 
-                            onPress={handleDeleteActiveSet}
+                        <TouchableOpacity
+                            onPress={() => {
+                                Alert.alert(
+                                    'Delete Set',
+                                    `Delete set ${activeSetIndex + 1}? This can't be undone.`,
+                                    [
+                                        { text: 'Cancel', style: 'cancel' },
+                                        { text: 'Delete', style: 'destructive', onPress: handleDeleteActiveSet },
+                                    ]
+                                );
+                            }}
                             style={{ flex: onAddSet ? undefined : 1 }}
                             className="flex-row items-center justify-center p-2 px-3 rounded-lg border border-danger/30 bg-danger/5 active:bg-danger/10"
                         >
