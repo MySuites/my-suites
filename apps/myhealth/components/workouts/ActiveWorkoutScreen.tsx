@@ -12,11 +12,13 @@ import { formatSeconds } from '../../utils/formatting';
 import { RestTimerBar } from './ActiveWorkoutDetailScreen';
 import { default as ExercisesScreen } from '../../app/(tabs)/exercises';
 import { isOutdoorGpsExercise } from '../../utils/workout-logic';
+import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { onToggleView: () => void; activeSetIndex: number; onAddExercise: () => void }) {
     const theme = useUITheme();
     const { isRunning, workoutSeconds } = useActiveWorkoutTimer();
-    const { exercises, currentIndex, updateExercise, removeExercise } = useActiveWorkout();
+    const { exercises, currentIndex, updateExercise, removeExercise, reorderExercises } = useActiveWorkout();
 
     const currentExercise = exercises[currentIndex];
     const exerciseName = currentExercise?.name || "Current Exercise";
@@ -24,6 +26,22 @@ function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { o
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
     const menuButtonRef = useRef<View>(null);
+    const [isReorderVisible, setIsReorderVisible] = useState(false);
+
+    const renderReorderItem = ({ item, drag, isActive }: RenderItemParams<typeof exercises[number]>) => (
+        <ScaleDecorator>
+            <TouchableOpacity
+                onPressIn={drag}
+                disabled={isActive}
+                className={`flex-row items-center justify-between px-4 py-3.5 mb-2 rounded-xl ${isActive ? 'bg-light dark:bg-dark' : 'bg-lighter dark:bg-dark-lighter'}`}
+            >
+                <Text className="text-base font-medium text-light dark:text-dark flex-1" numberOfLines={1}>
+                    {item.name}
+                </Text>
+                <IconSymbol name="line.3.horizontal" size={18} color={theme.textMuted || '#888'} />
+            </TouchableOpacity>
+        </ScaleDecorator>
+    );
 
     const handleOpenMenu = () => {
         menuButtonRef.current?.measure((_x: number, _y: number, _width: number, height: number, _pageX: number, pageY: number) => {
@@ -207,6 +225,19 @@ function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { o
                     <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
 
                     <TouchableOpacity
+                        onPress={() => {
+                            setIsMenuVisible(false);
+                            setIsReorderVisible(true);
+                        }}
+                        className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                    >
+                        <IconSymbol name="line.3.horizontal" size={16} color={theme.primary} style={{ marginRight: 10 }} />
+                        <Text className="text-primary dark:text-primary-dark font-semibold text-sm">Reorder Exercises</Text>
+                    </TouchableOpacity>
+
+                    <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+
+                    <TouchableOpacity
                         onPress={() => setIsMenuVisible(false)}
                         className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
                     >
@@ -215,6 +246,36 @@ function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { o
                     </TouchableOpacity>
                 </RaisedCard>
             </Pressable>
+        </Modal>
+
+        <Modal
+            visible={isReorderVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setIsReorderVisible(false)}
+        >
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                <View className="flex-1 justify-end bg-black/50">
+                    <View className="bg-light dark:bg-dark-lighter rounded-t-3xl p-6 pb-10" style={{ maxHeight: '75%' }}>
+                        <View className="flex-row items-center justify-between mb-4">
+                            <Text className="text-xl font-bold text-light dark:text-dark">Reorder Exercises</Text>
+                            <TouchableOpacity onPress={() => setIsReorderVisible(false)} className="p-2">
+                                <IconSymbol name="xmark" size={24} color={theme.textMuted || '#888'} />
+                            </TouchableOpacity>
+                        </View>
+                        <Text className="text-sm text-light-muted dark:text-dark-muted mb-4">
+                            Drag a row to reorder.
+                        </Text>
+                        <DraggableFlatList
+                            data={exercises}
+                            keyExtractor={(item, index) => `${item.id}-${index}`}
+                            renderItem={renderReorderItem}
+                            onDragEnd={({ from, to }) => reorderExercises(from, to)}
+                            containerStyle={{ flexGrow: 0 }}
+                        />
+                    </View>
+                </View>
+            </GestureHandlerRootView>
         </Modal>
         </>
     );
