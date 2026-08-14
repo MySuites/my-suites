@@ -23,4 +23,8 @@ export interface AIModelOption {
     approxSizeMB: number;
     capabilities: AIModelCapability[];
     config: AIModelConfig;
+    // Estimated from model size/RAM needs, not device-tested - update if
+    // real benchmarks say otherwise.
+    minIphone: string;
+    recommendedIphone: string;
 }

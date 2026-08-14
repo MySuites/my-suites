@@ -58,6 +58,18 @@ export default function AIModelsScreen() {
                                     <Text className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                                         ~{model.approxSizeMB} MB · {model.capabilities.join(' + ')}
                                     </Text>
+                                    <View className="flex-row flex-wrap gap-1.5 mt-2">
+                                        <View className="px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10">
+                                            <Text className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                                                Min: {model.minIphone}
+                                            </Text>
+                                        </View>
+                                        <View className="px-2 py-0.5 rounded-full bg-primary/10 dark:bg-primary-dark/10">
+                                            <Text className="text-[11px] font-medium" style={{ color: theme.primary }}>
+                                                Recommended: {model.recommendedIphone}
+                                            </Text>
+                                        </View>
+                                    </View>
                                 </View>
                                 {isSelected && (
                                     <IconSymbol name="checkmark" size={20} color={theme.primary} />

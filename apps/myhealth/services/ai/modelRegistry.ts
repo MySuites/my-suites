@@ -18,6 +18,8 @@ export const AI_MODEL_REGISTRY: AIModelOption[] = [
         approxSizeMB: 450,
         capabilities: ['vision', 'text'],
         config: LFM2_5_VL_450M_QUANTIZED,
+        minIphone: 'iPhone 12',
+        recommendedIphone: 'iPhone 13',
     },
     {
         id: 'lfm2.5-vl-1.6b-quantized',
@@ -26,6 +28,8 @@ export const AI_MODEL_REGISTRY: AIModelOption[] = [
         approxSizeMB: 1600,
         capabilities: ['vision', 'text'],
         config: LFM2_5_VL_1_6B_QUANTIZED,
+        minIphone: 'iPhone 13',
+        recommendedIphone: 'iPhone 15',
     },
     {
         id: 'gemma4-e2b-multimodal',
@@ -34,6 +38,8 @@ export const AI_MODEL_REGISTRY: AIModelOption[] = [
         approxSizeMB: 2000,
         capabilities: ['vision', 'text'],
         config: GEMMA4_E2B_MM,
+        minIphone: 'iPhone 14 Pro',
+        recommendedIphone: 'iPhone 15 Pro',
     },
     {
         id: 'qwen3-0.6b-quantized',
@@ -42,6 +48,8 @@ export const AI_MODEL_REGISTRY: AIModelOption[] = [
         approxSizeMB: 600,
         capabilities: ['text'],
         config: QWEN3_0_6B_QUANTIZED,
+        minIphone: 'iPhone 11',
+        recommendedIphone: 'iPhone 12',
     },
 ];
 
