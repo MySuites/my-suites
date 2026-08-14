@@ -616,7 +616,7 @@ function CardWorkoutSetInner({
             )}
 
             {showDuration && (
-                <View className={`${(showDistance || showRPE) ? 'border-b border-black/5 dark:border-white/5 pb-3' : ''} flex-col ${isOutdoorGpsExercise ? 'py-0 flex-1' : rowPadding}`}>
+                <View className={`${(showDistance || showRPE) ? 'pb-3' : ''} flex-col ${isOutdoorGpsExercise ? 'py-0 flex-1' : rowPadding}`}>
                     {isOutdoorGpsExercise ? (
                         <OutdoorRunPanel
                             index={index}
