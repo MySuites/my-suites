@@ -14,9 +14,8 @@ import { default as ExercisesScreen } from '../../app/(tabs)/exercises';
 import { isOutdoorGpsExercise } from '../../utils/workout-logic';
 
 function ActiveScreenHeader({ onToggleView }: { onToggleView: () => void }) {
-    const router = useRouter();
     const { isRunning, workoutSeconds } = useActiveWorkoutTimer();
-    const { exercises, currentIndex, pauseWorkout, resumeWorkout } = useActiveWorkout();
+    const { exercises, currentIndex } = useActiveWorkout();
     
     const currentExercise = exercises[currentIndex];
     const exerciseName = currentExercise?.name || "Current Exercise";
@@ -53,36 +52,6 @@ function ActiveScreenHeader({ onToggleView }: { onToggleView: () => void }) {
                 >
                     <IconSymbol name="list.bullet" size={22} className="text-primary dark:text-primary-dark" />
                 </RaisedCard>
-            }
-            rightAction={
-                <View className="flex-row gap-2 items-center">
-                    <RaisedCard
-                        onPress={() => {
-                            Keyboard.dismiss();
-                            if (isRunning) {
-                                pauseWorkout();
-                            } else {
-                                resumeWorkout();
-                            }
-                        }}
-                        className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                        style={{ borderRadius: 9999 }}
-                    >
-                        <IconSymbol name={isRunning ? 'pause.fill' : 'play.fill'} size={20} className="text-primary dark:text-primary-dark" />
-                    </RaisedCard>
-
-                    <RaisedCard
-                        onPress={() => {
-                            Keyboard.dismiss();
-                            pauseWorkout();
-                            router.push('/workouts/end');
-                        }}
-                        className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
-                        style={{ borderRadius: 9999 }}
-                    >
-                        <IconSymbol name="stop.fill" size={24} className="text-primary dark:text-primary-dark" />
-                    </RaisedCard>
-                </View>
             }
             className="z-[1001] border-b-0"
         />
