@@ -42,7 +42,7 @@ export default function AIModelsScreen() {
                 </Text>
 
                 {models.map((model) => {
-                    const isSelected = selectedId === model.id;
+                    const isSelected = selectedId === model.id && model.downloaded;
                     const isDownloading = downloadingId === model.id;
 
                     return (
