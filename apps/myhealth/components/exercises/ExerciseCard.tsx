@@ -395,7 +395,24 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
 
 
 
-                        <TouchableOpacity 
+                        {onAddSet && (
+                            <>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setIsMenuVisible(false);
+                                        onAddSet();
+                                    }}
+                                    className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                                >
+                                    <IconSymbol name="plus" size={16} color={theme.primary} style={{ marginRight: 10 }} />
+                                    <Text className="text-primary dark:text-primary-dark font-semibold text-sm">Add Set</Text>
+                                </TouchableOpacity>
+
+                                <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+                            </>
+                        )}
+
+                        <TouchableOpacity
                             onPress={() => {
                                 setIsMenuVisible(false);
                                 onRemoveExercise?.();
@@ -553,8 +570,10 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
 
                 {/* Add/Delete Set Buttons (not shown for Running/Biking — one continuous activity, not repeatable sets) */}
                 <View style={{ flexDirection: 'row', gap: 10, marginTop: 4, display: isOutdoorGpsExercise ? 'none' : 'flex' }}>
-                    {onAddSet && (
-                        <TouchableOpacity 
+                    {/* List mode moves this into the "..." menu instead - see
+                        the Exercise Menu Modal above. */}
+                    {onAddSet && horizontalSets && (
+                        <TouchableOpacity
                             onPress={onAddSet}
                             style={{ flex: 1 }}
                             className="flex-row items-center justify-center p-2 rounded-lg border border-dashed border-black/10 dark:border-white/10 active:opacity-70"

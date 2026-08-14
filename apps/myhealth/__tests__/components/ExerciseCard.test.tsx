@@ -86,7 +86,11 @@ describe('ExerciseCard', () => {
     });
 
     it('should render Add Set button and call onAddSet', () => {
-        const { getByText } = render(<ExerciseCard {...defaultProps} />);
+        // List mode (default props, no horizontalSets) moved Add Set into the
+        // "..." menu, whose open button relies on ref.measure() - not mocked
+        // here. Pager mode (horizontalSets=true) still has the standalone
+        // footer button this test exercises.
+        const { getByText } = render(<ExerciseCard {...defaultProps} horizontalSets={true} />);
         const addSetBtn = getByText(/Add Set/i);
         fireEvent.press(addSetBtn);
         expect(mockOnAddSet).toHaveBeenCalled();
