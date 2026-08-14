@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Keyboard, FlatList, useWindowDimensions, TouchableOpacity } from 'react-native';
+import { View, Text, Keyboard, FlatList, useWindowDimensions, TouchableOpacity, Modal, Pressable, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
@@ -13,14 +13,65 @@ import { RestTimerBar } from './ActiveWorkoutDetailScreen';
 import { default as ExercisesScreen } from '../../app/(tabs)/exercises';
 import { isOutdoorGpsExercise } from '../../utils/workout-logic';
 
-function ActiveScreenHeader({ onToggleView }: { onToggleView: () => void }) {
+function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { onToggleView: () => void; activeSetIndex: number; onAddExercise: () => void }) {
+    const theme = useUITheme();
     const { isRunning, workoutSeconds } = useActiveWorkoutTimer();
-    const { exercises, currentIndex } = useActiveWorkout();
-    
+    const { exercises, currentIndex, updateExercise, removeExercise } = useActiveWorkout();
+
     const currentExercise = exercises[currentIndex];
     const exerciseName = currentExercise?.name || "Current Exercise";
 
+    const [isMenuVisible, setIsMenuVisible] = useState(false);
+    const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
+    const menuButtonRef = useRef<View>(null);
+
+    const handleOpenMenu = () => {
+        menuButtonRef.current?.measure((_x: number, _y: number, _width: number, height: number, _pageX: number, pageY: number) => {
+            setMenuPosition({ top: pageY + height + 5, right: 16 });
+            setIsMenuVisible(true);
+        });
+    };
+
+    const handleAddSet = () => {
+        if (!currentExercise) return;
+        const nextSetIndex = currentExercise.sets;
+        const previousTarget = currentExercise.setTargets?.[nextSetIndex - 1];
+        const newTarget = previousTarget ? { ...previousTarget } : { weight: 0, reps: currentExercise.reps };
+        const currentTargets = currentExercise.setTargets ? [...currentExercise.setTargets] : [];
+        while (currentTargets.length < nextSetIndex) {
+            currentTargets.push({ weight: 0, reps: currentExercise.reps });
+        }
+        currentTargets[nextSetIndex] = newTarget;
+        updateExercise(currentIndex, {
+            sets: currentExercise.sets + 1,
+            setTargets: currentTargets
+        });
+    };
+
+    const handleDeleteSet = () => {
+        if (!currentExercise) return;
+        const setIndex = activeSetIndex;
+        const currentTarget = currentExercise.sets;
+        const currentSetTargets = currentExercise.setTargets ? [...currentExercise.setTargets] : [];
+        if (setIndex < currentSetTargets.length) {
+            currentSetTargets.splice(setIndex, 1);
+        }
+
+        let newCompletedIndices = [...(currentExercise.completedIndices || [])];
+        newCompletedIndices = newCompletedIndices
+            .filter(idx => idx !== setIndex)
+            .map(idx => idx > setIndex ? idx - 1 : idx);
+
+        updateExercise(currentIndex, {
+            setTargets: currentSetTargets,
+            completedIndices: newCompletedIndices,
+            completedSets: newCompletedIndices.length,
+            sets: Math.max(0, currentTarget - 1)
+        });
+    };
+
     return (
+        <>
         <ScreenHeader
             title={
                 <View className="flex-col items-center pt-2">
@@ -44,7 +95,7 @@ function ActiveScreenHeader({ onToggleView }: { onToggleView: () => void }) {
                 </View>
             }
             leftAction={
-                <RaisedCard 
+                <RaisedCard
                     onPress={onToggleView}
                     testID="toggle-detail-btn"
                     className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
@@ -53,8 +104,119 @@ function ActiveScreenHeader({ onToggleView }: { onToggleView: () => void }) {
                     <IconSymbol name="list.bullet" size={22} className="text-primary dark:text-primary-dark" />
                 </RaisedCard>
             }
+            rightAction={
+                <View ref={menuButtonRef}>
+                    <RaisedCard
+                        onPress={handleOpenMenu}
+                        testID="active-workout-menu-btn"
+                        className="h-12 w-12 active:h-11 p-0 bg-lighter dark:bg-dark-lighter items-center justify-center"
+                        style={{ borderRadius: 9999 }}
+                    >
+                        <IconSymbol name="ellipsis" size={22} className="text-primary dark:text-primary-dark" />
+                    </RaisedCard>
+                </View>
+            }
             className="z-[1001] border-b-0"
         />
+
+        <Modal
+            visible={isMenuVisible}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setIsMenuVisible(false)}
+        >
+            <Pressable className="flex-1" onPress={() => setIsMenuVisible(false)}>
+                <View className="flex-1 bg-black/25" />
+
+                <RaisedCard
+                    className="absolute w-44 p-1.5 bg-light dark:bg-dark-lighter rounded-xl"
+                    style={{
+                        top: menuPosition?.top || 100,
+                        right: menuPosition?.right || 16,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 6 },
+                        shadowOpacity: 0.15,
+                        shadowRadius: 10,
+                        elevation: 8
+                    }}
+                >
+                    <TouchableOpacity
+                        onPress={() => {
+                            setIsMenuVisible(false);
+                            onAddExercise();
+                        }}
+                        className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                    >
+                        <IconSymbol name="plus.circle" size={16} color={theme.primary} style={{ marginRight: 10 }} />
+                        <Text className="text-primary dark:text-primary-dark font-semibold text-sm">Add Exercise</Text>
+                    </TouchableOpacity>
+
+                    <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+
+                    <TouchableOpacity
+                        onPress={() => {
+                            setIsMenuVisible(false);
+                            handleAddSet();
+                        }}
+                        className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                    >
+                        <IconSymbol name="plus" size={16} color={theme.primary} style={{ marginRight: 10 }} />
+                        <Text className="text-primary dark:text-primary-dark font-semibold text-sm">Add Set</Text>
+                    </TouchableOpacity>
+
+                    <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+
+                    <TouchableOpacity
+                        onPress={() => {
+                            setIsMenuVisible(false);
+                            Alert.alert(
+                                'Delete Set',
+                                `Delete set ${activeSetIndex + 1}? This can't be undone.`,
+                                [
+                                    { text: 'Cancel', style: 'cancel' },
+                                    { text: 'Delete', style: 'destructive', onPress: handleDeleteSet },
+                                ]
+                            );
+                        }}
+                        className="flex-row items-center p-2.5 rounded-lg active:bg-danger/10"
+                    >
+                        <IconSymbol name="trash.fill" size={16} color={theme.danger} style={{ marginRight: 10 }} />
+                        <Text className="text-danger font-semibold text-sm">Delete Set</Text>
+                    </TouchableOpacity>
+
+                    <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+
+                    <TouchableOpacity
+                        onPress={() => {
+                            setIsMenuVisible(false);
+                            Alert.alert(
+                                'Remove Exercise',
+                                `Remove "${exerciseName}" from this workout? This can't be undone.`,
+                                [
+                                    { text: 'Cancel', style: 'cancel' },
+                                    { text: 'Remove', style: 'destructive', onPress: () => removeExercise(currentIndex) },
+                                ]
+                            );
+                        }}
+                        className="flex-row items-center p-2.5 rounded-lg active:bg-danger/10"
+                    >
+                        <IconSymbol name="trash.fill" size={16} color={theme.danger} style={{ marginRight: 10 }} />
+                        <Text className="text-danger font-semibold text-sm">Remove Exercise</Text>
+                    </TouchableOpacity>
+
+                    <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+
+                    <TouchableOpacity
+                        onPress={() => setIsMenuVisible(false)}
+                        className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                    >
+                        <IconSymbol name="xmark" size={16} color={theme.textMuted || '#888'} style={{ marginRight: 10 }} />
+                        <Text className="text-light-muted dark:text-dark-muted font-semibold text-sm">Cancel</Text>
+                    </TouchableOpacity>
+                </RaisedCard>
+            </Pressable>
+        </Modal>
+        </>
     );
 }
 
@@ -270,7 +432,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
 
     return (
         <View style={{ flex: 1 }}>
-            <ActiveScreenHeader onToggleView={onToggleView} />
+            <ActiveScreenHeader onToggleView={onToggleView} activeSetIndex={activeSetIndices[currentIndex] || 0} onAddExercise={handleOpenAddExercise} />
             
             {/* Left Edge Vertical Progress Bar */}
             {exercises.length > 0 && (
