@@ -338,17 +338,6 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                             )}
                         </View>
                         
-                        {!horizontalSets && (
-                            <TouchableOpacity 
-                                className="flex-row items-center mt-1"
-                                onPress={() => setIsPickerVisible(true)}
-                            >
-                                <IconSymbol name="timer" size={12} color={theme.textMuted} />
-                                <Text className="ml-1 text-[11px] font-semibold text-light-muted dark:text-dark-muted">
-                                    Rest Timer: {formatRestTime(exercise.restTime ?? 90)}
-                                </Text>
-                            </TouchableOpacity>
-                        )}
                     </TouchableOpacity>
                 </View>
                 <View className="flex-row items-center gap-3">
@@ -406,6 +395,25 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                 >
                                     <IconSymbol name="plus" size={16} color={theme.primary} style={{ marginRight: 10 }} />
                                     <Text className="text-primary dark:text-primary-dark font-semibold text-sm">Add Set</Text>
+                                </TouchableOpacity>
+
+                                <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+                            </>
+                        )}
+
+                        {!horizontalSets && (
+                            <>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setIsMenuVisible(false);
+                                        setIsPickerVisible(true);
+                                    }}
+                                    className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                                >
+                                    <IconSymbol name="timer" size={16} color={theme.textMuted} style={{ marginRight: 10 }} />
+                                    <Text className="text-light dark:text-dark font-semibold text-sm">
+                                        Rest Timer: {formatRestTime(exercise.restTime ?? 90)}
+                                    </Text>
                                 </TouchableOpacity>
 
                                 <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
