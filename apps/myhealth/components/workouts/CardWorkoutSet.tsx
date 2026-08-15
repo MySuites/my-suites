@@ -282,6 +282,7 @@ interface CardWorkoutSetProps {
     isProgressiveOverloadEnabled?: boolean;
     progressiveOverloadRepCeiling?: number;
     isGpsTrackingActive?: boolean;
+    activateGpsTrackingIfNeeded?: () => Promise<void>;
 }
 
 function CardWorkoutSetInner({
@@ -304,7 +305,8 @@ function CardWorkoutSetInner({
     isHapticsEnabled = true,
     isProgressiveOverloadEnabled = false,
     progressiveOverloadRepCeiling,
-    isGpsTrackingActive = false
+    isGpsTrackingActive = false,
+    activateGpsTrackingIfNeeded
 }: CardWorkoutSetProps) {
     const { height: windowHeight, width: windowWidth } = useWindowDimensions();
     const colorScheme = useColorScheme();
@@ -642,6 +644,7 @@ function CardWorkoutSetInner({
                             onUpdateSetTarget={onUpdateSetTarget}
                             showDistance={showDistance}
                             isGpsTrackingActive={isGpsTrackingActive}
+                            activateGpsTrackingIfNeeded={activateGpsTrackingIfNeeded}
                             isCurrentPage={isCurrentPage}
                             wheelsReady={wheelsReady}
                             exercisePrepTime={exercisePrepTime}
@@ -1053,6 +1056,7 @@ export const CardWorkoutSet = React.memo(CardWorkoutSetInner, (prev, next) => {
         prev.isHapticsEnabled === next.isHapticsEnabled &&
         prev.isProgressiveOverloadEnabled === next.isProgressiveOverloadEnabled &&
         prev.progressiveOverloadRepCeiling === next.progressiveOverloadRepCeiling &&
-        prev.isGpsTrackingActive === next.isGpsTrackingActive
+        prev.isGpsTrackingActive === next.isGpsTrackingActive &&
+        prev.activateGpsTrackingIfNeeded === next.activateGpsTrackingIfNeeded
     );
 });

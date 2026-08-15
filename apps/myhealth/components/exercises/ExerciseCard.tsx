@@ -57,9 +57,10 @@ interface ExerciseCardProps {
     isProgressiveOverloadEnabled?: boolean;
     progressiveOverloadRepCeiling?: number;
     isGpsTrackingActive?: boolean;
+    activateGpsTrackingIfNeeded?: () => Promise<void>;
 }
 
-function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange, showName, preloadWheels, wheelsReadyDelayMs, isRpeEnabled = false, isHapticsEnabled = true, isProgressiveOverloadEnabled = false, progressiveOverloadRepCeiling, isGpsTrackingActive = false }: ExerciseCardProps) {
+function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarget, onAddSet, onDeleteSet, onRemoveExercise, onMoveUp, onMoveDown, onDrag, onPressName, onUpdateRestTime, onUpdatePrepTime, onUpdateAttachment, onUpdateEquipment, onUpdateMovementType, theme, latestBodyWeight, horizontalSets, activeSetIndex: propActiveSetIndex, onActiveSetChange, showName, preloadWheels, wheelsReadyDelayMs, isRpeEnabled = false, isHapticsEnabled = true, isProgressiveOverloadEnabled = false, progressiveOverloadRepCeiling, isGpsTrackingActive = false, activateGpsTrackingIfNeeded }: ExerciseCardProps) {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number, right: number } | null>(null);
@@ -543,6 +544,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                             isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
                                             progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
                                             isGpsTrackingActive={isGpsTrackingActive}
+                                            activateGpsTrackingIfNeeded={activateGpsTrackingIfNeeded}
                                         />
                                     </View>
                                 ))}
@@ -575,6 +577,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                             isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
                             progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
                             isGpsTrackingActive={isGpsTrackingActive}
+                            activateGpsTrackingIfNeeded={activateGpsTrackingIfNeeded}
                         />
                     ))
                 )}
@@ -696,6 +699,7 @@ export const ExerciseCard = React.memo(ExerciseCardInner, (prev, next) => {
         prev.isHapticsEnabled === next.isHapticsEnabled &&
         prev.isProgressiveOverloadEnabled === next.isProgressiveOverloadEnabled &&
         prev.progressiveOverloadRepCeiling === next.progressiveOverloadRepCeiling &&
-        prev.isGpsTrackingActive === next.isGpsTrackingActive
+        prev.isGpsTrackingActive === next.isGpsTrackingActive &&
+        prev.activateGpsTrackingIfNeeded === next.activateGpsTrackingIfNeeded
     );
 });

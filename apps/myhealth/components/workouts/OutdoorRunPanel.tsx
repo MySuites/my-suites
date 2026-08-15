@@ -14,6 +14,7 @@ interface OutdoorRunPanelProps {
     onUpdateSetTarget?: (index: number, key: 'distance' | 'duration', value: string) => void;
     showDistance: boolean;
     isGpsTrackingActive: boolean;
+    activateGpsTrackingIfNeeded?: () => Promise<void>;
     isCurrentPage: boolean;
     wheelsReady: boolean;
     exercisePrepTime?: number;
@@ -31,6 +32,7 @@ function OutdoorRunPanelInner({
     onUpdateSetTarget,
     showDistance,
     isGpsTrackingActive,
+    activateGpsTrackingIfNeeded,
     isCurrentPage,
     wheelsReady,
     exercisePrepTime,
@@ -38,6 +40,18 @@ function OutdoorRunPanelInner({
 }: OutdoorRunPanelProps) {
     const distanceInputRef = React.useRef<TextInput>(null);
     const { isRunning: isWorkoutRunning } = useActiveWorkoutTimer();
+
+    // Catches the cases startWorkout()'s one-time check misses: the
+    // Settings toggle flipped on after this panel already existed (workout
+    // already running, or this exercise added mid-workout before the toggle
+    // was on), or an earlier permission request was denied and the user
+    // wants to retry after fixing it in system settings. No-ops if tracking
+    // is already active or the setting is off (see activateGpsTrackingIfNeeded).
+    React.useEffect(() => {
+        if (!isGpsTrackingActive) {
+            activateGpsTrackingIfNeeded?.();
+        }
+    }, [isGpsTrackingActive, activateGpsTrackingIfNeeded]);
 
     const [isRunning, setIsRunning] = React.useState(false);
     const [remainingSecs, setRemainingSecs] = React.useState(0);

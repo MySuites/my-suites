@@ -17,6 +17,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { router } from 'expo-router';
 import * as Application from 'expo-application';
 import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
+import { WorkoutLocationTrackingService } from '../../services/WorkoutLocationTrackingService';
 import { REP_CEILING_MIN, REP_CEILING_MAX } from '../../utils/progressiveOverload';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import { HEIGHT_STORAGE_KEY, inchesToCm, cmToInches, feetInchesToTotalInches, totalInchesToFeetInches } from '../../utils/height';
@@ -204,6 +205,21 @@ export default function SettingsScreen() {
   };
 
   const handleToggleGpsTracking = async (value: boolean) => {
+    if (value) {
+      // Ask now (foreground, then background/"Always Allow") instead of
+      // deferring to whenever the next outdoor exercise happens to start -
+      // the toggle otherwise looked like it did nothing, since nothing
+      // visibly prompted at the moment the user actually flipped it.
+      const granted = await WorkoutLocationTrackingService.requestPermissions();
+      if (!granted) {
+        Alert.alert(
+          "Permission Denied",
+          "Please enable Location permissions for MyHealth in your system settings to track your route during outdoor workouts.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+    }
     setGpsTrackingEnabled(value);
     await storage.setItem('gps_tracking_enabled', value);
     showToast({

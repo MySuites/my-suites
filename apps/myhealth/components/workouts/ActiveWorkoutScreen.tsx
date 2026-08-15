@@ -299,6 +299,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
         latestBodyWeight,
         addExercise,
         isGpsTrackingActive,
+        activateGpsTrackingIfNeeded,
     } = useActiveWorkout();
     const { isRpeEnabled, isHapticsEnabled, isProgressiveOverloadEnabled, progressiveOverloadRepCeiling } = useWorkoutManager();
 
@@ -407,8 +408,8 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
     // Reference changes only when currentIndex or activeSetIndices change,
     // so the active-set styling updates immediately instead of lagging.
     const listExtraData = React.useMemo(
-        () => ({ currentIndex, activeSetIndices }),
-        [currentIndex, activeSetIndices]
+        () => ({ currentIndex, activeSetIndices, isGpsTrackingActive }),
+        [currentIndex, activeSetIndices, isGpsTrackingActive]
     );
 
     const renderExerciseItem = React.useCallback(({ item: exercise, index }: { item: any; index: number }) => {
@@ -486,10 +487,11 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
                     isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
                     progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
                     isGpsTrackingActive={isGpsTrackingActive}
+                    activateGpsTrackingIfNeeded={activateGpsTrackingIfNeeded}
                 />
             </View>
         );
-    }, [containerHeight, theme, latestBodyWeight, completeSet, updateExercise, router]);
+    }, [containerHeight, theme, latestBodyWeight, completeSet, updateExercise, router, isGpsTrackingActive, activateGpsTrackingIfNeeded]);
 
     return (
         <View style={{ flex: 1 }}>

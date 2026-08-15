@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { Exercise, useWorkoutManager, fetchLastExercisePerformance, fetchRecentSetRpeAverages } from './WorkoutManagerProvider';
 import { useAuth } from '@mysuite/auth';
-import { createExercise, getEffectiveBodyweightLoad, workoutHasOutdoorExercise } from '../utils/workout-logic';
+import { createExercise, getEffectiveBodyweightLoad, workoutHasOutdoorExercise, isOutdoorGpsExercise } from '../utils/workout-logic';
 import { computeRouteDistance, computeElevationGain } from '../utils/geo';
 import { useActiveWorkoutTimers } from '../hooks/workouts/useActiveWorkoutTimers';
 import { useActiveWorkoutPersistence } from '../hooks/workouts/useActiveWorkoutPersistence';
@@ -55,6 +55,7 @@ interface ActiveWorkoutContextType {
     sourceWorkoutId: string | null;
     latestBodyWeight: number | null;
     isGpsTrackingActive: boolean;
+    activateGpsTrackingIfNeeded: () => Promise<void>;
 }
 
 const ActiveWorkoutContext = createContext<ActiveWorkoutContextType | undefined>(undefined);
@@ -224,6 +225,23 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         prevRestSecondsRef.current = restSeconds;
     }, [hasActiveSession, restSeconds]);
 
+    // Shared by startWorkout (an outdoor exercise present at start) and
+    // addExercise (an outdoor exercise added mid-workout) - and callable
+    // directly by OutdoorRunPanel itself, so flipping the Settings toggle
+    // on mid-workout (after the exercise was already there, or after this
+    // ran once and denied) also gets picked up instead of leaving the
+    // "enable it in Settings" placeholder stuck forever.
+    const activateGpsTrackingIfNeeded = useCallback(async () => {
+        if (gpsTrackingActiveRef.current) return;
+        const gpsEnabled = await storage.getItem<boolean>('gps_tracking_enabled');
+        if (!gpsEnabled) return;
+        const granted = await WorkoutLocationTrackingService.requestPermissions();
+        if (!granted) return;
+        await WorkoutLocationTrackingService.startTracking();
+        gpsTrackingActiveRef.current = true;
+        setIsGpsTrackingActive(true);
+    }, []);
+
     // Actions
     const startWorkout = useCallback((exercisesToStart?: Exercise[], name?: string, newRoutineId?: string, newSourceWorkoutId?: string) => {
 		// Allow empty workouts
@@ -258,15 +276,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
             });
 
             if (workoutHasOutdoorExercise(exercisesToStart)) {
-                (async () => {
-                    const gpsEnabled = await storage.getItem<boolean>('gps_tracking_enabled');
-                    if (!gpsEnabled) return;
-                    const granted = await WorkoutLocationTrackingService.requestPermissions();
-                    if (!granted) return;
-                    await WorkoutLocationTrackingService.startTracking();
-                    gpsTrackingActiveRef.current = true;
-                    setIsGpsTrackingActive(true);
-                })();
+                activateGpsTrackingIfNeeded();
             }
         } else {
             // We are resuming
@@ -274,11 +284,11 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
             if (newRoutineId !== undefined) setRoutineId(newRoutineId || null);
             if (newSourceWorkoutId !== undefined) setSourceWorkoutId(newSourceWorkoutId || null);
         }
-        
+
 		setRunning(true);
         setHasActiveSession(true);
         setIsExpanded(true);
-	}, [setRunning, workoutSeconds]);
+	}, [setRunning, workoutSeconds, activateGpsTrackingIfNeeded]);
 
     const pauseWorkout = useCallback(() => {
 		setRunning(false);
@@ -306,13 +316,13 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 
     const addExercise = useCallback((name: string, sets: string, reps: string, properties?: string[], id?: string, attachment?: string, equipment?: string) => {
         const ex = createExercise(name, sets, reps, properties);
-        setExercises((e) => [...e, { 
-            ...ex, 
-            id: id || ex.id, 
+        const newExercise = {
+            ...ex,
+            id: id || ex.id,
             attachment: attachment || undefined,
             equipment: equipment || undefined,
-            completedSets: 0, 
-            completedIndices: [], 
+            completedSets: 0,
+            completedIndices: [],
             logs: [],
             setTargets: ex.setTargets ? ex.setTargets.map((t: any) => ({
                 ...t,
@@ -322,8 +332,12 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                 duration: undefined,
                 distance: undefined,
             })) : undefined
-        }]);
-    }, []);
+        };
+        setExercises((e) => [...e, newExercise]);
+        if (isOutdoorGpsExercise(newExercise)) {
+            activateGpsTrackingIfNeeded();
+        }
+    }, [activateGpsTrackingIfNeeded]);
 
     const nextExercise = useCallback(() => {
         setExercises((exs) => {
@@ -609,11 +623,12 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         sourceWorkoutId,
         latestBodyWeight,
         isGpsTrackingActive,
+        activateGpsTrackingIfNeeded,
     }), [
         exercises, currentIndex, setCurrentIndex, workoutName, startWorkout, pauseWorkout, resumeWorkout, resetWorkout,
         handleToggleSetCompletion, nextExercise, prevExercise, addExercise, updateExercise,
         removeExercise, reorderExercises, handleFinishWorkout, handleCancelWorkout, isExpanded, hasActiveSession,
-        toggleExpanded, routineId, sourceWorkoutId, latestBodyWeight, isGpsTrackingActive
+        toggleExpanded, routineId, sourceWorkoutId, latestBodyWeight, isGpsTrackingActive, activateGpsTrackingIfNeeded
     ]);
 
     if (!isLoaded) {

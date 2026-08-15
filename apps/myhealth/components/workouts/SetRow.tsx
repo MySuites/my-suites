@@ -56,6 +56,7 @@ interface SetRowProps {
     isProgressiveOverloadEnabled?: boolean;
     progressiveOverloadRepCeiling?: number;
     isGpsTrackingActive?: boolean;
+    activateGpsTrackingIfNeeded?: () => Promise<void>;
 }
 
 const SetRowInner = ({
@@ -83,7 +84,8 @@ const SetRowInner = ({
     isHapticsEnabled = true,
     isProgressiveOverloadEnabled,
     progressiveOverloadRepCeiling,
-    isGpsTrackingActive
+    isGpsTrackingActive,
+    activateGpsTrackingIfNeeded
 }: SetRowProps) => {
     const isCompleted = exercise.completedIndices?.includes(index);
     const isEvenSet = (index + 1) % 2 === 0;
@@ -199,6 +201,7 @@ const SetRowInner = ({
                       isProgressiveOverloadEnabled={isProgressiveOverloadEnabled}
                       progressiveOverloadRepCeiling={progressiveOverloadRepCeiling}
                       isGpsTrackingActive={isGpsTrackingActive}
+                      activateGpsTrackingIfNeeded={activateGpsTrackingIfNeeded}
                   />
               )}
          </Animated.View>
@@ -262,7 +265,8 @@ export const SetRow = React.memo(SetRowInner, (prev, next) => {
         prev.isHapticsEnabled === next.isHapticsEnabled &&
         prev.isProgressiveOverloadEnabled === next.isProgressiveOverloadEnabled &&
         prev.progressiveOverloadRepCeiling === next.progressiveOverloadRepCeiling &&
-        prev.isGpsTrackingActive === next.isGpsTrackingActive
+        prev.isGpsTrackingActive === next.isGpsTrackingActive &&
+        prev.activateGpsTrackingIfNeeded === next.activateGpsTrackingIfNeeded
     );
 });
 
