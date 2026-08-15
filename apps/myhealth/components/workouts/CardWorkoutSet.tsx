@@ -5,7 +5,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { IconSymbol } from "@mysuite/ui";
 
 import { getExerciseFields } from './getExerciseFields';
-import { HorizontalSelectorWheel } from './HorizontalSelectorWheel';
+import { HorizontalSelectorWheel, CurrentValueLabel, CurrentValueLabelHandle } from './HorizontalSelectorWheel';
 import { OutdoorRunPanel } from './OutdoorRunPanel';
 import { VerticalSelectorWheel } from './VerticalSelectorWheel';
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
@@ -35,8 +35,11 @@ const REP_VALUES = Array.from({ length: 51 }, (_, i) => i); // 0 to 50
 // match a "one visible neighbor" width like a number wheel would - the
 // wheel's own padding keeps it centered for any itemWidth. Kept tight so
 // dragging feels like a real meter stick.
-const WHEEL_ITEM_WIDTH = 16;
-const WHEEL_HEIGHT = 56;
+const WHEEL_ITEM_WIDTH = 12;
+// Must match HorizontalSelectorWheel's own WHEEL_HEIGHT (separate constant,
+// different file) so the loading placeholder doesn't jump size once the
+// real wheel mounts.
+const WHEEL_HEIGHT = 72;
 const DURATION_WHEEL_HEIGHT = 120;
 const DURATION_ITEM_HEIGHT = 40;
 const PREP_OPTIONS = [0, 3, 5, 10];
@@ -127,7 +130,7 @@ function DistanceRow({ value, onChange, placeholderColor, className = '' }: Dist
 // Resting mirror of HorizontalSelectorWheel's ruler + value label, shown
 // until the real wheel mounts so the swap is seamless (only the tick marks
 // fade in).
-function WheelPlaceholder({ text, isAtGoal, goalColor }: { text: string; isAtGoal: boolean; goalColor: string }) {
+function WheelPlaceholder({ text, isAtGoal, goalColor, hideValue = false }: { text: string; isAtGoal: boolean; goalColor: string; hideValue?: boolean }) {
     return (
         <View>
             <View style={{ height: WHEEL_HEIGHT, justifyContent: 'center', alignItems: 'center' }}>
@@ -136,14 +139,16 @@ function WheelPlaceholder({ text, isAtGoal, goalColor }: { text: string; isAtGoa
                     style={{ width: WHEEL_ITEM_WIDTH, height: WHEEL_HEIGHT, borderRadius: 12 }}
                 />
             </View>
-            <View className="items-center justify-center flex-row mt-1">
-                <Text
-                    className="font-black text-2xl text-light dark:text-dark"
-                    style={isAtGoal ? { color: goalColor } : undefined}
-                >
-                    {text}
-                </Text>
-            </View>
+            {!hideValue && (
+                <View className="items-center justify-center flex-row mt-1">
+                    <Text
+                        className="font-black text-2xl text-light dark:text-dark"
+                        style={isAtGoal ? { color: goalColor } : undefined}
+                    >
+                        {text}
+                    </Text>
+                </View>
+            )}
         </View>
     );
 }
@@ -309,6 +314,15 @@ function CardWorkoutSetInner({
     // Narrower than full screen width - HorizontalSelectorWheel defaults to
     // windowWidth, which stretched the weight/reps rulers edge to edge.
     const wheelContainerWidth = windowWidth - 64;
+
+    // Live current-value labels rendered in each section's header row
+    // (label left, value right) instead of the wheel's own built-in
+    // placement below the ruler - see hideValueLabel/valueLabelRef on
+    // HorizontalSelectorWheel.
+    const weightValueLabelRef = React.useRef<CurrentValueLabelHandle>(null);
+    const repsValueLabelRef = React.useRef<CurrentValueLabelHandle>(null);
+    const repsLeftValueLabelRef = React.useRef<CurrentValueLabelHandle>(null);
+    const repsRightValueLabelRef = React.useRef<CurrentValueLabelHandle>(null);
 
     // Always start false so mounting a card never synchronously builds the
     // heavy wheel inside the same commit that swaps the current exercise —
@@ -852,7 +866,6 @@ function CardWorkoutSetInner({
 
             {showWeight && (
                 <View className="flex-col items-center justify-center py-2">
-                    <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Weight ({weightUnit})</Text>
                     {(() => {
                         const allowsAssistance = showBodyweight && showWeight;
                         const weightValues = allowsAssistance
@@ -872,29 +885,47 @@ function CardWorkoutSetInner({
                             ? snapToValues(lbToDisplay(weightGoalLb, unitSystem), weightValues)
                             : undefined;
                         const isAtGoal = goalDisplayWeight !== undefined && displayWeight === goalDisplayWeight;
-                        if (!wheelsReady) {
-                            return (
-                                <WheelPlaceholder
-                                    text={allowsAssistance ? formatAssistableWeight(displayWeight) : String(displayWeight || 0)}
-                                    isAtGoal={isAtGoal}
-                                    goalColor={goalColor}
-                                />
-                            );
-                        }
+                        const formatWeight = allowsAssistance ? formatAssistableWeight : (v: number) => String(v);
                         return (
-                            <HorizontalSelectorWheel
-                                value={displayWeight}
-                                onValueChange={handleWeightChange}
-                                values={weightValues}
-                                itemWidth={WHEEL_ITEM_WIDTH}
-                                containerWidth={wheelContainerWidth}
-                                unit=""
-                                goalValue={goalDisplayWeight}
-                                goalColor={goalColor}
-                                formatValue={allowsAssistance ? formatAssistableWeight : undefined}
-                                getTickSize={getTickSizeByTens}
-                                isHapticsEnabled={isHapticsEnabled}
-                            />
+                            <>
+                                <View className="flex-row items-center justify-between w-full px-4 mb-2">
+                                    <Text className="text-sm font-bold text-light-muted dark:text-dark-muted uppercase tracking-widest">Weight ({weightUnit})</Text>
+                                    <CurrentValueLabel
+                                        ref={weightValueLabelRef}
+                                        unit=""
+                                        formatValue={formatWeight}
+                                        goalValue={goalDisplayWeight}
+                                        goalColor={goalColor}
+                                        initialValue={displayWeight}
+                                        compact
+                                    />
+                                </View>
+                                {!wheelsReady ? (
+                                    <WheelPlaceholder
+                                        text={formatWeight(displayWeight)}
+                                        isAtGoal={isAtGoal}
+                                        goalColor={goalColor}
+                                        hideValue
+                                    />
+                                ) : (
+                                    <HorizontalSelectorWheel
+                                        value={displayWeight}
+                                        onValueChange={handleWeightChange}
+                                        values={weightValues}
+                                        itemWidth={WHEEL_ITEM_WIDTH}
+                                        containerWidth={wheelContainerWidth}
+                                        unit=""
+                                        goalValue={goalDisplayWeight}
+                                        goalColor={goalColor}
+                                        formatValue={formatWeight}
+                                        getTickSize={getTickSizeByTens}
+                                        isHapticsEnabled={isHapticsEnabled}
+                                        hideValueLabel
+                                        valueLabelRef={weightValueLabelRef}
+                                        labelIncrement={10}
+                                    />
+                                )}
+                            </>
                         );
                     })()}
                 </View>
@@ -902,55 +933,70 @@ function CardWorkoutSetInner({
 
             {showReps && (
                 <View className="flex-col items-center justify-center py-2">
-                    <Text className="text-xs font-bold text-light-muted dark:text-dark-muted mb-2 uppercase tracking-widest">Reps</Text>
                     {(() => {
                         const goalReps = suggestedGoal?.reps;
                         const renderRepsWheel = (
                             field: 'reps' | 'reps_left' | 'reps_right',
                             onChange: (val: number) => void,
+                            label: string,
+                            valueLabelRef: React.RefObject<CurrentValueLabelHandle | null>,
                         ) => {
                             const val = parseInt(getValue(field)) || 0;
-                            if (!wheelsReady) {
-                                return (
-                                    <WheelPlaceholder
-                                        text={getValue(field) || '0'}
-                                        isAtGoal={goalReps !== undefined && val === goalReps}
-                                        goalColor={goalColor}
-                                    />
-                                );
-                            }
+                            const isAtGoal = goalReps !== undefined && val === goalReps;
                             return (
-                                <HorizontalSelectorWheel
-                                    value={val}
-                                    onValueChange={onChange}
-                                    values={REP_VALUES}
-                                    itemWidth={WHEEL_ITEM_WIDTH}
-                                    containerWidth={wheelContainerWidth}
-                                    unit=""
-                                    goalValue={goalReps}
-                                    goalColor={goalColor}
-                                    getTickSize={getTickSizeByTens}
-                                    isHapticsEnabled={isHapticsEnabled}
-                                />
+                                <>
+                                    <View className="flex-row items-center justify-between w-full px-4 mb-1">
+                                        <Text className="text-sm font-bold text-light-muted dark:text-dark-muted uppercase tracking-widest">{label}</Text>
+                                        <CurrentValueLabel
+                                            ref={valueLabelRef}
+                                            unit=""
+                                            formatValue={(v) => String(v)}
+                                            goalValue={goalReps}
+                                            goalColor={goalColor}
+                                            initialValue={val}
+                                            compact
+                                        />
+                                    </View>
+                                    {!wheelsReady ? (
+                                        <WheelPlaceholder
+                                            text={getValue(field) || '0'}
+                                            isAtGoal={isAtGoal}
+                                            goalColor={goalColor}
+                                            hideValue
+                                        />
+                                    ) : (
+                                        <HorizontalSelectorWheel
+                                            value={val}
+                                            onValueChange={onChange}
+                                            values={REP_VALUES}
+                                            itemWidth={WHEEL_ITEM_WIDTH}
+                                            containerWidth={wheelContainerWidth}
+                                            unit=""
+                                            goalValue={goalReps}
+                                            goalColor={goalColor}
+                                            getTickSize={getTickSizeByTens}
+                                            isHapticsEnabled={isHapticsEnabled}
+                                            hideValueLabel
+                                            valueLabelRef={valueLabelRef}
+                                        />
+                                    )}
+                                </>
                             );
                         };
 
                         if (!isUnilateral) {
-                            return renderRepsWheel('reps', handleRepsChange);
+                            return renderRepsWheel('reps', handleRepsChange, 'Reps', repsValueLabelRef);
                         }
 
                         // L and R wheels are stacked, not side by side, so
                         // each spans the full card width — centered exactly
                         // like the weight wheel, not offset by a side label.
                         return ([
-                            { side: 'left', field: 'reps_left', label: 'Left', onChange: handleRepsLeftChange },
-                            { side: 'right', field: 'reps_right', label: 'Right', onChange: handleRepsRightChange },
-                        ] as const).map(({ side, field, label, onChange }) => (
-                            <View key={side} style={{ marginTop: side === 'right' ? 12 : 0, alignItems: 'center' }}>
-                                <Text className="text-[10px] font-bold text-light-muted dark:text-dark-muted uppercase tracking-widest mb-1">
-                                    {label}
-                                </Text>
-                                {renderRepsWheel(field, onChange)}
+                            { side: 'left', field: 'reps_left', label: 'Reps (Left)', onChange: handleRepsLeftChange, ref: repsLeftValueLabelRef },
+                            { side: 'right', field: 'reps_right', label: 'Reps (Right)', onChange: handleRepsRightChange, ref: repsRightValueLabelRef },
+                        ] as const).map(({ side, field, label, onChange, ref }) => (
+                            <View key={side} style={{ marginTop: side === 'right' ? 12 : 0, width: '100%' }}>
+                                {renderRepsWheel(field, onChange, label, ref)}
                             </View>
                         ));
                     })()}

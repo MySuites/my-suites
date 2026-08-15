@@ -35,13 +35,24 @@ interface HorizontalSelectorWheelProps {
     // the plain index-based majorTickEvery. Takes precedence when provided.
     getTickSize?: (val: number) => TickSize;
     isHapticsEnabled?: boolean;
+    // Ticks whose value is a multiple of this get a number label below them.
+    labelIncrement?: number;
+    // Suppresses the wheel's own built-in current-value label under the
+    // ruler - use together with valueLabelRef to render that live value
+    // somewhere else instead (e.g. a header row next to the section title).
+    hideValueLabel?: boolean;
+    valueLabelRef?: React.RefObject<CurrentValueLabelHandle | null>;
 }
 
-const WHEEL_HEIGHT = 56;
-const TICK_BOTTOM_INSET = 4;
+// +16 over the ruler's own footprint reserves room for the increment-of-5
+// value labels below each tick - without it, the horizontal ScrollView
+// clips them since they'd render below its own frame height.
+const WHEEL_HEIGHT = 72;
+const TICK_BOTTOM_INSET = 20;
+const TICK_LABEL_HEIGHT = 16;
 
 const TICK_DIMENSIONS: Record<TickSize, { width: number; height: number }> = {
-    lg: { width: 4, height: 28 },
+    lg: { width: 4, height: 36 },
     md: { width: 3.5, height: 21 },
     sm: { width: 3, height: 14 },
 };
@@ -87,20 +98,27 @@ export interface CurrentValueLabelHandle {
     setValue: (val: number) => void;
 }
 
-interface CurrentValueLabelProps {
+export interface CurrentValueLabelProps {
     unit?: string;
     formatValue: (val: number) => string;
     goalValue?: number;
     goalColor?: string;
     initialValue: number;
+    // Smaller, un-centered rendering for reuse in a label row outside the
+    // wheel (see HorizontalSelectorWheel's hideValueLabel/valueLabelRef).
+    // Defaults to the original large centered-under-the-ruler look.
+    compact?: boolean;
 }
 
-// Live-updating "current value" readout shown under the ruler. Isolated into
-// its own component, updated imperatively via a ref (see setValue) from the
-// parent's scroll listener, so its per-frame state updates while dragging
-// only re-render this small label, not the ~200-item tick strip above it.
-const CurrentValueLabel = React.forwardRef<CurrentValueLabelHandle, CurrentValueLabelProps>(
-    function CurrentValueLabel({ unit, formatValue, goalValue, goalColor, initialValue }, ref) {
+// Live-updating "current value" readout, normally shown under the ruler.
+// Isolated into its own component, updated imperatively via a ref (see
+// setValue) from the parent's scroll listener, so its per-frame state
+// updates while dragging only re-render this small label, not the ~200-item
+// tick strip above it. Exported so a caller can render its own instance
+// elsewhere (e.g. in a header row) and hand its ref to HorizontalSelectorWheel
+// via valueLabelRef instead of using the wheel's built-in placement.
+export const CurrentValueLabel = React.forwardRef<CurrentValueLabelHandle, CurrentValueLabelProps>(
+    function CurrentValueLabel({ unit, formatValue, goalValue, goalColor, initialValue, compact = false }, ref) {
         const [displayValue, setDisplayValue] = React.useState(initialValue);
 
         React.useImperativeHandle(ref, () => ({
@@ -111,8 +129,8 @@ const CurrentValueLabel = React.forwardRef<CurrentValueLabelHandle, CurrentValue
         const goalStyle = isGoal ? { color: goalColor } : undefined;
 
         return (
-            <View className="items-center justify-center flex-row mt-1">
-                <Text className="font-black text-2xl text-light dark:text-dark" style={goalStyle}>
+            <View className={compact ? "items-center flex-row" : "items-center justify-center flex-row mt-1"}>
+                <Text className={`font-black text-light dark:text-dark ${compact ? 'text-xl' : 'text-2xl'}`} style={goalStyle}>
                     {formatValue(displayValue)}
                 </Text>
                 {unit ? (
@@ -166,6 +184,9 @@ function HorizontalSelectorWheelBase({
     majorTickEvery = 5,
     getTickSize,
     isHapticsEnabled = true,
+    labelIncrement = 5,
+    hideValueLabel = false,
+    valueLabelRef,
 }: HorizontalSelectorWheelProps) {
     const { width: windowWidth } = useWindowDimensions();
     const width = containerWidth ?? windowWidth;
@@ -183,21 +204,23 @@ function HorizontalSelectorWheelBase({
     // content as the scrolling ticks underneath.
     const overlayTranslateX = React.useMemo(() => RNAnimated.multiply(scrollX, -1), [scrollX]);
     const scrollViewRef = React.useRef<ScrollView>(null);
-    const labelRef = React.useRef<CurrentValueLabelHandle>(null);
+    const internalLabelRef = React.useRef<CurrentValueLabelHandle>(null);
+    // Routes value updates to a caller-supplied label (see hideValueLabel)
+    // instead of the wheel's own, when one is provided.
+    const labelRef = valueLabelRef ?? internalLabelRef;
     const [localSelectedValue, setLocalSelectedValue] = React.useState(value);
 
     // Per-tick metadata, shared by the interactive strip and the filled-color
     // overlay so the two stay visually identical. `null` marks a padding slot.
+    // Every tick renders at the same ('lg') height now - getTickSize/
+    // majorTickEvery are kept as props (some callers still pass them) but no
+    // longer affect rendering.
     const tickMeta = React.useMemo(
         () => inlineData.map((item, i) => {
             if (item === null) return null;
-            const valueIndex = i - 1;
-            const tickSize: TickSize = getTickSize
-                ? getTickSize(item)
-                : (valueIndex % majorTickEvery === 0 ? 'lg' : 'sm');
-            return { item, tickSize, isGoal: goalValue !== undefined && item === goalValue };
+            return { item, tickSize: 'lg' as TickSize, isGoal: goalValue !== undefined && item === goalValue };
         }),
-        [inlineData, getTickSize, majorTickEvery, goalValue]
+        [inlineData, goalValue]
     );
 
     // Each tick fades out toward either edge of the visible window based on
@@ -301,22 +324,22 @@ function HorizontalSelectorWheelBase({
     return (
         <View>
             <View style={{ height: WHEEL_HEIGHT, width, flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
-                {/* Selection indicator - a triangle centered under the ruler,
-                    pointing up at whichever tick is currently centered. */}
+                {/* Selection indicator - a triangle centered above the ruler,
+                    pointing down at whichever tick is currently centered. */}
                 <View
                     pointerEvents="none"
                     style={{
                         position: 'absolute',
-                        left: width / 2 - 6,
-                        bottom: -8,
+                        left: width / 2 - 7,
+                        top: 2,
                         width: 0,
                         height: 0,
-                        borderLeftWidth: 6,
-                        borderRightWidth: 6,
-                        borderBottomWidth: 8,
+                        borderLeftWidth: 7,
+                        borderRightWidth: 7,
+                        borderTopWidth: 9,
                         borderLeftColor: 'transparent',
                         borderRightColor: 'transparent',
-                        borderBottomColor: theme.primary,
+                        borderTopColor: theme.primary,
                     }}
                 />
                 <RNAnimated.ScrollView
@@ -381,6 +404,28 @@ function HorizontalSelectorWheelBase({
                                     color={meta.isGoal ? GOAL_LIGHT_BLUE : (theme.textMuted ?? theme.text)}
                                     opacity={tickOpacities[i]}
                                 />
+                                {/* Value labels every 5 units, below the ruler -
+                                    only on this (interactive) strip, not the
+                                    filled overlay mirror, so they're not drawn
+                                    twice. */}
+                                {meta.item % labelIncrement === 0 && (
+                                    <RNAnimated.Text
+                                        style={{
+                                            position: 'absolute',
+                                            bottom: 0,
+                                            left: 0,
+                                            width: itemWidth,
+                                            height: TICK_LABEL_HEIGHT,
+                                            textAlign: 'center',
+                                            fontSize: 10,
+                                            fontWeight: '700',
+                                            color: theme.textMuted ?? theme.text,
+                                            opacity: tickOpacities[i],
+                                        }}
+                                    >
+                                        {meta.item}
+                                    </RNAnimated.Text>
+                                )}
                             </TouchableOpacity>
                         );
                     })}
@@ -440,14 +485,16 @@ function HorizontalSelectorWheelBase({
                     </RNAnimated.View>
                 </View>
             </View>
-            <CurrentValueLabel
-                ref={labelRef}
-                unit={unit}
-                formatValue={formatValue}
-                goalValue={goalValue}
-                goalColor={goalColor}
-                initialValue={value}
-            />
+            {!hideValueLabel && (
+                <CurrentValueLabel
+                    ref={internalLabelRef}
+                    unit={unit}
+                    formatValue={formatValue}
+                    goalValue={goalValue}
+                    goalColor={goalColor}
+                    initialValue={value}
+                />
+            )}
         </View>
     );
 }
