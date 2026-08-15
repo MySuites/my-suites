@@ -70,6 +70,10 @@ function InlineWorkoutSetInner({
         // snaps back to a non-empty value the instant the user backspaces it,
         // making it impossible to clear the field or type a fresh "0".
         if (isActiveWorkout && (val === undefined || val === null)) {
+            if (field === 'weight') {
+                const prevWeight = exercise.previousLog?.[index]?.weight;
+                return prevWeight !== undefined && prevWeight !== null ? prevWeight.toString() : '';
+            }
             if (field === 'reps' || field === 'reps_left' || field === 'reps_right' || field === 'duration' || field === 'distance') {
                 const prev = exercise.previousLog?.[index];
                 if (prev) {

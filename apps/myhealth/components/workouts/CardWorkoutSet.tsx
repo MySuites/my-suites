@@ -57,7 +57,7 @@ function getTickSizeByTens(val: number): TickSize {
 
 // Fields that carry over from the previous log / exercise default when this
 // set hasn't been touched yet.
-const CARRYOVER_FIELDS: SetField[] = ['reps', 'reps_left', 'reps_right', 'duration', 'distance'];
+const CARRYOVER_FIELDS: SetField[] = ['weight', 'reps', 'reps_left', 'reps_right', 'duration', 'distance'];
 
 function isBlank(val: any): boolean {
     return val === undefined || val === null || val === '';
@@ -372,7 +372,9 @@ function CardWorkoutSetInner({
             // The previous log uses the same field names as setTargets.
             const prevVal = exercise.previousLog?.[index]?.[field];
             if (prevVal != null) return prevVal.toString();
-            if (exercise.reps != null && exercise.reps !== 0) return exercise.reps.toString();
+            // exercise.reps is a legacy generic "target number" default -
+            // only meaningful for rep-like fields, not weight.
+            if (field !== 'weight' && exercise.reps != null && exercise.reps !== 0) return exercise.reps.toString();
             return '';
         }
 
