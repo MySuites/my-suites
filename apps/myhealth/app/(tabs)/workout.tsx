@@ -14,7 +14,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 
-import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
+import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
+import { formatSeconds } from '../../utils/formatting';
 import { ActiveRoutineCard } from '../../components/routines/ActiveRoutineCard';
 import { SavedWorkoutItem } from '../../components/workouts/SavedWorkoutItem';
 import { useRoutineTimeline } from '../../hooks/routines/useRoutineManager';
@@ -37,7 +38,11 @@ function Workout() {
         finishWorkout,
         cancelWorkout,
         hasActiveSession,
+        exercises: activeExercises,
+        workoutName: activeWorkoutName,
+        setExpanded,
     } = useActiveWorkout();
+    const { isRunning, workoutSeconds } = useActiveWorkoutTimer();
 
     const handleStartEmpty = (routineId?: string) => {
         if (hasActiveSession) {
@@ -187,6 +192,42 @@ function Workout() {
 				contentContainerStyle={{paddingBottom: 100 + insets.bottom, paddingTop: 130}}
 				showsVerticalScrollIndicator={false}
 			>
+                {/* In Progress Workout */}
+                {hasActiveSession && (
+                    <View className="px-4 mt-4">
+                        <TouchableOpacity
+                            onPress={() => setExpanded(true)}
+                            activeOpacity={0.8}
+                        >
+                            <RaisedCard
+                                className="p-4 flex-row items-center justify-between bg-primary dark:bg-primary-dark border-0"
+                                style={{ borderRadius: 16 }}
+                            >
+                                <View className="flex-1 mr-3">
+                                    <View className="flex-row items-center gap-2 mb-1">
+                                        {isRunning ? (
+                                            <View className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+                                        ) : (
+                                            <IconSymbol name="pause.fill" size={10} color="rgba(255,255,255,0.7)" />
+                                        )}
+                                        <Text className="text-xs font-bold uppercase text-white/80">
+                                            In Progress
+                                        </Text>
+                                    </View>
+                                    <Text className="text-lg font-bold text-white" numberOfLines={1}>
+                                        {activeWorkoutName}
+                                    </Text>
+                                    <Text className="text-sm text-white/80 mt-0.5">
+                                        {formatSeconds(workoutSeconds)}
+                                        {activeExercises.length > 0 ? ` · ${activeExercises.length} exercise${activeExercises.length === 1 ? '' : 's'}` : ''}
+                                    </Text>
+                                </View>
+                                <IconSymbol name="chevron.right" size={18} color="#FFFFFF" />
+                            </RaisedCard>
+                        </TouchableOpacity>
+                    </View>
+                )}
+
                 {/* Calendar View */}
                 <View className="px-4 mt-4">
                     <RaisedCard className="p-4" style={{ borderRadius: 16 }}>

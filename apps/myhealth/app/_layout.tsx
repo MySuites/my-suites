@@ -12,7 +12,7 @@ import { useColorScheme } from '../hooks/ui/use-color-scheme';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { initDatabase } from '../utils/db/database';
-import { ActiveWorkoutProvider } from '../providers/ActiveWorkoutProvider'; // Fixed import path
+import { ActiveWorkoutProvider } from '../providers/ActiveWorkoutProvider';
 import { WorkoutManagerProvider } from '../providers/WorkoutManagerProvider';
 import { ToastProvider } from '@mysuite/ui';
 import { DataRepository } from '../providers/DataRepository';
