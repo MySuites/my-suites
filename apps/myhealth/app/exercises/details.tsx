@@ -1,8 +1,7 @@
 import React, { useMemo, useEffect, useState, useCallback } from 'react';
-import { View, ScrollView, Pressable, Text, Alert, Modal } from 'react-native';
+import { View, ScrollView, Pressable, Text, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@mysuite/auth';
 import { useExerciseStats } from '../../hooks/workouts/useExerciseStats';
 import { ExerciseChart } from '../../components/exercises/ExerciseChart';
@@ -14,6 +13,8 @@ import DefaultExercises from '../../assets/data/default-exercises';
 import { DataRepository } from '../../providers/DataRepository';
 import { Exercise } from '../../utils/workout-api/types';
 import { VariationTree } from '../../components/exercises/VariationTree';
+import { VariationDetailModal } from '../../components/exercises/VariationDetailModal';
+import { ExerciseAdvancedSection } from '../../components/exercises/ExerciseAdvancedSection';
 import { useLatestBodyWeight } from '../../hooks/workouts/useLatestBodyWeight';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import { getBodyweightLoadPercentage, getEffectiveBodyweightLoad } from '../../utils/workout-logic';
@@ -21,21 +22,16 @@ import { lbToDisplay, roundForDisplay } from '../../utils/units';
 
 interface ExerciseDetailsScreenProps {
     exercise?: Exercise;
-    mode?: 'browse' | 'select';
-    onSelect?: (exercise: Exercise) => void;
     onBack?: () => void;
 }
 
 export default function ExerciseDetailsScreen({
     exercise: propExercise,
-    mode: propMode = 'browse',
-    onSelect,
     onBack
 }: ExerciseDetailsScreenProps = {}) {
     const router = useRouter();
     const params = useLocalSearchParams();
     const theme = useUITheme();
-    const insets = useSafeAreaInsets();
     const { user } = useAuth();
     const { deleteCustomExercise } = useWorkoutManager();
     
@@ -46,9 +42,6 @@ export default function ExerciseDetailsScreen({
     const [selectedAttachment, setSelectedAttachment] = useState<string>('All');
     const [selectedAttachmentVal, setSelectedAttachmentVal] = useState<string>('');
     const [selectedEquipmentVal, setSelectedEquipmentVal] = useState<string>('');
-
-    // Resolve mode
-    const isSelectMode = propMode === 'select' || params.mode === 'select';
 
     // Initial load from params, but act as fallback/skeleton
     const initialExercise = useMemo(() => {
@@ -479,54 +472,6 @@ export default function ExerciseDetailsScreen({
                         })()}
                     </View>
 
-                    {/* Bodyweight Load Section */}
-                    {isBodyweightExercise && (
-                        <View style={{ marginBottom: 24 }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                                <IconSymbol name="scalemass.fill" size={18} color={theme.primary} />
-                                <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700' }}>
-                                    Bodyweight Load
-                                </Text>
-                            </View>
-                            {effectiveLoadDisplay != null ? (
-                                <View style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    backgroundColor: theme.bgLight,
-                                    borderRadius: 12,
-                                    padding: 16,
-                                }}>
-                                    <View>
-                                        <Text style={{ color: currentColors.text, fontSize: 15, opacity: 0.8 }}>
-                                            {Math.round(bodyweightLoadPercentage * 100)}% of your bodyweight
-                                        </Text>
-                                        <Text style={{ color: currentColors.text, opacity: 0.5, fontSize: 12, marginTop: 2 }}>
-                                            Based on your latest logged weight
-                                        </Text>
-                                    </View>
-                                    <Text style={{ color: theme.primary, fontSize: 22, fontWeight: '800' }}>
-                                        {effectiveLoadDisplay} {weightUnit}
-                                    </Text>
-                                </View>
-                            ) : (
-                                <View style={{
-                                    padding: 16,
-                                    backgroundColor: theme.bgLight,
-                                    borderRadius: 12,
-                                    borderStyle: 'dashed',
-                                    borderWidth: 1,
-                                    borderColor: theme.border,
-                                    alignItems: 'center',
-                                }}>
-                                    <Text style={{ color: currentColors.text, opacity: 0.5, fontSize: 14, textAlign: 'center' }}>
-                                        This exercise loads {Math.round(bodyweightLoadPercentage * 100)}% of your bodyweight. Log your bodyweight to see the estimated load.
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
-                    )}
-
                     {/* Attachment Selection Section for Lat Pulldown / Seated Cable Row */}
                     {exercise && (exercise.id === 'lat_pulldown' || exercise.id === 'seated_cable_row') && (
                         <View style={{ marginBottom: 24 }}>
@@ -613,7 +558,6 @@ export default function ExerciseDetailsScreen({
                     {/* Instructions Section */}
                     <View style={{ marginBottom: 24 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                            <IconSymbol name="list.bullet" size={18} color={theme.primary} />
                             <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700' }}>
                                 Instructions
                             </Text>
@@ -658,54 +602,13 @@ export default function ExerciseDetailsScreen({
                         )}
                     </View>
 
-                    {/* Tips Section */}
-                    <View style={{ marginTop: 8 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                            <IconSymbol name="lightbulb.fill" size={18} color={theme.primary} />
-                            <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700' }}>
-                                Training Tips
-                            </Text>
-                        </View>
-                        {exercise.tips && exercise.tips.length > 0 ? (
-                            <View style={{ gap: 10 }}>
-                                {exercise.tips.map((tip: string, index: number) => (
-                                    <View 
-                                        key={index} 
-                                        style={{ 
-                                            flexDirection: 'row', 
-                                            gap: 10, 
-                                            backgroundColor: theme.bgLight, 
-                                            padding: 12, 
-                                            borderRadius: 12,
-                                            borderLeftWidth: 3,
-                                            borderLeftColor: theme.primary
-                                        }}
-                                    >
-                                        <Text style={{ color: theme.primary, fontWeight: '700', fontSize: 14, marginTop: 1 }}>
-                                            {index + 1}
-                                        </Text>
-                                        <Text style={{ flex: 1, color: currentColors.text, opacity: 0.85, fontSize: 14, lineHeight: 20 }}>
-                                            {tip}
-                                        </Text>
-                                    </View>
-                                ))}
-                            </View>
-                        ) : (
-                            <View style={{ 
-                                padding: 16, 
-                                backgroundColor: theme.bgLight, 
-                                borderRadius: 12, 
-                                borderStyle: 'dashed', 
-                                borderWidth: 1, 
-                                borderColor: theme.border,
-                                alignItems: 'center'
-                            }}>
-                                <Text style={{ color: currentColors.text, opacity: 0.5, fontSize: 14 }}>
-                                    Focus on controlled execution and steady breathing.
-                                </Text>
-                            </View>
-                        )}
-                    </View>
+                    <ExerciseAdvancedSection
+                        isBodyweightExercise={isBodyweightExercise}
+                        bodyweightLoadPercentage={bodyweightLoadPercentage}
+                        effectiveLoadDisplay={effectiveLoadDisplay}
+                        weightUnit={weightUnit}
+                        tips={exercise.tips}
+                    />
                 </View>
 
                 {variations.length > 0 && (
@@ -784,235 +687,11 @@ export default function ExerciseDetailsScreen({
                 <View style={{ height: 160 }} />
             </ScrollView>
 
-            {isSelectMode && (
-                <View 
-                    className="absolute self-center shadow-lg"
-                    style={{ bottom: insets.bottom + 20, width: 'auto', minWidth: 200, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8, zIndex: 999 }}
-                >
-                    <RaisedCard
-                        onPress={() => {
-                            if (onSelect) {
-                                let res = { ...exercise };
-                                if (selectedAttachmentVal) res.attachment = selectedAttachmentVal;
-                                if (selectedEquipmentVal) res.equipment = selectedEquipmentVal;
-                                onSelect(res);
-                            }
-                        }}
-                        className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
-                        style={{ borderRadius: 9999 }}
-                    >
-                        <View className="flex-row items-center justify-center">
-                            <Text className="text-lg font-bold text-white">
-                                Select {exercise.name}
-                            </Text>
-                        </View>
-                    </RaisedCard>
-                </View>
-            )}
-
-            {/* Variation Action Modal */}
-            <Modal transparent visible={!!selectedVariation} animationType="fade">
-                {selectedVariation && (
-                    <View style={{
-                        flex: 1,
-                        backgroundColor: 'rgba(0,0,0,0.7)',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        padding: 24,
-                        zIndex: 1000,
-                    }}>
-                        <Pressable 
-                            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} 
-                            onPress={() => setSelectedVariation(null)} 
-                        />
-                        <View style={{
-                            backgroundColor: currentColors.card,
-                            borderRadius: 24,
-                            padding: 24,
-                            width: '100%',
-                            maxWidth: 400,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 4 },
-                            shadowOpacity: 0.3,
-                            shadowRadius: 8,
-                            elevation: 5,
-                            position: 'relative',
-                        }}>
-                            <Pressable 
-                                onPress={() => setSelectedVariation(null)} 
-                                style={{
-                                    position: 'absolute',
-                                    top: 16,
-                                    left: 16,
-                                    padding: 8,
-                                    borderRadius: 9999,
-                                    zIndex: 10,
-                                }}
-                            >
-                                {({ pressed }) => (
-                                    <IconSymbol name="xmark" size={20} color={currentColors.text} style={{ opacity: pressed ? 0.6 : 1 }} />
-                                )}
-                            </Pressable>
-
-                            <Pressable 
-                                onPress={() => handleViewVariationDetails(selectedVariation)} 
-                                style={{
-                                    position: 'absolute',
-                                    top: 24,
-                                    right: 20,
-                                    zIndex: 10,
-                                }}
-                            >
-                                {({ pressed }) => (
-                                    <Text style={{ color: theme.primary, fontSize: 13, fontWeight: '600', opacity: pressed ? 0.6 : 1 }}>
-                                        View Full Details
-                                    </Text>
-                                )}
-                            </Pressable>
-
-                            <View style={{ height: 28 }} />
-
-                            <Text style={{ color: currentColors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>
-                                {selectedVariation.name}
-                            </Text>
-
-                            {selectedVariation.difficulty !== undefined && selectedVariation.properties?.includes('Bodyweight') && (() => {
-                                const diff = Number(selectedVariation.difficulty);
-                                const maxStars = 10;
-                                const fullStars = Math.floor(diff);
-                                const hasHalfStar = diff % 1 !== 0;
-                                
-                                return (
-                                    <View style={{ 
-                                        flexDirection: 'row',
-                                        alignSelf: 'center', 
-                                        paddingHorizontal: 12, 
-                                        paddingVertical: 4, 
-                                        borderRadius: 12, 
-                                        marginBottom: 16,
-                                        borderWidth: 1,
-                                        borderColor: currentColors.primary,
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: 2
-                                    }}>
-                                        <View style={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            left: 0,
-                                            right: 0,
-                                            bottom: 0,
-                                            backgroundColor: currentColors.primary,
-                                            opacity: 0.15,
-                                            borderRadius: 12,
-                                        }} />
-                                        
-                                        {Array.from({ length: maxStars }).map((_, index) => {
-                                            if (index < fullStars) {
-                                                return <IconSymbol key={index} name="star.fill" size={12} color={currentColors.primary} />;
-                                            } else if (index === fullStars && hasHalfStar) {
-                                                return <IconSymbol key={index} name="star.leadinghalf.filled" size={12} color={currentColors.primary} />;
-                                            }
-                                            return null;
-                                        })}
-                                    </View>
-                                );
-                            })()}
-
-                            {(selectedVariation.equipment || selectedVariation.movementType || selectedVariation.angle || selectedVariation.attachment) ? (
-                                <View style={{ flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-                                    {selectedVariation.equipment && selectedVariation.equipment !== 'none' && (
-                                        <View style={{
-                                            backgroundColor: theme.bgLight,
-                                            paddingHorizontal: 12,
-                                            paddingVertical: 5,
-                                            borderRadius: 12,
-                                            borderWidth: 1,
-                                            borderColor: theme.border
-                                        }}>
-                                            <Text style={{ color: currentColors.text, fontSize: 12, textTransform: 'capitalize', fontWeight: '500' }}>
-                                                {selectedVariation.equipment}
-                                            </Text>
-                                        </View>
-                                    )}
-                                    {selectedVariation.angle && (
-                                        <View style={{
-                                            backgroundColor: theme.bgLight,
-                                            paddingHorizontal: 12,
-                                            paddingVertical: 5,
-                                            borderRadius: 12,
-                                            borderWidth: 1,
-                                            borderColor: theme.border
-                                        }}>
-                                            <Text style={{ color: currentColors.text, fontSize: 12, textTransform: 'capitalize', fontWeight: '500' }}>
-                                                {selectedVariation.angle}
-                                            </Text>
-                                        </View>
-                                    )}
-                                    {selectedVariation.attachment && (
-                                        <View style={{
-                                            backgroundColor: theme.bgLight,
-                                            paddingHorizontal: 12,
-                                            paddingVertical: 5,
-                                            borderRadius: 12,
-                                            borderWidth: 1,
-                                            borderColor: theme.border
-                                        }}>
-                                            <Text style={{ color: currentColors.text, fontSize: 12, fontWeight: '500' }}>
-                                                {selectedVariation.attachment}
-                                            </Text>
-                                        </View>
-                                    )}
-                                    {selectedVariation.movementType && (
-                                        <View style={{
-                                            backgroundColor: theme.bgLight,
-                                            paddingHorizontal: 12,
-                                            paddingVertical: 5,
-                                            borderRadius: 12,
-                                            borderWidth: 1,
-                                            borderColor: theme.border
-                                        }}>
-                                            <Text style={{ color: currentColors.text, fontSize: 12, textTransform: 'capitalize', fontWeight: '500' }}>
-                                                {selectedVariation.movementType}
-                                            </Text>
-                                        </View>
-                                    )}
-                                </View>
-                            ) : null}
-
-                            {selectedVariation.description ? (
-                                <Text style={{ color: currentColors.text, fontSize: 15, opacity: 0.8, marginBottom: 24, textAlign: 'center', lineHeight: 22 }}>
-                                    {selectedVariation.description}
-                                </Text>
-                            ) : (
-                                <View style={{ height: 8 }} />
-                            )}
-
-
-
-                            {isSelectMode && (
-                                <View style={{ alignItems: 'center', width: '100%' }}>
-                                    <RaisedCard
-                                        onPress={() => {
-                                            if (onSelect) {
-                                                onSelect(selectedVariation);
-                                            }
-                                        }}
-                                        className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
-                                        style={{ borderRadius: 9999, minWidth: 200 }}
-                                    >
-                                        <View className="flex-row items-center justify-center">
-                                            <Text className="text-lg font-bold text-white">
-                                                Select {selectedVariation.name}
-                                            </Text>
-                                        </View>
-                                    </RaisedCard>
-                                </View>
-                            )}
-                        </View>
-                    </View>
-                )}
-            </Modal>
+            <VariationDetailModal
+                variation={selectedVariation}
+                onClose={() => setSelectedVariation(null)}
+                onViewFullDetails={handleViewVariationDetails}
+            />
         </View>
     );
 }
