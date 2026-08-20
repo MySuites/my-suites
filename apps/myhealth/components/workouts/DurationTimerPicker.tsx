@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, Vibration } from 'react-native';
 import { IconSymbol, useUITheme, RaisedCard } from '@mysuite/ui';
-import Svg, { Circle } from 'react-native-svg';
 import { formatSeconds } from '../../utils/formatting';
 import { VerticalSelectorWheel } from './VerticalSelectorWheel';
+import { CountdownRing } from '../ui/CountdownRing';
 
 const ITEM_HEIGHT = 50;
 const VISIBLE_ITEMS = 5;
@@ -56,7 +56,6 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
     const radius = 95;
     const strokeWidth = 10;
     const size = 220;
-    const circumference = 2 * Math.PI * radius;
 
     useEffect(() => {
         if (visible) {
@@ -85,52 +84,41 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
 
 
     useEffect(() => {
-        if (isTimerRunning) {
-            timerIntervalRef.current = setInterval(() => {
-                if (isPrepping) {
-                    setPrepRemaining(prev => {
-                        if (prev <= 1) {
-                            setIsPrepping(false);
-                            if (isHapticsEnabled) Vibration.vibrate(100);
-                            return 0;
-                        }
-                        if (isHapticsEnabled) Vibration.vibrate(10);
-                        return prev - 1;
-                    });
-                } else {
-                    setRemainingSeconds(prev => {
-                        if (prev <= 1) {
-                            setIsTimerRunning(false);
-                            if (isHapticsEnabled) Vibration.vibrate([0, 500, 200, 500]);
-                            return 0;
-                        }
-                        return prev - 1;
-                    });
-                }
-            }, 1000);
-        } else {
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
+        if (!isTimerRunning) return;
+
+        timerIntervalRef.current = setInterval(() => {
+            if (isPrepping) {
+                setPrepRemaining(prev => {
+                    if (prev <= 1) {
+                        setIsPrepping(false);
+                        if (isHapticsEnabled) Vibration.vibrate(100);
+                        return 0;
+                    }
+                    if (isHapticsEnabled) Vibration.vibrate(10);
+                    return prev - 1;
+                });
+            } else {
+                setRemainingSeconds(prev => {
+                    if (prev <= 1) {
+                        setIsTimerRunning(false);
+                        if (isHapticsEnabled) Vibration.vibrate([0, 500, 200, 500]);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
             }
-        }
-        return () => {
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
-            }
-        };
+        }, 1000);
+
+        return () => clearInterval(timerIntervalRef.current);
     }, [isTimerRunning, isPrepping, isHapticsEnabled]);
 
-    const handleMinChange = (newMin: number) => {
-        setSelectedMin(newMin);
+    const handleTimeChange = (unit: 'min' | 'sec', value: number) => {
+        const newMin = unit === 'min' ? value : selectedMin;
+        const newSec = unit === 'sec' ? value : selectedSec;
+        if (unit === 'min') setSelectedMin(value);
+        else setSelectedSec(value);
         if (!isTimerRunning) {
-            setRemainingSeconds(newMin * 60 + selectedSec);
-        }
-    };
-
-    const handleSecChange = (newSec: number) => {
-        setSelectedSec(newSec);
-        if (!isTimerRunning) {
-            setRemainingSeconds(selectedMin * 60 + newSec);
+            setRemainingSeconds(newMin * 60 + newSec);
         }
     };
 
@@ -163,40 +151,20 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
 
                     <View style={{ height: WHEEL_HEIGHT + 100 }} className="items-center justify-center mb-8">
                         {isTimerRunning ? (
-                            <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
-                                <Svg width={size} height={size}>
-                                    {/* Background Circle */}
-                                    <Circle
-                                        cx={size / 2}
-                                        cy={size / 2}
-                                        r={radius}
-                                        stroke={theme.bgDark === '#000000' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}
-                                        strokeWidth={strokeWidth}
-                                        fill="transparent"
-                                    />
-                                    {/* Foreground Progress Circle */}
-                                    <Circle
-                                        cx={size / 2}
-                                        cy={size / 2}
-                                        r={radius}
-                                        stroke={isPrepping ? '#ff9f0a' : theme.primary}
-                                        strokeWidth={strokeWidth}
-                                        fill="transparent"
-                                        strokeDasharray={circumference}
-                                        strokeDashoffset={circumference * (1 - progress)}
-                                        strokeLinecap="round"
-                                        transform={`rotate(-90 ${size / 2} ${size / 2})`}
-                                    />
-                                </Svg>
-                                <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text className="text-4xl font-black text-light dark:text-dark">
-                                        {isPrepping ? prepRemaining : formatSeconds(remainingSeconds)}
-                                    </Text>
-                                    <Text className="text-xs font-bold text-light-muted dark:text-dark-muted tracking-widest mt-1 uppercase">
-                                        {isPrepping ? 'READY' : 'GO!'}
-                                    </Text>
-                                </View>
-                            </View>
+                            <CountdownRing
+                                size={size}
+                                radius={radius}
+                                strokeWidth={strokeWidth}
+                                progress={progress}
+                                color={isPrepping ? '#ff9f0a' : theme.primary}
+                            >
+                                <Text className="text-4xl font-black text-light dark:text-dark">
+                                    {isPrepping ? prepRemaining : formatSeconds(remainingSeconds)}
+                                </Text>
+                                <Text className="text-xs font-bold text-light-muted dark:text-dark-muted tracking-widest mt-1 uppercase">
+                                    {isPrepping ? 'READY' : 'GO!'}
+                                </Text>
+                            </CountdownRing>
                         ) : (
                             <>
                                 <View style={{ height: WHEEL_HEIGHT }} className="flex-row items-center justify-center relative w-full px-4">
@@ -212,7 +180,7 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                                         <View style={{ height: WHEEL_HEIGHT, width: 80 }}>
                                             <VerticalSelectorWheel
                                                 value={selectedMin}
-                                                onValueChange={handleMinChange}
+                                                onValueChange={(v) => handleTimeChange('min', v)}
                                                 values={MIN_VALUES}
                                                 itemHeight={ITEM_HEIGHT}
                                                 width={80}
@@ -230,7 +198,7 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                                         <View style={{ height: WHEEL_HEIGHT, width: 80 }}>
                                             <VerticalSelectorWheel
                                                 value={selectedSec}
-                                                onValueChange={handleSecChange}
+                                                onValueChange={(v) => handleTimeChange('sec', v)}
                                                 values={SEC_VALUES}
                                                 itemHeight={ITEM_HEIGHT}
                                                 width={80}

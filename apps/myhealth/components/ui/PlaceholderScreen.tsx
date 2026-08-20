@@ -3,9 +3,7 @@ import { View, Text } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 
 import { BurgerMenu, BurgerMenuItem } from './BurgerMenu';
-import { BottomActionBar } from './BottomNavBar';
-import { DashboardButton } from './DashboardButton';
-import { BottomNavButton } from './BottomNavButton';
+import { BottomActionBar, BottomNavButton, DashboardButton } from './BottomNavBar';
 
 // Shared "To be implemented" dashboard used by the not-yet-built tabs
 // (Sleep, Mind, Nutrition). Each keeps its own route file so it can grow

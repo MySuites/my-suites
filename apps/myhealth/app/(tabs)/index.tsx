@@ -5,11 +5,9 @@ import { useFocusEffect } from 'expo-router';
 import { useAuth } from '@mysuite/auth';
 import { useUITheme, useToast } from '@mysuite/ui';
 
-import { BurgerMenu } from '../../components/ui/BurgerMenu';
+import { BurgerMenu, useBurgerMenu } from '../../components/ui/BurgerMenu';
 import { PROFILE_MENU_ITEMS } from '../../utils/burgerMenuItems';
-import { BottomActionBar } from '../../components/ui/BottomNavBar';
-import { DashboardButton } from '../../components/ui/DashboardButton';
-import { BottomNavButton } from '../../components/ui/BottomNavButton';
+import { BottomActionBar, BottomNavButton, DashboardButton } from '../../components/ui/BottomNavBar';
 import { BodyWeightCard } from '../../components/bodyweight/BodyWeightCard';
 import { WeightLogModal } from '../../components/bodyweight/WeightLogModal';
 import { useWorkoutManager, WorkoutLog } from '../../providers/WorkoutManagerProvider';
@@ -33,11 +31,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { showToast } = useToast();
   const { unitSystem } = useUnitPreference();
-  const [menuVisible, setMenuVisible] = useState(false);
-  // Tabs stay mounted when you switch away — without this, leaving the
-  // burger menu open and navigating elsewhere means it's still open when
-  // you come back.
-  useFocusEffect(useCallback(() => () => setMenuVisible(false), []));
+  const { visible: menuVisible, toggle: toggleMenu, close: closeMenu } = useBurgerMenu();
 
   const [isWeightModalVisible, setIsWeightModalVisible] = useState(false);
   const { workoutHistory, isLoading: workoutsLoading } = useWorkoutManager();
@@ -189,14 +183,14 @@ export default function ProfileScreen() {
             label="More"
             active={menuVisible}
             boldWhenActive={false}
-            onPress={() => setMenuVisible(!menuVisible)}
+            onPress={toggleMenu}
           />
         )}
       </BottomActionBar>
 
       <BurgerMenu
         visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
+        onClose={closeMenu}
         items={PROFILE_MENU_ITEMS}
       />
     </View>

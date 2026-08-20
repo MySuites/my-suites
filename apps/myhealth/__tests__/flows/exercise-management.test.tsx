@@ -98,22 +98,8 @@ jest.mock('@mysuite/ui', () => {
     };
 });
 
-// Mock SelectionModal (it's in components/ui/SelectionModal)
-jest.mock('../../components/ui/SelectionModal', () => {
-    return {
-        SelectionModal: ({ visible, title, items, onSelect, onClose, multiSelect }: any) => visible ? (
-            <mockRN.View testID="selection-modal">
-                <mockRN.Text>{title}</mockRN.Text>
-                {items.map((item: any) => (
-                    <mockRN.TouchableOpacity key={item.id || item.value} onPress={() => { onSelect(item); if(!multiSelect) onClose(); }}>
-                        <mockRN.Text>{item.name || item.label}</mockRN.Text>
-                    </mockRN.TouchableOpacity>
-                ))}
-                <mockRN.TouchableOpacity onPress={onClose}><mockRN.Text>Done</mockRN.Text></mockRN.TouchableOpacity>
-            </mockRN.View>
-        ) : null
-    };
-});
+// SelectionModal is now inlined (private) inside app/exercises/create.tsx —
+// no separate module to mock; the real implementation renders in this test.
 
 describe('Exercise Management Integration', () => {
     const mockRouter = { push: jest.fn(), back: jest.fn() };

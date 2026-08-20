@@ -166,22 +166,7 @@ describe('Exercise Details Integration', () => {
         expect(within(tree).getByText('Barbell Curl')).toBeTruthy();
     });
 
-    it('supports select mode and handles onSelect', async () => {
-        const mockOnSelect = jest.fn();
-        const { getByText } = render(
-            <ExerciseDetailsScreen mode="select" onSelect={mockOnSelect} exercise={mockExercise} />
-        );
-
-        // Verify primary select button is rendered at bottom
-        const selectBtn = getByText('Select Handstand Pushup');
-        expect(selectBtn).toBeTruthy();
-
-        // Tap select button
-        fireEvent.press(selectBtn);
-        expect(mockOnSelect).toHaveBeenCalledWith(mockExercise);
-    });
-
-    it('opens variation action modal and selects variation in select mode', async () => {
+    it('opens variation action modal on variation tap', async () => {
         const mockExercises = [
             {
                 id: 'dumbbell_curl',
@@ -203,13 +188,10 @@ describe('Exercise Details Integration', () => {
             }
         ];
 
-        const mockOnSelect = jest.fn();
         (useLocalSearchParams as jest.Mock).mockReturnValue({ exercise: JSON.stringify(mockExercises[0]) });
         (DataRepository.getExercises as jest.Mock).mockResolvedValue(mockExercises);
 
-        const { getByText, getByTestId } = render(
-            <ExerciseDetailsScreen mode="select" onSelect={mockOnSelect} />
-        );
+        const { getByText, getByTestId } = render(<ExerciseDetailsScreen />);
 
         // Wait for async load of variations
         await act(async () => {
@@ -224,13 +206,8 @@ describe('Exercise Details Integration', () => {
         const varNode = within(tree).getByText('Barbell Curl');
         fireEvent.press(varNode);
 
-        // Modal should open, and should have a select button for the variation
-        const selectVarBtn = getByText('Select Barbell Curl');
-        expect(selectVarBtn).toBeTruthy();
-
-        // Click select on the variation modal
-        fireEvent.press(selectVarBtn);
-        expect(mockOnSelect).toHaveBeenCalledWith(mockExercises[1]);
+        // Modal should open, offering a way to drill into the variation's own details
+        expect(getByText('View Full Details')).toBeTruthy();
     });
 
 

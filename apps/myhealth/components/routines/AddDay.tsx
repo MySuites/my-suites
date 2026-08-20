@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, Modal, ScrollView, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text, Modal, ScrollView } from 'react-native';
 import { useUITheme, RaisedCard, IconSymbol } from '@mysuite/ui';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { BackButton } from '../ui/BackButton';
-import { WorkoutPreviewModal } from '../workouts/WorkoutPreviewModal';
 
 
 interface AddDayProps {
@@ -22,14 +21,6 @@ export const AddDay = ({
     savedWorkouts
 }: AddDayProps) => {
     const theme = useUITheme();
-    
-    const [previewWorkout, setPreviewWorkout] = useState<any | null>(null);
-    const [previewVisible, setPreviewVisible] = useState(false);
-
-    const handleOpenPreview = (workout: any) => {
-        setPreviewWorkout(workout);
-        setPreviewVisible(true);
-    };
 
     return (
         <Modal
@@ -65,20 +56,9 @@ export const AddDay = ({
                                 onPress={() => onAddWorkout(workout)}
                                 className="p-4 mb-3"
                             >
-                                <View className="flex-row items-center justify-between">
-                                    <View>
-                                        <Text className="font-semibold text-lg text-light dark:text-dark">{workout.name}</Text>
-                                        <Text className="text-light-muted dark:text-dark-muted text-sm">{workout.exercises?.length || 0} Exercises</Text>
-                                    </View>
-                                    <TouchableOpacity
-                                        onPress={(e) => {
-                                            e.stopPropagation();
-                                            handleOpenPreview(workout);
-                                        }}
-                                        className="w-12 h-12 items-center justify-center -mr-2"
-                                    >
-                                        <IconSymbol name="info.circle" size={24} color={theme.primary} />
-                                    </TouchableOpacity>
+                                <View>
+                                    <Text className="font-semibold text-lg text-light dark:text-dark">{workout.name}</Text>
+                                    <Text className="text-light-muted dark:text-dark-muted text-sm">{workout.exercises?.length || 0} Exercises</Text>
                                 </View>
                             </RaisedCard>
                         ))
@@ -86,12 +66,6 @@ export const AddDay = ({
                     <View className="h-20" /> 
                 </ScrollView>
             </View>
-
-            <WorkoutPreviewModal 
-                visible={previewVisible}
-                onClose={() => setPreviewVisible(false)}
-                workout={previewWorkout}
-            />
         </Modal>
     );
 };

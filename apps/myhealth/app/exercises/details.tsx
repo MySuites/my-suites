@@ -15,6 +15,10 @@ import { Exercise } from '../../utils/workout-api/types';
 import { VariationTree } from '../../components/exercises/VariationTree';
 import { VariationDetailModal } from '../../components/exercises/VariationDetailModal';
 import { ExerciseAdvancedSection } from '../../components/exercises/ExerciseAdvancedSection';
+import { InstructionsList } from '../../components/exercises/InstructionsList';
+import { SegmentedControl } from '../../components/ui/SegmentedControl';
+import { PillPicker } from '../../components/ui/PillPicker';
+import { ATTACHMENT_OPTIONS } from '../../components/workouts/AttachmentPicker';
 import { useLatestBodyWeight } from '../../hooks/workouts/useLatestBodyWeight';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import { getBodyweightLoadPercentage, getEffectiveBodyweightLoad } from '../../utils/workout-logic';
@@ -166,6 +170,17 @@ export default function ExerciseDetailsScreen({
         });
     }, [variations, selectedAttachment]);
 
+    const tabOptions = useMemo(() => {
+        const options: { label: string; value: 'details' | 'performance' | 'variations' }[] = [
+            { label: 'Details', value: 'details' },
+            { label: 'Performance', value: 'performance' },
+        ];
+        if (variations.length > 0) {
+            options.push({ label: 'Variations', value: 'variations' });
+        }
+        return options;
+    }, [variations.length]);
+
     const handleSelectVariation = useCallback((ex: Exercise) => {
          setSelectedVariation(ex);
     }, []);
@@ -281,64 +296,12 @@ export default function ExerciseDetailsScreen({
 
             <ScrollView style={{ flex: 1, padding: 16, paddingTop: 124 }}>
                 {/* Tabs */}
-                <View style={{
-                    flexDirection: 'row',
-                    backgroundColor: toggleBackground,
-                    borderRadius: 8,
-                    padding: 4,
-                    marginBottom: 24
-                }}>
-                    <Pressable
-                        onPress={() => setActiveTab('details')}
-                        style={{
-                            flex: 1,
-                            paddingVertical: 8,
-                            alignItems: 'center',
-                            backgroundColor: activeTab === 'details' ? activeToggleBg : 'transparent',
-                            borderRadius: 6,
-                        }}
-                    >
-                        <Text style={{
-                            color: activeTab === 'details' ? activeToggleText : currentColors.text,
-                            fontWeight: activeTab === 'details' ? '600' : '400',
-                            opacity: activeTab === 'details' ? 1 : 0.7
-                        }}>Details</Text>
-                    </Pressable>
-                    <Pressable
-                        onPress={() => setActiveTab('performance')}
-                        style={{
-                            flex: 1,
-                            paddingVertical: 8,
-                            alignItems: 'center',
-                            backgroundColor: activeTab === 'performance' ? activeToggleBg : 'transparent',
-                            borderRadius: 6,
-                        }}
-                    >
-                        <Text style={{
-                            color: activeTab === 'performance' ? activeToggleText : currentColors.text,
-                            fontWeight: activeTab === 'performance' ? '600' : '400',
-                            opacity: activeTab === 'performance' ? 1 : 0.7
-                        }}>Performance</Text>
-                    </Pressable>
-                    {variations.length > 0 && (
-                        <Pressable
-                            onPress={() => setActiveTab('variations')}
-                            style={{
-                                flex: 1,
-                                paddingVertical: 8,
-                                alignItems: 'center',
-                                backgroundColor: activeTab === 'variations' ? activeToggleBg : 'transparent',
-                                borderRadius: 6,
-                            }}
-                        >
-                            <Text style={{
-                                color: activeTab === 'variations' ? activeToggleText : currentColors.text,
-                                fontWeight: activeTab === 'variations' ? '600' : '400',
-                                opacity: activeTab === 'variations' ? 1 : 0.7
-                            }}>Variations</Text>
-                        </Pressable>
-                    )}
-                </View>
+                <SegmentedControl
+                    options={tabOptions}
+                    value={activeTab}
+                    onChange={setActiveTab}
+                    containerClassName="mb-6"
+                />
 
                 <View style={{ display: activeTab === 'performance' ? 'flex' : 'none' }}>
                     {/* Performance Chart */}
@@ -473,142 +436,42 @@ export default function ExerciseDetailsScreen({
                     </View>
 
                     {/* Attachment Selection Section for Lat Pulldown / Seated Cable Row */}
-                    {exercise && (exercise.id === 'lat_pulldown' || exercise.id === 'seated_cable_row') && (
-                        <View style={{ marginBottom: 24 }}>
-                            <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700', marginBottom: 12 }}>
-                                Select Attachment
-                            </Text>
-                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                                {(exercise.id === 'lat_pulldown' 
-                                    ? ["Lat Bar", "Wide-Grip Bar", "Close-Grip V-Bar", "Neutral-Grip Handles"] 
-                                    : ["Close-Grip V-Bar", "Wide-Grip Bar", "Neutral-Grip Handles", "Straight Bar"]
-                                ).map((att) => {
-                                    const isSelected = selectedAttachmentVal === att;
-                                    return (
-                                        <Pressable
-                                            key={att}
-                                            onPress={() => setSelectedAttachmentVal(att)}
-                                            style={{
-                                                backgroundColor: isSelected ? theme.primary : theme.bgLight,
-                                                paddingHorizontal: 16,
-                                                paddingVertical: 10,
-                                                borderRadius: 20,
-                                                borderWidth: 1,
-                                                borderColor: isSelected ? 'transparent' : theme.border,
-                                            }}
-                                        >
-                                            <Text style={{
-                                                color: isSelected ? '#FFFFFF' : currentColors.text,
-                                                fontSize: 14,
-                                                fontWeight: '600',
-                                            }}>
-                                                {att}
-                                            </Text>
-                                        </Pressable>
-                                    );
-                                })}
-                            </View>
-                        </View>
+                    {exercise && exercise.id in ATTACHMENT_OPTIONS && (
+                        <PillPicker
+                            title="Select Attachment"
+                            options={ATTACHMENT_OPTIONS[exercise.id].map((att) => ({ value: att, label: att }))}
+                            selectedValue={selectedAttachmentVal}
+                            onSelect={setSelectedAttachmentVal}
+                        />
                     )}
 
                     {/* Equipment Selection Section */}
                     {exercise && Array.isArray(exercise.equipment) && exercise.equipment.length > 1 && (
-                        <View style={{ marginBottom: 24 }}>
-                            <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700', marginBottom: 12 }}>
-                                Select Equipment
-                            </Text>
-                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                                {exercise.equipment.map((eqName: string) => {
-                                    const value = eqName;
-                                    const label = eqName.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                                    return { value, label };
-                                }).map((opt: any) => {
-                                    const isSelected = selectedEquipmentVal === opt.value;
-                                    return (
-                                        <Pressable
-                                            key={opt.value}
-                                            onPress={() => setSelectedEquipmentVal(opt.value)}
-                                            style={{
-                                                backgroundColor: isSelected ? theme.primary : theme.bgLight,
-                                                paddingHorizontal: 16,
-                                                paddingVertical: 10,
-                                                borderRadius: 20,
-                                                borderWidth: 1,
-                                                borderColor: isSelected ? 'transparent' : theme.border,
-                                            }}
-                                        >
-                                            <Text style={{
-                                                color: isSelected ? '#FFFFFF' : currentColors.text,
-                                                fontSize: 14,
-                                                fontWeight: '600',
-                                            }}>
-                                                {opt.label}
-                                            </Text>
-                                        </Pressable>
-                                    );
-                                })}
-                            </View>
-                        </View>
+                        <PillPicker
+                            title="Select Equipment"
+                            options={exercise.equipment.map((eqName: string) => ({
+                                value: eqName,
+                                label: eqName.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+                            }))}
+                            selectedValue={selectedEquipmentVal}
+                            onSelect={setSelectedEquipmentVal}
+                        />
                     )}
 
                     <Text style={{ color: currentColors.text, opacity: 0.7, lineHeight: 24, fontSize: 15, marginBottom: 24 }}>
                         {exercise.description || "No description available for this exercise yet."}
                     </Text>
 
-                    {/* Instructions Section */}
-                    <View style={{ marginBottom: 24 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                            <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700' }}>
-                                Instructions
-                            </Text>
-                        </View>
-                        {exercise.instructions && exercise.instructions.length > 0 ? (
-                            <View style={{ gap: 12 }}>
-                                {exercise.instructions.map((step: string, index: number) => (
-                                    <View key={index} style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
-                                        <View style={{
-                                            width: 22,
-                                            height: 22,
-                                            borderRadius: 11,
-                                            backgroundColor: (theme.bgLight || 'rgba(0,0,0,0.05)'),
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            marginTop: 1
-                                        }}>
-                                            <Text style={{ color: currentColors.text, fontSize: 11, fontWeight: '700', opacity: 0.8 }}>
-                                                {index + 1}
-                                            </Text>
-                                        </View>
-                                        <Text style={{ flex: 1, color: currentColors.text, opacity: 0.8, fontSize: 14, lineHeight: 20 }}>
-                                            {step}
-                                        </Text>
-                                    </View>
-                                ))}
-                            </View>
-                        ) : (
-                            <View style={{ 
-                                padding: 16, 
-                                backgroundColor: theme.bgLight, 
-                                borderRadius: 12, 
-                                borderStyle: 'dashed', 
-                                borderWidth: 1, 
-                                borderColor: theme.border,
-                                alignItems: 'center'
-                            }}>
-                                <Text style={{ color: currentColors.text, opacity: 0.5, fontSize: 14 }}>
-                                    No step-by-step instructions available for this exercise yet.
-                                </Text>
-                            </View>
-                        )}
-                    </View>
+                    <InstructionsList instructions={exercise.instructions} />
 
-                    <ExerciseAdvancedSection
-                        isBodyweightExercise={isBodyweightExercise}
-                        bodyweightLoadPercentage={bodyweightLoadPercentage}
-                        effectiveLoadDisplay={effectiveLoadDisplay}
-                        weightUnit={weightUnit}
-                        tips={exercise.tips}
-                    />
+                    {isBodyweightExercise && (
+                        <ExerciseAdvancedSection
+                            isBodyweightExercise={isBodyweightExercise}
+                            bodyweightLoadPercentage={bodyweightLoadPercentage}
+                            effectiveLoadDisplay={effectiveLoadDisplay}
+                            weightUnit={weightUnit}
+                        />
+                    )}
                 </View>
 
                 {variations.length > 0 && (

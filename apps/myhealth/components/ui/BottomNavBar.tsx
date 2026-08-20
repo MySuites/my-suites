@@ -1,6 +1,9 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter, usePathname } from 'expo-router';
+import { IconSymbol, useUITheme } from '@mysuite/ui';
+import { findCurrentTab, isOnOwnDashboard } from '../../utils/navTabs';
 
 // Height of the bar's own content row, not counting the device's bottom
 // safe-area inset (added separately as padding).
@@ -29,4 +32,74 @@ export function BottomActionBar({ children }: BottomActionBarProps) {
       </View>
     </View>
   );
+}
+
+interface BottomNavButtonProps {
+    icon: string;
+    label: string;
+    onPress: () => void;
+    // Highlights the icon/label in the primary color instead of the muted color.
+    active?: boolean;
+    // Tab buttons (Exercises/History) render their label bold when active; the
+    // Menu toggle keeps it semibold. Defaults to the tab behavior.
+    boldWhenActive?: boolean;
+}
+
+// A single action in the BottomActionBar — the muted/primary icon-over-label
+// button repeated across every dashboard screen. Mirrors DashboardButton.
+export function BottomNavButton({
+    icon,
+    label,
+    onPress,
+    active = false,
+    boldWhenActive = true,
+}: BottomNavButtonProps) {
+    const theme = useUITheme();
+    const color = active ? theme.primary : theme.textMuted;
+
+    return (
+        <TouchableOpacity
+            onPress={onPress}
+            className="items-center justify-center"
+            style={{ gap: 2 }}
+        >
+            <IconSymbol name={icon as any} size={22} color={color} />
+            <Text style={{ fontSize: 10, fontWeight: active && boldWhenActive ? '700' : '600', color }}>
+                {label}
+            </Text>
+        </TouchableOpacity>
+    );
+}
+
+interface DashboardButtonProps {
+    // Suppress the active highlight when some other bottom-bar icon (e.g. the
+    // burger menu) is the one currently "selected".
+    dimmed?: boolean;
+}
+
+// Each screen's own "dashboard" — points at itself (Workout's button stays on
+// Workout, Sleep's stays on Sleep, etc.), not a shared Profile destination.
+// Only highlighted while actually on that dashboard screen, not a sub-route
+// of it (e.g. Workout History).
+export function DashboardButton({ dimmed }: DashboardButtonProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const theme = useUITheme();
+
+    const currentTab = findCurrentTab(pathname);
+    const isActive = isOnOwnDashboard(pathname);
+    const color = dimmed || !isActive ? theme.textMuted : theme.primary;
+
+    return (
+        <TouchableOpacity
+            onPress={() => router.navigate(currentTab.href as any)}
+            className="items-center justify-center"
+            style={{ gap: 2 }}
+        >
+            <IconSymbol name="house.fill" size={20} color={color} />
+            <Text style={{ fontSize: 10, fontWeight: '700', color }}>
+                Dashboard
+            </Text>
+        </TouchableOpacity>
+    );
 }

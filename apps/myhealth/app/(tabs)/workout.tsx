@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useRef, useCallback} from "react";
+import React, {useState, useMemo, useRef} from "react";
 import {
  	View,
  	Text,
@@ -11,7 +11,7 @@ import {
 } from "react-native";
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
@@ -22,10 +22,8 @@ import { useRoutineTimeline } from '../../hooks/routines/useRoutineManager';
 import { HollowedCard, RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 
 import { SavedWorkout } from '../../types';
-import { BottomActionBar } from '../../components/ui/BottomNavBar';
-import { DashboardButton } from '../../components/ui/DashboardButton';
-import { BottomNavButton } from '../../components/ui/BottomNavButton';
-import { BurgerMenu } from '../../components/ui/BurgerMenu';
+import { BottomActionBar, BottomNavButton, DashboardButton } from '../../components/ui/BottomNavBar';
+import { BurgerMenu, useBurgerMenu } from '../../components/ui/BurgerMenu';
 import { WORKOUT_MENU_ITEMS } from '../../utils/burgerMenuItems';
 
 function Workout() {
@@ -73,11 +71,7 @@ function Workout() {
             startWorkout([], "Empty Workout", routineId);
         }
     };
-    const [menuVisible, setMenuVisible] = useState(false);
-    // Tabs stay mounted when you switch away — without this, leaving the
-    // burger menu open and navigating elsewhere means it's still open when
-    // you come back.
-    useFocusEffect(useCallback(() => () => setMenuVisible(false), []));
+    const { visible: menuVisible, toggle: toggleMenu, close: closeMenu } = useBurgerMenu();
     const [activeSwipedCardId, setActiveSwipedCardId] = useState<string | null>(null);
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [isDayModalVisible, setIsDayModalVisible] = useState(false);
@@ -417,13 +411,13 @@ function Workout() {
                     label="More"
                     active={menuVisible}
                     boldWhenActive={false}
-                    onPress={() => setMenuVisible(!menuVisible)}
+                    onPress={toggleMenu}
                 />
             </BottomActionBar>
 
             <BurgerMenu
                 visible={menuVisible}
-                onClose={() => setMenuVisible(false)}
+                onClose={closeMenu}
                 items={WORKOUT_MENU_ITEMS}
             />
 

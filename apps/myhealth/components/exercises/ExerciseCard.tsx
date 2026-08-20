@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, createContext, useContext } from 'react';
 import { View, Text, TouchableOpacity, Modal, Pressable, ScrollView, useWindowDimensions, Alert } from 'react-native';
-import { AttachmentPicker } from '../workouts/AttachmentPicker';
+import { AttachmentPicker, ATTACHMENT_OPTIONS } from '../workouts/AttachmentPicker';
 import { EquipmentPicker } from '../workouts/EquipmentPicker';
 import { MovementTypePicker } from '../workouts/MovementTypePicker';
 import { RestTimerPicker } from '../workouts/RestTimerPicker';
@@ -12,7 +12,63 @@ import { RPEPicker } from '../workouts/RPEPicker';
 
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import { isOutdoorGpsExercise as computeIsOutdoorGpsExercise } from '../../utils/workout-logic';
-import { SetPagerScrollLockProvider } from './SetPagerScrollLock';
+import { useSetPager } from '../../hooks/workouts/useSetPager';
+import { ExercisePropertyPillRow } from '../ui/ExercisePropertyPill';
+
+// Lets a nested horizontal wheel (weight/reps selector) temporarily disable
+// the set-swipe pager's own horizontal ScrollView while the user is dragging
+// the wheel. Same-axis nested ScrollViews in RN negotiate touches
+// unreliably — without this, the outer pager can intermittently steal part
+// of a wheel drag, so the wheel snaps to whatever offset it happened to be
+// at when the outer view interrupted it instead of where the user released.
+// Defaults to no-ops so wheels used outside a pager (e.g. exercise details
+// screen) work unchanged.
+interface SetPagerScrollLockValue {
+    lock: () => void;
+    unlock: () => void;
+}
+
+const noopSetPagerScrollLock: SetPagerScrollLockValue = { lock: () => {}, unlock: () => {} };
+
+const SetPagerScrollLockContext = createContext<SetPagerScrollLockValue>(noopSetPagerScrollLock);
+
+export function useSetPagerScrollLock() {
+    return useContext(SetPagerScrollLockContext);
+}
+
+// Wrap the pager with this and pass it the setter for the pager
+// ScrollView's `scrollEnabled` prop.
+function SetPagerScrollLockProvider({
+    setScrollEnabled,
+    children,
+}: {
+    setScrollEnabled: (enabled: boolean) => void;
+    children: React.ReactNode;
+}) {
+    // Multiple wheels can theoretically be mid-drag in overlapping frames
+    // (e.g. a stray touch), so track a count rather than a single boolean —
+    // only re-enable once nothing is holding the lock.
+    const lockCount = useRef(0);
+
+    const value = useRef<SetPagerScrollLockValue>({
+        lock: () => {
+            lockCount.current += 1;
+            setScrollEnabled(false);
+        },
+        unlock: () => {
+            lockCount.current = Math.max(0, lockCount.current - 1);
+            if (lockCount.current === 0) {
+                setScrollEnabled(true);
+            }
+        },
+    }).current;
+
+    return (
+        <SetPagerScrollLockContext.Provider value={value}>
+            {children}
+        </SetPagerScrollLockContext.Provider>
+    );
+}
 
 interface ExerciseCardProps {
     exercise: Exercise;
@@ -88,134 +144,39 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
     const showRPE = calculatedShowRPE && isRpeEnabled;
     
     const isOutdoorGpsExercise = computeIsOutdoorGpsExercise(exercise);
-    const isAttachmentSupported = exercise.id === 'lat_pulldown' || exercise.id === 'seated_cable_row';
-    const defaultAttachment = exercise.id === 'lat_pulldown' ? 'Lat Bar' : exercise.id === 'seated_cable_row' ? 'Close-Grip V-Bar' : undefined;
+    const isAttachmentSupported = exercise.id in ATTACHMENT_OPTIONS;
+    const defaultAttachment = ATTACHMENT_OPTIONS[exercise.id]?.[0];
     const attachment = exercise.attachment || defaultAttachment;
     const equipment = exercise.equipment || inferEquipment(exercise.name);
     const movementType = exercise.movementType || inferMovementType(exercise.name, equipment);
     const isUnilateral = movementType === 'unilateral';
 
-    // Horizontal Sets Paging state
+    // Horizontal Sets Paging
     const dimensions = useWindowDimensions();
-    const [localActiveSetIndex, setLocalActiveSetIndex] = useState(0);
-    const activeSetIndex = propActiveSetIndex !== undefined ? propActiveSetIndex : localActiveSetIndex;
-    const lastAppliedSetIndexRef = useRef(propActiveSetIndex);
-    const setActiveSetIndex = React.useCallback((val: number) => {
-        lastAppliedSetIndexRef.current = val;
-        setLocalActiveSetIndex(val);
-        onActiveSetChange?.(val);
-    }, [onActiveSetChange]);
-
-    const [cardWidth, setCardWidth] = useState(dimensions.width - 64);
-    const [isSetPagerScrollEnabled, setIsSetPagerScrollEnabled] = useState(true);
-    const scrollViewRef = useRef<ScrollView>(null);
-    // Running/Biking are one continuous GPS-tracked activity, not repeatable sets.
-    const totalSets = isOutdoorGpsExercise ? 1 : Math.max(exercise.sets, exercise.logs?.length || 0);
-    const prevSetsCountRef = useRef(exercise.sets);
-    const isProgrammaticScroll = useRef(false);
-    const isMountedRef = useRef(true);
-    const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-    React.useEffect(() => {
-        return () => {
-            isMountedRef.current = false;
-            timeoutRefs.current.forEach(clearTimeout);
-            timeoutRefs.current = [];
-        };
-    }, []);
-
-    const scheduleTimeout = React.useCallback((callback: () => void, delay: number) => {
-        const timeoutId = setTimeout(() => {
-            timeoutRefs.current = timeoutRefs.current.filter((id) => id !== timeoutId);
-            if (!isMountedRef.current) {
-                return;
-            }
-            callback();
-        }, delay);
-        timeoutRefs.current.push(timeoutId);
-        return timeoutId;
-    }, []);
-
-
-
-    // Auto-scroll on sets length increase
-    React.useEffect(() => {
-        if (horizontalSets && scrollViewRef.current && cardWidth > 0) {
-            if (exercise.sets > prevSetsCountRef.current) {
-                const lastIndex = Math.max(0, totalSets - 1);
-                setActiveSetIndex(lastIndex);
-                // Wrap in a tiny timeout to ensure Layout is finished rendering the new item
-                scheduleTimeout(() => {
-                    isProgrammaticScroll.current = true;
-                    scrollViewRef.current?.scrollTo({ x: lastIndex * cardWidth, animated: true });
-                    scheduleTimeout(() => {
-                        isProgrammaticScroll.current = false;
-                    }, 500);
-                }, 50);
-            } else if (exercise.sets < prevSetsCountRef.current) {
-                const lastIndex = Math.max(0, totalSets - 1);
-                if (activeSetIndex > lastIndex) {
-                    setActiveSetIndex(lastIndex);
-                    isProgrammaticScroll.current = true;
-                    scrollViewRef.current?.scrollTo({ x: lastIndex * cardWidth, animated: true });
-                    scheduleTimeout(() => {
-                        isProgrammaticScroll.current = false;
-                    }, 500);
-                }
-            }
-        }
-        prevSetsCountRef.current = exercise.sets;
-    }, [exercise.sets, cardWidth, horizontalSets, totalSets, activeSetIndex, setActiveSetIndex, scheduleTimeout]);
-
-    // Parent-driven scrolling hook
-    React.useEffect(() => {
-        if (
-            horizontalSets &&
-            scrollViewRef.current &&
-            cardWidth > 0 &&
-            propActiveSetIndex !== undefined &&
-            propActiveSetIndex !== lastAppliedSetIndexRef.current
-        ) {
-            lastAppliedSetIndexRef.current = propActiveSetIndex;
-            isProgrammaticScroll.current = true;
-            scrollViewRef.current.scrollTo({ x: propActiveSetIndex * cardWidth, animated: true });
-            scheduleTimeout(() => {
-                isProgrammaticScroll.current = false;
-            }, 500);
-        }
-    }, [propActiveSetIndex, cardWidth, horizontalSets, scheduleTimeout]);
-
-    const handleDeleteActiveSet = () => {
-        if (onDeleteSet) {
-            onDeleteSet(activeSetIndex);
-            const nextIndex = Math.max(0, activeSetIndex - 1);
-            setActiveSetIndex(nextIndex);
-            if (scrollViewRef.current && cardWidth > 0) {
-                isProgrammaticScroll.current = true;
-                scrollViewRef.current.scrollTo({ x: nextIndex * cardWidth, animated: true });
-                scheduleTimeout(() => {
-                    isProgrammaticScroll.current = false;
-                }, 500);
-            }
-        }
-    };
-
-    const handleCompleteSetAndAutoPage = (setIndex: number) => {
-        const currentlyCompleted = exercise.completedIndices?.includes(setIndex);
-        onCompleteSet(setIndex);
-        
-        if (horizontalSets && !currentlyCompleted && setIndex < totalSets - 1) {
-            isProgrammaticScroll.current = true;
-            scheduleTimeout(() => {
-                const nextIndex = setIndex + 1;
-                setActiveSetIndex(nextIndex);
-                scrollViewRef.current?.scrollTo({ x: nextIndex * cardWidth, animated: true });
-                scheduleTimeout(() => {
-                    isProgrammaticScroll.current = false;
-                }, 500);
-            }, 300);
-        }
-    };
+    const {
+        scrollViewRef,
+        cardWidth,
+        setCardWidth,
+        activeSetIndex,
+        totalSets,
+        isSetPagerScrollEnabled,
+        setIsSetPagerScrollEnabled,
+        handleDeleteActiveSet,
+        handleCompleteSetAndAutoPage,
+        handleMomentumScrollEnd,
+        handleScrollEndDrag,
+    } = useSetPager({
+        horizontalSets,
+        exerciseSets: exercise.sets,
+        logsLength: exercise.logs?.length || 0,
+        isOutdoorGpsExercise,
+        completedIndices: exercise.completedIndices,
+        onCompleteSet,
+        onDeleteSet,
+        propActiveSetIndex,
+        onActiveSetChange,
+        initialCardWidth: dimensions.width - 64,
+    });
 
     const handleOpenMenu = () => {
         menuButtonRef.current?.measure((_x: number, _y: number, _width: number, height: number, _pageX: number, pageY: number) => {
@@ -254,92 +215,18 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                             </Text>
                         )}
                         
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 2, alignItems: 'center', display: isOutdoorGpsExercise ? 'none' : 'flex' }}>
-                            {isAttachmentSupported && attachment && (
-                                <TouchableOpacity
-                                    onPress={(e) => {
-                                        e.stopPropagation();
-                                        setIsAttachmentPickerVisible(true);
-                                    }}
-                                    style={{
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        backgroundColor: theme.bgLight,
-                                        paddingHorizontal: 10,
-                                        paddingVertical: 5,
-                                        borderRadius: 6,
-                                    }}
-                                >
-                                    <IconSymbol name="gearshape.fill" size={13} color={theme.textMuted} />
-                                    <Text style={{
-                                        marginLeft: 5,
-                                        fontSize: 12,
-                                        fontWeight: '600',
-                                        color: theme.textMuted
-                                    }}>
-                                        {attachment}
-                                    </Text>
-                                    <IconSymbol name="chevron.down" size={10} color={theme.textMuted} style={{ marginLeft: 4 }} />
-                                </TouchableOpacity>
-                            )}
-
-                            {equipment && (
-                                <TouchableOpacity
-                                    onPress={(e) => {
-                                        e.stopPropagation();
-                                        setIsEquipmentPickerVisible(true);
-                                    }}
-                                    style={{
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        backgroundColor: theme.bgLight,
-                                        paddingHorizontal: 10,
-                                        paddingVertical: 5,
-                                        borderRadius: 6,
-                                    }}
-                                >
-                                    <IconSymbol name="dumbbell.fill" size={13} color={theme.textMuted} />
-                                    <Text style={{
-                                        marginLeft: 5,
-                                        fontSize: 12,
-                                        fontWeight: '600',
-                                        color: theme.textMuted
-                                    }}>
-                                        {equipment.charAt(0).toUpperCase() + equipment.slice(1)}
-                                    </Text>
-                                    <IconSymbol name="chevron.down" size={10} color={theme.textMuted} style={{ marginLeft: 4 }} />
-                                </TouchableOpacity>
-                            )}
-
-                            {movementType && (
-                                <TouchableOpacity
-                                    onPress={(e) => {
-                                        e.stopPropagation();
-                                        setIsMovementTypePickerVisible(true);
-                                    }}
-                                    style={{
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        backgroundColor: theme.bgLight,
-                                        paddingHorizontal: 10,
-                                        paddingVertical: 5,
-                                        borderRadius: 6,
-                                    }}
-                                >
-                                    <IconSymbol name="figure.walk" size={13} color={theme.textMuted} />
-                                    <Text style={{
-                                        marginLeft: 5,
-                                        fontSize: 12,
-                                        fontWeight: '600',
-                                        color: theme.textMuted
-                                    }}>
-                                        {movementType.charAt(0).toUpperCase() + movementType.slice(1)}
-                                    </Text>
-                                    <IconSymbol name="chevron.down" size={10} color={theme.textMuted} style={{ marginLeft: 4 }} />
-                                </TouchableOpacity>
-                            )}
+                        <View style={{ display: isOutdoorGpsExercise ? 'none' : 'flex' }}>
+                            <ExercisePropertyPillRow
+                                isAttachmentSupported={isAttachmentSupported}
+                                attachment={attachment}
+                                onPressAttachment={() => setIsAttachmentPickerVisible(true)}
+                                equipment={equipment}
+                                onPressEquipment={() => setIsEquipmentPickerVisible(true)}
+                                movementType={movementType}
+                                onPressMovementType={() => setIsMovementTypePickerVisible(true)}
+                            />
                         </View>
-                        
+
                     </TouchableOpacity>
                 </View>
                 <View className="flex-row items-center gap-3">
@@ -455,7 +342,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                     // width so pages don't leave a static, non-scrolling gutter on
                     // each edge during the swipe.
                     const newWidth = horizontalSets ? e.nativeEvent.layout.width : e.nativeEvent.layout.width - 32;
-                    setCardWidth((prev) => (Math.abs(prev - newWidth) > 1 ? newWidth : prev));
+                    setCardWidth(newWidth);
                 }}
              >
                 {/* Headers */}
@@ -495,24 +382,10 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                 // rendered width, not a padding-math estimate from an
                                 // ancestor. Keeps each page's width (and paging math)
                                 // exactly in sync with what's actually on screen.
-                                const newWidth = e.nativeEvent.layout.width;
-                                setCardWidth((prev) => (Math.abs(prev - newWidth) > 1 ? newWidth : prev));
+                                setCardWidth(e.nativeEvent.layout.width);
                             }}
-                            onMomentumScrollEnd={(e) => {
-                                if (isProgrammaticScroll.current || cardWidth <= 0) return;
-                                const newIndex = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
-                                if (newIndex !== activeSetIndex && newIndex >= 0 && newIndex < totalSets) {
-                                    setActiveSetIndex(newIndex);
-                                }
-                            }}
-                            onScrollEndDrag={(e) => {
-                                if (isProgrammaticScroll.current || cardWidth <= 0) return;
-                                if (e.nativeEvent.velocity && (Math.abs(e.nativeEvent.velocity.x) > 0.01)) return;
-                                const newIndex = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
-                                if (newIndex !== activeSetIndex && newIndex >= 0 && newIndex < totalSets) {
-                                    setActiveSetIndex(newIndex);
-                                }
-                            }}
+                            onMomentumScrollEnd={handleMomentumScrollEnd}
+                            onScrollEndDrag={handleScrollEndDrag}
                         >
                             <SetPagerScrollLockProvider setScrollEnabled={setIsSetPagerScrollEnabled}>
                                 {Array.from({ length: totalSets }).map((_, i) => (
@@ -532,7 +405,6 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                             latestBodyWeight={latestBodyWeight}
                                             exercisePrepTime={exercise.prepTime}
                                             onUpdatePrepTime={onUpdatePrepTime}
-                                            enableSwipeToDelete={false}
                                             showCheckbox={false}
                                             showSetNumber={false}
                                             isActiveSet={i === activeSetIndex && ((isCurrent ?? false) || (preloadWheels ?? false))}
@@ -570,7 +442,6 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                             exercisePrepTime={exercise.prepTime}
                             onUpdatePrepTime={onUpdatePrepTime}
                             onPressRestTimer={() => setIsPickerVisible(true)}
-                            enableSwipeToDelete={false}
                             showSetNumber={!horizontalSets}
                             isRpeEnabled={isRpeEnabled}
                             isHapticsEnabled={isHapticsEnabled}

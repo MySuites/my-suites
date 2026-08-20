@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, Alert, ScrollView, Switch, InteractionManager, TouchableOpacity, Platform, TextInput } from 'react-native';
-import { useUITheme, ThemeToggle, IconSymbol, useToast, RaisedCard } from '@mysuite/ui';
+import { View, Text, Alert, ScrollView, InteractionManager, TouchableOpacity, Platform, TextInput } from 'react-native';
+import { useUITheme, ThemeToggle, IconSymbol, useToast } from '@mysuite/ui';
 
 import { DataRepository } from '../../providers/DataRepository';
 import { useThemePreference } from '../../providers/AppThemeProvider';
@@ -21,9 +21,18 @@ import { WorkoutLocationTrackingService } from '../../services/WorkoutLocationTr
 import { REP_CEILING_MIN, REP_CEILING_MAX } from '../../utils/progressiveOverload';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import { HEIGHT_STORAGE_KEY, inchesToCm, cmToInches, feetInchesToTotalInches, totalInchesToFeetInches } from '../../utils/height';
+import { SettingsSection } from '../../components/ui/SettingsSection';
+import { SettingsToggleRow } from '../../components/ui/SettingsToggleRow';
+import { SettingsLinkRow } from '../../components/ui/SettingsLinkRow';
+import { SegmentedControl } from '../../components/ui/SegmentedControl';
 
 const PRIVACY_POLICY_URL = 'https://mysuites.github.io/my-suites/privacy_policy.html';
 const TERMS_OF_SERVICE_URL = 'https://mysuites.github.io/my-suites/tos.html';
+
+const UNIT_SYSTEM_OPTIONS = [
+  { label: 'lb', value: 'imperial' as const },
+  { label: 'kg', value: 'metric' as const },
+];
 
 export default function SettingsScreen() {
   const theme = useUITheme();
@@ -345,78 +354,56 @@ export default function SettingsScreen() {
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 140 }}>
         
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Appearance</Text>
+        <SettingsSection title="Appearance">
           <ThemeToggle preference={preference} setPreference={setPreference} />
-        </View>
+        </SettingsSection>
 
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">General</Text>
-          <View className="flex-row justify-between items-center py-3">
-            <Text className="text-base text-light dark:text-dark font-medium">Allow Haptic Feedback</Text>
-            <Switch
-              testID="haptics-switch"
-              value={isHapticsEnabled}
-              onValueChange={async (value) => {
-                await setIsHapticsEnabled(value);
-                showToast({
-                  message: value ? "Haptic feedback enabled" : "Haptic feedback disabled",
-                  type: 'success'
-                });
-              }}
-              trackColor={{ false: theme.card, true: theme.primary }}
-              thumbColor={isHapticsEnabled ? "#ffffff" : "#f4f3f4"}
-            />
-          </View>
-        </View>
+        <SettingsSection title="General">
+          <SettingsToggleRow
+            testID="haptics-switch"
+            label="Allow Haptic Feedback"
+            labelBold
+            bordered={false}
+            value={isHapticsEnabled}
+            onValueChange={async (value) => {
+              await setIsHapticsEnabled(value);
+              showToast({
+                message: value ? "Haptic feedback enabled" : "Haptic feedback disabled",
+                type: 'success'
+              });
+            }}
+          />
+        </SettingsSection>
 
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Photos</Text>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark">Auto-Save Progress Photos to Library</Text>
-            <Switch
-              value={autoSavePhotos}
-              onValueChange={async (value) => {
-                setAutoSavePhotos(value);
-                await storage.setItem('auto_save_photos_to_gallery', value);
-                showToast({ 
-                  message: value ? "Auto-save enabled" : "Auto-save disabled", 
-                  type: 'success' 
-                });
-              }}
-              trackColor={{ false: theme.card, true: theme.primary }}
-              thumbColor={autoSavePhotos ? "#ffffff" : "#f4f3f4"}
-            />
-          </View>
-        </View>
+        <SettingsSection title="Photos">
+          <SettingsToggleRow
+            label="Auto-Save Progress Photos to Library"
+            value={autoSavePhotos}
+            onValueChange={async (value) => {
+              setAutoSavePhotos(value);
+              await storage.setItem('auto_save_photos_to_gallery', value);
+              showToast({
+                message: value ? "Auto-save enabled" : "Auto-save disabled",
+                type: 'success'
+              });
+            }}
+          />
+        </SettingsSection>
 
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Units</Text>
+        <SettingsSection title="Units">
           <View className="flex-row justify-between items-center py-3">
             <Text className="text-base text-light dark:text-dark font-medium">Weight Units</Text>
-            <View className="flex-row bg-light dark:bg-dark rounded-lg p-1">
-              {(['imperial', 'metric'] as const).map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  testID={`unit-system-${option}`}
-                  onPress={() => handleUpdateUnitSystem(option)}
-                  className="px-3 py-1.5 rounded-md"
-                  style={{ backgroundColor: unitSystem === option ? theme.primary : 'transparent' }}
-                >
-                  <Text
-                    className="text-sm font-semibold"
-                    style={{ color: unitSystem === option ? '#fff' : theme.textMuted }}
-                  >
-                    {option === 'imperial' ? 'lb' : 'kg'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+            <View style={{ width: 120 }}>
+              <SegmentedControl
+                options={UNIT_SYSTEM_OPTIONS}
+                value={unitSystem}
+                onChange={handleUpdateUnitSystem}
+              />
             </View>
           </View>
-        </View>
+        </SettingsSection>
 
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Body</Text>
+        <SettingsSection title="Body">
           <View className="flex-row justify-between items-center py-3">
             <Text className="text-base text-light dark:text-dark font-medium">Height</Text>
             {unitSystem === 'imperial' ? (
@@ -463,62 +450,46 @@ export default function SettingsScreen() {
               </View>
             )}
           </View>
-        </View>
+        </SettingsSection>
 
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Integrations</Text>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark">Apple Health & Watch</Text>
-            <Switch
-              value={isHealthConnected}
-              onValueChange={async (value) => {
-                if (value) {
-                    await handleConnectHealth();
-                } else {
-                    await HealthKitService.disableSync();
-                    await checkHealthStatus();
-                    showToast({ message: "HealthKit sync stopped", type: 'success' });
-                }
-              }}
-              trackColor={{ false: theme.card, true: theme.primary }}
-              thumbColor={isHealthConnected ? "#ffffff" : "#f4f3f4"}
-            />
-          </View>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark">Allow GPS Route Tracking</Text>
-            <Switch
-              testID="gps-tracking-switch"
-              value={gpsTrackingEnabled}
-              onValueChange={handleToggleGpsTracking}
-              trackColor={{ false: theme.card, true: theme.primary }}
-              thumbColor={gpsTrackingEnabled ? "#ffffff" : "#f4f3f4"}
-            />
-          </View>
-        </View>
+        <SettingsSection title="Integrations">
+          <SettingsToggleRow
+            label="Apple Health & Watch"
+            value={isHealthConnected}
+            onValueChange={async (value) => {
+              if (value) {
+                  await handleConnectHealth();
+              } else {
+                  await HealthKitService.disableSync();
+                  await checkHealthStatus();
+                  showToast({ message: "HealthKit sync stopped", type: 'success' });
+              }
+            }}
+          />
+          <SettingsToggleRow
+            testID="gps-tracking-switch"
+            label="Allow GPS Route Tracking"
+            value={gpsTrackingEnabled}
+            onValueChange={handleToggleGpsTracking}
+          />
+        </SettingsSection>
 
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Notifications</Text>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark">Push Notifications</Text>
-            <Switch
-              testID="push-notifications-switch"
-              value={pushNotificationsEnabled}
-              onValueChange={handleTogglePushNotifications}
-              trackColor={{ false: theme.card, true: theme.primary }}
-              thumbColor={pushNotificationsEnabled ? "#ffffff" : "#f4f3f4"}
-            />
-          </View>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-6">
-            <Text className="text-base text-light dark:text-dark">Daily Workout Reminder</Text>
-            <Switch
-              testID="daily-reminder-switch"
-              value={notificationsEnabled}
-              onValueChange={handleToggleNotifications}
-              trackColor={{ false: theme.card, true: theme.primary }}
-              thumbColor={notificationsEnabled ? "#ffffff" : "#f4f3f4"}
-            />
-          </View>
-          {notificationsEnabled && (
+        <SettingsSection title="Notifications">
+          <SettingsToggleRow
+            testID="push-notifications-switch"
+            label="Push Notifications"
+            value={pushNotificationsEnabled}
+            onValueChange={handleTogglePushNotifications}
+          />
+          <SettingsToggleRow
+            testID="daily-reminder-switch"
+            label="Daily Workout Reminder"
+            indented
+            value={notificationsEnabled}
+            onValueChange={handleToggleNotifications}
+            disabled={!pushNotificationsEnabled}
+          />
+          {notificationsEnabled && pushNotificationsEnabled && (
             <>
               <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-6">
                 <Text className="text-base text-light dark:text-dark font-medium">Reminder Time</Text>
@@ -553,17 +524,14 @@ export default function SettingsScreen() {
               )}
             </>
           )}
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-6" style={{ opacity: pushNotificationsEnabled ? 1 : 0.5 }}>
-            <Text className="text-base text-light dark:text-dark">Long Workout Reminder</Text>
-            <Switch
-              testID="long-workout-reminder-switch"
-              value={longWorkoutReminderEnabled}
-              onValueChange={handleToggleLongWorkoutReminder}
-              disabled={!pushNotificationsEnabled}
-              trackColor={{ false: theme.card, true: theme.primary }}
-              thumbColor={longWorkoutReminderEnabled ? "#ffffff" : "#f4f3f4"}
-            />
-          </View>
+          <SettingsToggleRow
+            testID="long-workout-reminder-switch"
+            label="Long Workout Reminder"
+            indented
+            value={longWorkoutReminderEnabled}
+            onValueChange={handleToggleLongWorkoutReminder}
+            disabled={!pushNotificationsEnabled}
+          />
           {longWorkoutReminderEnabled && pushNotificationsEnabled && (
             <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-12">
               <Text className="text-base text-light dark:text-dark font-medium">Duration (minutes)</Text>
@@ -586,41 +554,34 @@ export default function SettingsScreen() {
               </View>
             </View>
           )}
-        </View>
+        </SettingsSection>
 
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Workouts</Text>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark font-medium">Enable RPE Tracking</Text>
-            <Switch
-              value={isRpeEnabled}
-              onValueChange={async (value) => {
-                await setIsRpeEnabled(value);
-                showToast({
-                  message: value ? "RPE tracking enabled" : "RPE tracking disabled",
-                  type: 'success'
-                });
-              }}
-              trackColor={{ false: theme.card, true: theme.primary }}
-              thumbColor={isRpeEnabled ? "#ffffff" : "#f4f3f4"}
-            />
-          </View>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark font-medium">Progressive Overload Guide</Text>
-            <Switch
-              testID="progressive-overload-switch"
-              value={isProgressiveOverloadEnabled}
-              onValueChange={async (value) => {
-                await setIsProgressiveOverloadEnabled(value);
-                showToast({
-                  message: value ? "Progressive overload guide enabled" : "Progressive overload guide disabled",
-                  type: 'success'
-                });
-              }}
-              trackColor={{ false: theme.card, true: theme.primary }}
-              thumbColor={isProgressiveOverloadEnabled ? "#ffffff" : "#f4f3f4"}
-            />
-          </View>
+        <SettingsSection title="Workouts">
+          <SettingsToggleRow
+            label="Enable RPE Tracking"
+            labelBold
+            value={isRpeEnabled}
+            onValueChange={async (value) => {
+              await setIsRpeEnabled(value);
+              showToast({
+                message: value ? "RPE tracking enabled" : "RPE tracking disabled",
+                type: 'success'
+              });
+            }}
+          />
+          <SettingsToggleRow
+            testID="progressive-overload-switch"
+            label="Progressive Overload Guide"
+            labelBold
+            value={isProgressiveOverloadEnabled}
+            onValueChange={async (value) => {
+              await setIsProgressiveOverloadEnabled(value);
+              showToast({
+                message: value ? "Progressive overload guide enabled" : "Progressive overload guide disabled",
+                type: 'success'
+              });
+            }}
+          />
           {isProgressiveOverloadEnabled && (
             <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark pl-6">
               <Text className="text-base text-light dark:text-dark font-medium">Reps before Weight Increase</Text>
@@ -667,92 +628,57 @@ export default function SettingsScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </SettingsSection>
 
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Legal</Text>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark">Privacy Policy</Text>
-            <RaisedCard 
-              onPress={() => WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL)}
-              className="w-10 h-10 active:h-9 p-0 rounded-full items-center justify-center"
-              style={{ borderRadius: 9999 }}
-            >
-              <IconSymbol name="chevron.right" size={20} color={theme.primary} />
-            </RaisedCard>
-          </View>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark">Terms of Service</Text>
-            <RaisedCard 
-              onPress={() => WebBrowser.openBrowserAsync(TERMS_OF_SERVICE_URL)}
-              className="w-10 h-10 active:h-9 p-0 rounded-full items-center justify-center"
-              style={{ borderRadius: 9999 }}
-            >
-              <IconSymbol name="chevron.right" size={20} color={theme.primary} />
-            </RaisedCard>
-          </View>
-        </View>
+        <SettingsSection title="Legal">
+          <SettingsLinkRow
+            label="Privacy Policy"
+            onPress={() => WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL)}
+          />
+          <SettingsLinkRow
+            label="Terms of Service"
+            onPress={() => WebBrowser.openBrowserAsync(TERMS_OF_SERVICE_URL)}
+          />
+        </SettingsSection>
 
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">AI</Text>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark">Manage AI Models</Text>
-            <RaisedCard
-              onPress={() => router.push('/settings/ai-models' as any)}
-              className="w-10 h-10 active:h-9 p-0 rounded-full items-center justify-center"
-              style={{ borderRadius: 9999 }}
-            >
-              <IconSymbol name="chevron.right" size={20} color={theme.primary} />
-            </RaisedCard>
-          </View>
-        </View>
+        <SettingsSection title="AI">
+          <SettingsLinkRow
+            label="Manage AI Models"
+            onPress={() => router.push('/settings/ai-models' as any)}
+          />
+        </SettingsSection>
 
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Developer</Text>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-light dark:text-dark">Developer Mode</Text>
-            <Switch
-              value={developerMode}
-              onValueChange={async (value) => {
-                setDeveloperMode(value);
-                await storage.setItem('developer_mode', value);
-                showToast({ 
-                  message: value ? "Developer mode enabled" : "Developer mode disabled", 
-                  type: 'success' 
-                });
-              }}
-              trackColor={{ false: theme.card, true: theme.primary }}
-              thumbColor={developerMode ? "#ffffff" : "#f4f3f4"}
-            />
-          </View>
+        <SettingsSection title="Developer">
+          <SettingsToggleRow
+            label="Developer Mode"
+            value={developerMode}
+            onValueChange={async (value) => {
+              setDeveloperMode(value);
+              await storage.setItem('developer_mode', value);
+              showToast({
+                message: value ? "Developer mode enabled" : "Developer mode disabled",
+                type: 'success'
+              });
+            }}
+          />
           {developerMode && (
-            <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-              <Text className="text-base text-light dark:text-dark font-medium">View SQLite Database</Text>
-              <RaisedCard 
-                onPress={() => router.push('/settings/developer/database' as any)}
-                className="w-10 h-10 active:h-9 p-0 rounded-full items-center justify-center"
-                style={{ borderRadius: 9999 }}
-              >
-                <IconSymbol name="chevron.right" size={20} color={theme.primary} />
-              </RaisedCard>
-            </View>
+            <SettingsLinkRow
+              label="View SQLite Database"
+              labelBold
+              onPress={() => router.push('/settings/developer/database' as any)}
+            />
           )}
-        </View>
+        </SettingsSection>
 
-        <View className="mb-6">
-          <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Data</Text>
-          <View className="flex-row justify-between items-center py-3 border-b border-light dark:border-dark">
-            <Text className="text-base text-danger">Delete Data</Text>
-            <RaisedCard
-              testID="delete-data-btn"
-              onPress={handleDeleteData}
-              className="w-10 h-10 p-0 rounded-full items-center justify-center"
-              style={{ borderRadius: 9999 }}
-            >
-              <IconSymbol name="trash.fill" size={20} color={theme.danger} />
-            </RaisedCard>
-          </View>
-        </View>
+        <SettingsSection title="Data">
+          <SettingsLinkRow
+            testID="delete-data-btn"
+            label="Delete Data"
+            danger
+            icon="trash.fill"
+            onPress={handleDeleteData}
+          />
+        </SettingsSection>
         
         <Text className="text-center text-xs text-gray-500 dark:text-gray-400 mt-6">
           Version {Application.nativeApplicationVersion ?? '—'}

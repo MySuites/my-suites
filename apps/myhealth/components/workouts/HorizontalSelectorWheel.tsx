@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, useWindowDimensions, Animated as RNAnimated, ScrollView } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useUITheme } from '@mysuite/ui';
-import { useSetPagerScrollLock } from '../exercises/SetPagerScrollLock';
+import { useSetPagerScrollLock } from '../exercises/ExerciseCard';
 
 type TickSize = 'lg' | 'md' | 'sm';
 
@@ -212,15 +212,19 @@ function HorizontalSelectorWheelBase({
 
     // Per-tick metadata, shared by the interactive strip and the filled-color
     // overlay so the two stay visually identical. `null` marks a padding slot.
-    // Every tick renders at the same ('lg') height now - getTickSize/
-    // majorTickEvery are kept as props (some callers still pass them) but no
-    // longer affect rendering.
+    // `getTickSize` (classifies by actual value, e.g. big at every 10) takes
+    // precedence when provided; otherwise falls back to the index-based
+    // majorTickEvery (every Nth tick renders taller).
     const tickMeta = React.useMemo(
         () => inlineData.map((item, i) => {
             if (item === null) return null;
-            return { item, tickSize: 'lg' as TickSize, isGoal: goalValue !== undefined && item === goalValue };
+            const positionInValues = i - 1; // account for the leading pad slot
+            const tickSize: TickSize = getTickSize
+                ? getTickSize(item)
+                : (positionInValues % majorTickEvery === 0 ? 'lg' : 'sm');
+            return { item, tickSize, isGoal: goalValue !== undefined && item === goalValue };
         }),
-        [inlineData, goalValue]
+        [inlineData, goalValue, getTickSize, majorTickEvery]
     );
 
     // Each tick fades out toward either edge of the visible window based on
@@ -238,6 +242,7 @@ function HorizontalSelectorWheelBase({
     );
 
     const getScrollOffset = React.useCallback((val: number) => {
+        if (values.length === 0) return 0;
         const closest = values.reduce((prev, curr) =>
             Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev
         );

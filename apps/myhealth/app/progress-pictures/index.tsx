@@ -440,7 +440,7 @@ export default function ProgressPicturesScreen() {
                         <HollowedCard className="p-10 mt-10 justify-center items-center" style={{ borderRadius: 20 }}>
                             <IconSymbol name="camera.fill" size={40} color={theme.textMuted} style={{ marginBottom: 12 }} />
                             <Text className="text-base font-bold text-center text-light dark:text-dark">
-                                No pictures tagged "{muscleFilter}"
+                                No pictures tagged &quot;{muscleFilter}&quot;
                             </Text>
                         </HollowedCard>
                     }

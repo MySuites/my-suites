@@ -21,6 +21,7 @@ const MAPPING = {
   'gearshape.fill': 'settings',
   'dumbbell.fill': 'fitness-center',
   'camera.fill': 'photo-camera',
+  'photo.fill': 'image',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
   'chevron.left': 'chevron-left',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Pressable, Modal, Dimensions, Keyboard, TouchableWithoutFeedback, Image, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,25 +11,23 @@ import { default as ExercisesScreen } from '../(tabs)/exercises';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
-import * as MediaLibrary from 'expo-media-library';
-import * as FileSystem from 'expo-file-system/legacy';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
+import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { WorkoutOverviewChart } from '../../components/workouts/WorkoutOverviewChart';
 import { WorkoutDraftExerciseItem } from '../../components/workouts/WorkoutDraftExerciseItem';
-import { WorkoutRouteMap } from '../../components/workouts/WorkoutRouteMap';
-import { formatRestTime, formatDistance, formatElevation } from '../../utils/formatting';
+import { WorkoutStatsCard } from '../../components/workouts/WorkoutStatsCard';
+import { WorkoutHeaderMenu } from '../../components/workouts/WorkoutHeaderMenu';
+import { ProgressPictureStrip } from '../../components/workouts/ProgressPictureStrip';
+import { FullScreenImageViewer } from '../../components/workouts/FullScreenImageViewer';
+import { formatRestTime } from '../../utils/formatting';
+import { areExercisesEqual } from '../../utils/workout-logic';
 
-const resolveImageUri = (uri: string | null | undefined): string => {
-    if (!uri) return '';
-    if (uri.includes('/progress_pictures/')) {
-        const parts = uri.split('/progress_pictures/');
-        const filename = parts[parts.length - 1];
-        return `${FileSystem.documentDirectory}progress_pictures/${filename}`;
-    }
-    return uri;
-};
+const DETAILS_TABS = [
+    { label: 'Details', value: 'details' as const },
+    { label: 'Performance', value: 'performance' as const },
+];
 
 export default function CreateWorkoutScreen() {
     const theme = useTheme();
@@ -139,59 +137,6 @@ export default function CreateWorkoutScreen() {
     const [isAddingExercise, setIsAddingExercise] = useState(false);
     const [activeTab, setActiveTab] = useState<'details' | 'performance'>('details');
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-    const [headerMenuVisible, setHeaderMenuVisible] = useState(false);
-    const [headerMenuPos, setHeaderMenuPos] = useState({ top: 0, right: 0 });
-    const headerMenuRef = useRef<View>(null);
-    const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-
-    const toggleBackground = (theme.bg || theme.bgDark) as string;
-    const activeToggleBg = theme.bgLight as string; 
-    const activeToggleText = theme.text as string;
-
-
-
-    const areExercisesEqual = (exs1: any[], exs2: any[]) => {
-        const e1List = exs1 || [];
-        const e2List = exs2 || [];
-        if (e1List.length !== e2List.length) return false;
-        
-        for (let i = 0; i < e1List.length; i++) {
-            const e1 = e1List[i];
-            const e2 = e2List[i];
-            
-            if (e1.id !== e2.id) return false;
-            if (e1.name !== e2.name) return false;
-            if (Number(e1.sets || 0) !== Number(e2.sets || 0)) return false;
-            if (Number(e1.reps || 0) !== Number(e2.reps || 0)) return false;
-            if (e1.category !== e2.category) return false;
-            if (e1.properties !== e2.properties) return false;
-            if (e1.type !== e2.type) return false;
-            if (e1.attachment !== e2.attachment) return false;
-            if (e1.equipment !== e2.equipment) return false;
-            if (Number(e1.restTime || 0) !== Number(e2.restTime || 0)) return false;
-            if (Number(e1.prepTime || 0) !== Number(e2.prepTime || 0)) return false;
-            
-            const t1 = e1.setTargets || [];
-            const t2 = e2.setTargets || [];
-            if (t1.length !== t2.length) return false;
-            
-            for (let j = 0; j < t1.length; j++) {
-                const s1 = t1[j];
-                const s2 = t2[j];
-                
-                if (Number(s1.reps || 0) !== Number(s2.reps || 0)) return false;
-                if (Number(s1.weight || 0) !== Number(s2.weight || 0)) return false;
-                if (Number(s1.duration || 0) !== Number(s2.duration || 0)) return false;
-                if (Number(s1.distance || 0) !== Number(s2.distance || 0)) return false;
-                if (Number(s1.rpe || 0) !== Number(s2.rpe || 0)) return false;
-                if (Number(s1.reps_left || 0) !== Number(s2.reps_left || 0)) return false;
-                if (Number(s1.reps_right || 0) !== Number(s2.reps_right || 0)) return false;
-            }
-        }
-        return true;
-    };
 
     const hasUnsavedChanges = (() => {
         if (!editingWorkoutId) {
@@ -332,27 +277,6 @@ export default function CreateWorkoutScreen() {
         );
     }
 
-    const handleSaveToPhotos = async (uri: string) => {
-        try {
-            const resolvedUri = resolveImageUri(uri);
-            const fileInfo = await FileSystem.getInfoAsync(resolvedUri);
-            if (!fileInfo.exists) {
-                Alert.alert("Photo Not Found", "This photo no longer exists on the device. It may have been removed when the app was reinstalled.");
-                return;
-            }
-            const { status } = await MediaLibrary.requestPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert("Permission Required", "Permission to access the photo library is required to save photos.");
-                return;
-            }
-            await MediaLibrary.saveToLibraryAsync(resolvedUri);
-            Alert.alert("Success", "Photo successfully saved to your Photos library!");
-        } catch (error) {
-            console.error("Failed to save photo to library:", error);
-            Alert.alert("Error", "Failed to save photo to your library.");
-        }
-    };
-
     function handleAddExercise(exercises: any[]) {
         if (exercises.length > 0) {
             exercises.forEach(exercise => {
@@ -464,85 +388,29 @@ export default function CreateWorkoutScreen() {
                             <IconSymbol name="trash.fill" size={20} color={theme.options?.destructiveColor || "#ff4444"} />
                         </RaisedCard>
                     ) : (
-                        <View ref={headerMenuRef as any}>
-                            <RaisedCard 
-                                onPress={(e) => { 
-                                    headerMenuRef.current?.measure((x, y, width, height, pageX, pageY) => {
-                                        setHeaderMenuPos({ 
-                                            top: pageY + height + 4, 
-                                            right: SCREEN_WIDTH - pageX - width
-                                        });
-                                        setHeaderMenuVisible(true);
-                                    });
-                                }} 
-                                className="w-12 h-12 p-0 rounded-full bg-lighter dark:bg-dark-lighter items-center justify-center" 
-                                style={{ borderRadius: 9999 }}
-                            >
-                                <IconSymbol name="ellipsis" size={20} color={theme.primary as string} />
-                            </RaisedCard>
-                        </View>
+                        <WorkoutHeaderMenu
+                            onEdit={() => setIsEditing(true)}
+                            onDelete={editingWorkoutId ? () => {
+                                Alert.alert('Delete Workout', 'Are you sure?', [
+                                    { text: 'Cancel', style: 'cancel' },
+                                    {
+                                        text: 'Delete',
+                                        style: 'destructive',
+                                        onPress: () => {
+                                            deleteSavedWorkout(editingWorkoutId, {
+                                                skipConfirmation: true,
+                                                onSuccess: () => {
+                                                    router.back();
+                                                }
+                                            });
+                                        }
+                                    }
+                                ]);
+                            } : undefined}
+                        />
                     )
                 }
             />
-
-            {/* Header Menu */}
-            <Modal transparent visible={headerMenuVisible} animationType="fade" onRequestClose={() => setHeaderMenuVisible(false)}>
-                <TouchableOpacity 
-                    activeOpacity={1} 
-                    onPress={() => setHeaderMenuVisible(false)}
-                    className="flex-1"
-                    style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
-                >
-                    <RaisedCard 
-                        className="absolute w-48 p-1 origin-top-right rounded-xl bg-lighter dark:bg-dark-lighter"
-                        style={{ 
-                            top: headerMenuPos.top,
-                            right: headerMenuPos.right,
-                            shadowColor: '#000', 
-                            shadowOffset: { width: 0, height: 4 }, 
-                            shadowOpacity: 0.15, 
-                            shadowRadius: 12, 
-                            elevation: 5,
-                        }}
-                    >
-                        <TouchableOpacity onPress={(e) => { e.stopPropagation(); setHeaderMenuVisible(false); setIsEditing(true); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
-                            <IconSymbol name="pencil" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
-                            <Text style={{ color: theme.text as string }} className="font-medium">Edit Workout</Text>
-                        </TouchableOpacity>
-                        
-                        {editingWorkoutId && (
-                            <>
-                                <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
-                                <TouchableOpacity 
-                                    onPress={(e) => { 
-                                        e.stopPropagation(); 
-                                        setHeaderMenuVisible(false); 
-                                        Alert.alert('Delete Workout', 'Are you sure?', [
-                                            { text: 'Cancel', style: 'cancel' },
-                                            { 
-                                                text: 'Delete', 
-                                                style: 'destructive', 
-                                                onPress: () => {
-                                                    deleteSavedWorkout(editingWorkoutId, {
-                                                        skipConfirmation: true,
-                                                        onSuccess: () => {
-                                                            router.back();
-                                                        }
-                                                    });
-                                                }
-                                            }
-                                        ]);
-                                    }} 
-                                    className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
-                                >
-                                    <IconSymbol name="trash.fill" size={18} color={theme.options?.destructiveColor || '#ff4444'} style={{ marginRight: 12 }} />
-                                    <Text style={{ color: theme.options?.destructiveColor || '#ff4444' }} className="font-medium">Delete</Text>
-                                </TouchableOpacity>
-                            </>
-                        )}
-                    </RaisedCard>
-                </TouchableOpacity>
-            </Modal>
 
             <GestureHandlerRootView style={{ flex: 1 }}>
                 <DraggableFlatList
@@ -561,124 +429,21 @@ export default function CreateWorkoutScreen() {
                     activationDistance={20}
                     ListHeaderComponent={
                     <View>
-                            <View style={{
-                                flexDirection: 'row',
-                                backgroundColor: toggleBackground,
-                                borderRadius: 8,
-                                padding: 4,
-                                marginBottom: 24
-                            }}>
-                                <Pressable
-                                    onPress={() => setActiveTab('details')}
-                                    style={{
-                                        flex: 1,
-                                        paddingVertical: 8,
-                                        alignItems: 'center',
-                                        backgroundColor: activeTab === 'details' ? activeToggleBg : 'transparent',
-                                        borderRadius: 6,
-                                    }}
-                                >
-                                    <Text style={{
-                                        color: activeTab === 'details' ? activeToggleText : (theme.text as string),
-                                        fontWeight: activeTab === 'details' ? '600' : '400',
-                                        opacity: activeTab === 'details' ? 1 : 0.7
-                                    }}>Details</Text>
-                                </Pressable>
-                                <Pressable
-                                    onPress={() => setActiveTab('performance')}
-                                    style={{
-                                        flex: 1,
-                                        paddingVertical: 8,
-                                        alignItems: 'center',
-                                        backgroundColor: activeTab === 'performance' ? activeToggleBg : 'transparent',
-                                        borderRadius: 6,
-                                    }}
-                                >
-                                    <Text style={{
-                                        color: activeTab === 'performance' ? activeToggleText : (theme.text as string),
-                                        fontWeight: activeTab === 'performance' ? '600' : '400',
-                                        opacity: activeTab === 'performance' ? 1 : 0.7
-                                    }}>Performance</Text>
-                                </Pressable>
+                            <View style={{ marginBottom: 24 }}>
+                                <SegmentedControl
+                                    options={DETAILS_TABS}
+                                    value={activeTab}
+                                    onChange={setActiveTab}
+                                />
                             </View>
                                              {!isEditing && activeTab === 'performance' && workoutDraftName ? <WorkoutOverviewChart workoutName={workoutDraftName} /> : null}
 
-                        {!isEditing && activeTab === 'details' && (historyItem?.healthkitUuid || historyItem?.metricsSource === 'gps') && (
-                            <View style={{ marginBottom: 20 }}>
-                                <Text className="font-semibold text-light dark:text-dark mb-3 text-lg">
-                                    {historyItem.metricsSource === 'gps' ? 'GPS Stats' : 'Apple Watch Stats'}
-                                </Text>
-                                <View className="flex-row flex-wrap" style={{ gap: 12 }}>
-                                    {historyItem.avgHeartRate != null && (
-                                        <RaisedCard className="p-3" style={{ minWidth: '30%', flexGrow: 1 }}>
-                                            <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5">Avg Heart Rate</Text>
-                                            <Text className="text-lg font-bold text-light dark:text-dark">{Math.round(historyItem.avgHeartRate)} bpm</Text>
-                                        </RaisedCard>
-                                    )}
-                                    {historyItem.maxHeartRate != null && (
-                                        <RaisedCard className="p-3" style={{ minWidth: '30%', flexGrow: 1 }}>
-                                            <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5">Max Heart Rate</Text>
-                                            <Text className="text-lg font-bold text-light dark:text-dark">{Math.round(historyItem.maxHeartRate)} bpm</Text>
-                                        </RaisedCard>
-                                    )}
-                                    {historyItem.calories != null && (
-                                        <RaisedCard className="p-3" style={{ minWidth: '30%', flexGrow: 1 }}>
-                                            <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5">Calories</Text>
-                                            <Text className="text-lg font-bold text-light dark:text-dark">{Math.round(historyItem.calories)} kcal</Text>
-                                        </RaisedCard>
-                                    )}
-                                    {historyItem.distance != null && (
-                                        <RaisedCard className="p-3" style={{ minWidth: '30%', flexGrow: 1 }}>
-                                            <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5">Distance</Text>
-                                            <Text className="text-lg font-bold text-light dark:text-dark">{formatDistance(historyItem.distance, unitSystem)}</Text>
-                                        </RaisedCard>
-                                    )}
-                                    {historyItem.elevationGain != null && (
-                                        <RaisedCard className="p-3" style={{ minWidth: '30%', flexGrow: 1 }}>
-                                            <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5">Elevation Gain</Text>
-                                            <Text className="text-lg font-bold text-light dark:text-dark">{formatElevation(historyItem.elevationGain, unitSystem)}</Text>
-                                        </RaisedCard>
-                                    )}
-                                </View>
-                                {historyItem.route && historyItem.route.length >= 2 && (
-                                    <View style={{ marginTop: 16 }}>
-                                        <WorkoutRouteMap route={historyItem.route} color={theme.primary as string} />
-                                    </View>
-                                )}
-                            </View>
+                        {!isEditing && activeTab === 'details' && (
+                            <WorkoutStatsCard historyItem={historyItem} unitSystem={unitSystem} />
                         )}
 
-                        {!isEditing && activeTab === 'details' && workoutLogImageUrls.length > 0 && (
-                            <View style={{ marginBottom: 20 }}>
-                                <Text className="font-semibold text-light dark:text-dark mb-3 text-lg">Progress Pictures</Text>
-                                <ScrollView 
-                                    horizontal 
-                                    showsHorizontalScrollIndicator={false}
-                                    contentContainerStyle={{ gap: 12 }}
-                                >
-                                    {workoutLogImageUrls.map((rawUri: string, idx: number) => {
-                                        const uri = resolveImageUri(rawUri);
-                                        return (
-                                            <Pressable
-                                                key={idx}
-                                                onPress={() => setSelectedImage(uri)}
-                                                style={{
-                                                    width: 100,
-                                                    height: 100,
-                                                    borderRadius: 12,
-                                                    overflow: 'hidden',
-                                                    backgroundColor: 'rgba(0,0,0,0.05)',
-                                                }}
-                                            >
-                                                <Image
-                                                    source={{ uri }}
-                                                    style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
-                                                />
-                                            </Pressable>
-                                        );
-                                    })}
-                                </ScrollView>
-                            </View>
+                        {!isEditing && activeTab === 'details' && (
+                            <ProgressPictureStrip imageUrls={workoutLogImageUrls} onSelect={setSelectedImage} />
                         )}
 
                         {(isEditing || activeTab === 'details') && (
@@ -830,73 +595,7 @@ export default function CreateWorkoutScreen() {
                 </Animated.View>
                 );
             })()}
-            {selectedImage && (
-                <View style={{ 
-                    position: 'absolute', 
-                    top: 0, 
-                    left: 0, 
-                    right: 0, 
-                    bottom: 0, 
-                    backgroundColor: 'rgba(0,0,0,0.95)', 
-                    justifyContent: 'center', 
-                    alignItems: 'center',
-                    zIndex: 99999 
-                }}>
-                    <Pressable 
-                        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-                        onPress={() => setSelectedImage(null)}
-                    />
-                    
-                    <Image 
-                        source={{ uri: resolveImageUri(selectedImage) }} 
-                        style={{ width: '100%', height: '80%', resizeMode: 'contain' }} 
-                    />
-
-                    {/* Top Action Header */}
-                    <View style={{
-                        position: 'absolute',
-                        top: insets.top + 12,
-                        left: 0,
-                        right: 0,
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        paddingHorizontal: 20,
-                        zIndex: 100000
-                    }}>
-                        <TouchableOpacity 
-                            onPress={() => setSelectedImage(null)}
-                            style={{
-                                backgroundColor: 'rgba(255,255,255,0.15)',
-                                width: 40,
-                                height: 40,
-                                borderRadius: 20,
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                        >
-                            <IconSymbol name="xmark" size={20} color="#fff" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity 
-                            onPress={() => handleSaveToPhotos(selectedImage)}
-                            style={{
-                                backgroundColor: 'rgba(255,255,255,0.15)',
-                                width: 40,
-                                height: 40,
-                                borderRadius: 20,
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                        >
-                            <IconSymbol name="square.and.arrow.down" size={20} color="#fff" />
-                        </TouchableOpacity>
-                    </View>
-
-                    <Text style={{ color: 'rgba(255,255,255,0.6)', position: 'absolute', bottom: insets.bottom + 20, fontSize: 14 }}>
-                        Tap anywhere to close
-                    </Text>
-                </View>
-            )}
+            <FullScreenImageViewer uri={selectedImage} onClose={() => setSelectedImage(null)} />
         </View>
         </TouchableWithoutFeedback>
     );

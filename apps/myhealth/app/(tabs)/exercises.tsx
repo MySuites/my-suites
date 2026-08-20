@@ -5,163 +5,16 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, useToast, IconSymbol } from '@mysuite/ui';
 import { useAuth } from '@mysuite/auth';
 import { fetchExercises } from '../../providers/WorkoutManagerProvider';
-import DefaultExercises from '../../assets/data/default-exercises';
+import { groupExercisesForDisplay } from '../../assets/data/default-exercises';
 import ExerciseDetailsScreen from '../exercises/details';
+import { useExerciseSections } from '../../hooks/exercises/useExerciseSections';
 
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { TopNavBanner } from '../../components/ui/TopNavBanner';
-import { BottomActionBar } from '../../components/ui/BottomNavBar';
-import { DashboardButton } from '../../components/ui/DashboardButton';
-import { BottomNavButton } from '../../components/ui/BottomNavButton';
-import { BurgerMenu } from '../../components/ui/BurgerMenu';
+import { BottomActionBar, BottomNavButton, DashboardButton } from '../../components/ui/BottomNavBar';
+import { BurgerMenu, useBurgerMenu } from '../../components/ui/BurgerMenu';
 import { WORKOUT_MENU_ITEMS } from '../../utils/burgerMenuItems';
-
-function getCollapsedGroupDetails(comp: any[]) {
-    const ids = comp.map(e => e.id);
-    
-    if (ids.some(id => id.includes('split_squat') || id.includes('bulgarian'))) {
-        return {
-            name: "Split Squat",
-            representativeId: "split_squat",
-            subtitle: `${comp.length} variations (Bodyweight, Bulgarian...)`
-        };
-    }
-    if (ids.some(id => id.includes('lunge'))) {
-        return {
-            name: "Lunge",
-            representativeId: "lunges",
-            subtitle: `${comp.length} variations (Bodyweight, Weighted...)`
-        };
-    }
-    if (ids.includes('push_up') || ids.includes('pushup')) {
-        return {
-            name: "Push-up",
-            representativeId: "push_up",
-            subtitle: `${comp.length} variations (Wall, Incline, Knee, Decline...)`
-        };
-    }
-    if (ids.some(id => id === 'weighted_squat' || id === 'barbell_squat')) {
-        return {
-            name: "Weighted Squat",
-            representativeId: "weighted_squat",
-            subtitle: `${comp.length} variations (Goblet, Barbell, Hack, Pendulum...)`
-        };
-    }
-    if (ids.some(id => id.includes('squat'))) {
-        return {
-            name: "Squat",
-            representativeId: "bodyweight_squat",
-            subtitle: `${comp.length} variations (Bodyweight, Sissy, Shrimp, Pistol...)`
-        };
-    }
-    if (ids.some(id => id.includes('tricep') || id.includes('skullcrusher'))) {
-        return {
-            name: "Tricep Extension / Pushdown",
-            representativeId: "cable_tricep_pushdown",
-            subtitle: `${comp.length} variations (Cable, Dumbbell, Overhead, Kickbacks...)`
-        };
-    }
-    if (ids.some(id => id.includes('lateral_raise') || id.includes('delt_raise'))) {
-        return {
-            name: "Lateral Raise",
-            representativeId: "lateral_raise",
-            subtitle: `${comp.length} variations (Dumbbell, Cable, Machine...)`
-        };
-    }
-    if (ids.some(id => id.includes('shoulder_press') || id.includes('overhead_press') || id.includes('arnold_press'))) {
-        return {
-            name: "Shoulder Press",
-            representativeId: "shoulder_press",
-            subtitle: `${comp.length} variations (Dumbbell, Barbell, Machine, Arnold...)`
-        };
-    }
-    if (ids.some(id => id.includes('deadlift'))) {
-        return {
-            name: "Deadlift",
-            representativeId: "deadlift",
-            subtitle: `${comp.length} variations (Standard, Romanian...)`
-        };
-    }
-    if (ids.some(id => id.includes('calf_raise'))) {
-        return {
-            name: "Calf Raise",
-            representativeId: "calf_raise",
-            subtitle: `${comp.length} variations (Bodyweight, Dumbbell, Machine...)`
-        };
-    }
-    if (ids.some(id => id.includes('leg_curl'))) {
-        return {
-            name: "Leg Curl",
-            representativeId: "seated_leg_curl",
-            subtitle: `${comp.length} variations (Seated, Lying...)`
-        };
-    }
-    if (ids.some(id => id.includes('leg_press'))) {
-        return {
-            name: "Leg Press",
-            representativeId: "leg_press",
-            subtitle: `${comp.length} variations (Standard, Horizontal...)`
-        };
-    }
-    if (ids.some(id => id.includes('plank'))) {
-        return {
-            name: "Plank",
-            representativeId: "plank",
-            subtitle: `${comp.length} variations (Standard, Side, Weighted...)`
-        };
-    }
-    if (ids.includes('pull_up') || ids.includes('pullup')) {
-        return {
-            name: "Pull-up",
-            representativeId: "pull_up",
-            subtitle: `${comp.length} variations (Standard, Weighted...)`
-        };
-    }
-    if (ids.includes('chin_up') || ids.includes('chinup')) {
-        return {
-            name: "Chin-up",
-            representativeId: "chin_up",
-            subtitle: `${comp.length} variations (Standard, Weighted...)`
-        };
-    }
-    if (ids.some(id => id.includes('handstand') || id.includes('crow_pose') || id.includes('frog_stand'))) {
-        return {
-            name: "Handstand / Balance",
-            representativeId: "handstand",
-            subtitle: `${comp.length} variations (Frog Stand, Crow, Wall, Freestanding...)`
-        };
-    }
-    if (ids.some(id => id.includes('planche'))) {
-        return {
-            name: "Planche",
-            representativeId: "tuck_planche",
-            subtitle: `${comp.length} variations (Pseudo Planche, Tuck, Straddle, Full...)`
-        };
-    }
-    if (ids.some(id => id.includes('front_lever'))) {
-        return {
-            name: "Front Lever",
-            representativeId: "tuck_front_lever",
-            subtitle: `${comp.length} variations (Tuck, Straddle, Full...)`
-        };
-    }
-    if (ids.some(id => id.includes('back_lever'))) {
-        return {
-            name: "Back Lever",
-            representativeId: "tuck_back_lever",
-            subtitle: `${comp.length} variations (Tuck, Straddle, Full...)`
-        };
-    }
-
-    const sorted = [...comp].sort((a, b) => (a.difficulty || 0) - (b.difficulty || 0));
-    const rep = sorted[0];
-    return {
-        name: rep.name,
-        representativeId: rep.id,
-        subtitle: `${comp.length} variations`
-    };
-}
 
 export interface ExercisesScreenProps {
   mode?: 'browse' | 'select';
@@ -184,11 +37,7 @@ export default function ExercisesScreen({
   const searchInputRef = React.useRef<TextInput>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [detailsExercise, setDetailsExercise] = useState<any | null>(null);
-  const [menuVisible, setMenuVisible] = useState(false);
-  // Tabs stay mounted when you switch away — without this, leaving the
-  // burger menu open and navigating elsewhere means it's still open when
-  // you come back.
-  useFocusEffect(useCallback(() => () => setMenuVisible(false), []));
+  const { visible: menuVisible, toggle: toggleMenu, close: closeMenu } = useBurgerMenu();
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   React.useEffect(() => {
@@ -264,68 +113,7 @@ export default function ExercisesScreen({
   };
 
   // Filter out non-active progression exercises and combine similar ones
-  const processedExercises = React.useMemo(() => {
-      // 1. Build undirected adjacency maps for default exercises to find connected components
-      const adj = new Map<string, Set<string>>();
-      exercises.forEach(ex => {
-          if (!adj.has(ex.id)) adj.set(ex.id, new Set());
-          (ex.nextVariations || []).forEach((childId: string) => {
-              if (!adj.has(childId)) adj.set(childId, new Set());
-              adj.get(ex.id)!.add(childId);
-              adj.get(childId)!.add(ex.id);
-          });
-      });
-
-      // 2. Find connected components (groups)
-      const visited = new Set<string>();
-      const resultList: any[] = [];
-
-      const defaultExs = exercises.filter(ex => DefaultExercises.some(d => d.id === ex.id));
-      const customExs = exercises.filter(ex => !DefaultExercises.some(d => d.id === ex.id));
-
-      defaultExs.forEach(ex => {
-          if (!visited.has(ex.id)) {
-              const comp: any[] = [];
-              const queue = [ex.id];
-              visited.add(ex.id);
-
-              while (queue.length > 0) {
-                  const currId = queue.shift()!;
-                  const currEx = defaultExs.find(e => e.id === currId);
-                  if (currEx) {
-                      comp.push(currEx);
-                  }
-                  const neighbors = adj.get(currId) || new Set();
-                  neighbors.forEach(neighId => {
-                      if (!visited.has(neighId)) {
-                          visited.add(neighId);
-                          queue.push(neighId);
-                      }
-                  });
-              }
-
-              if (comp.length > 1) {
-                  const details = getCollapsedGroupDetails(comp);
-                  const representative = comp.find(e => e.id === details.representativeId) || comp[0];
-                  resultList.push({
-                      isGroup: true,
-                      id: `group_${details.name.replace(/\s+/g, '_').toLowerCase()}`,
-                      name: details.name,
-                      subtitle: details.subtitle,
-                      variations: comp,
-                      representative: representative,
-                      muscle_groups: Array.from(new Set(comp.flatMap(e => e.muscle_groups || []))).filter(Boolean),
-                      difficulty: representative.difficulty || 0,
-                      group: representative.group || "Other"
-                  });
-              } else if (comp.length === 1) {
-                  resultList.push(comp[0]);
-              }
-          }
-      });
-
-      return [...resultList, ...customExs];
-  }, [exercises]);
+  const processedExercises = React.useMemo(() => groupExercisesForDisplay(exercises), [exercises]);
 
   const uniqueMuscleGroups = React.useMemo(() => ["All", ...Array.from(new Set(processedExercises.flatMap(e => e.muscle_groups || []))).filter(Boolean).sort()], [processedExercises]);
 
@@ -344,84 +132,12 @@ export default function ExercisesScreen({
       setSelectedCategories(newSet);
   };
 
-  const sections = React.useMemo(() => {
-    const normalizeSearch = (text: string) => text.toLowerCase().replace(/[-_\s]+/g, ' ').trim();
-    const normalizedQuery = normalizeSearch(searchQuery);
-
-    const flattenData = (dataArray: any[]) => {
-        const flat: any[] = [];
-        dataArray.forEach(item => {
-            flat.push(item);
-            if (item.isGroup && mode === 'select' && expandedGroups.has(item.id)) {
-                item.variations.forEach((v: any) => {
-                    flat.push({
-                        ...v,
-                        isVariation: true,
-                        parentGroupId: item.id
-                    });
-                });
-            }
-        });
-        return flat;
-    };
-
-    let filtered = processedExercises.filter(ex => {
-        if (ex.isGroup) {
-            const matchesGroupName = normalizeSearch(ex.name).includes(normalizedQuery);
-            const matchesVariationName = ex.variations.some((v: any) => normalizeSearch(v.name).includes(normalizedQuery));
-            return matchesGroupName || matchesVariationName;
-        }
-        return normalizeSearch(ex.name).includes(normalizedQuery);
-    });
-    
-    if (selectedCategories.size > 0) {
-        filtered = filtered.filter(ex => 
-            (ex.muscle_groups || []).some((m: string) => selectedCategories.has(m)) || 
-            selectedCategories.has(ex.group)
-        );
-    }
-    
-    const result: { title: string, data: any[] }[] = [];
-    
-    // 1. Custom Exercises
-    const custom = filtered.filter(ex => !ex.isGroup && !DefaultExercises.some(d => d.id === ex.id));
-    if (custom.length > 0) {
-        result.push({ title: 'Custom Exercises', data: flattenData(custom) });
-    }
-
-    // 2. Default Exercises & Groups sorted by dynamic Muscle Group
-    const defaultFiltered = filtered.filter(ex => ex.isGroup || DefaultExercises.some(d => d.id === ex.id));
-    const muscleGroupMap = new Map<string, any[]>();
-    defaultFiltered.forEach(ex => {
-        const primary = ex.muscle_groups && ex.muscle_groups.length > 0 ? ex.muscle_groups[0] : "Other";
-        if (!muscleGroupMap.has(primary)) muscleGroupMap.set(primary, []);
-        muscleGroupMap.get(primary)!.push(ex);
-    });
-
-    const sortedMuscleGroups = Array.from(muscleGroupMap.keys()).sort((a, b) => {
-        if (a === "Other") return 1;
-        if (b === "Other") return -1;
-        return a.localeCompare(b);
-    });
-
-    sortedMuscleGroups.forEach(mg => {
-        result.push({ title: mg, data: flattenData(muscleGroupMap.get(mg)!) });
-    });
-    
-    return result;
-  }, [processedExercises, searchQuery, selectedCategories, expandedGroups, mode]);
+  const sections = useExerciseSections(processedExercises, searchQuery, selectedCategories, expandedGroups, mode);
 
   if (detailsExercise) {
       return (
           <ExerciseDetailsScreen
               exercise={detailsExercise}
-              mode={mode}
-              onSelect={(selectedEx) => {
-                  if (onSelect) onSelect([selectedEx]);
-                  setSelectedIds(new Set());
-                  setDetailsExercise(null);
-                  if (onClose) onClose();
-              }}
               onBack={() => setDetailsExercise(null)}
           />
       );
@@ -738,13 +454,13 @@ export default function ExercisesScreen({
                 label="More"
                 active={menuVisible}
                 boldWhenActive={false}
-                onPress={() => setMenuVisible(!menuVisible)}
+                onPress={toggleMenu}
             />
           </BottomActionBar>
 
           <BurgerMenu
             visible={menuVisible}
-            onClose={() => setMenuVisible(false)}
+            onClose={closeMenu}
             items={WORKOUT_MENU_ITEMS}
           />
         </>

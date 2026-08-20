@@ -1,8 +1,8 @@
 import React, { useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Pressable, useWindowDimensions, Vibration, useColorScheme } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
-import Svg, { Circle } from 'react-native-svg';
 import { IconSymbol } from "@mysuite/ui";
+import { CountdownRing } from '../ui/CountdownRing';
 
 import { getExerciseFields } from './getExerciseFields';
 import { HorizontalSelectorWheel, CurrentValueLabel, CurrentValueLabelHandle } from './HorizontalSelectorWheel';
@@ -654,10 +654,8 @@ function CardWorkoutSetInner({
                         const clockSize = isSmallScreen ? 240 : 260;
                         const radius = isSmallScreen ? 100 : 110;
                         const strokeWidth = isSmallScreen ? 10 : 14;
-                        const center = clockSize / 2;
-                        const circumference = 2 * Math.PI * radius;
                         const targetSecs = parseInt(durationVal) || 0;
-                        const dashoffset = circumference * (1 - getClockProgress({
+                        const progress = getClockProgress({
                             isRunning: isLocalTimerRunning,
                             isPrepping: isLocalPrepping,
                             isStopwatch: isStopwatchMode,
@@ -665,7 +663,7 @@ function CardWorkoutSetInner({
                             prepRemainingSecs: localPrepSecs,
                             seconds: localRemainingSecs,
                             targetSecs,
-                        }));
+                        });
                         const currentMin = Math.floor(targetSecs / 60);
                         const currentSec = targetSecs % 60;
                         const goalMin = suggestedDurationGoal ? Math.floor(suggestedDurationGoal.duration / 60) : undefined;
@@ -763,33 +761,17 @@ function CardWorkoutSetInner({
                                     </View>
 
                                     <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 12 }}>
-                                        <View style={{ width: clockSize, height: clockSize, justifyContent: 'center', alignItems: 'center' }}>
-                                            <Svg width={clockSize} height={clockSize}>
-                                                <Circle
-                                                    cx={center}
-                                                    cy={center}
-                                                    r={radius}
-                                                    stroke={theme.bgDark === '#000000' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}
-                                                    strokeWidth={strokeWidth}
-                                                    fill="transparent"
-                                                />
-                                                <Circle
-                                                    cx={center}
-                                                    cy={center}
-                                                    r={radius}
-                                                    stroke={isLocalTimerRunning && isLocalPrepping ? '#ff9f0a' : theme.primary}
-                                                    strokeWidth={strokeWidth}
-                                                    fill="transparent"
-                                                    strokeDasharray={circumference}
-                                                    strokeDashoffset={dashoffset}
-                                                    strokeLinecap="round"
-                                                    transform={`rotate(-90 ${center} ${center})`}
-                                                />
-                                            </Svg>
-                                            <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', width: clockSize - 40, height: clockSize - 40 }}>
+                                        <CountdownRing
+                                            size={clockSize}
+                                            radius={radius}
+                                            strokeWidth={strokeWidth}
+                                            progress={progress}
+                                            color={isLocalTimerRunning && isLocalPrepping ? '#ff9f0a' : theme.primary}
+                                        >
+                                            <View style={{ width: clockSize - 40, height: clockSize - 40, justifyContent: 'center', alignItems: 'center' }}>
                                                 {clockFace}
                                             </View>
-                                        </View>
+                                        </CountdownRing>
                                     </View>
 
                                     {/* Timer/Stopwatch mode toggle, stacked above the

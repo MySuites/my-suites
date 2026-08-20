@@ -1468,7 +1468,157 @@ export const CardioExercises = [
     },
 ];
 
-export default [
+// Given a connected component of related default exercises (linked via
+// nextVariations), pick a curated display name/representative/subtitle for
+// the collapsed group row shown in the exercise list. Falls back to the
+// lowest-difficulty exercise's own name if no pattern matches.
+export function getCollapsedGroupDetails(comp: any[]) {
+    const ids = comp.map(e => e.id);
+
+    if (ids.some(id => id.includes('split_squat') || id.includes('bulgarian'))) {
+        return {
+            name: "Split Squat",
+            representativeId: "split_squat",
+            subtitle: `${comp.length} variations (Bodyweight, Bulgarian...)`
+        };
+    }
+    if (ids.some(id => id.includes('lunge'))) {
+        return {
+            name: "Lunge",
+            representativeId: "lunges",
+            subtitle: `${comp.length} variations (Bodyweight, Weighted...)`
+        };
+    }
+    if (ids.includes('push_up') || ids.includes('pushup')) {
+        return {
+            name: "Push-up",
+            representativeId: "push_up",
+            subtitle: `${comp.length} variations (Wall, Incline, Knee, Decline...)`
+        };
+    }
+    if (ids.some(id => id === 'weighted_squat' || id === 'barbell_squat')) {
+        return {
+            name: "Weighted Squat",
+            representativeId: "weighted_squat",
+            subtitle: `${comp.length} variations (Goblet, Barbell, Hack, Pendulum...)`
+        };
+    }
+    if (ids.some(id => id.includes('squat'))) {
+        return {
+            name: "Squat",
+            representativeId: "bodyweight_squat",
+            subtitle: `${comp.length} variations (Bodyweight, Sissy, Shrimp, Pistol...)`
+        };
+    }
+    if (ids.some(id => id.includes('tricep') || id.includes('skullcrusher'))) {
+        return {
+            name: "Tricep Extension / Pushdown",
+            representativeId: "cable_tricep_pushdown",
+            subtitle: `${comp.length} variations (Cable, Dumbbell, Overhead, Kickbacks...)`
+        };
+    }
+    if (ids.some(id => id.includes('lateral_raise') || id.includes('delt_raise'))) {
+        return {
+            name: "Lateral Raise",
+            representativeId: "lateral_raise",
+            subtitle: `${comp.length} variations (Dumbbell, Cable, Machine...)`
+        };
+    }
+    if (ids.some(id => id.includes('shoulder_press') || id.includes('overhead_press') || id.includes('arnold_press'))) {
+        return {
+            name: "Shoulder Press",
+            representativeId: "shoulder_press",
+            subtitle: `${comp.length} variations (Dumbbell, Barbell, Machine, Arnold...)`
+        };
+    }
+    if (ids.some(id => id.includes('deadlift'))) {
+        return {
+            name: "Deadlift",
+            representativeId: "deadlift",
+            subtitle: `${comp.length} variations (Standard, Romanian...)`
+        };
+    }
+    if (ids.some(id => id.includes('calf_raise'))) {
+        return {
+            name: "Calf Raise",
+            representativeId: "calf_raise",
+            subtitle: `${comp.length} variations (Bodyweight, Dumbbell, Machine...)`
+        };
+    }
+    if (ids.some(id => id.includes('leg_curl'))) {
+        return {
+            name: "Leg Curl",
+            representativeId: "seated_leg_curl",
+            subtitle: `${comp.length} variations (Seated, Lying...)`
+        };
+    }
+    if (ids.some(id => id.includes('leg_press'))) {
+        return {
+            name: "Leg Press",
+            representativeId: "leg_press",
+            subtitle: `${comp.length} variations (Standard, Horizontal...)`
+        };
+    }
+    if (ids.some(id => id.includes('plank'))) {
+        return {
+            name: "Plank",
+            representativeId: "plank",
+            subtitle: `${comp.length} variations (Standard, Side, Weighted...)`
+        };
+    }
+    if (ids.includes('pull_up') || ids.includes('pullup')) {
+        return {
+            name: "Pull-up",
+            representativeId: "pull_up",
+            subtitle: `${comp.length} variations (Standard, Weighted...)`
+        };
+    }
+    if (ids.includes('chin_up') || ids.includes('chinup')) {
+        return {
+            name: "Chin-up",
+            representativeId: "chin_up",
+            subtitle: `${comp.length} variations (Standard, Weighted...)`
+        };
+    }
+    if (ids.some(id => id.includes('handstand') || id.includes('crow_pose') || id.includes('frog_stand'))) {
+        return {
+            name: "Handstand / Balance",
+            representativeId: "handstand",
+            subtitle: `${comp.length} variations (Frog Stand, Crow, Wall, Freestanding...)`
+        };
+    }
+    if (ids.some(id => id.includes('planche'))) {
+        return {
+            name: "Planche",
+            representativeId: "tuck_planche",
+            subtitle: `${comp.length} variations (Pseudo Planche, Tuck, Straddle, Full...)`
+        };
+    }
+    if (ids.some(id => id.includes('front_lever'))) {
+        return {
+            name: "Front Lever",
+            representativeId: "tuck_front_lever",
+            subtitle: `${comp.length} variations (Tuck, Straddle, Full...)`
+        };
+    }
+    if (ids.some(id => id.includes('back_lever'))) {
+        return {
+            name: "Back Lever",
+            representativeId: "tuck_back_lever",
+            subtitle: `${comp.length} variations (Tuck, Straddle, Full...)`
+        };
+    }
+
+    const sorted = [...comp].sort((a, b) => (a.difficulty || 0) - (b.difficulty || 0));
+    const rep = sorted[0];
+    return {
+        name: rep.name,
+        representativeId: rep.id,
+        subtitle: `${comp.length} variations`
+    };
+}
+
+const ALL_DEFAULT_EXERCISES = [
     ...BarbellBenchPress,
     ...SmithMachineBenchPress,
     ...DumbbellBenchPress,
@@ -1515,6 +1665,74 @@ export default [
     ...Shrugs,
     ...CardioExercises,
 ];
+
+export default ALL_DEFAULT_EXERCISES;
+
+// Collapses related default-exercise variations (linked via nextVariations)
+// into single group entries for list display, leaving custom exercises
+// untouched. Mirrors the exercise list's "N variations" rows.
+export function groupExercisesForDisplay(exercises: any[]) {
+    // 1. Build undirected adjacency map for default exercises to find connected components
+    const adj = new Map<string, Set<string>>();
+    exercises.forEach(ex => {
+        if (!adj.has(ex.id)) adj.set(ex.id, new Set());
+        (ex.nextVariations || []).forEach((childId: string) => {
+            if (!adj.has(childId)) adj.set(childId, new Set());
+            adj.get(ex.id)!.add(childId);
+            adj.get(childId)!.add(ex.id);
+        });
+    });
+
+    // 2. Find connected components (groups)
+    const visited = new Set<string>();
+    const resultList: any[] = [];
+
+    const defaultExs = exercises.filter(ex => ALL_DEFAULT_EXERCISES.some(d => d.id === ex.id));
+    const customExs = exercises.filter(ex => !ALL_DEFAULT_EXERCISES.some(d => d.id === ex.id));
+
+    defaultExs.forEach(ex => {
+        if (!visited.has(ex.id)) {
+            const comp: any[] = [];
+            const queue = [ex.id];
+            visited.add(ex.id);
+
+            while (queue.length > 0) {
+                const currId = queue.shift()!;
+                const currEx = defaultExs.find(e => e.id === currId);
+                if (currEx) {
+                    comp.push(currEx);
+                }
+                const neighbors = adj.get(currId) || new Set();
+                neighbors.forEach(neighId => {
+                    if (!visited.has(neighId)) {
+                        visited.add(neighId);
+                        queue.push(neighId);
+                    }
+                });
+            }
+
+            if (comp.length > 1) {
+                const details = getCollapsedGroupDetails(comp);
+                const representative = comp.find(e => e.id === details.representativeId) || comp[0];
+                resultList.push({
+                    isGroup: true,
+                    id: `group_${details.name.replace(/\s+/g, '_').toLowerCase()}`,
+                    name: details.name,
+                    subtitle: details.subtitle,
+                    variations: comp,
+                    representative: representative,
+                    muscle_groups: Array.from(new Set(comp.flatMap(e => e.muscle_groups || []))).filter(Boolean),
+                    difficulty: representative.difficulty || 0,
+                    group: representative.group || "Other"
+                });
+            } else if (comp.length === 1) {
+                resultList.push(comp[0]);
+            }
+        }
+    });
+
+    return [...resultList, ...customExs];
+}
 
 export const Groups = {
     "Bench Press": BarbellBenchPress,

@@ -111,6 +111,13 @@ describe('Settings Flow', () => {
         // The option text is shown
         expect(getByText('Daily Workout Reminder')).toBeTruthy();
 
+        // Daily reminder piggybacks on push notification permission, so it
+        // must be enabled first, or the switch stays disabled.
+        const pushSwitch = getByTestId('push-notifications-switch');
+        await act(async () => {
+            fireEvent(pushSwitch, 'onValueChange', true);
+        });
+
         // Switch should be found
         const toggleSwitch = getByTestId('daily-reminder-switch');
         expect(toggleSwitch.props.value).toBe(false);

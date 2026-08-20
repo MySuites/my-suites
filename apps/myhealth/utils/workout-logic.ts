@@ -217,9 +217,53 @@ export function isUnilateralExercise(name: string): boolean {
            lower.includes('one arm') || 
            lower.includes('one-leg') || 
            lower.includes('one leg') || 
-           lower.includes('unilateral') || 
-           lower.includes('dumbbell row') || 
-           lower.includes('lunges') || 
-           lower.includes('lunge') || 
+           lower.includes('unilateral') ||
+           lower.includes('dumbbell row') ||
+           lower.includes('lunges') ||
+           lower.includes('lunge') ||
            lower.includes('split squat');
+}
+
+// Field-by-field comparison (not a generic deep-equal) so transient/UI-only
+// fields don't trigger a false "unsaved changes" — used to diff a workout
+// draft against its originally-saved version.
+export function areExercisesEqual(exs1: any[], exs2: any[]): boolean {
+    const e1List = exs1 || [];
+    const e2List = exs2 || [];
+    if (e1List.length !== e2List.length) return false;
+
+    for (let i = 0; i < e1List.length; i++) {
+        const e1 = e1List[i];
+        const e2 = e2List[i];
+
+        if (e1.id !== e2.id) return false;
+        if (e1.name !== e2.name) return false;
+        if (Number(e1.sets || 0) !== Number(e2.sets || 0)) return false;
+        if (Number(e1.reps || 0) !== Number(e2.reps || 0)) return false;
+        if (e1.category !== e2.category) return false;
+        if (e1.properties !== e2.properties) return false;
+        if (e1.type !== e2.type) return false;
+        if (e1.attachment !== e2.attachment) return false;
+        if (e1.equipment !== e2.equipment) return false;
+        if (Number(e1.restTime || 0) !== Number(e2.restTime || 0)) return false;
+        if (Number(e1.prepTime || 0) !== Number(e2.prepTime || 0)) return false;
+
+        const t1 = e1.setTargets || [];
+        const t2 = e2.setTargets || [];
+        if (t1.length !== t2.length) return false;
+
+        for (let j = 0; j < t1.length; j++) {
+            const s1 = t1[j];
+            const s2 = t2[j];
+
+            if (Number(s1.reps || 0) !== Number(s2.reps || 0)) return false;
+            if (Number(s1.weight || 0) !== Number(s2.weight || 0)) return false;
+            if (Number(s1.duration || 0) !== Number(s2.duration || 0)) return false;
+            if (Number(s1.distance || 0) !== Number(s2.distance || 0)) return false;
+            if (Number(s1.rpe || 0) !== Number(s2.rpe || 0)) return false;
+            if (Number(s1.reps_left || 0) !== Number(s2.reps_left || 0)) return false;
+            if (Number(s1.reps_right || 0) !== Number(s2.reps_right || 0)) return false;
+        }
+    }
+    return true;
 }

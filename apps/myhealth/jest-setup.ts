@@ -101,9 +101,11 @@ jest.mock("expo-router", () => ({
         push: jest.fn(),
         replace: jest.fn(),
         back: jest.fn(),
+        navigate: jest.fn(),
     })),
     useLocalSearchParams: jest.fn(() => ({})),
     usePathname: jest.fn(() => "/profile"),
+    useFocusEffect: jest.fn(),
     Stack: {
         Screen: jest.fn(() => null),
     },

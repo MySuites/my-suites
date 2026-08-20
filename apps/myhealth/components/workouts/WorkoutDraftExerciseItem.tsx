@@ -1,14 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Dimensions, Modal } from 'react-native';
 import { useUITheme as useTheme, IconSymbol, RaisedCard } from '@mysuite/ui';
-import { getExerciseDefaultProperties, useWorkoutManager } from '../../providers/WorkoutManagerProvider';
+import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
+import { getExerciseFields } from './getExerciseFields';
 import { formatRestTime, formatSeconds } from '../../utils/formatting';
 import { RPEPicker } from './RPEPicker';
 import { RestTimerPicker } from './RestTimerPicker';
 import { DurationTimerPicker } from './DurationTimerPicker';
-import { AttachmentPicker } from './AttachmentPicker';
+import { AttachmentPicker, ATTACHMENT_OPTIONS } from './AttachmentPicker';
 import { EquipmentPicker } from './EquipmentPicker';
 import { MovementTypePicker } from './MovementTypePicker';
+import { ExercisePropertyPillRow } from '../ui/ExercisePropertyPill';
 
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 
@@ -101,33 +103,12 @@ export const WorkoutDraftExerciseItem = ({
 
     const _isEditing = isEditing || isLocalEditing;
 
-    const getExerciseFields = (properties?: string[], exerciseId?: string) => {
-        let props = properties || [];
-        
-        // Fallback to default properties if available (handles stale data)
-        if (exerciseId) {
-            const defaults = getExerciseDefaultProperties(exerciseId);
-            // Merge unique properties
-            const unique = new Set([...props, ...defaults]);
-            props = Array.from(unique);
-        }
-
-        const lowerProps = props.map(p => p.toLowerCase());
-        return { 
-            showWeight: lowerProps.includes('weighted'),
-            showReps: lowerProps.includes('reps'),
-            showDuration: lowerProps.includes('duration'),
-            showDistance: lowerProps.includes('distance'),
-            showRPE: lowerProps.includes('weighted') || lowerProps.includes('reps') || lowerProps.includes('duration') || lowerProps.includes('distance') || lowerProps.includes('rpe')
-        };
-    };
-
     const { isRpeEnabled, isHapticsEnabled } = useWorkoutManager();
     const { showWeight, showReps, showDuration, showDistance, showRPE: calculatedShowRPE } = getExerciseFields(item.properties, item.id);
     const showRPE = calculatedShowRPE && isRpeEnabled;
     
-    const isAttachmentSupported = item.id === 'lat_pulldown' || item.id === 'seated_cable_row';
-    const defaultAttachment = item.id === 'lat_pulldown' ? 'Lat Bar' : item.id === 'seated_cable_row' ? 'Close-Grip V-Bar' : undefined;
+    const isAttachmentSupported = item.id in ATTACHMENT_OPTIONS;
+    const defaultAttachment = ATTACHMENT_OPTIONS[item.id]?.[0];
     const attachment = item.attachment || defaultAttachment;
     const equipment = item.equipment || inferEquipment(item.name);
     const movementType = item.movementType || inferMovementType(item.name, equipment);
@@ -191,100 +172,17 @@ export const WorkoutDraftExerciseItem = ({
                         {item.name}
                     </Text>
                     
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 2, alignItems: 'center' }}>
-                        {isAttachmentSupported && attachment && (
-                            <TouchableOpacity
-                                disabled={isReadOnly}
-                                onPress={(e) => {
-                                    e.stopPropagation();
-                                    setIsAttachmentPickerVisible(true);
-                                }}
-                                style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-                                    paddingHorizontal: 8,
-                                    paddingVertical: 3,
-                                    borderRadius: 4,
-                                }}
-                            >
-                                <IconSymbol name="gearshape.fill" size={10} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
-                                <Text style={{
-                                    marginLeft: 4,
-                                    fontSize: 10,
-                                    fontWeight: '600',
-                                    color: theme.bgDark === '#000000' ? '#ccc' : '#444'
-                                }}>
-                                    {attachment}
-                                </Text>
-                                {!isReadOnly && (
-                                    <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
-                                )}
-                            </TouchableOpacity>
-                        )}
-
-                        {equipment && (
-                            <TouchableOpacity
-                                disabled={isReadOnly}
-                                onPress={(e) => {
-                                    e.stopPropagation();
-                                    setIsEquipmentPickerVisible(true);
-                                }}
-                                style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-                                    paddingHorizontal: 8,
-                                    paddingVertical: 3,
-                                    borderRadius: 4,
-                                }}
-                            >
-                                <IconSymbol name="dumbbell.fill" size={10} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
-                                <Text style={{
-                                    marginLeft: 4,
-                                    fontSize: 10,
-                                    fontWeight: '600',
-                                    color: theme.bgDark === '#000000' ? '#ccc' : '#444'
-                                }}>
-                                    {equipment.charAt(0).toUpperCase() + equipment.slice(1)}
-                                </Text>
-                                {!isReadOnly && (
-                                    <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
-                                )}
-                            </TouchableOpacity>
-                        )}
-
-                        {movementType && (
-                            <TouchableOpacity
-                                disabled={isReadOnly}
-                                onPress={(e) => {
-                                    e.stopPropagation();
-                                    setIsMovementTypePickerVisible(true);
-                                }}
-                                style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    backgroundColor: theme.bgDark === '#000000' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-                                    paddingHorizontal: 8,
-                                    paddingVertical: 3,
-                                    borderRadius: 4,
-                                }}
-                            >
-                                <IconSymbol name="figure.walk" size={10} color={theme.bgDark === '#000000' ? '#bbb' : '#555'} />
-                                <Text style={{
-                                    marginLeft: 4,
-                                    fontSize: 10,
-                                    fontWeight: '600',
-                                    color: theme.bgDark === '#000000' ? '#ccc' : '#444'
-                                }}>
-                                    {movementType.charAt(0).toUpperCase() + movementType.slice(1)}
-                                </Text>
-                                {!isReadOnly && (
-                                    <IconSymbol name="chevron.down" size={8} color={theme.bgDark === '#000000' ? '#ccc' : '#444'} style={{ marginLeft: 3 }} />
-                                )}
-                            </TouchableOpacity>
-                        )}
-                    </View>
+                    <ExercisePropertyPillRow
+                        variant="subtle"
+                        disabled={isReadOnly}
+                        isAttachmentSupported={isAttachmentSupported}
+                        attachment={attachment}
+                        onPressAttachment={() => setIsAttachmentPickerVisible(true)}
+                        equipment={equipment}
+                        onPressEquipment={() => setIsEquipmentPickerVisible(true)}
+                        movementType={movementType}
+                        onPressMovementType={() => setIsMovementTypePickerVisible(true)}
+                    />
                     
                     <TouchableOpacity 
                         className="flex-row items-center mt-1 pb-1"

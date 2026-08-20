@@ -36,6 +36,13 @@ jest.mock('../../providers/ActiveWorkoutProvider', () => ({
         finishWorkout: jest.fn(),
         cancelWorkout: jest.fn(),
         hasActiveSession: false,
+        exercises: [],
+        workoutName: '',
+        setExpanded: jest.fn(),
+    }),
+    useActiveWorkoutTimer: () => ({
+        isRunning: false,
+        workoutSeconds: 0,
     }),
 }));
 

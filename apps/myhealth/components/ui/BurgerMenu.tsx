@@ -1,12 +1,25 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { Text, TouchableOpacity, Modal } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 
 export interface BurgerMenuItem {
     label: string;
     icon: string;
     route: string;
+}
+
+// Tabs stay mounted when you switch away — without the focus-blur close,
+// leaving the menu open and navigating elsewhere means it's still open
+// when you come back.
+export function useBurgerMenu() {
+    const [visible, setVisible] = useState(false);
+    useFocusEffect(useCallback(() => () => setVisible(false), []));
+
+    const toggle = useCallback(() => setVisible(v => !v), []);
+    const close = useCallback(() => setVisible(false), []);
+
+    return { visible, toggle, close };
 }
 
 interface BurgerMenuProps {
