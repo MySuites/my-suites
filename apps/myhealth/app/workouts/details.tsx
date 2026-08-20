@@ -211,7 +211,7 @@ export default function CreateWorkoutScreen() {
                         style: "destructive",
                         onPress: () => {
                             cancelWorkout();
-                            startWorkout(workoutDraftExercises, workoutDraftName, undefined, editingWorkoutId || undefined);
+                            startWorkout(workoutDraftExercises, workoutDraftName, editingWorkoutId || undefined);
                             router.back();
                         }
                     }
@@ -220,7 +220,7 @@ export default function CreateWorkoutScreen() {
             return;
         }
 
-        startWorkout(workoutDraftExercises, workoutDraftName, undefined, editingWorkoutId || undefined);
+        startWorkout(workoutDraftExercises, workoutDraftName, editingWorkoutId || undefined);
         router.back(); // or navigate to active workout screen depending on how top-level handles it
     }
 

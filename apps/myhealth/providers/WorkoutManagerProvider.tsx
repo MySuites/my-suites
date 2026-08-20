@@ -6,10 +6,8 @@ import {
     WorkoutLog,
     fetchWorkoutLogDetails
 } from "../utils/workout-api";
-import { useRoutineManager } from "../hooks/routines/useRoutineManager";
 import { useToast } from "@mysuite/ui";
 import { DataRepository } from "./DataRepository";
-import { ProfileRepository } from "./ProfileRepository";
 import { useSyncService } from "../hooks/useSyncService";
 import uuid from 'react-native-uuid';
 import { storage } from "../utils/storage";
@@ -23,29 +21,16 @@ export { fetchExercises, fetchMuscleGroups, fetchExerciseStats, fetchLastExercis
 
 interface WorkoutManagerContextType {
     savedWorkouts: any[];
-    routines: any[];
-    activeRoutine: {
-        id: string;
-        dayIndex: number;
-        lastCompletedDate?: string;
-    } | null;
-    startActiveRoutine: (id: string) => void;
-    setActiveRoutineIndex: (index: number) => void;
-    markRoutineDayComplete: () => void;
-    clearActiveRoutine: () => void;
     isSaving: boolean;
     isLoading: boolean;
     saveWorkout: (name: string, exercises: Exercise[], onSuccess: () => void) => Promise<void>;
     deleteSavedWorkout: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => void;
     updateSavedWorkout: (id: string, name: string, exercises: Exercise[], onSuccess: () => void, valuesOnly?: boolean) => Promise<void>;
-    saveRoutineDraft: (name: string, sequence: any[], onSuccess: () => void) => Promise<void>;
-    updateRoutine: (id: string, name: string, sequence: any[], onSuccess: () => void, suppressAlert?: boolean) => Promise<void>;
-    deleteRoutine: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => void;
     createCustomExercise: (name: string, type: string, primary?: string, secondary?: string[]) => Promise<{ data?: any, error?: any }>;
     deleteCustomExercise: (id: string) => Promise<void>;
     workoutHistory: WorkoutLog[];
     fetchWorkoutLogDetails: (logId: string) => Promise<{ data: any[], error: any }>;
-    saveCompletedWorkout: (name: string, exercises: Exercise[], duration: number, onSuccess?: () => void, note?: string, routineId?: string, sourceWorkoutId?: string, imageUrl?: string, imageUrls?: string[]) => Promise<void>;
+    saveCompletedWorkout: (name: string, exercises: Exercise[], duration: number, onSuccess?: () => void, note?: string, sourceWorkoutId?: string, imageUrl?: string, imageUrls?: string[]) => Promise<void>;
     deleteWorkoutLog: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => void;
     lastSyncedAt: Date | null;
     sync: () => Promise<void>;
@@ -67,7 +52,6 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
     const { user } = useAuth();
     const { showToast } = useToast();
     const [savedWorkouts, setSavedWorkouts] = useState<any[]>([]);
-    const [routines, setRoutines] = useState<any[]>([]);
     const [workoutHistory, setWorkoutHistory] = useState<WorkoutLog[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -77,15 +61,6 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
     const [progressiveOverloadRepCeiling, setProgressiveOverloadRepCeilingState] = useState(DEFAULT_REP_CEILING);
 
     const { lastSyncedAt, sync, isSyncing } = useSyncService();
-
-    const {
-        activeRoutine,
-        startActiveRoutine: startActiveRoutineRaw,
-        setActiveRoutineIndex: setActiveRoutineIndexRaw,
-        markRoutineDayComplete,
-        clearActiveRoutine: clearActiveRoutineRaw,
-        setRoutineState
-    } = useRoutineManager(routines);
 
     const isInitialized = useRef(false);
 
@@ -132,15 +107,6 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
                 mappedHistory.sort((a, b) => new Date(b.workoutDate).getTime() - new Date(a.workoutDate).getTime());
                 setWorkoutHistory(mappedHistory);
 
-                const storedRoutines = await DataRepository.getRoutines();
-                setRoutines(storedRoutines);
-
-                const userId = user?.id || 'guest';
-                const profile = await ProfileRepository.getProfile(userId);
-                if (profile && profile.active_routine) {
-                     setRoutineState(profile.active_routine);
-                }
-
                 const rpeVal = await storage.getItem<boolean>('setting.workout.isRpeEnabled');
                 setIsRpeEnabledState(!!rpeVal);
 
@@ -163,23 +129,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
             }
         }
         loadData();
-    }, [user, setRoutineState]);
-
-    // Persist active routine state changes
-    useEffect(() => {
-        if (!isInitialized.current || isLoading) return;
-        
-        const persistRoutine = async () => {
-            try {
-                const userId = user?.id || 'guest';
-                await ProfileRepository.updateActiveRoutine(userId, activeRoutine);
-            } catch (e) {
-                console.error("Failed to persist active routine", e);
-            }
-        };
-
-        persistRoutine();
-    }, [activeRoutine, user, isLoading]);
+    }, [user]);
 
     const saveWorkout = useCallback(async (
         workoutName: string,
@@ -326,7 +276,6 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         duration: number,
         onSuccess?: () => void,
         note?: string,
-        routineId?: string,
         sourceWorkoutId?: string,
         imageUrl?: string,
         imageUrls?: string[],
@@ -368,78 +317,11 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
              mappedHistory.sort((a: any, b: any) => new Date(b.workoutDate).getTime() - new Date(a.workoutDate).getTime());
              setWorkoutHistory(mappedHistory);
 
-             if (routineId && activeRoutine?.id === routineId) {
-                markRoutineDayComplete();
-             }
              onSuccess?.();
          } finally {
              setIsSaving(false);
          }
-     }, [user, activeRoutine, markRoutineDayComplete]);
-
-    const saveRoutineDraft = useCallback(async (name: string, sequence: any[], onSuccess: () => void) => {
-        setIsSaving(true);
-        try {
-            const id = uuid.v4() as string;
-            const newRoutine = { id, name, sequence, createdAt: new Date().toISOString() };
-            
-            await DataRepository.saveRoutine(newRoutine);
-            const updated = await DataRepository.getRoutines();
-            setRoutines(updated);
-            
-            onSuccess();
-        } catch (e) {
-            Alert.alert("Error saving routine", String(e));
-        } finally {
-            setIsSaving(false);
-        }
-    }, []);
-    
-    const updateRoutine = useCallback(async (id: string, name: string, sequence: any[], onSuccess: () => void, suppressAlert?: boolean) => {
-        setIsSaving(true);
-        try {
-            const existing = routines.find(r => r.id === id);
-            const routineToSave = { 
-                ...existing,
-                id, name, sequence, 
-                updatedAt: Date.now() 
-            };
-            
-            await DataRepository.saveRoutine(routineToSave);
-            const updated = await DataRepository.getRoutines();
-            setRoutines(updated);
-            
-            onSuccess();
-        } catch (e) {
-            Alert.alert("Error updating routine", String(e));
-        } finally {
-            setIsSaving(false);
-        }
-    }, [routines]);
-
-    const deleteRoutine = useCallback((id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => {
-         const performDelete = async () => {
-             setIsSaving(true);
-             try {
-                await DataRepository.deleteRoutine(id);
-                setRoutines(prev => prev.filter(r => r.id !== id));
-                options?.onSuccess?.();
-             } catch(e) {
-                 Alert.alert("Error deleting routine", String(e));
-             } finally {
-                 setIsSaving(false);
-             }
-         };
-
-         if (options?.skipConfirmation) {
-             performDelete();
-         } else {
-             Alert.alert("Delete Routine", "Are you sure?", [
-                { text: "Cancel", style: "cancel" },
-                { text: "Delete", style: "destructive", onPress: performDelete }
-             ]);
-         }
-    }, []);
+     }, [user]);
 
     const fetchWorkoutLogDetailsStable = useCallback(async (id: string) => {
         return await fetchWorkoutLogDetails(user, id);
@@ -496,26 +378,13 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
          }
     }, [showToast]);
 
-    const startActiveRoutine = useCallback((id: string) => startActiveRoutineRaw(id), [startActiveRoutineRaw]);
-    const setActiveRoutineIndex = useCallback((index: number) => setActiveRoutineIndexRaw(index), [setActiveRoutineIndexRaw]);
-    const clearActiveRoutine = useCallback(() => clearActiveRoutineRaw(), [clearActiveRoutineRaw]);
-
     const value = useMemo(() => ({
         savedWorkouts,
-        routines,
-        activeRoutine,
-        startActiveRoutine,
-        setActiveRoutineIndex,
-        markRoutineDayComplete,
-        clearActiveRoutine,
         isSaving,
         isLoading,
         saveWorkout,
         deleteSavedWorkout,
         updateSavedWorkout,
-        saveRoutineDraft,
-        updateRoutine,
-        deleteRoutine,
         workoutHistory,
         fetchWorkoutLogDetails: fetchWorkoutLogDetailsStable,
         saveCompletedWorkout,
@@ -535,10 +404,9 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         progressiveOverloadRepCeiling,
         setProgressiveOverloadRepCeiling,
     }), [
-        savedWorkouts, routines, activeRoutine, startActiveRoutine, setActiveRoutineIndex,
-        markRoutineDayComplete, clearActiveRoutine, isSaving, isLoading, saveWorkout,
-        deleteSavedWorkout, updateSavedWorkout, saveRoutineDraft, updateRoutine,
-        deleteRoutine, workoutHistory, fetchWorkoutLogDetailsStable, saveCompletedWorkout,
+        savedWorkouts, isSaving, isLoading, saveWorkout,
+        deleteSavedWorkout, updateSavedWorkout,
+        workoutHistory, fetchWorkoutLogDetailsStable, saveCompletedWorkout,
         deleteWorkoutLog, createCustomExercise, deleteCustomExercise, lastSyncedAt,
         sync, isSyncing, reorderSavedWorkouts, isRpeEnabled, setIsRpeEnabled,
         isHapticsEnabled, setIsHapticsEnabled,
@@ -555,20 +423,11 @@ export function useWorkoutManager() {
         // Fallback context structure for tests or components rendered outside the provider
         return {
             savedWorkouts: [],
-            routines: [],
-            activeRoutine: null,
-            startActiveRoutine: () => {},
-            setActiveRoutineIndex: () => {},
-            markRoutineDayComplete: () => {},
-            clearActiveRoutine: () => {},
             isSaving: false,
             isLoading: false,
             saveWorkout: async () => {},
             deleteSavedWorkout: () => {},
             updateSavedWorkout: async () => {},
-            saveRoutineDraft: async () => {},
-            updateRoutine: async () => {},
-            deleteRoutine: () => {},
             createCustomExercise: async () => ({}),
             deleteCustomExercise: async () => {},
             workoutHistory: [],

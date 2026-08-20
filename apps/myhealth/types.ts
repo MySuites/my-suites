@@ -7,9 +7,3 @@ export interface SavedWorkout {
     createdAt: string;
 }
 
-export interface Routine {
-    id: string;
-    name: string;
-    sequence: any[];
-    createdAt: string;
-}

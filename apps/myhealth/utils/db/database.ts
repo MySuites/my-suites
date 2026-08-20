@@ -109,25 +109,11 @@ export const initDatabase = async () => {
                 email TEXT,
                 username TEXT,
                 full_name TEXT,
-                active_routine TEXT,
                 updated_at INTEGER,
                 sync_status TEXT DEFAULT 'pending'
             );
         `);
         console.log("[DB] Created profiles");
-
-        await database.execAsync(`
-            CREATE TABLE IF NOT EXISTS routines (
-                id TEXT PRIMARY KEY,
-                name TEXT,
-                sequence TEXT,
-                created_at TEXT,
-                updated_at INTEGER,
-                deleted_at INTEGER,
-                sync_status TEXT DEFAULT 'pending'
-            );
-        `);
-        console.log("[DB] Created routines");
 
         await database.execAsync(`
             CREATE TABLE IF NOT EXISTS exercises (
@@ -270,7 +256,6 @@ export const initDatabase = async () => {
         await database.execAsync(`DELETE FROM workout_logs WHERE id IS NULL OR id = 'null';`);
         await database.execAsync(`DELETE FROM set_logs WHERE id IS NULL OR id = 'null';`);
         await database.execAsync(`DELETE FROM body_measurements WHERE id IS NULL OR id = 'null';`);
-        await database.execAsync(`DELETE FROM routines WHERE id IS NULL OR id = 'null';`);
         await database.execAsync(`DELETE FROM progress_pictures WHERE id IS NULL OR id = 'null';`);
         console.log("[DB] Cleanup of ghost data complete");
     } catch (e) {
@@ -377,30 +362,16 @@ export const initDatabase = async () => {
             }
         }
 
-        const routineRows = await database.getAllAsync<any>(
-            `SELECT id, sequence FROM routines WHERE sequence LIKE '%"rpe":4%' OR sequence LIKE '%"rpe":"4"%'`
-        );
-        for (const row of routineRows) {
-            try {
-                const sequence = JSON.parse(row.sequence);
-                if (!Array.isArray(sequence)) continue;
-                let routineChanged = false;
-                sequence.forEach((item: any) => {
-                    if (Array.isArray(item?.workout?.exercises) && migrateSetTargets(item.workout.exercises)) {
-                        routineChanged = true;
-                    }
-                });
-                if (routineChanged) {
-                    await database.runAsync('UPDATE routines SET sequence = ? WHERE id = ?', [JSON.stringify(sequence), row.id]);
-                }
-            } catch (e) {
-                console.error(`[DB] Failed migrating RPE for routine ${row.id}:`, e);
-            }
-        }
-
-        console.log(`[DB] RPE 4->6 template migration complete. ${workoutRows.length} workout(s), ${routineRows.length} routine(s) checked.`);
+        console.log(`[DB] RPE 4->6 template migration complete. ${workoutRows.length} workout(s) checked.`);
     } catch (e) {
         console.error("[DB] Failed running RPE 4->6 template migration:", e);
+    }
+
+    // Routine feature removed - drop the now-unused table on existing installs.
+    try {
+        await database.execAsync(`DROP TABLE IF EXISTS routines;`);
+    } catch (e) {
+        console.error("[DB] Failed dropping routines table:", e);
     }
 
     // Migration for consolidated exercises

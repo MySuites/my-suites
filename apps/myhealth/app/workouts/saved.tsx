@@ -32,14 +32,14 @@ function SavedWorkoutsScreen() {
                       style: "destructive", 
                       onPress: () => {
                           cancelWorkout();
-                          setTimeout(() => startWorkout(workoutExercises || [], name, undefined, id), 100);
+                          setTimeout(() => startWorkout(workoutExercises || [], name, id), 100);
                           router.back();
                       }
                   }
               ]
           );
       } else {
-          startWorkout(workoutExercises || [], name, undefined, id);
+          startWorkout(workoutExercises || [], name, id);
           router.back();
       }
   };

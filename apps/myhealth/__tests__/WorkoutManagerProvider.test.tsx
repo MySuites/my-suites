@@ -5,9 +5,8 @@ import { WorkoutManagerProvider, useWorkoutManager } from '../providers/WorkoutM
 
 
 // Mock mocks
-// We need to mock the DataRepository and ProfileRepository
+// We need to mock the DataRepository
 import { DataRepository } from '../providers/DataRepository';
-import { ProfileRepository } from '../providers/ProfileRepository';
 
 jest.mock('../providers/DataRepository', () => ({
     DataRepository: {
@@ -15,15 +14,7 @@ jest.mock('../providers/DataRepository', () => ({
         saveWorkout: jest.fn(),
         deleteWorkout: jest.fn(),
         getHistory: jest.fn(() => Promise.resolve([])),
-        getRoutines: jest.fn(() => Promise.resolve([])),
-        saveRoutine: jest.fn(),
         saveLog: jest.fn(),
-    }
-}));
-
-jest.mock('../providers/ProfileRepository', () => ({
-    ProfileRepository: {
-        getProfile: jest.fn(() => Promise.resolve(null))
     }
 }));
 
@@ -38,21 +29,6 @@ jest.mock('@mysuite/auth', () => ({
         }
     }
 }));
-
-// Mock useRoutineManager
-jest.mock('../hooks/routines/useRoutineManager', () => {
-    const mockSetRoutineState = jest.fn();
-    return {
-        useRoutineManager: jest.fn(() => ({
-            activeRoutine: null,
-            startActiveRoutine: jest.fn(),
-            setActiveRoutineIndex: jest.fn(),
-            markRoutineDayComplete: jest.fn(),
-            clearActiveRoutine: jest.fn(),
-            setRoutineState: mockSetRoutineState
-        }))
-    };
-});
 
 // Mock Alert
 jest.spyOn(Alert, 'alert');
@@ -81,7 +57,6 @@ describe('WorkoutManagerProvider', () => {
         
         // Default returns for DataRepository mocks
         (DataRepository.getWorkouts as jest.Mock).mockResolvedValue([]);
-        (DataRepository.getRoutines as jest.Mock).mockResolvedValue([]);
         (DataRepository.getHistory as jest.Mock).mockResolvedValue([]);
     });
 

@@ -34,7 +34,7 @@ interface ActiveWorkoutContextType {
     setCurrentIndex: (index: number) => void;
     workoutName: string;
     setWorkoutName: (name: string) => void;
-    startWorkout: (exercisesToStart?: Exercise[], name?: string, routineId?: string, sourceWorkoutId?: string) => void;
+    startWorkout: (exercisesToStart?: Exercise[], name?: string, sourceWorkoutId?: string) => void;
     pauseWorkout: () => void;
     resumeWorkout: () => void;
     resetWorkout: () => void;
@@ -51,7 +51,6 @@ interface ActiveWorkoutContextType {
     finishWorkout: (note?: string, imageUrl?: string, imageUrls?: string[]) => void;
     cancelWorkout: () => void;
     hasActiveSession: boolean;
-    routineId: string | null;
     sourceWorkoutId: string | null;
     latestBodyWeight: number | null;
     isGpsTrackingActive: boolean;
@@ -76,7 +75,6 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const { user } = useAuth();
     const [workoutName, setWorkoutName] = useState("Current Workout");
-    const [routineId, setRoutineId] = useState<string | null>(null);
     const [sourceWorkoutId, setSourceWorkoutId] = useState<string | null>(null);
     const [hasActiveSession, setHasActiveSession] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -101,13 +99,11 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         workoutSeconds,
         workoutName,
         isRunning,
-        routineId,
         sourceWorkoutId,
         currentIndex,
         setExercises,
         setWorkoutSeconds,
         setWorkoutName,
-        setRoutineId,
         setSourceWorkoutId,
         setCurrentIndex,
         setRunning,
@@ -243,7 +239,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     }, []);
 
     // Actions
-    const startWorkout = useCallback((exercisesToStart?: Exercise[], name?: string, newRoutineId?: string, newSourceWorkoutId?: string) => {
+    const startWorkout = useCallback((exercisesToStart?: Exercise[], name?: string, newSourceWorkoutId?: string) => {
 		// Allow empty workouts
 		// if (targetExercises.length === 0) { ... }
         if (exercisesToStart) {
@@ -262,7 +258,6 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
                 })) : undefined
             })));
             setWorkoutName(name || "Current Workout");
-            setRoutineId(newRoutineId || null);
             setSourceWorkoutId(newSourceWorkoutId || null);
             NotificationService.scheduleWorkoutTimeoutReminder();
 
@@ -281,7 +276,6 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         } else {
             // We are resuming
             if (name !== undefined) setWorkoutName(name);
-            if (newRoutineId !== undefined) setRoutineId(newRoutineId || null);
             if (newSourceWorkoutId !== undefined) setSourceWorkoutId(newSourceWorkoutId || null);
         }
 
@@ -548,7 +542,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         }
 
         // Save the workout
-        saveCompletedWorkout(workoutName, exercisesWithLogs, workoutSeconds, undefined, note, routineId || undefined, sourceWorkoutId || undefined, imageUrl, imageUrls, gpsData);
+        saveCompletedWorkout(workoutName, exercisesWithLogs, workoutSeconds, undefined, note, sourceWorkoutId || undefined, imageUrl, imageUrls, gpsData);
 
         // Reset state
 		setRunning(false);
@@ -556,9 +550,8 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 		setCurrentIndex(0);
 		setExercises([]);
 		setWorkoutName("Current Workout");
-		setRoutineId(null);
 		setSourceWorkoutId(null);
-        
+
         setHasActiveSession(false);
         setIsExpanded(false);
 
@@ -566,7 +559,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         clearPersistence();
         NotificationService.cancelWorkoutTimeoutReminder();
         LiveActivityService.end();
-    }, [workoutName, exercises, workoutSeconds, saveCompletedWorkout, routineId, sourceWorkoutId, setRunning, resetTimers, clearPersistence, latestBodyWeight, user?.id]);
+    }, [workoutName, exercises, workoutSeconds, saveCompletedWorkout, sourceWorkoutId, setRunning, resetTimers, clearPersistence, latestBodyWeight, user?.id]);
 
     const handleCancelWorkout = useCallback(() => {
         setRunning(false);
@@ -574,7 +567,6 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         setCurrentIndex(0);
         setExercises([]);
         setWorkoutName("Current Workout");
-        setRoutineId(null);
         setSourceWorkoutId(null);
 
         setHasActiveSession(false);
@@ -619,7 +611,6 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         toggleExpanded,
         setExpanded: setIsExpanded,
         setWorkoutName,
-        routineId,
         sourceWorkoutId,
         latestBodyWeight,
         isGpsTrackingActive,
@@ -628,7 +619,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
         exercises, currentIndex, setCurrentIndex, workoutName, startWorkout, pauseWorkout, resumeWorkout, resetWorkout,
         handleToggleSetCompletion, nextExercise, prevExercise, addExercise, updateExercise,
         removeExercise, reorderExercises, handleFinishWorkout, handleCancelWorkout, isExpanded, hasActiveSession,
-        toggleExpanded, routineId, sourceWorkoutId, latestBodyWeight, isGpsTrackingActive, activateGpsTrackingIfNeeded
+        toggleExpanded, sourceWorkoutId, latestBodyWeight, isGpsTrackingActive, activateGpsTrackingIfNeeded
     ]);
 
     if (!isLoaded) {

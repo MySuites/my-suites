@@ -16,9 +16,7 @@ import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 
 import { useActiveWorkout, useActiveWorkoutTimer } from '../../providers/ActiveWorkoutProvider';
 import { formatSeconds } from '../../utils/formatting';
-import { ActiveRoutineCard } from '../../components/routines/ActiveRoutineCard';
 import { SavedWorkoutItem } from '../../components/workouts/SavedWorkoutItem';
-import { useRoutineTimeline } from '../../hooks/routines/useRoutineManager';
 import { HollowedCard, RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 
 import { SavedWorkout } from '../../types';
@@ -42,7 +40,7 @@ function Workout() {
     } = useActiveWorkout();
     const { isRunning, workoutSeconds } = useActiveWorkoutTimer();
 
-    const handleStartEmpty = (routineId?: string) => {
+    const handleStartEmpty = () => {
         if (hasActiveSession) {
             Alert.alert(
                 "Active Workout",
@@ -62,13 +60,13 @@ function Workout() {
                         onPress: () => {
                             cancelWorkout();
                             // Small timeout to ensure state clears before starting new
-                            setTimeout(() => startWorkout([], "Empty Workout", routineId), 100);
+                            setTimeout(() => startWorkout([], "Empty Workout"), 100);
                         }
                     }
                 ]
             );
         } else {
-            startWorkout([], "Empty Workout", routineId);
+            startWorkout([], "Empty Workout");
         }
     };
     const { visible: menuVisible, toggle: toggleMenu, close: closeMenu } = useBurgerMenu();
@@ -76,11 +74,8 @@ function Workout() {
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [isDayModalVisible, setIsDayModalVisible] = useState(false);
 
-    const { 
-        savedWorkouts, 
-        routines, 
-        activeRoutine,
-        setActiveRoutineIndex,
+    const {
+        savedWorkouts,
         deleteSavedWorkout,
         workoutHistory,
     } = useWorkoutManager();
@@ -122,21 +117,12 @@ function Workout() {
         });
     }, [selectedDay, workoutHistory]);
 
-    const activeRoutineObj = routines.find((r: any) => r.id === activeRoutine?.id);
-    const dayIndex = activeRoutine?.dayIndex || 0;
-
-    const timelineDays = useRoutineTimeline(activeRoutineObj, dayIndex, 'week');
-
-    const isDayCompleted = !!(activeRoutine?.lastCompletedDate &&
-        new Date(activeRoutine.lastCompletedDate).toDateString() === new Date().toDateString());
-
-
     function handleEditSavedWorkout(workout: SavedWorkout) {
         console.log("handleEditSavedWorkout called with:", workout);
         router.push({ pathname: '/workouts/details', params: { id: workout.id } });
     }
 
-    function handleStartSavedWorkout(workout: SavedWorkout, routineId?: string) {
+    function handleStartSavedWorkout(workout: SavedWorkout) {
         let exercisesToStart = workout.exercises;
         let fresh;
         
@@ -168,19 +154,19 @@ function Workout() {
                         style: "destructive",
                         onPress: () => {
                             cancelWorkout();
-                            setTimeout(() => startWorkout(exercisesToStart, workout.name, routineId, workout.id), 100);
+                            setTimeout(() => startWorkout(exercisesToStart, workout.name, workout.id), 100);
                         }
                     }
                 ]
             );
         } else {
-            startWorkout(exercisesToStart, workout.name, routineId, workout.id);
+            startWorkout(exercisesToStart, workout.name, workout.id);
         }
     }
 
 	return (
 		<View className="flex-1 bg-light dark:bg-dark">
-			{/* Dashboard: Routines & Saved Workouts */}
+			{/* Dashboard: Saved Workouts */}
 			<ScrollView
 				className="flex-1"
 				contentContainerStyle={{paddingBottom: 100 + insets.bottom, paddingTop: 130}}
@@ -319,7 +305,7 @@ function Workout() {
                             style={{ borderWidth: 2, borderStyle: 'dashed', borderColor: theme.primary }}
                         >
                             <TouchableOpacity
-                                onPress={() => handleStartEmpty(activeRoutineObj?.id)}
+                                onPress={() => handleStartEmpty()}
                                 className="flex-1 justify-center px-4"
                                 style={{ borderRightWidth: 2, borderStyle: 'dashed', borderRightColor: theme.primary }}
                             >
@@ -329,7 +315,7 @@ function Workout() {
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                onPress={() => handleStartEmpty(activeRoutineObj?.id)}
+                                onPress={() => handleStartEmpty()}
                                 className="w-[20%] items-center justify-center"
                             >
                                 <IconSymbol name="plus" size={24} color={theme.primary} />
@@ -362,39 +348,6 @@ function Workout() {
                                 />
                             )}
                         />
-                    )}
-                </View>
-                {/* Active Routine Section */}
-                <View className="px-4">
-                    <View className="flex-row justify-between items-end mb-3">
-                        <Text className="text-lg font-semibold text-light dark:text-dark">
-                            Active Routine{activeRoutineObj ? `: ${activeRoutineObj.name}` : ''}
-                        </Text>
-                        <TouchableOpacity 
-                            onPress={() => router.push('/routines')}
-                            className="py-1.5 rounded-lg active:opacity-50"
-                        >
-                            <Text className="text-black dark:text-white text-sm">See all</Text>
-                        </TouchableOpacity>
-                    </View>
-                    {activeRoutineObj ? (
-                        <ActiveRoutineCard
-                            activeRoutineObj={activeRoutineObj}
-                            timelineDays={timelineDays}
-                            dayIndex={dayIndex}
-                            isDayCompleted={isDayCompleted}
-                             onStartWorkout={(exercises, name, workoutId) => {
-                                handleStartSavedWorkout({ id: workoutId as string, name: name || "", exercises: exercises, createdAt: new Date().toISOString() }, activeRoutineObj.id);
-                            }}
-                            onJumpToDay={setActiveRoutineIndex}
-                            onMenuPress={() => router.push('/routines')}
-                        />
-                    ) : (
-                        <HollowedCard className="p-8 mb-8">
-                            <Text className="text-base text-light-muted dark:text-dark-muted text-center">
-                                Select a routine to start tracking your progress.
-                            </Text>
-                        </HollowedCard>
                     )}
                 </View>
 			</ScrollView>
@@ -492,7 +445,7 @@ function Workout() {
                                     <TouchableOpacity
                                         onPress={() => {
                                             setIsDayModalVisible(false);
-                                            handleStartEmpty(activeRoutineObj?.id);
+                                            handleStartEmpty();
                                         }}
                                         className="py-2.5 px-5 rounded-full bg-primary dark:bg-primary-dark"
                                     >

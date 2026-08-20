@@ -6,7 +6,6 @@ const STORAGE_KEYS = [
     "myhealth_workout_exercises",
     "myhealth_workout_seconds",
     "myhealth_workout_name",
-    "myhealth_workout_routine_id",
     "myhealth_workout_source_id",
     "myhealth_workout_running",
     "myhealth_workout_last_tick",
@@ -18,13 +17,11 @@ interface UseActiveWorkoutPersistenceProps {
     workoutSeconds: number;
     workoutName: string;
     isRunning: boolean;
-    routineId: string | null;
     sourceWorkoutId: string | null;
     currentIndex: number;
     setExercises: (exercises: Exercise[]) => void;
     setWorkoutSeconds: (seconds: number) => void;
     setWorkoutName: (name: string) => void;
-    setRoutineId: (id: string | null) => void;
     setSourceWorkoutId: (id: string | null) => void;
     setCurrentIndex: (index: number) => void;
     setRunning: (running: boolean) => void;
@@ -37,13 +34,11 @@ export function useActiveWorkoutPersistence({
     workoutSeconds,
     workoutName,
     isRunning,
-    routineId,
     sourceWorkoutId,
     currentIndex,
     setExercises,
     setWorkoutSeconds,
     setWorkoutName,
-    setRoutineId,
     setSourceWorkoutId,
     setCurrentIndex,
     setRunning,
@@ -116,10 +111,6 @@ export function useActiveWorkoutPersistence({
                     setWorkoutName(data["myhealth_workout_name"]);
                 }
 
-                if (data["myhealth_workout_routine_id"]) {
-                    setRoutineId(data["myhealth_workout_routine_id"]);
-                }
-
                 if (data["myhealth_workout_source_id"]) {
                     setSourceWorkoutId(data["myhealth_workout_source_id"]);
                 }
@@ -148,7 +139,7 @@ export function useActiveWorkoutPersistence({
     workoutSecondsRef.current = workoutSeconds;
 
     // Persist to local storage - fires on meaningful state changes
-    // (exercises/name/running/routine/index), not on every timer tick.
+    // (exercises/name/running/index), not on every timer tick.
     // Debounced: `exercises` gets a new array reference on every keystroke/
     // wheel-scroll tick (updateExercise), and this save JSON.stringifies the
     // whole exercises array + hits AsyncStorage, so firing it synchronously
@@ -187,12 +178,6 @@ export function useActiveWorkoutPersistence({
                     ["myhealth_workout_current_index", currentIndex.toString()],
                 ];
 
-                if (routineId) {
-                    pairs.push(["myhealth_workout_routine_id", routineId]);
-                } else {
-                    await AsyncStorage.removeItem("myhealth_workout_routine_id");
-                }
-
                 if (sourceWorkoutId) {
                     pairs.push(["myhealth_workout_source_id", sourceWorkoutId]);
                 } else {
@@ -215,7 +200,6 @@ export function useActiveWorkoutPersistence({
         exercises,
         workoutName,
         isRunning,
-        routineId,
         sourceWorkoutId,
         currentIndex,
         hasActiveSession,

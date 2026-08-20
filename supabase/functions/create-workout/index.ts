@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
         }
 
         const body = await req.json().catch(() => null);
-        const { workout_name, exercises, user_id, routine_id } = body || {};
+        const { workout_name, exercises, user_id } = body || {};
 
         if (!workout_name || typeof workout_name !== "string") {
             return new Response(
@@ -52,7 +52,6 @@ Deno.serve(async (req) => {
                 user_id,
                 workout_name: workout_name.trim(),
                 notes: JSON.stringify(exercises || []), // Keep JSON fallback
-                routine_id: routine_id || null,
             }])
             .select()
             .single();

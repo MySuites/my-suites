@@ -128,7 +128,7 @@ describe('Saved Workouts & Template Editor', () => {
             // Find Play button (Icon:play.fill)
             fireEvent.press(getByText('Icon:play.fill'), { stopPropagation: jest.fn() });
             
-            expect(mockStartWorkout).toHaveBeenCalledWith([], 'Leg Day', undefined, 'w1');
+            expect(mockStartWorkout).toHaveBeenCalledWith([], 'Leg Day', 'w1');
             expect(mockRouter.back).toHaveBeenCalled();
         });
         

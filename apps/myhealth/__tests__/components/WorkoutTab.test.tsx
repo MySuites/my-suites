@@ -49,20 +49,9 @@ jest.mock('../../providers/ActiveWorkoutProvider', () => ({
 jest.mock('../../providers/WorkoutManagerProvider', () => ({
     useWorkoutManager: () => ({
         savedWorkouts: [],
-        routines: [],
-        activeRoutine: null,
-        setActiveRoutineIndex: jest.fn(),
         deleteSavedWorkout: jest.fn(),
         workoutHistory: [],
     }),
-}));
-
-jest.mock('../../hooks/routines/useRoutineManager', () => ({
-    useRoutineTimeline: () => [],
-}));
-
-jest.mock('../../components/routines/ActiveRoutineCard', () => ({
-    ActiveRoutineCard: () => null,
 }));
 
 jest.mock('../../components/workouts/SavedWorkoutItem', () => ({

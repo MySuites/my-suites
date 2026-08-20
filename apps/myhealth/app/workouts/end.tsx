@@ -79,7 +79,6 @@ export default function EndWorkoutScreen() {
         finishWorkout,
         cancelWorkout,
         sourceWorkoutId,
-        routineId 
     } = useActiveWorkout();
     
     const { workoutSeconds } = useActiveWorkoutTimer();
@@ -346,8 +345,8 @@ export default function EndWorkoutScreen() {
             return;
         } 
         
-        // Only prompt for NEW template if there was no SOURCE template and it's not a routine
-        if (totalExercises > 0 && !routineId) {
+        // Only prompt for NEW template if there was no SOURCE template
+        if (totalExercises > 0) {
             Alert.alert(
                 "Save as Template?",
                 "Would you like to save this workout as a template for future use?",
@@ -372,7 +371,7 @@ export default function EndWorkoutScreen() {
             return;
         }
 
-        // Catch-all for routines or empty workouts with no exercises
+        // Catch-all for empty workouts with no exercises
         finalize();
     };
 

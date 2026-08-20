@@ -8,7 +8,6 @@ export async function fetchUserWorkouts(user: any) {
         .from("workouts")
         .select("*")
         .eq("user_id", user.id)
-        .is("routine_id", null)
         .order("created_at", { ascending: false });
     return { data, error };
 }
@@ -17,7 +16,6 @@ export async function persistWorkoutToSupabase(
     user: any,
     workoutName: string,
     exercises: Exercise[],
-    routineId?: string,
 ) {
     if (!user) return { error: "User not logged in" };
 
@@ -31,7 +29,6 @@ export async function persistWorkoutToSupabase(
                 workout_name: workoutName.trim(),
                 exercises: exercises,
                 user_id: user.id,
-                routine_id: routineId,
             },
         });
 
