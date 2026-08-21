@@ -2,13 +2,6 @@
 import { fetchExerciseStats, fetchLastExercisePerformance } from '../utils/workout-api/exercises';
 import { DataRepository } from '../providers/DataRepository';
 
-// Mock Supabase 
-jest.mock('@mysuite/auth', () => ({
-  supabase: {
-    from: jest.fn(),
-  },
-}));
-
 // Mock DataRepository
 jest.mock('../providers/DataRepository', () => ({
   DataRepository: {

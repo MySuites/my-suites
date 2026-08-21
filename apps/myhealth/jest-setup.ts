@@ -26,24 +26,6 @@ jest.mock("expo-audio", () => ({
 }));
 
 jest.mock("@mysuite/auth", () => ({
-    supabase: {
-        auth: {
-            getSession: jest.fn(),
-            signInWithPassword: jest.fn(),
-            signOut: jest.fn(),
-            onAuthStateChange: jest.fn(() => ({
-                data: { subscription: { unsubscribe: jest.fn() } },
-            })),
-        },
-        from: jest.fn(() => ({
-            select: jest.fn(() => ({
-                eq: jest.fn(() => ({
-                    single: jest.fn(),
-                    maybeSingle: jest.fn(),
-                })),
-            })),
-        })),
-    },
     useAuth: jest.fn(() => ({ session: null, user: null })),
 }));
 

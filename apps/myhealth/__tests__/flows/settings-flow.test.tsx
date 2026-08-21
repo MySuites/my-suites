@@ -1,21 +1,13 @@
 import React from 'react';
 import { render, fireEvent, act } from '@testing-library/react-native';
 import { Alert, TouchableOpacity as MockTouchableOpacity } from 'react-native';
-import { useAuth, supabase } from '@mysuite/auth';
+import { useAuth } from '@mysuite/auth';
 import SettingsScreen from '../../app/settings/index';
 import { NotificationService } from '../../services/NotificationService';
 
 // Mock dependencies
 jest.mock('@mysuite/auth', () => ({
     useAuth: jest.fn(),
-    supabase: {
-        auth: {
-            signOut: jest.fn(() => Promise.resolve({ error: null })),
-        },
-        functions: {
-            invoke: jest.fn(() => Promise.resolve({ data: null, error: null })),
-        }
-    }
 }));
 
 jest.mock('expo-router', () => ({

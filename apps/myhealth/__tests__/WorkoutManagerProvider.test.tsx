@@ -22,12 +22,6 @@ jest.mock('../providers/DataRepository', () => ({
 const mockUseAuth = jest.fn();
 jest.mock('@mysuite/auth', () => ({
     useAuth: () => mockUseAuth(),
-    supabase: {
-        from: jest.fn(),
-        auth: {
-            getSession: jest.fn(),
-        }
-    }
 }));
 
 // Mock Alert

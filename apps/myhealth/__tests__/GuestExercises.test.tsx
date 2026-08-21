@@ -2,13 +2,6 @@
 import { fetchExercises } from '../utils/workout-api/exercises';
 import ExerciseDefaultData from '../assets/data/default-exercises';
 
-// Mock Supabase 
-jest.mock('@mysuite/auth', () => ({
-  supabase: {
-    from: jest.fn(),
-  },
-}));
-
 describe('Guest Exercise Fetching', () => {
   it('should return default exercises when user is null', async () => {
     const { data, error } = await fetchExercises(null);
