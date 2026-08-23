@@ -401,43 +401,7 @@ export default function ExerciseDetailsScreen({
                                              <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{String(exercise.angle)}</Text>
                                          </View>
                                     )}
-                                    {selectedAttachmentVal && (
-                                         <View style={{ 
-                                             backgroundColor: theme.bgLight, 
-                                             paddingHorizontal: 12, 
-                                             paddingVertical: 6, 
-                                             borderRadius: 16,
-                                             borderWidth: 1,
-                                             borderColor: theme.border
-                                         }}>
-                                             <Text style={{ fontSize: 13, color: currentColors.text }}>{selectedAttachmentVal}</Text>
-                                         </View>
-                                    )}
-                                    {selectedEquipmentVal && selectedEquipmentVal !== 'none' && (
-                                         <View style={{ 
-                                             backgroundColor: theme.bgLight, 
-                                             paddingHorizontal: 12, 
-                                             paddingVertical: 6, 
-                                             borderRadius: 16,
-                                             borderWidth: 1,
-                                             borderColor: theme.border
-                                         }}>
-                                             <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{selectedEquipmentVal}</Text>
-                                         </View>
-                                    )}
-                                    {selectedMovementTypeVal && (
-                                         <View style={{
-                                              backgroundColor: theme.bgLight,
-                                              paddingHorizontal: 12,
-                                              paddingVertical: 6,
-                                              borderRadius: 16,
-                                              borderWidth: 1,
-                                              borderColor: theme.border
-                                          }}>
-                                              <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{selectedMovementTypeVal}</Text>
-                                         </View>
-                                    )}
-                                    {(!primaryMuscle && secondaryMuscles.length === 0 && properties.length === 0 && !exercise?.angle && !exercise?.attachment && !exercise?.movementType) && (
+                                    {(!primaryMuscle && secondaryMuscles.length === 0 && properties.length === 0 && !exercise?.angle) && (
                                         <Text style={{ fontStyle: 'italic', color: currentColors.text, opacity: 0.6 }}>No specific properties</Text>
                                     )}
                                 </>
