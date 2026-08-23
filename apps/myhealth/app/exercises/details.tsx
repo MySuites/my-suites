@@ -10,7 +10,7 @@ import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import DefaultExercises from '../../assets/data/default-exercises';
-import { DataRepository } from '../../providers/DataRepository';
+import { DataRepository, inferMovementType } from '../../providers/DataRepository';
 import { Exercise } from '../../utils/workout-api/types';
 import { VariationTree } from '../../components/exercises/VariationTree';
 import { VariationDetailModal } from '../../components/exercises/VariationDetailModal';
@@ -19,6 +19,7 @@ import { InstructionsList } from '../../components/exercises/InstructionsList';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { BottomSheetOptionPicker } from '../../components/ui/BottomSheetOptionPicker';
 import { ATTACHMENT_OPTIONS } from '../../components/workouts/AttachmentPicker';
+import { MovementTypePicker } from '../../components/workouts/MovementTypePicker';
 import { useLatestBodyWeight } from '../../hooks/workouts/useLatestBodyWeight';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import { getBodyweightLoadPercentage, getEffectiveBodyweightLoad } from '../../utils/workout-logic';
@@ -46,8 +47,10 @@ export default function ExerciseDetailsScreen({
     const [selectedAttachment, setSelectedAttachment] = useState<string>('All');
     const [selectedAttachmentVal, setSelectedAttachmentVal] = useState<string>('');
     const [selectedEquipmentVal, setSelectedEquipmentVal] = useState<string>('');
+    const [selectedMovementTypeVal, setSelectedMovementTypeVal] = useState<string>('');
     const [isAttachmentPickerVisible, setIsAttachmentPickerVisible] = useState(false);
     const [isEquipmentPickerVisible, setIsEquipmentPickerVisible] = useState(false);
+    const [isMovementTypePickerVisible, setIsMovementTypePickerVisible] = useState(false);
 
     // Initial load from params, but act as fallback/skeleton
     const initialExercise = useMemo(() => {
@@ -76,7 +79,12 @@ export default function ExerciseDetailsScreen({
         } else {
             setSelectedEquipmentVal('');
         }
-    }, [exercise?.id, exercise?.attachment, exercise?.equipment]);
+        if (exercise) {
+            setSelectedMovementTypeVal(
+                exercise.movementType || inferMovementType(exercise.name, exercise.equipment as any)
+            );
+        }
+    }, [exercise?.id, exercise?.attachment, exercise?.equipment, exercise?.movementType]);
 
     useEffect(() => {
         let isMounted = true;
@@ -417,16 +425,16 @@ export default function ExerciseDetailsScreen({
                                              <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{selectedEquipmentVal}</Text>
                                          </View>
                                     )}
-                                    {exercise?.movementType && (
-                                         <View style={{ 
-                                              backgroundColor: theme.bgLight, 
-                                              paddingHorizontal: 12, 
-                                              paddingVertical: 6, 
+                                    {selectedMovementTypeVal && (
+                                         <View style={{
+                                              backgroundColor: theme.bgLight,
+                                              paddingHorizontal: 12,
+                                              paddingVertical: 6,
                                               borderRadius: 16,
                                               borderWidth: 1,
                                               borderColor: theme.border
                                           }}>
-                                              <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{String(exercise.movementType)}</Text>
+                                              <Text style={{ fontSize: 13, color: currentColors.text, textTransform: 'capitalize' }}>{selectedMovementTypeVal}</Text>
                                          </View>
                                     )}
                                     {(!primaryMuscle && secondaryMuscles.length === 0 && properties.length === 0 && !exercise?.angle && !exercise?.attachment && !exercise?.movementType) && (
@@ -489,6 +497,32 @@ export default function ExerciseDetailsScreen({
                         </Pressable>
                     )}
 
+                    {/* Movement Type Selection Section */}
+                    {exercise && (
+                        <Pressable
+                            onPress={() => setIsMovementTypePickerVisible(true)}
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                backgroundColor: theme.bgLight,
+                                borderRadius: 12,
+                                padding: 16,
+                                marginBottom: 24,
+                            }}
+                        >
+                            <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700' }}>
+                                Select Movement Type
+                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                <Text style={{ color: currentColors.text, opacity: 0.7, fontSize: 14, textTransform: 'capitalize' }}>
+                                    {selectedMovementTypeVal || 'Choose'}
+                                </Text>
+                                <IconSymbol name="chevron.right" size={14} color={currentColors.text} />
+                            </View>
+                        </Pressable>
+                    )}
+
                     {exercise && exercise.id in ATTACHMENT_OPTIONS && (
                         <BottomSheetOptionPicker
                             visible={isAttachmentPickerVisible}
@@ -511,6 +545,15 @@ export default function ExerciseDetailsScreen({
                             }))}
                             selectedValue={selectedEquipmentVal}
                             onSelect={setSelectedEquipmentVal}
+                        />
+                    )}
+
+                    {exercise && (
+                        <MovementTypePicker
+                            visible={isMovementTypePickerVisible}
+                            currentMovementType={selectedMovementTypeVal}
+                            onClose={() => setIsMovementTypePickerVisible(false)}
+                            onSelect={setSelectedMovementTypeVal}
                         />
                     )}
 
