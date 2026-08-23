@@ -17,7 +17,7 @@ import { VariationDetailModal } from '../../components/exercises/VariationDetail
 import { ExerciseAdvancedSection } from '../../components/exercises/ExerciseAdvancedSection';
 import { InstructionsList } from '../../components/exercises/InstructionsList';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
-import { PillPicker } from '../../components/ui/PillPicker';
+import { BottomSheetOptionPicker } from '../../components/ui/BottomSheetOptionPicker';
 import { ATTACHMENT_OPTIONS } from '../../components/workouts/AttachmentPicker';
 import { useLatestBodyWeight } from '../../hooks/workouts/useLatestBodyWeight';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
@@ -46,6 +46,8 @@ export default function ExerciseDetailsScreen({
     const [selectedAttachment, setSelectedAttachment] = useState<string>('All');
     const [selectedAttachmentVal, setSelectedAttachmentVal] = useState<string>('');
     const [selectedEquipmentVal, setSelectedEquipmentVal] = useState<string>('');
+    const [isAttachmentPickerVisible, setIsAttachmentPickerVisible] = useState(false);
+    const [isEquipmentPickerVisible, setIsEquipmentPickerVisible] = useState(false);
 
     // Initial load from params, but act as fallback/skeleton
     const initialExercise = useMemo(() => {
@@ -437,7 +439,60 @@ export default function ExerciseDetailsScreen({
 
                     {/* Attachment Selection Section for Lat Pulldown / Seated Cable Row */}
                     {exercise && exercise.id in ATTACHMENT_OPTIONS && (
-                        <PillPicker
+                        <Pressable
+                            onPress={() => setIsAttachmentPickerVisible(true)}
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                backgroundColor: theme.bgLight,
+                                borderRadius: 12,
+                                padding: 16,
+                                marginBottom: 24,
+                            }}
+                        >
+                            <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700' }}>
+                                Select Attachment
+                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                <Text style={{ color: currentColors.text, opacity: 0.7, fontSize: 14 }}>
+                                    {selectedAttachmentVal || 'Choose'}
+                                </Text>
+                                <IconSymbol name="chevron.right" size={14} color={currentColors.text} />
+                            </View>
+                        </Pressable>
+                    )}
+
+                    {/* Equipment Selection Section */}
+                    {exercise && Array.isArray(exercise.equipment) && exercise.equipment.length > 1 && (
+                        <Pressable
+                            onPress={() => setIsEquipmentPickerVisible(true)}
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                backgroundColor: theme.bgLight,
+                                borderRadius: 12,
+                                padding: 16,
+                                marginBottom: 24,
+                            }}
+                        >
+                            <Text style={{ color: currentColors.text, fontSize: 16, fontWeight: '700' }}>
+                                Select Equipment
+                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                <Text style={{ color: currentColors.text, opacity: 0.7, fontSize: 14, textTransform: 'capitalize' }}>
+                                    {selectedEquipmentVal || 'Choose'}
+                                </Text>
+                                <IconSymbol name="chevron.right" size={14} color={currentColors.text} />
+                            </View>
+                        </Pressable>
+                    )}
+
+                    {exercise && exercise.id in ATTACHMENT_OPTIONS && (
+                        <BottomSheetOptionPicker
+                            visible={isAttachmentPickerVisible}
+                            onClose={() => setIsAttachmentPickerVisible(false)}
                             title="Select Attachment"
                             options={ATTACHMENT_OPTIONS[exercise.id].map((att) => ({ value: att, label: att }))}
                             selectedValue={selectedAttachmentVal}
@@ -445,9 +500,10 @@ export default function ExerciseDetailsScreen({
                         />
                     )}
 
-                    {/* Equipment Selection Section */}
                     {exercise && Array.isArray(exercise.equipment) && exercise.equipment.length > 1 && (
-                        <PillPicker
+                        <BottomSheetOptionPicker
+                            visible={isEquipmentPickerVisible}
+                            onClose={() => setIsEquipmentPickerVisible(false)}
                             title="Select Equipment"
                             options={exercise.equipment.map((eqName: string) => ({
                                 value: eqName,
