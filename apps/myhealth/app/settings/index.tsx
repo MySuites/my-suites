@@ -30,8 +30,8 @@ const PRIVACY_POLICY_URL = 'https://mysuites.github.io/my-suites/privacy_policy.
 const TERMS_OF_SERVICE_URL = 'https://mysuites.github.io/my-suites/tos.html';
 
 const UNIT_SYSTEM_OPTIONS = [
-  { label: 'lb', value: 'imperial' as const },
-  { label: 'kg', value: 'metric' as const },
+  { label: 'Imperial', value: 'imperial' as const },
+  { label: 'Metric', value: 'metric' as const },
 ];
 
 export default function SettingsScreen() {
@@ -377,7 +377,6 @@ export default function SettingsScreen() {
             testID="sound-switch"
             label="Allow Sound Effects"
             labelBold
-            bordered={false}
             value={isSoundEnabled}
             onValueChange={async (value) => {
               await setIsSoundEnabled(value);
@@ -387,6 +386,16 @@ export default function SettingsScreen() {
               });
             }}
           />
+          <View className="flex-row justify-between items-center py-3">
+            <Text className="text-base text-light dark:text-dark font-medium">Units</Text>
+            <View style={{ width: 180 }}>
+              <SegmentedControl
+                options={UNIT_SYSTEM_OPTIONS}
+                value={unitSystem}
+                onChange={handleUpdateUnitSystem}
+              />
+            </View>
+          </View>
         </SettingsSection>
 
         <SettingsSection title="Photos">
@@ -402,19 +411,6 @@ export default function SettingsScreen() {
               });
             }}
           />
-        </SettingsSection>
-
-        <SettingsSection title="Units">
-          <View className="flex-row justify-between items-center py-3">
-            <Text className="text-base text-light dark:text-dark font-medium">Weight Units</Text>
-            <View style={{ width: 120 }}>
-              <SegmentedControl
-                options={UNIT_SYSTEM_OPTIONS}
-                value={unitSystem}
-                onChange={handleUpdateUnitSystem}
-              />
-            </View>
-          </View>
         </SettingsSection>
 
         <SettingsSection title="Body">
