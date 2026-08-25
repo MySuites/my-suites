@@ -17,7 +17,7 @@ export const NAV_TABS: NavTab[] = [
   { key: 'sleep', href: '/(tabs)/sleep', match: ['/sleep', '/(tabs)/sleep'], dashboardMatch: ['/sleep', '/(tabs)/sleep'], icon: 'moon.zzz.fill', label: 'Sleep' },
   { key: 'mind', href: '/(tabs)/mind', match: ['/mind', '/(tabs)/mind'], dashboardMatch: ['/mind', '/(tabs)/mind'], icon: 'brain.head.profile', label: 'Mind' },
   { key: 'profile', href: '/(tabs)', match: ['/', '/index', '/(tabs)', '/(tabs)/index'], dashboardMatch: ['/', '/index', '/(tabs)', '/(tabs)/index'], icon: 'person.fill', label: 'Profile' },
-  { key: 'workout', href: '/(tabs)/workout', match: ['/workout', '/(tabs)/workout', '/exercises', '/(tabs)/exercises'], dashboardMatch: ['/workout', '/(tabs)/workout'], icon: 'dumbbell.fill', label: 'Workout' },
+  { key: 'workout', href: '/(tabs)/workout', match: ['/workout', '/(tabs)/workout', '/exercises', '/(tabs)/exercises', '/saved', '/(tabs)/saved'], dashboardMatch: ['/workout', '/(tabs)/workout'], icon: 'dumbbell.fill', label: 'Workout' },
   { key: 'nutrition', href: '/(tabs)/nutrition', match: ['/nutrition', '/(tabs)/nutrition'], dashboardMatch: ['/nutrition', '/(tabs)/nutrition'], icon: 'fork.knife', label: 'Nutrition' },
 ];
 

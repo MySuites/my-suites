@@ -37,7 +37,6 @@ function RootLayoutNav() {
       <Stack.Screen name="settings/developer/database" options={{ headerShown: false }} />
       <Stack.Screen name="settings/ai-models" options={{ headerShown: false }} />
       <Stack.Screen name="exercises/details" options={{ headerShown: false }} />
-      <Stack.Screen name="workouts/saved" options={{ title: 'Saved Workouts', headerShown: false }} />
       <Stack.Screen name="workouts/details" options={{ headerShown: false }} />
       <Stack.Screen name="history/index" options={{ headerShown: false }} />
       <Stack.Screen name="progress-pictures/index" options={{ headerShown: false }} />

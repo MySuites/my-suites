@@ -292,7 +292,7 @@ function Workout() {
                     <View className="flex-row justify-between items-end mb-3">
                         <Text className="text-lg font-semibold text-light dark:text-dark">Saved Workouts</Text>
                         <TouchableOpacity 
-                            onPress={() => router.push('/workouts/saved')}
+                            onPress={() => router.navigate('/(tabs)/saved' as any)}
                             className="py-1.5 rounded-lg active:opacity-50"
                         >
                             <Text className="text-black dark:text-white text-sm">See all</Text>
@@ -358,6 +358,11 @@ function Workout() {
                     icon="dumbbell.fill"
                     label="Exercises"
                     onPress={() => router.navigate('/(tabs)/exercises' as any)}
+                />
+                <BottomNavButton
+                    icon="list.bullet.clipboard"
+                    label="Saved"
+                    onPress={() => router.navigate('/(tabs)/saved' as any)}
                 />
                 <BottomNavButton
                     icon="line.3.horizontal"

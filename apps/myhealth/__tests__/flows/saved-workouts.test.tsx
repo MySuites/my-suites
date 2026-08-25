@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import SavedWorkoutsScreen from '../../app/workouts/saved';
+import SavedWorkoutsScreen from '../../app/(tabs)/saved';
 import CreateWorkoutScreen from '../../app/workouts/details';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
@@ -23,7 +23,8 @@ jest.mock('../../providers/ActiveWorkoutProvider', () => ({
 jest.mock('expo-router', () => ({
     useRouter: jest.fn(),
     useLocalSearchParams: jest.fn(),
-    usePathname: jest.fn()
+    usePathname: jest.fn(() => '/(tabs)/saved'),
+    useFocusEffect: jest.fn(),
 }));
 
 jest.mock('@mysuite/auth', () => ({
@@ -87,7 +88,7 @@ jest.mock('../../hooks/workouts/useWorkoutDraft', () => ({
 }));
 
 describe('Saved Workouts & Template Editor', () => {
-    const mockRouter = { push: jest.fn(), back: jest.fn() };
+    const mockRouter = { push: jest.fn(), back: jest.fn(), navigate: jest.fn() };
     const mockStartWorkout = jest.fn();
     
     beforeEach(() => {
@@ -129,7 +130,7 @@ describe('Saved Workouts & Template Editor', () => {
             fireEvent.press(getByText('Icon:play.fill'), { stopPropagation: jest.fn() });
             
             expect(mockStartWorkout).toHaveBeenCalledWith([], 'Leg Day', 'w1');
-            expect(mockRouter.back).toHaveBeenCalled();
+            expect(mockRouter.navigate).toHaveBeenCalledWith('/(tabs)/workout');
         });
         
         it('navigates to editor when creating new', () => {

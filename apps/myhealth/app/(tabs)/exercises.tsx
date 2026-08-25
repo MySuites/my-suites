@@ -450,6 +450,11 @@ export default function ExercisesScreen({
                 onPress={() => router.navigate('/(tabs)/exercises' as any)}
             />
             <BottomNavButton
+                icon="list.bullet.clipboard"
+                label="Saved"
+                onPress={() => router.navigate('/(tabs)/saved' as any)}
+            />
+            <BottomNavButton
                 icon="line.3.horizontal"
                 label="More"
                 active={menuVisible}

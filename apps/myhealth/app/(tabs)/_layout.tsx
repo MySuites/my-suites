@@ -18,6 +18,7 @@ export default function TabLayout() {
         }}
       >
         <Tabs.Screen name="exercises" />
+        <Tabs.Screen name="saved" />
         <Tabs.Screen name="sleep" />
         <Tabs.Screen name="mind" />
         <Tabs.Screen name="index" />

@@ -1,23 +1,28 @@
 import React from 'react';
 import { View, Alert, Text } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUITheme, RaisedCard, HollowedCard, Skeleton, IconSymbol } from '@mysuite/ui';
 import { useWorkoutManager } from '../../providers/WorkoutManagerProvider';
 import { SavedWorkoutItem } from '../../components/workouts/SavedWorkoutItem';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
-import { ScreenHeader } from '../../components/ui/ScreenHeader';
-import { BackButton } from '../../components/ui/BackButton';
+import { TopNavBanner } from '../../components/ui/TopNavBanner';
+import { BottomActionBar, BottomNavButton, DashboardButton } from '../../components/ui/BottomNavBar';
+import { BurgerMenu, useBurgerMenu } from '../../components/ui/BurgerMenu';
+import { WORKOUT_MENU_ITEMS } from '../../utils/burgerMenuItems';
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 function SavedWorkoutsScreen() {
   const router = useRouter();
   const theme = useUITheme();
-  
+  const insets = useSafeAreaInsets();
+  const { visible: menuVisible, toggle: toggleMenu, close: closeMenu } = useBurgerMenu();
+
   const { savedWorkouts, isLoading, deleteSavedWorkout, reorderSavedWorkouts } = useWorkoutManager();
   const { hasActiveSession, startWorkout, finishWorkout, cancelWorkout } = useActiveWorkout();
   const [activeSwipedCardId, setActiveSwipedCardId] = React.useState<string | null>(null);
-  
+
 
   const handleStart = (id: string, name: string, workoutExercises: any[]) => {
       if (hasActiveSession) {
@@ -26,21 +31,21 @@ function SavedWorkoutsScreen() {
               "You have an active workout. What would you like to do?",
               [
                   { text: "Cancel", style: "cancel" },
-                  { text: "Stop Current", onPress: () => { finishWorkout(); router.back(); } },
-                  { 
-                      text: "Replace", 
-                      style: "destructive", 
+                  { text: "Stop Current", onPress: () => { finishWorkout(); router.navigate('/(tabs)/workout' as any); } },
+                  {
+                      text: "Replace",
+                      style: "destructive",
                       onPress: () => {
                           cancelWorkout();
                           setTimeout(() => startWorkout(workoutExercises || [], name, id), 100);
-                          router.back();
+                          router.navigate('/(tabs)/workout' as any);
                       }
                   }
               ]
           );
       } else {
           startWorkout(workoutExercises || [], name, id);
-          router.back();
+          router.navigate('/(tabs)/workout' as any);
       }
   };
 
@@ -49,26 +54,25 @@ function SavedWorkoutsScreen() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View className="flex-1 bg-light dark:bg-dark">
-        <ScreenHeader
-          title="Saved Workouts"
-          leftAction={<BackButton />}
-        rightAction={
-            <RaisedCard 
+        <View
+            className="px-4"
+            style={{ position: 'absolute', bottom: 70 + insets.bottom, left: 0, zIndex: 50 }}
+        >
+            <RaisedCard
                 onPress={() => router.push('/workouts/details')}
                 style={{ borderRadius: 9999 }}
                 className="w-12 h-12 p-0 my-0 rounded-full items-center justify-center"
             >
-                <IconSymbol 
-                    name="square.and.pencil" 
-                    size={24} 
-                    color={theme.primary} 
+                <IconSymbol
+                    name="square.and.pencil"
+                    size={24}
+                    color={theme.primary}
                 />
             </RaisedCard>
-        }
-      />
-      
+        </View>
+
       {isLoading ? (
-          <View className="mt-28 flex-1 px-4">
+          <View style={{ paddingTop: 160 }} className="flex-1 px-4">
               {[1, 2, 3, 4, 5].map((i) => (
                   <RaisedCard key={i} className="flex-row items-center justify-between p-4 mb-3">
                       <View className="flex-1">
@@ -80,7 +84,7 @@ function SavedWorkoutsScreen() {
               ))}
           </View>
       ) : savedWorkouts.length === 0 ? (
-          <View className="mt-28 flex-1 p-4">
+          <View style={{ paddingTop: 160 }} className="flex-1 p-4">
               <HollowedCard className="p-8 w-full">
                   <Text className="text-base text-center leading-6 text-light-muted dark:text-dark-muted">
                       No saved workouts found. Create one to get started!
@@ -116,15 +120,43 @@ function SavedWorkoutsScreen() {
             )}
             style={{ flex: 1 }}
             containerStyle={{ flex: 1 }}
-            contentContainerStyle={{ paddingBottom: 120, paddingTop: 124 }}
+            contentContainerStyle={{ paddingBottom: 100 + insets.bottom, paddingTop: 160 }}
             activationDistance={20}
           />
       )}
       </View>
+
+      <TopNavBanner />
+
+      <BottomActionBar>
+          <DashboardButton dimmed={menuVisible} />
+          <BottomNavButton
+              icon="dumbbell.fill"
+              label="Exercises"
+              onPress={() => router.navigate('/(tabs)/exercises' as any)}
+          />
+          <BottomNavButton
+              icon="list.bullet.clipboard"
+              label="Saved"
+              active
+              onPress={() => router.navigate('/(tabs)/saved' as any)}
+          />
+          <BottomNavButton
+              icon="line.3.horizontal"
+              label="More"
+              active={menuVisible}
+              boldWhenActive={false}
+              onPress={toggleMenu}
+          />
+      </BottomActionBar>
+
+      <BurgerMenu
+          visible={menuVisible}
+          onClose={closeMenu}
+          items={WORKOUT_MENU_ITEMS}
+      />
     </GestureHandlerRootView>
   );
 }
-
-
 
 export default SavedWorkoutsScreen;
