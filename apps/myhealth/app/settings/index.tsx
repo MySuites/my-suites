@@ -41,6 +41,7 @@ export default function SettingsScreen() {
   const {
     isRpeEnabled, setIsRpeEnabled,
     isHapticsEnabled, setIsHapticsEnabled,
+    isSoundEnabled, setIsSoundEnabled,
     isProgressiveOverloadEnabled, setIsProgressiveOverloadEnabled,
     progressiveOverloadRepCeiling, setProgressiveOverloadRepCeiling,
   } = useWorkoutManager();
@@ -363,12 +364,25 @@ export default function SettingsScreen() {
             testID="haptics-switch"
             label="Allow Haptic Feedback"
             labelBold
-            bordered={false}
             value={isHapticsEnabled}
             onValueChange={async (value) => {
               await setIsHapticsEnabled(value);
               showToast({
                 message: value ? "Haptic feedback enabled" : "Haptic feedback disabled",
+                type: 'success'
+              });
+            }}
+          />
+          <SettingsToggleRow
+            testID="sound-switch"
+            label="Allow Sound Effects"
+            labelBold
+            bordered={false}
+            value={isSoundEnabled}
+            onValueChange={async (value) => {
+              await setIsSoundEnabled(value);
+              showToast({
+                message: value ? "Sound effects enabled" : "Sound effects disabled",
                 type: 'success'
               });
             }}

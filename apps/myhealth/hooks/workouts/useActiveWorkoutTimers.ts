@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAudioPlayer } from "expo-audio";
+import { useWorkoutManager } from "../../providers/WorkoutManagerProvider";
 
 export function useActiveWorkoutTimers() {
+    const { isSoundEnabled } = useWorkoutManager();
     const player = useAudioPlayer(require("../../assets/sounds/timer_success.mp3"));
     const [isRunning, setRunning] = useState(false);
     const [workoutSeconds, setWorkoutSeconds] = useState(0);
@@ -17,7 +19,7 @@ export function useActiveWorkoutTimers() {
 
     const playTimerCompleteSound = async () => {
         try {
-            if (player) {
+            if (player && isSoundEnabled) {
                 player.seekTo(0);
                 player.play();
             }
