@@ -17,12 +17,30 @@ import { RaisedCard, HollowedCard, useUITheme, IconSymbol, useToast } from '@mys
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { ProgressPictureService, ProgressPictureEntry } from '../../services/ProgressPictureService';
-import { analyzeMuscleGroupsInBackground, cancelAnalysis } from '../../services/ai/analyzeProgressPicture';
-import { useAnalysisStatus } from '../../hooks/ai/useActiveAnalysis';
+import {
+    AnalysisStatus,
+    analyzeMuscleGroupsInBackground,
+    cancelAnalysis,
+    getAnalysisStatus,
+    subscribeAnalysisStatus,
+} from '../../services/ai/analyzeProgressPicture';
 
 const { width } = Dimensions.get('window');
 const GAP = 10;
 const COLUMN_WIDTH = (width - 32 - (GAP * 2)) / 3; // 3 column layout with padding
+
+// Tracks which progress picture is currently mid-analysis and which are
+// queued behind it, so the UI can show a spinner on the active one and a
+// spinner+pause on queued ones - the underlying model only runs one at a time.
+function useAnalysisStatus(): AnalysisStatus {
+    const [status, setStatus] = useState<AnalysisStatus>(getAnalysisStatus());
+
+    useEffect(() => {
+        return subscribeAnalysisStatus(setStatus);
+    }, []);
+
+    return status;
+}
 
 export default function ProgressPicturesScreen() {
     const { user } = useAuth();

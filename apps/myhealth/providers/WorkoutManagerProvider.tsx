@@ -12,7 +12,8 @@ import { useSyncService } from "../hooks/useSyncService";
 import uuid from 'react-native-uuid';
 import { storage } from "../utils/storage";
 import { DEFAULT_REP_CEILING } from "../utils/progressiveOverload";
-import { REP_CEILING_STORAGE_KEY } from "../utils/progressiveOverloadSettings";
+
+const REP_CEILING_STORAGE_KEY = 'setting.workout.progressiveOverloadRepCeiling';
 
 
 // Re-export types for compatibility

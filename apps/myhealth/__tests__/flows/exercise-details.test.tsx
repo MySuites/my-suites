@@ -31,7 +31,8 @@ jest.mock('../../providers/WorkoutManagerProvider', () => ({
 jest.mock('../../providers/DataRepository', () => ({
     DataRepository: {
         getExercises: jest.fn(() => Promise.resolve([])),
-    }
+    },
+    inferMovementType: jest.fn(() => 'uniform'),
 }));
 
 jest.mock('@mysuite/ui', () => ({

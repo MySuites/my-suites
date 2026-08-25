@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Keyboard, TouchableWithoutFeedback, ScrollView, Pressable, Image } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,10 +19,10 @@ import { WorkoutOverviewChart } from '../../components/workouts/WorkoutOverviewC
 import { WorkoutDraftExerciseItem } from '../../components/workouts/WorkoutDraftExerciseItem';
 import { WorkoutStatsCard } from '../../components/workouts/WorkoutStatsCard';
 import { WorkoutHeaderMenu } from '../../components/workouts/WorkoutHeaderMenu';
-import { ProgressPictureStrip } from '../../components/workouts/ProgressPictureStrip';
 import { FullScreenImageViewer } from '../../components/workouts/FullScreenImageViewer';
 import { formatRestTime } from '../../utils/formatting';
 import { areExercisesEqual } from '../../utils/workout-logic';
+import { resolveImageUri } from '../../utils/progressPictures';
 
 const DETAILS_TABS = [
     { label: 'Details', value: 'details' as const },
@@ -442,8 +442,37 @@ export default function CreateWorkoutScreen() {
                             <WorkoutStatsCard historyItem={historyItem} unitSystem={unitSystem} />
                         )}
 
-                        {!isEditing && activeTab === 'details' && (
-                            <ProgressPictureStrip imageUrls={workoutLogImageUrls} onSelect={setSelectedImage} />
+                        {!isEditing && activeTab === 'details' && workoutLogImageUrls.length > 0 && (
+                            <View style={{ marginBottom: 20 }}>
+                                <Text className="font-semibold text-light dark:text-dark mb-3 text-lg">Progress Pictures</Text>
+                                <ScrollView
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={{ gap: 12 }}
+                                >
+                                    {workoutLogImageUrls.map((rawUri: string, idx: number) => {
+                                        const uri = resolveImageUri(rawUri);
+                                        return (
+                                            <Pressable
+                                                key={idx}
+                                                onPress={() => setSelectedImage(uri)}
+                                                style={{
+                                                    width: 100,
+                                                    height: 100,
+                                                    borderRadius: 12,
+                                                    overflow: 'hidden',
+                                                    backgroundColor: 'rgba(0,0,0,0.05)',
+                                                }}
+                                            >
+                                                <Image
+                                                    source={{ uri }}
+                                                    style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
+                                                />
+                                            </Pressable>
+                                        );
+                                    })}
+                                </ScrollView>
+                            </View>
                         )}
 
                         {(isEditing || activeTab === 'details') && (

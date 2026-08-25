@@ -1,9 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { BodyWeightChart } from './BodyWeightChart';
 import { SegmentedControlOption } from '../ui/SegmentedControl';
 import { HollowedCard, useUITheme, Skeleton, IconSymbol, RaisedCard } from '@mysuite/ui';
-import { DateRange } from '../ui/TimeSeriesChart';
+import { TimeSeriesChart, DateRange } from '../ui/TimeSeriesChart';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import { MetricDetailModal } from '../dashboard/MetricDetailModal';
 
@@ -214,10 +213,10 @@ export function BodyWeightCard({
         primaryColor={primaryColor}
       >
         {history.length > 0 ? (
-          <BodyWeightChart
+          <TimeSeriesChart
             data={history}
-            color={primaryColor}
-            textColor={textColor}
+            color={primaryColor ?? '#3b82f6'}
+            textColor={textColor ?? '#9ca3af'}
             maxPoints={
               selectedRange === 'Day' ? 8 :
               selectedRange === 'Week' ? 7 :
@@ -234,6 +233,8 @@ export function BodyWeightCard({
                 setSelectedPoint(point);
               }
             }}
+            height={150}
+            paddingHorizontal={32}
           />
         ) : (
           <View className="py-8 bg-gray-50/50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-white/10">

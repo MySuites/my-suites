@@ -18,12 +18,15 @@ import { StrengthRankCard } from '../../components/dashboard/StrengthRankCard';
 import { WidgetGrid } from '../../components/dashboard/WidgetGrid';
 import { useBodyWeightTrend } from '../../hooks/bodyweight/useBodyWeightTrend';
 import { useWorkoutVolumeTrend } from '../../hooks/workouts/useWorkoutVolumeTrend';
-import { useWeeklyGoal } from '../../hooks/workouts/useWeeklyGoal';
-import { useStrengthRankWidget } from '../../hooks/workouts/useStrengthRankWidget';
+import { useStrengthRanks } from '../../hooks/workouts/useStrengthRanks';
 import { useMuscleVolumes } from '../../hooks/dashboard/useMuscleVolumes';
 import { storage } from '../../utils/storage';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
 import { WIDGET_ORDER_STORAGE_KEY, DEFAULT_WIDGET_ORDER, WidgetId } from '../../utils/widgetOrder';
+import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
+import { getCurrentWeekRange } from '../../components/dashboard/WeeklyCompletionRing';
+import { RANKING_SEX_STORAGE_KEY, DEFAULT_RANKING_SEX, StrengthSex } from '../../utils/strengthStandards';
+import { HEIGHT_STORAGE_KEY } from '../../utils/height';
 
 export default function ProfileScreen() {
   const { user } = useAuth();
@@ -77,15 +80,63 @@ export default function ProfileScreen() {
     storage.setItem(WIDGET_ORDER_STORAGE_KEY, order);
   }, []);
 
-  const { weeklyGoal, weeklyCompletedCount } = useWeeklyGoal(workoutHistory);
+  const [weeklyGoal, setWeeklyGoal] = useState(DEFAULT_WEEKLY_GOAL);
 
-  const {
-    strengthBests,
-    strengthLoading,
-    rankingSex,
-    handleChangeRankingSex,
-    heightInches,
-  } = useStrengthRankWidget(user);
+  const loadWeeklyGoal = useCallback(() => {
+    storage.getItem<number>(WEEKLY_GOAL_STORAGE_KEY).then((goal) => {
+      if (goal !== null) setWeeklyGoal(goal);
+    });
+  }, []);
+
+  useEffect(() => {
+    loadWeeklyGoal();
+  }, [loadWeeklyGoal]);
+
+  // Re-check the goal whenever the screen regains focus, so a change made in
+  // Settings shows up immediately without needing to reload the whole app.
+  useFocusEffect(useCallback(() => {
+    loadWeeklyGoal();
+  }, [loadWeeklyGoal]));
+
+  const weeklyCompletedCount = useMemo(() => {
+    const { start, end } = getCurrentWeekRange();
+    return (workoutHistory || []).filter((log: WorkoutLog) => {
+      if (!log.workoutDate) return false;
+      const d = new Date(log.workoutDate);
+      return d >= start && d < end;
+    }).length;
+  }, [workoutHistory]);
+
+  const [rankingSex, setRankingSex] = useState<StrengthSex>(DEFAULT_RANKING_SEX);
+  useEffect(() => {
+    storage.getItem<StrengthSex>(RANKING_SEX_STORAGE_KEY).then((sex) => {
+      if (sex === 'male' || sex === 'female') setRankingSex(sex);
+    });
+  }, []);
+
+  const handleChangeRankingSex = useCallback(async (sex: StrengthSex) => {
+    setRankingSex(sex);
+    await storage.setItem(RANKING_SEX_STORAGE_KEY, sex);
+  }, []);
+
+  const { bests: strengthBests, isLoading: strengthLoading } = useStrengthRanks(user);
+
+  const [heightInches, setHeightInches] = useState<number | null>(null);
+  const loadHeight = useCallback(() => {
+    storage.getItem<number>(HEIGHT_STORAGE_KEY).then((height) => {
+      if (height !== null) setHeightInches(height);
+    });
+  }, []);
+
+  useEffect(() => {
+    loadHeight();
+  }, [loadHeight]);
+
+  // Re-check on focus too, same reasoning as weekly goal — height is set
+  // from Settings, a separate screen.
+  useFocusEffect(useCallback(() => {
+    loadHeight();
+  }, [loadHeight]));
 
   const handleSaveWeight = async (weight: number, date: Date) => {
     try {

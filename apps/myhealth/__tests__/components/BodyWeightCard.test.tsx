@@ -2,9 +2,9 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { BodyWeightCard } from '../../components/bodyweight/BodyWeightCard';
 
-// Mock BodyWeightChart to avoid canvas/library rendering issues
-jest.mock('../../components/bodyweight/BodyWeightChart', () => ({
-  BodyWeightChart: () => null,
+// Mock TimeSeriesChart to avoid canvas/library rendering issues
+jest.mock('../../components/ui/TimeSeriesChart', () => ({
+  TimeSeriesChart: () => null,
 }));
 
 // Mock @mysuite/ui locally to forward props for RaisedCard and HollowedCard

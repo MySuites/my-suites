@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, useWindowDimensions, Animated as RNAnimated, ScrollView } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useUITheme } from '@mysuite/ui';
-import { useSetPagerScrollLock } from '../exercises/ExerciseCard';
+import { useSetPagerScrollLock } from '../exercises/SetPagerScrollLock';
 
 type TickSize = 'lg' | 'md' | 'sm';
 
