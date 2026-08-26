@@ -14,8 +14,11 @@ import { NotificationService } from '../../services/NotificationService';
 import { storage } from '../../utils/storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as WebBrowser from 'expo-web-browser';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import { router } from 'expo-router';
 import * as Application from 'expo-application';
+import { buildUserDataExport } from '../../utils/exportUserData';
 import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
 import { WorkoutLocationTrackingService } from '../../services/WorkoutLocationTrackingService';
 import { REP_CEILING_MIN, REP_CEILING_MAX } from '../../utils/progressiveOverload';
@@ -95,6 +98,46 @@ export default function SettingsScreen() {
     await storage.setItem(HEIGHT_STORAGE_KEY, totalInches);
     syncHeightInputs(totalInches);
   };
+  const [isExportingData, setIsExportingData] = useState(false);
+  const handleExportData = async () => {
+    setIsExportingData(true);
+    try {
+        const [savedWorkouts, workoutHistory, exercises, bodyWeightHistory, progressPictures] = await Promise.all([
+            DataRepository.getWorkouts(),
+            DataRepository.getHistory(),
+            DataRepository.getExercises(),
+            DataRepository.getBodyWeightHistory(null),
+            DataRepository.getProgressPictures(null),
+        ]);
+
+        const json = buildUserDataExport({
+            savedWorkouts,
+            workoutHistory,
+            exercises,
+            bodyWeightHistory,
+            progressPictures,
+        });
+
+        const fileUri = `${FileSystem.cacheDirectory}myhealth_export_${Date.now()}.json`;
+        await FileSystem.writeAsStringAsync(fileUri, json);
+
+        if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(fileUri, {
+                mimeType: 'application/json',
+                dialogTitle: 'Export My Data',
+                UTI: 'public.json',
+            });
+        } else {
+            showToast({ message: 'Sharing is not available on this device', type: 'error' });
+        }
+    } catch (error) {
+        console.error('Export data error:', error);
+        showToast({ message: 'Failed to export data', type: 'error' });
+    } finally {
+        setIsExportingData(false);
+    }
+  };
+
   const handleDeleteData = () => {
     Alert.alert(
         "Delete All Data?",
@@ -681,6 +724,12 @@ export default function SettingsScreen() {
         </SettingsSection>
 
         <SettingsSection title="Data">
+          <SettingsLinkRow
+            testID="export-data-btn"
+            label={isExportingData ? "Exporting..." : "Export Data"}
+            icon="square.and.arrow.down"
+            onPress={handleExportData}
+          />
           <SettingsLinkRow
             testID="delete-data-btn"
             label="Delete Data"
