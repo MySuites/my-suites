@@ -405,7 +405,7 @@ export default function SettingsScreen() {
         <SettingsSection title="General">
           <SettingsToggleRow
             testID="haptics-switch"
-            label="Allow Haptic Feedback"
+            label="Haptic (Vibration) Feedback"
             labelBold
             value={isHapticsEnabled}
             onValueChange={async (value) => {
