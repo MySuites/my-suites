@@ -8,13 +8,14 @@ import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { ExerciseCard } from '../exercises/ExerciseCard';
 import { ScreenHeader } from '../ui/ScreenHeader';
 import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
-import { formatSeconds } from '../../utils/formatting';
+import { formatSeconds, formatRestTime } from '../../utils/formatting';
 import { RestTimerBar } from './ActiveWorkoutDetailScreen';
 import { default as ExercisesScreen } from '../../app/(tabs)/exercises';
 import { isOutdoorGpsExercise } from '../../utils/workout-logic';
 import { AttachmentPicker, ATTACHMENT_OPTIONS } from './AttachmentPicker';
 import { EquipmentPicker } from './EquipmentPicker';
 import { MovementTypePicker } from './MovementTypePicker';
+import { RestTimerPicker } from './RestTimerPicker';
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -42,6 +43,7 @@ function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { o
     const [isAttachmentPickerVisible, setIsAttachmentPickerVisible] = useState(false);
     const [isEquipmentPickerVisible, setIsEquipmentPickerVisible] = useState(false);
     const [isMovementTypePickerVisible, setIsMovementTypePickerVisible] = useState(false);
+    const [isRestTimerPickerVisible, setIsRestTimerPickerVisible] = useState(false);
 
     const renderReorderItem = ({ item, drag, isActive }: RenderItemParams<typeof exercises[number]>) => (
         <ScaleDecorator>
@@ -198,6 +200,25 @@ function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { o
                     </TouchableOpacity>
 
                     <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+
+                    {currentExercise && (
+                        <>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setIsMenuVisible(false);
+                                    setIsRestTimerPickerVisible(true);
+                                }}
+                                className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                            >
+                                <IconSymbol name="timer" size={16} color={theme.textMuted} style={{ marginRight: 10 }} />
+                                <Text className="text-light dark:text-dark font-semibold text-sm flex-1" style={{ flexShrink: 1 }}>
+                                    Rest Timer: {formatRestTime(currentExercise.restTime ?? 90)}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+                        </>
+                    )}
 
                     {currentExercise && equipment && (
                         <>
@@ -374,6 +395,15 @@ function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { o
             onClose={() => setIsMovementTypePickerVisible(false)}
             onSelect={(newMovementType) => updateExercise(currentIndex, { movementType: newMovementType })}
         />
+
+        {currentExercise && (
+            <RestTimerPicker
+                visible={isRestTimerPickerVisible}
+                onClose={() => setIsRestTimerPickerVisible(false)}
+                initialValue={currentExercise.restTime ?? 90}
+                onSave={(newRestTime) => updateExercise(currentIndex, { restTime: newRestTime })}
+            />
+        )}
         </>
     );
 }
@@ -644,7 +674,7 @@ export function ActiveWorkoutScreen({ onToggleView }: ActiveWorkoutScreenProps) 
             <View 
                 style={{ 
                     flex: 1, 
-                    paddingTop: insets.top + (windowHeight < 900 ? 75 : 95), 
+                    paddingTop: insets.top + (windowHeight < 900 ? 55 : 75),
                     paddingHorizontal: 16,
                 }}
             >

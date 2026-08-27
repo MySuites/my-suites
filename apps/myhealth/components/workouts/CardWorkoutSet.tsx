@@ -10,7 +10,7 @@ import { OutdoorRunPanel } from './OutdoorRunPanel';
 import { VerticalSelectorWheel } from './VerticalSelectorWheel';
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import { useUnitPreference } from '../../providers/UnitPreferenceProvider';
-import { formatSeconds, formatRestTime } from '../../utils/formatting';
+import { formatSeconds } from '../../utils/formatting';
 import { getSuggestedGoal, getSuggestedUnilateralGoal, getSuggestedDurationGoal } from '../../utils/progressiveOverload';
 import { lbToDisplay, displayToLb, roundForDisplay, snapToValues } from '../../utils/units';
 import { getEffectiveBodyweightLoad, isOutdoorGpsExercise as computeIsOutdoorGpsExercise } from '../../utils/workout-logic';
@@ -259,7 +259,6 @@ interface CardWorkoutSetProps {
     exercisePrepTime?: number;
     onUpdatePrepTime?: (prepTime: number) => void;
     isActiveSet?: boolean;
-    onPressRestTimer?: () => void;
     isCompleted: boolean;
     // True only while this exercise's page is actually the one visible on
     // screen — unlike isActiveSet, which is also true for preloaded
@@ -297,7 +296,6 @@ function CardWorkoutSetInner({
     exercisePrepTime,
     onUpdatePrepTime,
     isActiveSet = true,
-    onPressRestTimer,
     isCompleted,
     isCurrentPage = true,
     wheelsReadyDelayMs = 60,
@@ -613,25 +611,27 @@ function CardWorkoutSetInner({
     };
 
     return (
-        <View className={`w-full flex-col px-0 flex-1 ${isOutdoorGpsExercise ? 'py-0 justify-start' : 'py-1 justify-around'}`}>
+        <View className={`w-full flex-col px-0 flex-1 ${isOutdoorGpsExercise ? 'py-0 justify-start' : 'py-0 justify-around'}`}>
             {!isOutdoorGpsExercise && (
-                <View className="flex-row justify-between w-full px-0 mb-3">
-                    <View className="min-w-[80px] h-[72px] items-start justify-center p-1">
+                <View className="flex-row justify-between w-full px-0 mb-1">
+                    <View className="min-w-[80px] h-[48px] items-start justify-center p-1">
                         <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted" numberOfLines={1}>Previous</Text>
                         <Text className="text-xl font-bold text-light dark:text-dark mt-1" numberOfLines={1}>
                             {getPreviousDisplay()}
                         </Text>
                     </View>
 
-                    <TouchableOpacity
-                        onPress={() => onPressRestTimer?.()}
-                        className="min-w-[80px] h-[72px] items-end justify-center p-1 active:opacity-75"
-                    >
-                        <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted" numberOfLines={1}>Rest</Text>
-                        <Text className="text-xl font-bold text-light dark:text-dark mt-1" numberOfLines={1}>
-                            {formatRestTime(exercise.restTime ?? 90)}
-                        </Text>
-                    </TouchableOpacity>
+                    {showRPE && (
+                        <TouchableOpacity
+                            onPress={() => onPressRPE?.(index, getValue('rpe'))}
+                            className="min-w-[80px] h-[48px] items-end justify-center p-1 active:opacity-75"
+                        >
+                            <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted" numberOfLines={1}>RPE</Text>
+                            <Text className={`text-xl font-bold mt-1 ${getTextColor(getValue('rpe'))}`} numberOfLines={1}>
+                                {getValue('rpe') || '-'}
+                            </Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
             )}
 
@@ -1001,20 +1001,6 @@ function CardWorkoutSetInner({
                 />
             )}
 
-            {/* RPE - always last, under everything else in the set. */}
-            {showRPE && !isOutdoorGpsExercise && (
-                <View className="flex-row justify-end w-full px-0 mt-1">
-                    <TouchableOpacity
-                        onPress={() => onPressRPE?.(index, getValue('rpe'))}
-                        className="min-w-[80px] h-[72px] items-end justify-center p-1 active:opacity-75"
-                    >
-                        <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted" numberOfLines={1}>RPE</Text>
-                        <Text className={`text-xl font-bold mt-1 ${getTextColor(getValue('rpe'))}`} numberOfLines={1}>
-                            {getValue('rpe') || '-'}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            )}
         </View>
     );
 }

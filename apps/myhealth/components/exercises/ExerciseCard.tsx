@@ -341,7 +341,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
             </Modal>
 
              <View
-                className={horizontalSets ? (isOutdoorGpsExercise ? "pb-4 flex-1" : "py-4 flex-1") : "pt-0 px-4 pb-0"}
+                className={horizontalSets ? (isOutdoorGpsExercise ? "pb-4 flex-1" : "pt-0 pb-4 flex-1") : "pt-0 px-4 pb-0"}
                 style={horizontalSets ? { flex: 1 } : undefined}
                 onLayout={(e) => {
                     // No horizontal padding here in horizontalSets mode (see className
@@ -415,7 +415,6 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                             showCheckbox={false}
                                             showSetNumber={false}
                                             isActiveSet={i === activeSetIndex && ((isCurrent ?? false) || (preloadWheels ?? false))}
-                                            onPressRestTimer={() => setIsPickerVisible(true)}
                                             isCurrentPage={isCurrent ?? false}
                                             wheelsReadyDelayMs={wheelsReadyDelayMs}
                                             isRpeEnabled={isRpeEnabled}
@@ -448,7 +447,6 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                             latestBodyWeight={latestBodyWeight}
                             exercisePrepTime={exercise.prepTime}
                             onUpdatePrepTime={onUpdatePrepTime}
-                            onPressRestTimer={() => setIsPickerVisible(true)}
                             showSetNumber={!horizontalSets}
                             isRpeEnabled={isRpeEnabled}
                             isHapticsEnabled={isHapticsEnabled}

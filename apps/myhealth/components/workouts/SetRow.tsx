@@ -27,7 +27,6 @@ interface SetRowProps {
     showCheckbox?: boolean;
     showSetNumber?: boolean;
     isActiveSet?: boolean;
-    onPressRestTimer?: () => void;
     // Distinct from isActiveSet, which is also true for preloaded off-screen
     // neighbors (so their wheels are ready ahead of time). This is only true
     // for the page actually visible on screen right now — needed to gate
@@ -63,7 +62,6 @@ const SetRowInner = ({
     showCheckbox = true,
     showSetNumber = true,
     isActiveSet = true,
-    onPressRestTimer,
     isCurrentPage = true,
     wheelsReadyDelayMs,
     isRpeEnabled,
@@ -149,7 +147,6 @@ const SetRowInner = ({
                       exercisePrepTime={exercisePrepTime}
                       onUpdatePrepTime={onUpdatePrepTime}
                       isActiveSet={isActiveSet}
-                      onPressRestTimer={onPressRestTimer}
                       isCompleted={isCompleted}
                       isCurrentPage={isCurrentPage}
                       wheelsReadyDelayMs={wheelsReadyDelayMs}
