@@ -85,6 +85,8 @@ interface ExercisePropertyPillRowProps {
     // Active workout screen moved the movement-type pill into the exercise's
     // ellipsis menu instead; the workout builder still shows it inline here.
     showMovementType?: boolean;
+    // Same deal as showMovementType, but for the attachment pill.
+    showAttachment?: boolean;
 }
 
 // Attachment/equipment/movement-type pill row shown under an exercise's
@@ -101,10 +103,11 @@ export function ExercisePropertyPillRow({
     disabled = false,
     variant = 'default',
     showMovementType = true,
+    showAttachment = true,
 }: ExercisePropertyPillRowProps) {
     return (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 2, alignItems: 'center' }}>
-            {isAttachmentSupported && attachment && (
+            {showAttachment && isAttachmentSupported && attachment && (
                 <ExercisePropertyPill
                     icon="gearshape.fill"
                     label={attachment}
