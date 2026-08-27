@@ -12,6 +12,10 @@ import { formatSeconds } from '../../utils/formatting';
 import { RestTimerBar } from './ActiveWorkoutDetailScreen';
 import { default as ExercisesScreen } from '../../app/(tabs)/exercises';
 import { isOutdoorGpsExercise } from '../../utils/workout-logic';
+import { AttachmentPicker, ATTACHMENT_OPTIONS } from './AttachmentPicker';
+import { EquipmentPicker } from './EquipmentPicker';
+import { MovementTypePicker } from './MovementTypePicker';
+import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -23,10 +27,21 @@ function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { o
     const currentExercise = exercises[currentIndex];
     const exerciseName = currentExercise?.name || "Current Exercise";
 
+    const isAttachmentSupported = !!currentExercise && currentExercise.id in ATTACHMENT_OPTIONS;
+    const defaultAttachment = currentExercise ? ATTACHMENT_OPTIONS[currentExercise.id]?.[0] : undefined;
+    const attachment = currentExercise?.attachment || defaultAttachment;
+    const equipment = currentExercise ? (currentExercise.equipment || inferEquipment(currentExercise.name)) : undefined;
+    const movementType = currentExercise
+        ? (currentExercise.movementType || inferMovementType(currentExercise.name, equipment as string))
+        : undefined;
+
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
     const menuButtonRef = useRef<View>(null);
     const [isReorderVisible, setIsReorderVisible] = useState(false);
+    const [isAttachmentPickerVisible, setIsAttachmentPickerVisible] = useState(false);
+    const [isEquipmentPickerVisible, setIsEquipmentPickerVisible] = useState(false);
+    const [isMovementTypePickerVisible, setIsMovementTypePickerVisible] = useState(false);
 
     const renderReorderItem = ({ item, drag, isActive }: RenderItemParams<typeof exercises[number]>) => (
         <ScaleDecorator>
@@ -147,7 +162,7 @@ function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { o
                 <View className="flex-1 bg-black/25" />
 
                 <RaisedCard
-                    className="absolute w-44 p-1.5 bg-light dark:bg-dark-lighter rounded-xl"
+                    className="absolute w-56 p-1.5 bg-light dark:bg-dark-lighter rounded-xl"
                     style={{
                         top: menuPosition?.top || 100,
                         right: menuPosition?.right || 16,
@@ -183,6 +198,63 @@ function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { o
                     </TouchableOpacity>
 
                     <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+
+                    {currentExercise && equipment && (
+                        <>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setIsMenuVisible(false);
+                                    setIsEquipmentPickerVisible(true);
+                                }}
+                                className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                            >
+                                <IconSymbol name="dumbbell.fill" size={16} color={theme.textMuted} style={{ marginRight: 10 }} />
+                                <Text className="text-light dark:text-dark font-semibold text-sm flex-1" style={{ flexShrink: 1 }}>
+                                    Equipment: {equipment.charAt(0).toUpperCase() + equipment.slice(1)}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+                        </>
+                    )}
+
+                    {isAttachmentSupported && (
+                        <>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setIsMenuVisible(false);
+                                    setIsAttachmentPickerVisible(true);
+                                }}
+                                className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                            >
+                                <IconSymbol name="gearshape.fill" size={16} color={theme.textMuted} style={{ marginRight: 10 }} />
+                                <Text className="text-light dark:text-dark font-semibold text-sm flex-1" style={{ flexShrink: 1 }}>
+                                    Attachment: {attachment}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+                        </>
+                    )}
+
+                    {currentExercise && movementType && (
+                        <>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setIsMenuVisible(false);
+                                    setIsMovementTypePickerVisible(true);
+                                }}
+                                className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                            >
+                                <IconSymbol name="figure.walk" size={16} color={theme.textMuted} style={{ marginRight: 10 }} />
+                                <Text className="text-light dark:text-dark font-semibold text-sm flex-1" style={{ flexShrink: 1 }}>
+                                    Movement Type: {movementType.charAt(0).toUpperCase() + movementType.slice(1)}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+                        </>
+                    )}
 
                     <TouchableOpacity
                         onPress={() => {
@@ -277,6 +349,31 @@ function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { o
                 </View>
             </GestureHandlerRootView>
         </Modal>
+
+        <EquipmentPicker
+            visible={isEquipmentPickerVisible}
+            exerciseId={currentExercise?.id}
+            currentEquipment={equipment}
+            onClose={() => setIsEquipmentPickerVisible(false)}
+            onSelect={(newEquipment) => updateExercise(currentIndex, { equipment: newEquipment })}
+        />
+
+        {currentExercise && (
+            <AttachmentPicker
+                visible={isAttachmentPickerVisible}
+                exerciseId={currentExercise.id}
+                currentAttachment={attachment}
+                onClose={() => setIsAttachmentPickerVisible(false)}
+                onSelect={(newAttachment) => updateExercise(currentIndex, { attachment: newAttachment })}
+            />
+        )}
+
+        <MovementTypePicker
+            visible={isMovementTypePickerVisible}
+            currentMovementType={movementType}
+            onClose={() => setIsMovementTypePickerVisible(false)}
+            onSelect={(newMovementType) => updateExercise(currentIndex, { movementType: newMovementType })}
+        />
         </>
     );
 }

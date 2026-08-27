@@ -213,7 +213,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                     <View className="flex-1 bg-black/25" />
                     
                     <RaisedCard 
-                        className="absolute w-44 p-1.5 bg-light dark:bg-dark-lighter rounded-xl"
+                        className="absolute w-56 p-1.5 bg-light dark:bg-dark-lighter rounded-xl"
                         style={{ 
                             top: menuPosition?.top || 100,
                             right: menuPosition?.right || 16,
@@ -254,7 +254,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                     className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
                                 >
                                     <IconSymbol name="timer" size={16} color={theme.textMuted} style={{ marginRight: 10 }} />
-                                    <Text className="text-light dark:text-dark font-semibold text-sm">
+                                    <Text className="text-light dark:text-dark font-semibold text-sm flex-1" style={{ flexShrink: 1 }}>
                                         Rest Timer: {formatRestTime(exercise.restTime ?? 90)}
                                     </Text>
                                 </TouchableOpacity>
@@ -273,7 +273,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                     className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
                                 >
                                     <IconSymbol name="dumbbell.fill" size={16} color={theme.textMuted} style={{ marginRight: 10 }} />
-                                    <Text className="text-light dark:text-dark font-semibold text-sm">
+                                    <Text className="text-light dark:text-dark font-semibold text-sm flex-1" style={{ flexShrink: 1 }}>
                                         Equipment: {equipment.charAt(0).toUpperCase() + equipment.slice(1)}
                                     </Text>
                                 </TouchableOpacity>
@@ -292,7 +292,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                     className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
                                 >
                                     <IconSymbol name="gearshape.fill" size={16} color={theme.textMuted} style={{ marginRight: 10 }} />
-                                    <Text className="text-light dark:text-dark font-semibold text-sm">
+                                    <Text className="text-light dark:text-dark font-semibold text-sm flex-1" style={{ flexShrink: 1 }}>
                                         Attachment: {attachment}
                                     </Text>
                                 </TouchableOpacity>
@@ -309,7 +309,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                             className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
                         >
                             <IconSymbol name="figure.walk" size={16} color={theme.textMuted} style={{ marginRight: 10 }} />
-                            <Text className="text-light dark:text-dark font-semibold text-sm">
+                            <Text className="text-light dark:text-dark font-semibold text-sm flex-1" style={{ flexShrink: 1 }}>
                                 Movement Type: {movementType.charAt(0).toUpperCase() + movementType.slice(1)}
                             </Text>
                         </TouchableOpacity>
