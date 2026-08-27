@@ -52,9 +52,9 @@ const TICK_BOTTOM_INSET = 20;
 const TICK_LABEL_HEIGHT = 16;
 
 const TICK_DIMENSIONS: Record<TickSize, { width: number; height: number }> = {
-    lg: { width: 4, height: 36 },
+    lg: { width: 4, height: 32 },
     md: { width: 3.5, height: 21 },
-    sm: { width: 3, height: 14 },
+    sm: { width: 3, height: 32 },
 };
 
 // Fixed (not theme-derived) - the goal tick is always this literal blue/
@@ -192,9 +192,18 @@ function HorizontalSelectorWheelBase({
     const width = containerWidth ?? windowWidth;
     const theme = useUITheme();
     const { lock: lockSetPager, unlock: unlockSetPager } = useSetPagerScrollLock();
-    // Padded either side so the first and last real values can still scroll
-    // to the centered (selected) position.
-    const inlineData = React.useMemo(() => [null, ...values, null], [values]);
+    // No padding slots needed: contentContainerStyle's paddingHorizontal
+    // below (half a screen width minus half an item, each side) already
+    // gives the first item's natural offset (0) and the last item's natural
+    // offset ((n-1)*itemWidth) exactly the room they need to land centered
+    // under the triangle - min/max scrollX line up exactly with the first
+    // and last real tick. An earlier version added an extra empty slot on
+    // each end "just in case", but that slot was itself real, draggable
+    // scroll content - it let you drag a full tick-width past the first/last
+    // real value into empty space, which committed nothing (the value there
+    // is meaningless) and looked/felt like the ruler scrolling past its
+    // bounds. Do not reintroduce it without re-deriving the offset math.
+    const inlineData = values;
     // Native-driven so the fill overlay's translateX (below) tracks the
     // actual native scroll with zero lag - a JS-driven transform goes
     // through the bridge each frame and visibly trails a frame behind.
@@ -211,17 +220,15 @@ function HorizontalSelectorWheelBase({
     const [localSelectedValue, setLocalSelectedValue] = React.useState(value);
 
     // Per-tick metadata, shared by the interactive strip and the filled-color
-    // overlay so the two stay visually identical. `null` marks a padding slot.
-    // `getTickSize` (classifies by actual value, e.g. big at every 10) takes
-    // precedence when provided; otherwise falls back to the index-based
-    // majorTickEvery (every Nth tick renders taller).
+    // overlay so the two stay visually identical. `getTickSize` (classifies
+    // by actual value, e.g. big at every 10) takes precedence when provided;
+    // otherwise falls back to the index-based majorTickEvery (every Nth tick
+    // renders taller).
     const tickMeta = React.useMemo(
         () => inlineData.map((item, i) => {
-            if (item === null) return null;
-            const positionInValues = i - 1; // account for the leading pad slot
             const tickSize: TickSize = getTickSize
                 ? getTickSize(item)
-                : (positionInValues % majorTickEvery === 0 ? 'lg' : 'sm');
+                : (i % majorTickEvery === 0 ? 'lg' : 'sm');
             return { item, tickSize, isGoal: goalValue !== undefined && item === goalValue };
         }),
         [inlineData, goalValue, getTickSize, majorTickEvery]
@@ -246,16 +253,21 @@ function HorizontalSelectorWheelBase({
         const closest = values.reduce((prev, curr) =>
             Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev
         );
-        // +1 for the leading padding slot in inlineData.
-        return (values.indexOf(closest) + 1) * itemWidth;
+        return values.indexOf(closest) * itemWidth;
     }, [values, itemWidth]);
 
-    // Nearest real (non-padding) value to a raw scroll offset, or null.
+    // Nearest real value to a raw scroll offset, or null if `values` is
+    // empty. Clamped to the first/last index rather than the raw rounded
+    // index - min/max scrollX already line up exactly with the first/last
+    // tick (see inlineData above), so clamping here only catches transient
+    // native scroll events slightly outside that range (e.g. a frame during
+    // deceleration), not a real "past the edge" position.
     const valueAtOffset = React.useCallback((offset: number) => {
+        if (values.length === 0) return null;
         const idx = Math.round(offset / itemWidth);
-        if (idx < 0 || idx >= inlineData.length) return null;
-        return inlineData[idx];
-    }, [inlineData, itemWidth]);
+        const clampedIdx = Math.min(Math.max(idx, 0), inlineData.length - 1);
+        return inlineData[clampedIdx];
+    }, [inlineData, itemWidth, values.length]);
 
     const updateLabelForOffset = React.useCallback((offset: number) => {
         const nearest = valueAtOffset(offset);
@@ -320,11 +332,20 @@ function HorizontalSelectorWheelBase({
     }, [onValueChange]);
 
     const handleScrollEnd = React.useCallback((event: any) => {
-        const newVal = valueAtOffset(event.nativeEvent.contentOffset.x);
+        const offset = event.nativeEvent.contentOffset.x;
+        const newVal = valueAtOffset(offset);
         if (newVal !== null) {
             commitValue(newVal);
+            // Bounce (native rubber-banding, or any residual native travel
+            // past the clamped range) can settle the real scroll position a
+            // few px off the tick's exact offset. Snap it back so the ruler
+            // always rests pixel-exact on the committed tick.
+            const correctedOffset = getScrollOffset(newVal);
+            if (Math.abs(correctedOffset - offset) > 1) {
+                scrollViewRef.current?.scrollTo({ x: correctedOffset, animated: true });
+            }
         }
-    }, [valueAtOffset, commitValue]);
+    }, [valueAtOffset, commitValue, getScrollOffset]);
 
     return (
         <View>
@@ -358,6 +379,8 @@ function HorizontalSelectorWheelBase({
                     onTouchStart={lockSetPager}
                     onTouchEnd={unlockSetPager}
                     onTouchCancel={unlockSetPager}
+                    bounces={false}
+                    overScrollMode="never"
                     // Keep scrollX (the fill overlay) and the label in sync with
                     // the initial scroll position, not left defaulting to 0.
                     onLayout={() => syncToValue(value)}
@@ -386,9 +409,6 @@ function HorizontalSelectorWheelBase({
                     contentContainerStyle={{ paddingHorizontal: (width - itemWidth) / 2 }}
                 >
                     {tickMeta.map((meta, i) => {
-                        if (meta === null) {
-                            return <View key={`pad-${i}`} style={{ width: itemWidth, height: WHEEL_HEIGHT }} />;
-                        }
                         return (
                             <TouchableOpacity
                                 key={`tick-${i}`}
@@ -473,9 +493,6 @@ function HorizontalSelectorWheelBase({
                         }}
                     >
                         {tickMeta.map((meta, i) => {
-                            if (meta === null) {
-                                return <View key={`fill-pad-${i}`} style={{ width: itemWidth, height: WHEEL_HEIGHT }} />;
-                            }
                             return (
                                 <View key={`fill-${i}`} style={{ width: itemWidth, height: WHEEL_HEIGHT }}>
                                     <TickMark

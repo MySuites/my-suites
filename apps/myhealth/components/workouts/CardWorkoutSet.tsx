@@ -44,15 +44,12 @@ const DURATION_WHEEL_HEIGHT = 120;
 const DURATION_ITEM_HEIGHT = 40;
 const PREP_OPTIONS = [0, 3, 5, 10];
 
-// Weight/reps wheel tick heights: big at every 10, medium at every 5, small
-// otherwise. Module-level (not defined inline in render) so it's a stable
-// function reference across renders - the wheel is React.memo'd and a fresh
-// inline function every render would defeat that.
+// Weight/reps wheel tick heights: long at every 10, regular otherwise.
+// Module-level (not defined inline in render) so it's a stable function
+// reference across renders - the wheel is React.memo'd and a fresh inline
+// function every render would defeat that.
 function getTickSizeByTens(val: number): TickSize {
-    const v = Math.abs(val);
-    if (v % 10 === 0) return 'lg';
-    if (v % 5 === 0) return 'md';
-    return 'sm';
+    return Math.abs(val) % 10 === 0 ? 'lg' : 'sm';
 }
 
 // Fields that carry over from the previous log / exercise default when this
