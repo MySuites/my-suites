@@ -170,6 +170,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                 onPressEquipment={() => setIsEquipmentPickerVisible(true)}
                                 movementType={movementType}
                                 onPressMovementType={() => setIsMovementTypePickerVisible(true)}
+                                showMovementType={false}
                             />
                         </View>
 
@@ -254,6 +255,21 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                 <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
                             </>
                         )}
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                setIsMenuVisible(false);
+                                setIsMovementTypePickerVisible(true);
+                            }}
+                            className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                        >
+                            <IconSymbol name="figure.walk" size={16} color={theme.textMuted} style={{ marginRight: 10 }} />
+                            <Text className="text-light dark:text-dark font-semibold text-sm">
+                                Movement Type: {movementType.charAt(0).toUpperCase() + movementType.slice(1)}
+                            </Text>
+                        </TouchableOpacity>
+
+                        <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
 
                         <TouchableOpacity
                             onPress={() => {

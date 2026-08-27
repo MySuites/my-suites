@@ -82,6 +82,9 @@ interface ExercisePropertyPillRowProps {
     onPressMovementType: () => void;
     disabled?: boolean;
     variant?: 'default' | 'subtle';
+    // Active workout screen moved the movement-type pill into the exercise's
+    // ellipsis menu instead; the workout builder still shows it inline here.
+    showMovementType?: boolean;
 }
 
 // Attachment/equipment/movement-type pill row shown under an exercise's
@@ -97,6 +100,7 @@ export function ExercisePropertyPillRow({
     onPressMovementType,
     disabled = false,
     variant = 'default',
+    showMovementType = true,
 }: ExercisePropertyPillRowProps) {
     return (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 2, alignItems: 'center' }}>
@@ -118,7 +122,7 @@ export function ExercisePropertyPillRow({
                     variant={variant}
                 />
             )}
-            {movementType && (
+            {showMovementType && movementType && (
                 <ExercisePropertyPill
                     icon="figure.walk"
                     label={movementType.charAt(0).toUpperCase() + movementType.slice(1)}
