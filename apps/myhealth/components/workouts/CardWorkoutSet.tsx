@@ -20,15 +20,15 @@ type TickSize = 'lg' | 'md' | 'sm';
 
 const INLINE_MIN_VALUES = Array.from({ length: 15 }, (_, i) => i);
 const INLINE_SEC_VALUES = Array.from({ length: 60 }, (_, i) => i);
-const WEIGHT_VALUES_LB = Array.from({ length: 201 }, (_, i) => i * 2.5); // 0 to 500
-const WEIGHT_VALUES_KG = Array.from({ length: 201 }, (_, i) => i * 1.25); // 0 to 250
+const WEIGHT_VALUES_LB = Array.from({ length: 401 }, (_, i) => i * 2.5); // 0 to 1000
+const WEIGHT_VALUES_KG = Array.from({ length: 401 }, (_, i) => i * 1.25); // 0 to 500
 // Bodyweight+Weighted combo exercises (e.g. merged pull_up) log weight
 // relative to bodyweight - negative for band/machine assistance, positive
 // for added load - so their wheel needs a negative range. Plain weighted
 // exercises (bench press, curls, ...) never need negative and keep the
 // positive-only wheel above so they can't be scrolled into a nonsense value.
-const ASSISTABLE_WEIGHT_VALUES_LB = Array.from({ length: 261 }, (_, i) => -150 + i * 2.5); // -150 to 500
-const ASSISTABLE_WEIGHT_VALUES_KG = Array.from({ length: 261 }, (_, i) => -75 + i * 1.25); // -75 to 250
+const ASSISTABLE_WEIGHT_VALUES_LB = Array.from({ length: 501 }, (_, i) => -250 + i * 2.5); // -250 to 1000
+const ASSISTABLE_WEIGHT_VALUES_KG = Array.from({ length: 501 }, (_, i) => -125 + i * 1.25); // -125 to 500
 const REP_VALUES = Array.from({ length: 51 }, (_, i) => i); // 0 to 50
 
 // Ruler-style ticks (not per-item numbers), so tick spacing doesn't need to

@@ -50,6 +50,11 @@ interface HorizontalSelectorWheelProps {
 const WHEEL_HEIGHT = 72;
 const TICK_BOTTOM_INSET = 20;
 const TICK_LABEL_HEIGHT = 16;
+// Wider than a single tick slot so multi-digit/negative value labels (e.g.
+// "-97.5") have room to render on one line without wrapping or clipping -
+// see the label's `left` offset below, which re-centers this wider box back
+// over the tick it belongs to.
+const TICK_LABEL_WIDTH = 48;
 
 const TICK_DIMENSIONS: Record<TickSize, { width: number; height: number }> = {
     lg: { width: 4, height: 32 },
@@ -204,6 +209,37 @@ function HorizontalSelectorWheelBase({
     // is meaningless) and looked/felt like the ruler scrolling past its
     // bounds. Do not reintroduce it without re-deriving the offset math.
     const inlineData = values;
+
+    // Wheels with a lot of values (weight: ~200-260 entries) were mounting a
+    // TouchableOpacity + native fade-opacity interpolation for every single
+    // one, always - not just the ~30 actually visible at once. That's real
+    // work re-evaluated on the native (UI) thread every scroll frame, and
+    // under a fast fling it was enough to make iOS visibly coalesce/delay
+    // the scroll events the JS-side label depends on (the "wheel keeps
+    // moving, value freezes till it stops" symptom). Small wheels (reps,
+    // prep time, etc.) stay exactly as before - full array, no windowing -
+    // since there's nothing to save there and it'd just be extra mechanism.
+    const VIRTUALIZE_THRESHOLD = 80;
+    const shouldVirtualize = values.length > VIRTUALIZE_THRESHOLD;
+    // Ticks rendered on each side of the current center, in addition to the
+    // visible width itself - has to comfortably cover how far a fast fling
+    // can travel between two JS-thread-delivered scroll events, or the
+    // window runs out mid-scroll and flashes blank spacer. 3 screens' worth
+    // each side is a conservative starting point; if a real device still
+    // shows a blank flash on a hard flick, widen this rather than the
+    // opacity/haptics tuning.
+    const windowRadius = Math.ceil(width / itemWidth) * 3;
+    const [centerIndex, setCenterIndex] = React.useState(() => {
+        const idx = values.indexOf(value);
+        return idx === -1 ? 0 : idx;
+    });
+    // Mirrors centerIndex for synchronous reads inside the scroll listener
+    // (which closes over stale state otherwise, since it isn't rebuilt
+    // every render - see onScrollWithLabel's useMemo deps).
+    const centerIndexRef = React.useRef(centerIndex);
+    const windowStart = shouldVirtualize ? Math.max(0, centerIndex - windowRadius) : 0;
+    const windowEnd = shouldVirtualize ? Math.min(values.length, centerIndex + windowRadius + 1) : values.length;
+
     // Native-driven so the fill overlay's translateX (below) tracks the
     // actual native scroll with zero lag - a JS-driven transform goes
     // through the bridge each frame and visibly trails a frame behind.
@@ -220,32 +256,38 @@ function HorizontalSelectorWheelBase({
     const [localSelectedValue, setLocalSelectedValue] = React.useState(value);
 
     // Per-tick metadata, shared by the interactive strip and the filled-color
-    // overlay so the two stay visually identical. `getTickSize` (classifies
-    // by actual value, e.g. big at every 10) takes precedence when provided;
-    // otherwise falls back to the index-based majorTickEvery (every Nth tick
-    // renders taller).
-    const tickMeta = React.useMemo(
-        () => inlineData.map((item, i) => {
+    // overlay so the two stay visually identical. Only built for the
+    // windowed slice [windowStart, windowEnd) - `i` is the tick's absolute
+    // index into `values`, not its position in this array, since that's
+    // what the fade-opacity math and offset math below both need.
+    // `getTickSize` (classifies by actual value, e.g. big at every 10) takes
+    // precedence when provided; otherwise falls back to the index-based
+    // majorTickEvery (every Nth tick renders taller).
+    const tickMeta = React.useMemo(() => {
+        const arr: { i: number; item: number; tickSize: TickSize; isGoal: boolean }[] = [];
+        for (let i = windowStart; i < windowEnd; i++) {
+            const item = inlineData[i];
             const tickSize: TickSize = getTickSize
                 ? getTickSize(item)
                 : (i % majorTickEvery === 0 ? 'lg' : 'sm');
-            return { item, tickSize, isGoal: goalValue !== undefined && item === goalValue };
-        }),
-        [inlineData, goalValue, getTickSize, majorTickEvery]
-    );
+            arr.push({ i, item, tickSize, isGoal: goalValue !== undefined && item === goalValue });
+        }
+        return arr;
+    }, [inlineData, windowStart, windowEnd, goalValue, getTickSize, majorTickEvery]);
 
     // Each tick fades out toward either edge of the visible window based on
     // its distance from the centered (triangle) position - native-driven off
     // the same scrollX used for scrolling, so it's live during drag at zero
     // extra cost. (Unlike color, opacity IS supported by the native driver.)
     // Built once per layout and shared by both strips rather than
-    // re-interpolated per tick per render.
+    // re-interpolated per tick per render. Indexed by position in tickMeta
+    // (not absolute tick index), aligned 1:1 with it.
     const tickOpacities = React.useMemo(
-        () => inlineData.map((_, i) => scrollX.interpolate({
-            ...getFadeOpacityRange(i * itemWidth, width / 2),
+        () => tickMeta.map((meta) => scrollX.interpolate({
+            ...getFadeOpacityRange(meta.i * itemWidth, width / 2),
             extrapolate: 'clamp',
         })),
-        [inlineData, itemWidth, width, scrollX]
+        [tickMeta, itemWidth, width, scrollX]
     );
 
     const getScrollOffset = React.useCallback((val: number) => {
@@ -281,6 +323,28 @@ function HorizontalSelectorWheelBase({
     // resync (switching sets/exercises via syncToValue) doesn't itself count
     // as a "crossing" the next time the user actually scrolls.
     const lastHapticValueRef = React.useRef<number | null>(null);
+    // Timestamp of the last haptic pulse actually fired. During a fast fling
+    // the scroll listener can cross many ticks between JS-thread frames, and
+    // firing Haptics.selectionAsync() (a native bridge call) on every single
+    // one of them backs up the JS thread - the exact "wheel lags / value
+    // lags behind and jumps" symptom this guards against. Throttling to a
+    // minimum interval keeps tactile feedback at normal scroll speeds
+    // without spamming the bridge during a fling.
+    const lastHapticTimeRef = React.useRef(0);
+    const MIN_HAPTIC_INTERVAL_MS = 40;
+
+    // Recenters the virtualization window on `idx` if it's drifted far
+    // enough from the current window to matter. Cheap no-op comparison on
+    // every scroll event; only actually triggers a re-render (rebuilding
+    // tickMeta/tickOpacities for the new window) roughly once per
+    // windowRadius ticks crossed, not every frame.
+    const recenterWindow = React.useCallback((idx: number) => {
+        if (!shouldVirtualize) return;
+        if (Math.abs(idx - centerIndexRef.current) > windowRadius / 2) {
+            centerIndexRef.current = idx;
+            setCenterIndex(idx);
+        }
+    }, [shouldVirtualize, windowRadius]);
 
     // Jumps the strip, the fill overlay (scrollX) and the label to `val` in
     // one step - used both for the initial layout and whenever the parent
@@ -290,8 +354,13 @@ function HorizontalSelectorWheelBase({
         scrollX.setValue(offset);
         updateLabelForOffset(offset);
         lastHapticValueRef.current = val;
+        const idx = values.indexOf(val);
+        if (idx !== -1) {
+            centerIndexRef.current = idx;
+            setCenterIndex(idx);
+        }
         scrollViewRef.current?.scrollTo({ x: offset, animated: false });
-    }, [getScrollOffset, scrollX, updateLabelForOffset]);
+    }, [getScrollOffset, scrollX, updateLabelForOffset, values]);
 
     React.useEffect(() => {
         if (value !== localSelectedValue) {
@@ -315,16 +384,21 @@ function HorizontalSelectorWheelBase({
             listener: (event: any) => {
                 const offset = event.nativeEvent.contentOffset.x;
                 updateLabelForOffset(offset);
+                if (shouldVirtualize) {
+                    recenterWindow(Math.min(Math.max(Math.round(offset / itemWidth), 0), values.length - 1));
+                }
                 const nearest = valueAtOffset(offset);
                 if (nearest !== null && nearest !== lastHapticValueRef.current) {
                     lastHapticValueRef.current = nearest;
-                    if (isHapticsEnabled) {
+                    const now = Date.now();
+                    if (isHapticsEnabled && now - lastHapticTimeRef.current >= MIN_HAPTIC_INTERVAL_MS) {
+                        lastHapticTimeRef.current = now;
                         Haptics.selectionAsync();
                     }
                 }
             },
         }
-    ), [scrollX, updateLabelForOffset, valueAtOffset, isHapticsEnabled]);
+    ), [scrollX, updateLabelForOffset, valueAtOffset, isHapticsEnabled, shouldVirtualize, recenterWindow, itemWidth, values.length]);
 
     const commitValue = React.useCallback((val: number) => {
         setLocalSelectedValue(val);
@@ -336,6 +410,9 @@ function HorizontalSelectorWheelBase({
         const newVal = valueAtOffset(offset);
         if (newVal !== null) {
             commitValue(newVal);
+            if (shouldVirtualize) {
+                recenterWindow(values.indexOf(newVal));
+            }
             // Bounce (native rubber-banding, or any residual native travel
             // past the clamped range) can settle the real scroll position a
             // few px off the tick's exact offset. Snap it back so the ruler
@@ -345,7 +422,7 @@ function HorizontalSelectorWheelBase({
                 scrollViewRef.current?.scrollTo({ x: correctedOffset, animated: true });
             }
         }
-    }, [valueAtOffset, commitValue, getScrollOffset]);
+    }, [valueAtOffset, commitValue, getScrollOffset, shouldVirtualize, recenterWindow, values]);
 
     return (
         <View>
@@ -408,13 +485,16 @@ function HorizontalSelectorWheelBase({
                     scrollEventThrottle={16}
                     contentContainerStyle={{ paddingHorizontal: (width - itemWidth) / 2 }}
                 >
-                    {tickMeta.map((meta, i) => {
+                    {windowStart > 0 && (
+                        <View style={{ width: windowStart * itemWidth, height: WHEEL_HEIGHT }} />
+                    )}
+                    {tickMeta.map((meta, k) => {
                         return (
                             <TouchableOpacity
-                                key={`tick-${i}`}
+                                key={`tick-${meta.i}`}
                                 style={{ width: itemWidth, height: WHEEL_HEIGHT }}
                                 onPress={() => {
-                                    scrollViewRef.current?.scrollTo({ x: i * itemWidth, animated: true });
+                                    scrollViewRef.current?.scrollTo({ x: meta.i * itemWidth, animated: true });
                                     commitValue(meta.item);
                                 }}
                             >
@@ -427,7 +507,7 @@ function HorizontalSelectorWheelBase({
                                     size={meta.tickSize}
                                     slotWidth={itemWidth}
                                     color={meta.isGoal ? GOAL_LIGHT_BLUE : (theme.textMuted ?? theme.text)}
-                                    opacity={tickOpacities[i]}
+                                    opacity={tickOpacities[k]}
                                 />
                                 {/* Value labels every 5 units, below the ruler -
                                     only on this (interactive) strip, not the
@@ -435,17 +515,26 @@ function HorizontalSelectorWheelBase({
                                     twice. */}
                                 {meta.item % labelIncrement === 0 && (
                                     <RNAnimated.Text
+                                        numberOfLines={1}
                                         style={{
                                             position: 'absolute',
                                             bottom: 0,
-                                            left: 0,
-                                            width: itemWidth,
+                                            // Wider than one tick slot and re-centered
+                                            // over it - a bare `width: itemWidth` (12px)
+                                            // is nowhere near enough for multi-digit
+                                            // negative values (e.g. "-97.5" on the
+                                            // assistable-weight wheel), and RN wraps/
+                                            // clips text to an explicit width instead
+                                            // of letting it overflow, which chopped
+                                            // those labels into unreadable fragments.
+                                            left: -(TICK_LABEL_WIDTH - itemWidth) / 2,
+                                            width: TICK_LABEL_WIDTH,
                                             height: TICK_LABEL_HEIGHT,
                                             textAlign: 'center',
                                             fontSize: 10,
                                             fontWeight: '700',
                                             color: theme.textMuted ?? theme.text,
-                                            opacity: tickOpacities[i],
+                                            opacity: tickOpacities[k],
                                         }}
                                     >
                                         {meta.item}
@@ -454,6 +543,9 @@ function HorizontalSelectorWheelBase({
                             </TouchableOpacity>
                         );
                     })}
+                    {windowEnd < values.length && (
+                        <View style={{ width: (values.length - windowEnd) * itemWidth, height: WHEEL_HEIGHT }} />
+                    )}
                 </RNAnimated.ScrollView>
                 {/* Filled-tick overlay - a mirror of the strip above, colored
                     primary/goal-blue, clipped to a static window from the
@@ -492,18 +584,24 @@ function HorizontalSelectorWheelBase({
                             transform: [{ translateX: overlayTranslateX }],
                         }}
                     >
-                        {tickMeta.map((meta, i) => {
+                        {windowStart > 0 && (
+                            <View style={{ width: windowStart * itemWidth, height: WHEEL_HEIGHT }} />
+                        )}
+                        {tickMeta.map((meta, k) => {
                             return (
-                                <View key={`fill-${i}`} style={{ width: itemWidth, height: WHEEL_HEIGHT }}>
+                                <View key={`fill-${meta.i}`} style={{ width: itemWidth, height: WHEEL_HEIGHT }}>
                                     <TickMark
                                         size={meta.tickSize}
                                         slotWidth={itemWidth}
                                         color={meta.isGoal ? GOAL_BLUE : theme.primary}
-                                        opacity={tickOpacities[i]}
+                                        opacity={tickOpacities[k]}
                                     />
                                 </View>
                             );
                         })}
+                        {windowEnd < values.length && (
+                            <View style={{ width: (values.length - windowEnd) * itemWidth, height: WHEEL_HEIGHT }} />
+                        )}
                     </RNAnimated.View>
                 </View>
             </View>
