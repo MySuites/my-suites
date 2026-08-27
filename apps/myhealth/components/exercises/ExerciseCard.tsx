@@ -143,8 +143,8 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     paddingHorizontal: 16,
-                    paddingTop: horizontalSets ? 0 : 16,
-                    paddingBottom: horizontalSets ? 4 : 16,
+                    paddingTop: horizontalSets ? 0 : 6,
+                    paddingBottom: horizontalSets ? 4 : 4,
                 }}
             >
                 <View className="flex-1 flex-row items-center">
@@ -341,7 +341,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
             </Modal>
 
              <View
-                className={horizontalSets ? (isOutdoorGpsExercise ? "pb-4 flex-1" : "py-4 flex-1") : "pt-4 px-4 pb-2"}
+                className={horizontalSets ? (isOutdoorGpsExercise ? "pb-4 flex-1" : "py-4 flex-1") : "pt-0 px-4 pb-0"}
                 style={horizontalSets ? { flex: 1 } : undefined}
                 onLayout={(e) => {
                     // No horizontal padding here in horizontalSets mode (see className
