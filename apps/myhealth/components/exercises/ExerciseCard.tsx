@@ -263,7 +263,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                             </>
                         )}
 
-                        {equipment && equipment !== 'none' && (
+                        {equipment && (
                             <>
                                 <TouchableOpacity
                                     onPress={() => {
