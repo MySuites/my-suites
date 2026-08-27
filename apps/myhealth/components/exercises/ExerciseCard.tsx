@@ -158,9 +158,14 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                         {showName !== false && (
                             <Text className="text-lg font-bold text-light dark:text-dark">
                                 {exercise.name}
+                                {equipment && equipment !== 'none' && (
+                                    <Text className="text-sm font-normal text-light-muted dark:text-dark-muted">
+                                        {' '}({equipment.charAt(0).toUpperCase() + equipment.slice(1)})
+                                    </Text>
+                                )}
                             </Text>
                         )}
-                        
+
                         <View style={{ display: isOutdoorGpsExercise ? 'none' : 'flex' }}>
                             <ExercisePropertyPillRow
                                 isAttachmentSupported={isAttachmentSupported}
@@ -172,6 +177,7 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                 onPressMovementType={() => setIsMovementTypePickerVisible(true)}
                                 showMovementType={false}
                                 showAttachment={false}
+                                showEquipment={false}
                             />
                         </View>
 
@@ -250,6 +256,25 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                                     <IconSymbol name="timer" size={16} color={theme.textMuted} style={{ marginRight: 10 }} />
                                     <Text className="text-light dark:text-dark font-semibold text-sm">
                                         Rest Timer: {formatRestTime(exercise.restTime ?? 90)}
+                                    </Text>
+                                </TouchableOpacity>
+
+                                <View className="h-[1px] bg-black/5 dark:bg-white/5 my-0.5" />
+                            </>
+                        )}
+
+                        {equipment && equipment !== 'none' && (
+                            <>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setIsMenuVisible(false);
+                                        setIsEquipmentPickerVisible(true);
+                                    }}
+                                    className="flex-row items-center p-2.5 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                                >
+                                    <IconSymbol name="dumbbell.fill" size={16} color={theme.textMuted} style={{ marginRight: 10 }} />
+                                    <Text className="text-light dark:text-dark font-semibold text-sm">
+                                        Equipment: {equipment.charAt(0).toUpperCase() + equipment.slice(1)}
                                     </Text>
                                 </TouchableOpacity>
 

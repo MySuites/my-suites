@@ -87,6 +87,8 @@ interface ExercisePropertyPillRowProps {
     showMovementType?: boolean;
     // Same deal as showMovementType, but for the attachment pill.
     showAttachment?: boolean;
+    // Same deal as showMovementType, but for the equipment pill.
+    showEquipment?: boolean;
 }
 
 // Attachment/equipment/movement-type pill row shown under an exercise's
@@ -104,6 +106,7 @@ export function ExercisePropertyPillRow({
     variant = 'default',
     showMovementType = true,
     showAttachment = true,
+    showEquipment = true,
 }: ExercisePropertyPillRowProps) {
     return (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 2, alignItems: 'center' }}>
@@ -116,7 +119,7 @@ export function ExercisePropertyPillRow({
                     variant={variant}
                 />
             )}
-            {equipment && (
+            {showEquipment && equipment && (
                 <ExercisePropertyPill
                     icon="dumbbell.fill"
                     label={equipment.charAt(0).toUpperCase() + equipment.slice(1)}

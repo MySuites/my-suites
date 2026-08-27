@@ -73,7 +73,7 @@ describe('ExerciseCard', () => {
 
     it('should render exercise name and finish status', () => {
         const { getByText } = render(<ExerciseCard {...defaultProps} />);
-        expect(getByText('Bench Press')).toBeTruthy();
+        expect(getByText(/Bench Press/)).toBeTruthy();
     });
 
     it('should render correct number of SetRows', () => {
@@ -110,7 +110,7 @@ describe('ExerciseCard', () => {
             name: 'Dumbbell Curl',
         };
         const { getByText } = render(<ExerciseCard {...defaultProps} exercise={dumbbellExercise} />);
-        expect(getByText('Dumbbell')).toBeTruthy();
+        expect(getByText(/\(Dumbbell\)/)).toBeTruthy();
     });
 
     it('should render horizontal sets indicator and delete set button when horizontalSets is true', () => {
