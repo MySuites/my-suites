@@ -4,12 +4,13 @@ import { RaisedCard, IconSymbol, useUITheme } from '@mysuite/ui';
 
 interface WorkoutHeaderMenuProps {
     onEdit: () => void;
+    onAddExercise: () => void;
     // Omit to hide the Delete item entirely (e.g. a workout that hasn't
     // been saved yet has nothing to delete).
     onDelete?: () => void;
 }
 
-export function WorkoutHeaderMenu({ onEdit, onDelete }: WorkoutHeaderMenuProps) {
+export function WorkoutHeaderMenu({ onEdit, onAddExercise, onDelete }: WorkoutHeaderMenuProps) {
     const theme = useUITheme();
     const [visible, setVisible] = useState(false);
     const [pos, setPos] = useState({ top: 0, right: 0 });
@@ -60,6 +61,15 @@ export function WorkoutHeaderMenu({ onEdit, onDelete }: WorkoutHeaderMenuProps) 
                         >
                             <IconSymbol name="pencil" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
                             <Text style={{ color: theme.text as string }} className="font-medium">Edit Workout</Text>
+                        </TouchableOpacity>
+
+                        <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
+                        <TouchableOpacity
+                            onPress={(e) => { e.stopPropagation(); setVisible(false); onAddExercise(); }}
+                            className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+                        >
+                            <IconSymbol name="plus" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
+                            <Text style={{ color: theme.text as string }} className="font-medium">Add Exercise</Text>
                         </TouchableOpacity>
 
                         {onDelete && (
