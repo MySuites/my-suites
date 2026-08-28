@@ -10,7 +10,6 @@ import { DurationTimerPicker } from './DurationTimerPicker';
 import { AttachmentPicker, ATTACHMENT_OPTIONS } from './AttachmentPicker';
 import { EquipmentPicker } from './EquipmentPicker';
 import { MovementTypePicker } from './MovementTypePicker';
-import { ExercisePropertyPillRow } from '../ui/ExercisePropertyPill';
 
 import { inferEquipment, inferMovementType } from '../../providers/DataRepository';
 
@@ -170,21 +169,14 @@ export const WorkoutDraftExerciseItem = ({
                 style={{ zIndex: menuVisible ? 999 : 1, elevation: menuVisible ? 999 : 1 }}>
                     <Text className="text-base text-light dark:text-dark leading-6 font-semibold">
                         {item.name}
+                        {equipment && equipment !== 'none' && (
+                            <Text className="text-sm font-normal text-light-muted dark:text-dark-muted">
+                                {' '}({equipment.charAt(0).toUpperCase() + equipment.slice(1)})
+                            </Text>
+                        )}
                     </Text>
                     
-                    <ExercisePropertyPillRow
-                        variant="subtle"
-                        disabled={isReadOnly}
-                        isAttachmentSupported={isAttachmentSupported}
-                        attachment={attachment}
-                        onPressAttachment={() => setIsAttachmentPickerVisible(true)}
-                        equipment={equipment}
-                        onPressEquipment={() => setIsEquipmentPickerVisible(true)}
-                        movementType={movementType}
-                        onPressMovementType={() => setIsMovementTypePickerVisible(true)}
-                    />
-                    
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         className="flex-row items-center mt-1 pb-1"
                         onPress={(e) => {
                             e.stopPropagation();
@@ -204,7 +196,7 @@ export const WorkoutDraftExerciseItem = ({
                         onPress={(e) => { 
                             e.stopPropagation(); 
                             ellipsisRef.current?.measure((x, y, width, height, pageX, pageY) => {
-                                const MENU_ESTIMATED_HEIGHT = 210; // Approx height of the menu
+                                const MENU_ESTIMATED_HEIGHT = isAttachmentSupported ? 350 : 300; // Approx height of the menu
                                 let topPos = pageY + height + 4;
                                 
                                 // Output upwards if it goes beyond the screen
@@ -232,7 +224,7 @@ export const WorkoutDraftExerciseItem = ({
                             style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
                         >
                             <RaisedCard 
-                                className="absolute w-48 p-1 origin-top-right rounded-xl bg-lighter dark:bg-dark-lighter"
+                                className="absolute w-64 p-1 origin-top-right rounded-xl bg-lighter dark:bg-dark-lighter"
                                 style={{ 
                                     top: menuPos.top,
                                     right: menuPos.right - 8,
@@ -246,6 +238,25 @@ export const WorkoutDraftExerciseItem = ({
                                 <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); setIsLocalEditing(prev => !prev); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
                                     <IconSymbol name={isLocalEditing ? "checkmark" : "pencil"} size={18} color={theme.text as string} style={{ marginRight: 12 }} />
                                     <Text style={{ color: theme.text as string }} className="font-medium">{isLocalEditing ? "Done" : "Edit"}</Text>
+                                </TouchableOpacity>
+                                <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
+                                {isAttachmentSupported && (
+                                    <>
+                                        <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); setIsAttachmentPickerVisible(true); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
+                                            <IconSymbol name="gearshape.fill" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
+                                            <Text style={{ color: theme.text as string }} className="font-medium flex-1">Attachment: {attachment}</Text>
+                                        </TouchableOpacity>
+                                        <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
+                                    </>
+                                )}
+                                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); setIsEquipmentPickerVisible(true); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
+                                    <IconSymbol name="dumbbell.fill" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
+                                    <Text style={{ color: theme.text as string }} className="font-medium flex-1">Equipment: {equipment.charAt(0).toUpperCase() + equipment.slice(1)}</Text>
+                                </TouchableOpacity>
+                                <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
+                                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); setIsMovementTypePickerVisible(true); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
+                                    <IconSymbol name="figure.walk" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
+                                    <Text style={{ color: theme.text as string }} className="font-medium flex-1">Movement: {movementType.charAt(0).toUpperCase() + movementType.slice(1)}</Text>
                                 </TouchableOpacity>
                                 <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
                                 <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); onRemove(); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
