@@ -21,7 +21,6 @@ import { WorkoutStatsCard } from '../../components/workouts/WorkoutStatsCard';
 import { WorkoutHeaderMenu } from '../../components/workouts/WorkoutHeaderMenu';
 import { FullScreenImageViewer } from '../../components/workouts/FullScreenImageViewer';
 import { formatRestTime } from '../../utils/formatting';
-import { areExercisesEqual } from '../../utils/workout-logic';
 import { resolveImageUri } from '../../utils/progressPictures';
 
 const DETAILS_TABS = [
@@ -33,7 +32,7 @@ export default function CreateWorkoutScreen() {
     const theme = useTheme();
     const router = useRouter();
     const { id, logId } = useLocalSearchParams();
-    const { latestBodyWeight, startWorkout, hasActiveSession, cancelWorkout } = useActiveWorkout();
+    const { latestBodyWeight } = useActiveWorkout();
     const { unitSystem } = useUnitPreference();
     const insets = useSafeAreaInsets();
 
@@ -52,7 +51,6 @@ export default function CreateWorkoutScreen() {
     const historyItem = viewingLogId ? workoutHistory.find((h: any) => h.id === viewingLogId) : null;
     const workoutLogImageUrls = historyItem?.imageUrls || (historyItem?.imageUrl ? [historyItem.imageUrl] : []);
     const isLogView = !!viewingLogId;
-    const originalWorkout = savedWorkouts.find((w: any) => w.id === editingWorkoutId);
     
     // Pre-compute initial values synchronously to avoid the loading spinner
     const initialData = useRef((() => {
@@ -132,7 +130,6 @@ export default function CreateWorkoutScreen() {
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(initialData.isLoading);
     const [lastSaved, setLastSaved] = useState(0);
-    const [currentlyEditingIndices, setCurrentlyEditingIndices] = useState<Set<number>>(new Set());
     const hasInitializedRef = useRef(false);
     const [workoutLogDate] = useState<string | null>(initialData.logDate || null);
     const [workoutLogDuration] = useState<number | null>(initialData.logDuration || null);
@@ -140,15 +137,6 @@ export default function CreateWorkoutScreen() {
     const [isAddingExercise, setIsAddingExercise] = useState(false);
     const [activeTab, setActiveTab] = useState<'details' | 'performance'>('details');
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-    const hasUnsavedChanges = (() => {
-        if (!editingWorkoutId) {
-            return workoutDraftExercises.length > 0 || workoutDraftName.trim().length > 0;
-        }
-        if (!originalWorkout) return false;
-        
-        return workoutDraftName.trim() !== originalWorkout.name.trim() || !areExercisesEqual(workoutDraftExercises, originalWorkout.exercises);
-    })();
 
     // Fallback async init — only needed if log data wasn't in workoutHistory during first render
     useEffect(() => {
@@ -202,31 +190,6 @@ export default function CreateWorkoutScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [viewingLogId]);
 
-    function handleStartWorkout() {
-        if (hasActiveSession) {
-            Alert.alert(
-                "Active Workout", 
-                "You already have a workout in progress. Please finish or discard it before starting a new one.",
-                [
-                    { text: "Cancel", style: "cancel" },
-                    { 
-                        text: "Discard and Start Workout", 
-                        style: "destructive",
-                        onPress: () => {
-                            cancelWorkout();
-                            startWorkout(workoutDraftExercises, workoutDraftName, editingWorkoutId || undefined);
-                            router.back();
-                        }
-                    }
-                ]
-            );
-            return;
-        }
-
-        startWorkout(workoutDraftExercises, workoutDraftName, editingWorkoutId || undefined);
-        router.back(); // or navigate to active workout screen depending on how top-level handles it
-    }
-
     async function handleSaveWorkoutDraft() {
         if (!workoutDraftName.trim()) {
             Alert.alert("Required", "Please enter a workout name");
@@ -237,7 +200,6 @@ export default function CreateWorkoutScreen() {
         const onSuccess = () => {
              setIsSaving(false);
              setLastSaved(Date.now());
-             setCurrentlyEditingIndices(new Set());
              if (editingWorkoutId) {
                  setIsEditing(false);
              } else {
@@ -560,14 +522,6 @@ export default function CreateWorkoutScreen() {
                                     isEditing={isEditing}
                                     isReadOnly={isLogView}
                                     lastSaved={lastSaved}
-                                    onToggleLocalEdit={(isNowEditing) => {
-                                        setCurrentlyEditingIndices(prev => {
-                                            const next = new Set(prev);
-                                            if (isNowEditing) next.add(index);
-                                            else next.delete(index);
-                                            return next;
-                                        });
-                                    }}
                                     onDrag={drag}
                                 />
                             </View>
@@ -592,43 +546,6 @@ export default function CreateWorkoutScreen() {
                 </Animated.View>
             )}
 
-            {/* Quick Start Style Start/Save Button */}
-            {!isAddingExercise && !isLogView && (() => {
-                const isSavingMode = hasUnsavedChanges || currentlyEditingIndices.size > 0 || (isEditing && !editingWorkoutId);
-                return (
-                <Animated.View 
-                    entering={SlideInDown.duration(300)}
-                    exiting={SlideOutDown.duration(300)}
-                    className="absolute self-center"
-                    style={{ bottom: insets.bottom + 20, width: 'auto', minWidth: 200, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8, zIndex: 50 }}
-                >
-                    <RaisedCard
-                        onPress={isSavingMode ? handleSaveWorkoutDraft : handleStartWorkout}
-                        disabled={isSaving}
-                        className="items-center justify-center py-3 px-6 rounded-full bg-primary dark:bg-primary-dark border-0"
-                        style={{ borderRadius: 9999 }}
-                    >
-                        {isSaving ? (
-                            <ActivityIndicator size="small" color="#FFF" />
-                        ) : (
-                            <View className="flex-row items-center justify-center">
-                                {isSavingMode ? (
-                                    <>
-                                        <IconSymbol name="checkmark.circle.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                                        <Text className="text-lg font-bold text-white">Save Workout</Text>
-                                    </>
-                                ) : (
-                                    <>
-                                        <IconSymbol name="play.fill" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                                        <Text className="text-lg font-bold text-white">Start Workout</Text>
-                                    </>
-                                )}
-                            </View>
-                        )}
-                    </RaisedCard>
-                </Animated.View>
-                );
-            })()}
             <FullScreenImageViewer uri={selectedImage} onClose={() => setSelectedImage(null)} />
         </View>
         </TouchableWithoutFeedback>
