@@ -175,19 +175,6 @@ export const WorkoutDraftExerciseItem = ({
                             </Text>
                         )}
                     </Text>
-                    
-                    <TouchableOpacity
-                        className="flex-row items-center mt-1 pb-1"
-                        onPress={(e) => {
-                            e.stopPropagation();
-                            setIsRestPickerVisible(true);
-                        }}
-                    >
-                        <IconSymbol name="timer" size={12} color={theme.bgDark === '#000000' ? '#999' : '#666'} />
-                        <Text className="ml-1 text-[11px] font-semibold text-light-muted dark:text-dark-muted">
-                            Rest Timer: {formatRestTime(item.restTime ?? 90)}
-                        </Text>
-                    </TouchableOpacity>
                 </TouchableOpacity>
                 {!isReadOnly && (
                     <View className="flex-row items-center relative z-20 pr-1">
@@ -196,7 +183,7 @@ export const WorkoutDraftExerciseItem = ({
                         onPress={(e) => { 
                             e.stopPropagation(); 
                             ellipsisRef.current?.measure((x, y, width, height, pageX, pageY) => {
-                                const MENU_ESTIMATED_HEIGHT = isAttachmentSupported ? 350 : 300; // Approx height of the menu
+                                const MENU_ESTIMATED_HEIGHT = isAttachmentSupported ? 400 : 350; // Approx height of the menu
                                 let topPos = pageY + height + 4;
                                 
                                 // Output upwards if it goes beyond the screen
@@ -238,6 +225,11 @@ export const WorkoutDraftExerciseItem = ({
                                 <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); setIsLocalEditing(prev => !prev); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
                                     <IconSymbol name={isLocalEditing ? "checkmark" : "pencil"} size={18} color={theme.text as string} style={{ marginRight: 12 }} />
                                     <Text style={{ color: theme.text as string }} className="font-medium">{isLocalEditing ? "Done" : "Edit"}</Text>
+                                </TouchableOpacity>
+                                <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
+                                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setMenuVisible(false); setIsRestPickerVisible(true); }} className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5">
+                                    <IconSymbol name="timer" size={18} color={theme.text as string} style={{ marginRight: 12 }} />
+                                    <Text style={{ color: theme.text as string }} className="font-medium flex-1">Rest Timer: {formatRestTime(item.restTime ?? 90)}</Text>
                                 </TouchableOpacity>
                                 <View className="h-[1px] bg-black/5 dark:bg-white/5 my-1" />
                                 {isAttachmentSupported && (
