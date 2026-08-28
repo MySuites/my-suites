@@ -61,7 +61,10 @@ export default function CreateWorkoutScreen() {
             if (workout) {
                 return {
                     name: workout.name,
-                    exercises: workout.exercises ? JSON.parse(JSON.stringify(workout.exercises)) : [],
+                    exercises: workout.exercises ? workout.exercises.map((ex: any) => {
+                        const { isNewlyAdded, ...rest } = JSON.parse(JSON.stringify(ex));
+                        return rest;
+                    }) : [],
                     isEditing: false,
                     isLoading: false,
                     logDate: null as string | null,
@@ -242,10 +245,12 @@ export default function CreateWorkoutScreen() {
              }
         };
 
+        const exercisesToSave = workoutDraftExercises.map(({ isNewlyAdded, ...ex }) => ex);
+
         if (editingWorkoutId) {
-            updateSavedWorkout(editingWorkoutId, workoutDraftName, workoutDraftExercises, onSuccess);
+            updateSavedWorkout(editingWorkoutId, workoutDraftName, exercisesToSave, onSuccess);
         } else {
-            saveWorkout(workoutDraftName, workoutDraftExercises, onSuccess);
+            saveWorkout(workoutDraftName, exercisesToSave, onSuccess);
         }
     }
 
@@ -589,7 +594,7 @@ export default function CreateWorkoutScreen() {
 
             {/* Quick Start Style Start/Save Button */}
             {!isAddingExercise && !isLogView && (() => {
-                const isSavingMode = hasUnsavedChanges || currentlyEditingIndices.size > 0 || isEditing;
+                const isSavingMode = hasUnsavedChanges || currentlyEditingIndices.size > 0 || (isEditing && !editingWorkoutId);
                 return (
                 <Animated.View 
                     entering={SlideInDown.duration(300)}

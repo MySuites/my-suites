@@ -227,6 +227,15 @@ export function isUnilateralExercise(name: string): boolean {
 // Field-by-field comparison (not a generic deep-equal) so transient/UI-only
 // fields don't trigger a false "unsaved changes" — used to diff a workout
 // draft against its originally-saved version.
+function arraysOrValuesEqual(v1: any, v2: any): boolean {
+    if (Array.isArray(v1) || Array.isArray(v2)) {
+        const a1 = v1 || [];
+        const a2 = v2 || [];
+        return a1.length === a2.length && a1.every((v: any, idx: number) => v === a2[idx]);
+    }
+    return v1 === v2;
+}
+
 export function areExercisesEqual(exs1: any[], exs2: any[]): boolean {
     const e1List = exs1 || [];
     const e2List = exs2 || [];
@@ -241,8 +250,8 @@ export function areExercisesEqual(exs1: any[], exs2: any[]): boolean {
         if (Number(e1.sets || 0) !== Number(e2.sets || 0)) return false;
         if (Number(e1.reps || 0) !== Number(e2.reps || 0)) return false;
         if (e1.category !== e2.category) return false;
-        if (e1.properties !== e2.properties) return false;
-        if (e1.type !== e2.type) return false;
+        if (!arraysOrValuesEqual(e1.properties, e2.properties)) return false;
+        if (!arraysOrValuesEqual(e1.type, e2.type)) return false;
         if (e1.attachment !== e2.attachment) return false;
         if (e1.equipment !== e2.equipment) return false;
         if (Number(e1.restTime || 0) !== Number(e2.restTime || 0)) return false;
