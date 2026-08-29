@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, Vibration } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Vibration, AppState } from 'react-native';
 import { IconSymbol, useUITheme, RaisedCard } from '@mysuite/ui';
 import { formatSeconds } from '../../utils/formatting';
 import { VerticalSelectorWheel } from './VerticalSelectorWheel';
@@ -47,6 +47,12 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
     const [isPrepping, setIsPrepping] = useState(false);
     const [prepRemaining, setPrepRemaining] = useState(0);
     const timerIntervalRef = useRef<any>(null);
+    // Wall-clock timestamp (ms) the current phase (prep or main) ends at.
+    // setInterval ticks get suspended while the screen is off/backgrounded,
+    // so we can't just decrement a counter once per tick — we recompute the
+    // remaining time from this fixed target each tick (and on app resume)
+    // to stay accurate regardless of how long the JS thread was paused.
+    const phaseEndTimeRef = useRef<number>(0);
 
     const totalDuration = (selectedMin * 60) + selectedSec;
     const progress = isPrepping
@@ -70,8 +76,10 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
                 if (prepTime > 0) {
                     setIsPrepping(true);
                     setPrepRemaining(prepTime);
+                    phaseEndTimeRef.current = Date.now() + prepTime * 1000;
                 } else {
                     setIsPrepping(false);
+                    phaseEndTimeRef.current = Date.now() + initialValue * 1000;
                 }
                 setIsTimerRunning(true);
             } else {
@@ -86,30 +94,43 @@ export function DurationTimerPicker({ visible, onClose, initialValue, onSave, is
     useEffect(() => {
         if (!isTimerRunning) return;
 
-        timerIntervalRef.current = setInterval(() => {
-            if (isPrepping) {
-                setPrepRemaining(prev => {
-                    if (prev <= 1) {
-                        setIsPrepping(false);
-                        if (isHapticsEnabled) Vibration.vibrate(100);
-                        return 0;
-                    }
-                    if (isHapticsEnabled) Vibration.vibrate(10);
-                    return prev - 1;
-                });
-            } else {
-                setRemainingSeconds(prev => {
-                    if (prev <= 1) {
-                        setIsTimerRunning(false);
-                        if (isHapticsEnabled) Vibration.vibrate([0, 500, 200, 500]);
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }
-        }, 1000);
+        const tick = () => {
+            const secondsLeft = Math.max(0, Math.ceil((phaseEndTimeRef.current - Date.now()) / 1000));
 
-        return () => clearInterval(timerIntervalRef.current);
+            if (isPrepping) {
+                setPrepRemaining(secondsLeft);
+                if (secondsLeft <= 0) {
+                    setIsPrepping(false);
+                    phaseEndTimeRef.current = Date.now() + totalDuration * 1000;
+                    if (isHapticsEnabled) Vibration.vibrate(100);
+                } else {
+                    if (isHapticsEnabled) Vibration.vibrate(10);
+                }
+            } else {
+                setRemainingSeconds(secondsLeft);
+                if (secondsLeft <= 0) {
+                    setIsTimerRunning(false);
+                    if (isHapticsEnabled) Vibration.vibrate([0, 500, 200, 500]);
+                }
+            }
+        };
+
+        timerIntervalRef.current = setInterval(tick, 1000);
+
+        // setInterval is suspended while the app is backgrounded/screen is
+        // off, so a locked phone shows a stale, non-counting timer until the
+        // next tick fires. Recompute immediately on resume so it catches up
+        // right away instead of waiting up to a second (and instead of
+        // silently having lost all the elapsed time).
+        const subscription = AppState.addEventListener('change', (nextState) => {
+            if (nextState === 'active') tick();
+        });
+
+        return () => {
+            clearInterval(timerIntervalRef.current);
+            subscription.remove();
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isTimerRunning, isPrepping, isHapticsEnabled]);
 
     const handleTimeChange = (unit: 'min' | 'sec', value: number) => {
