@@ -74,6 +74,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     // State
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const { user } = useAuth();
+    const { isLiveActivitiesEnabled } = useWorkoutManager();
     const [workoutName, setWorkoutName] = useState("Current Workout");
     const [sourceWorkoutId, setSourceWorkoutId] = useState<string | null>(null);
     const [hasActiveSession, setHasActiveSession] = useState(false);
@@ -199,18 +200,18 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
     const currentExerciseCompletedSets = currentExercise?.completedSets || 0;
     const currentExerciseSets = currentExercise?.sets;
     useEffect(() => {
-        if (!hasActiveSession || !currentExercise) return;
+        if (!hasActiveSession || !currentExercise || !isLiveActivitiesEnabled) return;
         LiveActivityService.update({
             exerciseName: currentExerciseName,
             setProgress: getSetProgressLabel(currentExercise),
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [hasActiveSession, currentIndex, currentExerciseName, currentExerciseCompletedSets, currentExerciseSets]);
+    }, [hasActiveSession, currentIndex, currentExerciseName, currentExerciseCompletedSets, currentExerciseSets, isLiveActivitiesEnabled]);
 
     // Reflect rest-timer start/end on the Live Activity
     const prevRestSecondsRef = React.useRef(0);
     useEffect(() => {
-        if (!hasActiveSession) return;
+        if (!hasActiveSession || !isLiveActivitiesEnabled) return;
         const wasResting = prevRestSecondsRef.current > 0;
         const isResting = restSeconds > 0;
         if (!wasResting && isResting) {
@@ -219,7 +220,7 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
             LiveActivityService.update({ isResting: false });
         }
         prevRestSecondsRef.current = restSeconds;
-    }, [hasActiveSession, restSeconds]);
+    }, [hasActiveSession, restSeconds, isLiveActivitiesEnabled]);
 
     // Shared by startWorkout (an outdoor exercise present at start) and
     // addExercise (an outdoor exercise added mid-workout) - and callable
@@ -261,14 +262,16 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
             setSourceWorkoutId(newSourceWorkoutId || null);
             NotificationService.scheduleWorkoutTimeoutReminder();
 
-            const firstExercise = exercisesToStart[0];
-            LiveActivityService.start({
-                workoutName: name || "Current Workout",
-                exerciseName: firstExercise?.name || '',
-                setProgress: getSetProgressLabel(firstExercise),
-                startedAt: new Date(Date.now() - workoutSeconds * 1000),
-                isPaused: false,
-            });
+            if (isLiveActivitiesEnabled) {
+                const firstExercise = exercisesToStart[0];
+                LiveActivityService.start({
+                    workoutName: name || "Current Workout",
+                    exerciseName: firstExercise?.name || '',
+                    setProgress: getSetProgressLabel(firstExercise),
+                    startedAt: new Date(Date.now() - workoutSeconds * 1000),
+                    isPaused: false,
+                });
+            }
 
             if (workoutHasOutdoorExercise(exercisesToStart)) {
                 activateGpsTrackingIfNeeded();
@@ -282,17 +285,17 @@ export function ActiveWorkoutProvider({ children }: { children: React.ReactNode 
 		setRunning(true);
         setHasActiveSession(true);
         setIsExpanded(true);
-	}, [setRunning, workoutSeconds, activateGpsTrackingIfNeeded]);
+	}, [setRunning, workoutSeconds, activateGpsTrackingIfNeeded, isLiveActivitiesEnabled]);
 
     const pauseWorkout = useCallback(() => {
 		setRunning(false);
-        LiveActivityService.update({ isPaused: true });
-	}, [setRunning]);
+        if (isLiveActivitiesEnabled) LiveActivityService.update({ isPaused: true });
+	}, [setRunning, isLiveActivitiesEnabled]);
 
     const resumeWorkout = useCallback(() => {
 		setRunning(true);
-        LiveActivityService.update({ isPaused: false, startedAt: new Date(Date.now() - workoutSeconds * 1000) });
-	}, [setRunning, workoutSeconds]);
+        if (isLiveActivitiesEnabled) LiveActivityService.update({ isPaused: false, startedAt: new Date(Date.now() - workoutSeconds * 1000) });
+	}, [setRunning, workoutSeconds, isLiveActivitiesEnabled]);
 
 	const resetWorkout = useCallback(() => {
 		// Keep running (or start if paused) as per user request to "continue counting" after reset

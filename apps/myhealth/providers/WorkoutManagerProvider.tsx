@@ -47,6 +47,8 @@ interface WorkoutManagerContextType {
     setIsProgressiveOverloadEnabled: (enabled: boolean) => Promise<void>;
     progressiveOverloadRepCeiling: number;
     setProgressiveOverloadRepCeiling: (ceiling: number) => Promise<void>;
+    isLiveActivitiesEnabled: boolean;
+    setIsLiveActivitiesEnabled: (enabled: boolean) => Promise<void>;
 }
 
 const WorkoutManagerContext = createContext<WorkoutManagerContextType | undefined>(undefined);
@@ -63,6 +65,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
     const [isSoundEnabled, setIsSoundEnabledState] = useState(true);
     const [isProgressiveOverloadEnabled, setIsProgressiveOverloadEnabledState] = useState(true);
     const [progressiveOverloadRepCeiling, setProgressiveOverloadRepCeilingState] = useState(DEFAULT_REP_CEILING);
+    const [isLiveActivitiesEnabled, setIsLiveActivitiesEnabledState] = useState(true);
 
     const { lastSyncedAt, sync, isSyncing } = useSyncService();
 
@@ -91,6 +94,11 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
     const setProgressiveOverloadRepCeiling = useCallback(async (ceiling: number) => {
         setProgressiveOverloadRepCeilingState(ceiling);
         await storage.setItem(REP_CEILING_STORAGE_KEY, ceiling);
+    }, []);
+
+    const setIsLiveActivitiesEnabled = useCallback(async (enabled: boolean) => {
+        setIsLiveActivitiesEnabledState(enabled);
+        await storage.setItem('setting.workout.isLiveActivitiesEnabled', enabled);
     }, []);
 
     // Initial Load - Local First
@@ -130,6 +138,9 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
 
                 const repCeilingVal = await storage.getItem<number>(REP_CEILING_STORAGE_KEY);
                 setProgressiveOverloadRepCeilingState(repCeilingVal === null ? DEFAULT_REP_CEILING : repCeilingVal);
+
+                const liveActivitiesVal = await storage.getItem<boolean>('setting.workout.isLiveActivitiesEnabled');
+                setIsLiveActivitiesEnabledState(liveActivitiesVal === null ? true : !!liveActivitiesVal);
             } catch (e) {
                 console.error("Failed to load local data", e);
             } finally {
@@ -417,6 +428,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         setIsProgressiveOverloadEnabled,
         progressiveOverloadRepCeiling,
         setProgressiveOverloadRepCeiling,
+        isLiveActivitiesEnabled,
+        setIsLiveActivitiesEnabled,
     }), [
         savedWorkouts, isSaving, isLoading, saveWorkout,
         deleteSavedWorkout, updateSavedWorkout,
@@ -426,7 +439,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         isHapticsEnabled, setIsHapticsEnabled,
         isSoundEnabled, setIsSoundEnabled,
         isProgressiveOverloadEnabled, setIsProgressiveOverloadEnabled,
-        progressiveOverloadRepCeiling, setProgressiveOverloadRepCeiling
+        progressiveOverloadRepCeiling, setProgressiveOverloadRepCeiling,
+        isLiveActivitiesEnabled, setIsLiveActivitiesEnabled
     ]);
 
     return <WorkoutManagerContext.Provider value={value}>{children}</WorkoutManagerContext.Provider>;
@@ -463,6 +477,8 @@ export function useWorkoutManager() {
             setIsProgressiveOverloadEnabled: async () => {},
             progressiveOverloadRepCeiling: DEFAULT_REP_CEILING,
             setProgressiveOverloadRepCeiling: async () => {},
+            isLiveActivitiesEnabled: true,
+            setIsLiveActivitiesEnabled: async () => {},
         } as any;
     }
     return context;

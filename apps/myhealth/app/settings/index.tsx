@@ -47,6 +47,7 @@ export default function SettingsScreen() {
     isSoundEnabled, setIsSoundEnabled,
     isProgressiveOverloadEnabled, setIsProgressiveOverloadEnabled,
     progressiveOverloadRepCeiling, setProgressiveOverloadRepCeiling,
+    isLiveActivitiesEnabled, setIsLiveActivitiesEnabled,
   } = useWorkoutManager();
   const handleUpdateRepCeiling = async (ceiling: number) => {
     await setProgressiveOverloadRepCeiling(ceiling);
@@ -429,6 +430,21 @@ export default function SettingsScreen() {
               });
             }}
           />
+          {Platform.OS === 'ios' && (
+            <SettingsToggleRow
+              testID="live-activities-switch"
+              label="Live Activities"
+              labelBold
+              value={isLiveActivitiesEnabled}
+              onValueChange={async (value) => {
+                await setIsLiveActivitiesEnabled(value);
+                showToast({
+                  message: value ? "Live Activities enabled" : "Live Activities disabled",
+                  type: 'success'
+                });
+              }}
+            />
+          )}
           <View className="flex-row justify-between items-center py-3">
             <Text className="text-base text-light dark:text-dark font-medium">Units</Text>
             <View style={{ width: 180 }}>
