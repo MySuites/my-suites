@@ -318,7 +318,7 @@ export default function ProgressPicturesScreen() {
                         )}
                     </View>
                     <View className="p-2">
-                        <Text className="font-bold text-[9px] text-light dark:text-dark">{formatDate(item.date)}</Text>
+                        <Text className="font-bold text-[11px] text-light dark:text-dark">{formatDate(item.date)}</Text>
                         {item.notes ? (
                             <Text className="text-[8px] text-light-muted dark:text-dark-muted mt-0.5" numberOfLines={1}>
                                 {item.notes}

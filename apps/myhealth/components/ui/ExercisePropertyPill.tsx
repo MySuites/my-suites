@@ -22,7 +22,7 @@ export function ExercisePropertyPill({ icon, label, onPress, disabled = false, v
     };
 
     if (variant === 'subtle') {
-        const isDark = theme.bgDark === '#000000';
+        const isDark = theme.dark;
         const bg = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)';
         const iconColor = isDark ? '#bbb' : '#555';
         const textColor = isDark ? '#ccc' : '#444';
@@ -30,6 +30,7 @@ export function ExercisePropertyPill({ icon, label, onPress, disabled = false, v
             <TouchableOpacity
                 disabled={disabled}
                 onPress={handlePress}
+                hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -40,7 +41,7 @@ export function ExercisePropertyPill({ icon, label, onPress, disabled = false, v
                 }}
             >
                 <IconSymbol name={icon as any} size={10} color={iconColor} />
-                <Text style={{ marginLeft: 4, fontSize: 10, fontWeight: '600', color: textColor }}>
+                <Text style={{ marginLeft: 4, fontSize: 12, fontWeight: '600', color: textColor }}>
                     {label}
                 </Text>
                 {!disabled && (

@@ -531,7 +531,7 @@ function HorizontalSelectorWheelBase({
                                             width: TICK_LABEL_WIDTH,
                                             height: TICK_LABEL_HEIGHT,
                                             textAlign: 'center',
-                                            fontSize: 10,
+                                            fontSize: 12,
                                             fontWeight: '700',
                                             color: theme.textMuted ?? theme.text,
                                             opacity: tickOpacities[k],

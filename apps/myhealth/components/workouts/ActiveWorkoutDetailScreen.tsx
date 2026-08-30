@@ -38,12 +38,12 @@ export function RestTimerBar({ raised = false }: { raised?: boolean }) {
                 bottom: raised ? insets.bottom + RAISED_BOTTOM_OFFSET : insets.bottom,
                 backgroundColor: theme.bgLight, 
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.2,
-                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.12,
+                shadowRadius: 8,
                 elevation: 10,
                 borderWidth: 1,
-                borderColor: theme.bgDark === '#000000' ? '#333' : '#eee'
+                borderColor: theme.dark ? '#333' : '#eee'
             }}
         >
             <View className="flex-row items-center gap-3">
@@ -55,7 +55,7 @@ export function RestTimerBar({ raised = false }: { raised?: boolean }) {
                 </TouchableOpacity>
 
                 <View className="items-center px-2">
-                    <Text className="text-light-muted dark:text-dark-muted text-[10px] font-bold uppercase tracking-wider">Resting</Text>
+                    <Text className="text-light-muted dark:text-dark-muted text-[12px] font-bold uppercase tracking-wider">Resting</Text>
                     <Text className="text-light dark:text-dark text-xl font-black tabular-nums">{formatRestTime(restSeconds)}</Text>
                 </View>
 
@@ -99,7 +99,7 @@ function DetailScreenHeader({ onToggleView }: { onToggleView: () => void }) {
                             {isRunning ? (
                                 <View className="w-2 h-2 rounded-full bg-primary dark:bg-primary-dark" />
                             ) : (
-                                <Text className="text-[9px] font-black tracking-widest text-warning uppercase">PAUSED</Text>
+                                <Text className="text-[11px] font-black tracking-widest text-warning uppercase">PAUSED</Text>
                             )}
                             <Text className="text-sm font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
                         </View>

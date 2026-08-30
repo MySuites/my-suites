@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Pressable, useWindowDimensions, Vibration, useColorScheme } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
-import { IconSymbol } from "@mysuite/ui";
+import { IconSymbol, useUITheme } from "@mysuite/ui";
 import { CountdownRing } from '../ui/CountdownRing';
 
 import { getExerciseFields } from './getExerciseFields';
@@ -206,6 +206,7 @@ function PrepTimeSelector({ selectedPrepSec, onSelect, isDark }: {
     onSelect: (val: number) => void;
     isDark: boolean;
 }) {
+    const theme = useUITheme();
     return (
         <View style={{ marginRight: 36, alignItems: 'center' }}>
             <Text className="text-[11px] font-bold text-light-muted dark:text-dark-muted mb-1.5 uppercase tracking-widest">Prep</Text>
@@ -222,7 +223,7 @@ function PrepTimeSelector({ selectedPrepSec, onSelect, isDark }: {
                                 paddingHorizontal: 4,
                                 paddingVertical: 12,
                                 borderRadius: 14,
-                                backgroundColor: isSelected ? (isDark ? '#2c2c2e' : '#fff') : 'transparent',
+                                backgroundColor: isSelected ? (isDark ? theme.bgLightest : theme.bgLight) : 'transparent',
                             }}
                         >
                             <Text
@@ -231,7 +232,7 @@ function PrepTimeSelector({ selectedPrepSec, onSelect, isDark }: {
                                 style={{
                                     fontSize: 13,
                                     fontWeight: '700',
-                                    color: isSelected ? '#f97316' : isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
+                                    color: isSelected ? theme.primary : theme.textSubtle,
                                 }}
                             >
                                 {val === 0 ? 'None' : `${val}s`}
@@ -793,7 +794,7 @@ function CardWorkoutSetInner({
                                                                 width: 44,
                                                                 height: 42,
                                                                 borderRadius: 22,
-                                                                backgroundColor: colorScheme === 'dark' ? '#2c2c2e' : '#fff',
+                                                                backgroundColor: colorScheme === 'dark' ? theme.bgLightest : theme.bgLight,
                                                             },
                                                         ]}
                                                     />

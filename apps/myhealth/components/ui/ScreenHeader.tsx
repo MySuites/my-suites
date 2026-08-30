@@ -1,5 +1,4 @@
-import { View, Text, useColorScheme } from 'react-native';
-import { BlurView } from 'expo-blur';
+import { View, Text } from 'react-native';
 
 interface ScreenHeaderProps {
   title: string | React.ReactNode;
@@ -10,13 +9,9 @@ interface ScreenHeaderProps {
 }
 
 export function ScreenHeader({ title, rightAction, leftAction, className, rightActionClassName }: ScreenHeaderProps) {
-  const colorScheme = useColorScheme();
-
   return (
-    <BlurView 
-      tint={colorScheme === 'dark' ? 'dark' : 'light'}
-      intensity={5}
-      className={`absolute top-0 left-0 right-0 py-4 pt-16 rounded-b-3xl overflow-hidden bg-light/60 dark:bg-dark/60 ${className || ''}`}
+    <View
+      className={`absolute top-0 left-0 right-0 py-4 pt-16 rounded-b-3xl overflow-hidden bg-light dark:bg-dark ${className || ''}`}
       style={{ zIndex: 50 }}
     >
       <View className="flex-row justify-center items-center relative min-h-[44px]">
@@ -36,6 +31,6 @@ export function ScreenHeader({ title, rightAction, leftAction, className, rightA
           </View>
         )}
       </View>
-    </BlurView>
+    </View>
   );
 }

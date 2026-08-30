@@ -132,6 +132,7 @@ export default function AddProgressPictureScreen() {
                                         <TouchableOpacity
                                             onPress={() => setTempPhotoUris(prev => prev.filter((_, i) => i !== index))}
                                             style={{ position: 'absolute', top: 6, right: 6, backgroundColor: 'rgba(0,0,0,0.5)', width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}
+                                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                                         >
                                             <IconSymbol name="xmark" size={12} color="#fff" />
                                         </TouchableOpacity>

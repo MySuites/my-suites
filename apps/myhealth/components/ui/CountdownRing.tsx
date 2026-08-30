@@ -17,7 +17,7 @@ export function CountdownRing({ size, radius, strokeWidth, progress, color, chil
     const theme = useUITheme();
     const center = size / 2;
     const circumference = 2 * Math.PI * radius;
-    const trackColor = theme.bgDark === '#000000' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+    const trackColor = theme.dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
 
     return (
         <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>

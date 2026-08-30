@@ -4,6 +4,7 @@ const baseColors = {
     bg: 'hsl(137, 37%, 80%)',
     text: 'hsl(222, 47%, 11%)', // Ink Black
     textMuted: 'hsl(215, 16%, 47%)', // Cool Grey
+    textSubtle: 'hsl(215, 16%, 65%)', // Faint Grey — third tier, below Muted
     icon: 'hsl(222, 47%, 11%)',
     tabIconDefault: 'hsl(215, 20%, 65%)',
     error: 'hsl(0, 84%, 60%)',
@@ -22,6 +23,7 @@ const baseColors = {
     bgDark: 'hsl(222, 47%, 5%)', // Extra Dark
     text: 'hsl(210, 40%, 98%)', // Bright White
     textMuted: 'hsl(215, 20%, 65%)', // Muted Grey
+    textSubtle: 'hsl(215, 20%, 45%)', // Faint Grey — third tier, below Muted
     icon: 'hsl(210, 40%, 98%)',
     tabIconDefault: 'hsl(215, 20%, 65%)',
     error: 'hsl(0, 84%, 60%)',

@@ -403,9 +403,10 @@ function Workout() {
                                     Completed Workouts
                                 </Text>
                             </View>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={() => setIsDayModalVisible(false)}
                                 className="w-8 h-8 items-center justify-center rounded-full bg-black/5 dark:bg-white/10"
+                                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                             >
                                 <IconSymbol name="xmark" size={16} color={theme.text} />
                             </TouchableOpacity>

@@ -215,10 +215,10 @@ export const WorkoutDraftExerciseItem = ({
                                 style={{ 
                                     top: menuPos.top,
                                     right: menuPos.right - 8,
-                                    shadowColor: '#000', 
-                                    shadowOffset: { width: 0, height: 4 }, 
-                                    shadowOpacity: 0.15, 
-                                    shadowRadius: 12, 
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.12,
+                                    shadowRadius: 8,
                                     elevation: 5,
                                 }}
                             >
@@ -310,7 +310,7 @@ export const WorkoutDraftExerciseItem = ({
                                                     selectTextOnFocus
                                                     editable={_isEditing}
                                                 />
-                                                <Text className="text-light-muted dark:text-dark-muted text-[10px] font-bold">/</Text>
+                                                <Text className="text-light-muted dark:text-dark-muted text-[12px] font-bold">/</Text>
                                                 <TextInput 
                                                     value={set.reps_right !== undefined && set.reps_right !== null ? String(set.reps_right) : ''} 
                                                     keyboardType="numeric"

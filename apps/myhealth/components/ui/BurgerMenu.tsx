@@ -56,9 +56,9 @@ export function BurgerMenu({ visible, onClose, items }: BurgerMenuProps) {
                 className="absolute bottom-24 right-4 w-52 p-2 bg-light dark:bg-dark-lighter origin-bottom-right rounded-xl"
                 style={{
                     shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 12,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.12,
+                    shadowRadius: 8,
                     elevation: 5
                 }}
                 testID="burger-menu-content"

@@ -356,15 +356,15 @@ function ExerciseCardInner({ exercise, isCurrent, onCompleteSet, onUpdateSetTarg
                 {!horizontalSets && (
                     <View className="flex-row mb-2 px-1">
                         {!horizontalSets && (
-                            <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[30px] text-light-muted dark:text-dark-muted">SET</Text>
+                            <Text className="text-[12px] items-center justify-center font-bold uppercase text-center w-[30px] text-light-muted dark:text-dark-muted">SET</Text>
                         )}
-                        <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted flex-1">PREVIOUS</Text>
+                        <Text className="text-[12px] font-bold uppercase text-center text-light-muted dark:text-dark-muted flex-1">PREVIOUS</Text>
 
-                        {showWeight && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">LBS</Text>}
-                        {showReps && <Text className={`text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted mx-0.5 ${isUnilateral ? 'w-[54px]' : 'w-[52px]'}`}>{isUnilateral ? 'L / R' : 'REPS'}</Text>}
-                        {showDuration && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">TIME</Text>}
-                        {showDistance && <Text className="text-[10px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">DIST</Text>}
-                        {showRPE && <Text className="text-[10px] items-center justify-center font-bold uppercase text-center w-[40px] ml-2 mr-0.5 text-light-muted dark:text-dark-muted">RPE</Text>}
+                        {showWeight && <Text className="text-[12px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">LBS</Text>}
+                        {showReps && <Text className={`text-[12px] font-bold uppercase text-center text-light-muted dark:text-dark-muted mx-0.5 ${isUnilateral ? 'w-[54px]' : 'w-[52px]'}`}>{isUnilateral ? 'L / R' : 'REPS'}</Text>}
+                        {showDuration && <Text className="text-[12px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">TIME</Text>}
+                        {showDistance && <Text className="text-[12px] font-bold uppercase text-center text-light-muted dark:text-dark-muted w-[52px] mx-0.5">DIST</Text>}
+                        {showRPE && <Text className="text-[12px] items-center justify-center font-bold uppercase text-center w-[40px] ml-2 mr-0.5 text-light-muted dark:text-dark-muted">RPE</Text>}
                         {/* Matches the checkbox (w-7 ml-1) + list-mode delete
                             icon (w-6 ml-1) trailing each row - see SetRow. */}
                         <View className="w-7 ml-1" />

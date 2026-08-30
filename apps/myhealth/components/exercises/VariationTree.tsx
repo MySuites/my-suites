@@ -21,11 +21,11 @@ export const VariationTree = React.memo(function VariationTree({ exercises, onSe
     const horizontalScrollRef = useRef<ScrollView>(null);
 
     const currentColors = {
-        text: theme.text || '#FFFFFF',
-        primary: theme.primary || '#FF6F61',
-        card: theme.bgLight || '#333333',
-        lineDefault: theme.text, 
-        lineActive: theme.primary, 
+        text: theme.text,
+        primary: theme.primary,
+        card: theme.bgLight,
+        lineDefault: theme.text,
+        lineActive: theme.primary,
         background: (theme.bgDark || theme.bg) as string,
     };
 
@@ -233,8 +233,8 @@ export const VariationTree = React.memo(function VariationTree({ exercises, onSe
                                             // Outer shadow handling natively
                                             shadowColor: isActive ? currentColors.primary : '#000',
                                             shadowOffset: { width: 0, height: 2 },
-                                            shadowOpacity: isActive ? 0.6 : 0.15,
-                                            shadowRadius: isActive ? 6 : 4,
+                                            shadowOpacity: isActive ? 0.35 : 0.12,
+                                            shadowRadius: isActive ? 5 : 3,
                                             elevation: isActive ? 6 : 3,
                                             backgroundColor: currentColors.card,
                                             borderWidth: isActive ? 3 : 2,

@@ -31,8 +31,10 @@ module.exports = {
       textColor: {
         'light': baseColors.light.text,
         'light-muted': baseColors.light.textMuted,
+        'light-subtle': baseColors.light.textSubtle,
         'dark': baseColors.dark.text,
         'dark-muted': baseColors.dark.textMuted,
+        'dark-subtle': baseColors.dark.textSubtle,
 
         primary: brand.light.primary,
         'primary-muted': brand.light.primaryMuted,

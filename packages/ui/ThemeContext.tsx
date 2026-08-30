@@ -10,6 +10,7 @@ export type AppTheme = {
   bgDark?: string;
   text: string;
   textMuted?: string;
+  textSubtle?: string;
   icon?: string;
   tabIconDefault?: string;
   tabIconSelected?: string;

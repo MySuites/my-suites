@@ -46,7 +46,7 @@ export function MetricWidgetCard({
             <IconSymbol name={icon} size={16} color={color} />
           </View>
           <View className="flex-row items-center gap-1">
-            <Text className="text-[10px] text-light-muted dark:text-dark-muted font-semibold bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded">
+            <Text className="text-[12px] text-light-muted dark:text-dark-muted font-semibold bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded">
               {badgeLabel}
             </Text>
             <IconSymbol name="chevron.right" size={12} color={textColor || theme.textMuted} />
@@ -54,7 +54,7 @@ export function MetricWidgetCard({
         </View>
 
         <View>
-          <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5" numberOfLines={1}>
+          <Text className="text-[12px] text-light-muted dark:text-dark-muted font-medium mb-0.5" numberOfLines={1}>
             {label}
           </Text>
           <View className="flex-row items-baseline">
@@ -62,7 +62,7 @@ export function MetricWidgetCard({
               {value}
             </Text>
             {unit && (
-              <Text className="text-[10px] text-light-muted dark:text-dark-muted ml-0.5">{unit}</Text>
+              <Text className="text-[12px] text-light-muted dark:text-dark-muted ml-0.5">{unit}</Text>
             )}
           </View>
         </View>

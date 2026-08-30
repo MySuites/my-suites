@@ -122,7 +122,7 @@ function ActiveScreenHeader({ onToggleView, activeSetIndex, onAddExercise }: { o
                             {isRunning ? (
                                 <View className="w-2 h-2 rounded-full bg-primary dark:bg-primary-dark" />
                             ) : (
-                                <Text className="text-[9px] font-black tracking-widest text-warning uppercase">PAUSED</Text>
+                                <Text className="text-[11px] font-black tracking-widest text-warning uppercase">PAUSED</Text>
                             )}
                             <Text className="text-sm font-semibold tabular-nums text-light dark:text-dark">{formatSeconds(workoutSeconds)}</Text>
                         </View>

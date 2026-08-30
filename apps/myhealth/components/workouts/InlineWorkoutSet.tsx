@@ -172,7 +172,7 @@ function InlineWorkoutSetInner({
                     <Text 
                         numberOfLines={1}
                         ellipsizeMode="tail"
-                        className="text-center text-[10px] font-medium text-light-muted dark:text-dark-muted"
+                        className="text-center text-[12px] font-medium text-light-muted dark:text-dark-muted"
                     >
                        {getPreviousDisplay()}
                     </Text>
@@ -204,7 +204,7 @@ function InlineWorkoutSetInner({
                             textAlignVertical="center"
                             selectTextOnFocus
                         />
-                        <Text className="text-light-muted dark:text-dark-muted text-[10px] font-bold">/</Text>
+                        <Text className="text-light-muted dark:text-dark-muted text-[12px] font-bold">/</Text>
                         <TextInput 
                             className={`flex-1 bg-transparent text-center text-xs font-bold p-0 ${getTextColor(getValue('reps_right'))}`}
                             value={getValue('reps_right')}
@@ -276,9 +276,10 @@ function InlineWorkoutSetInner({
                </TouchableOpacity>
             )}
             {showCheckbox ? (
-                <TouchableOpacity 
+                <TouchableOpacity
                     className={`w-7 h-7 rounded-lg items-center justify-center ml-1 ${isCompleted ? 'bg-primary dark:bg-primary-dark' : 'border-2 border-primary dark:border-primary-dark'}`}
                     onPress={() => onCompleteSet({})}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                      <IconSymbol name="checkmark" size={16} color={isCompleted ? "#fff" : theme.primary} />
                 </TouchableOpacity>

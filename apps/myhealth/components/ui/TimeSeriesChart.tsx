@@ -453,7 +453,7 @@ export function TimeSeriesChart({
                 yAxisThickness={0}
                 xAxisThickness={0}
                 hideYAxisText
-                xAxisLabelTextStyle={{ color: maxPoints ? 'transparent' : textColor, fontSize: 10, width: 40 }}
+                xAxisLabelTextStyle={{ color: maxPoints ? 'transparent' : textColor, fontSize: 12, width: 40 }}
                 yAxisLabelContainerStyle={{ width: 0 }} // Effectively hide internal Y container
                 {...({ containerToDataUpperPadding: 0 } as any)} // Force-remove internal top offset
                 hideRules
@@ -524,7 +524,7 @@ export function TimeSeriesChart({
                         transform: [{ translateY: -4 }] 
                     }}
                 >
-                    <Text style={{ color: textColor, fontSize: 10 }}>{label}</Text>
+                    <Text style={{ color: textColor, fontSize: 12 }}>{label}</Text>
                 </View>
             ))}
          </View>
@@ -550,7 +550,7 @@ export function TimeSeriesChart({
                         width: 40, 
                         alignItems: isFirst ? 'flex-start' : isLast ? 'flex-end' : 'center' 
                     }}>
-                        <Text className="text-[10px]" style={{ color: textColor }}>{label}</Text>
+                        <Text className="text-[12px]" style={{ color: textColor }}>{label}</Text>
                     </View>
                   );
               })}

@@ -120,7 +120,7 @@ export function BodyWeightCard({
             </View>
 
             <View className="flex-row items-center gap-1">
-              <Text className="text-[10px] text-light-muted dark:text-dark-muted font-semibold bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded">
+              <Text className="text-[12px] text-light-muted dark:text-dark-muted font-semibold bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded">
                 {RANGE_BADGE_LABEL[selectedRange] ?? selectedRange}
               </Text>
               <IconSymbol name="chevron.right" size={12} color={textColor || theme.textMuted} />
@@ -137,14 +137,14 @@ export function BodyWeightCard({
               activeOpacity={0.7}
               className="flex-1 mr-2"
             >
-              <Text className="text-[10px] text-light-muted dark:text-dark-muted font-medium mb-0.5" numberOfLines={1}>
+              <Text className="text-[12px] text-light-muted dark:text-dark-muted font-medium mb-0.5" numberOfLines={1}>
                 Body Weight
               </Text>
               <View className="flex-row items-baseline">
                 <Text className="text-lg font-bold text-light dark:text-dark" numberOfLines={1}>
                   {weight ? weight.toLocaleString() : '--'}
                 </Text>
-                <Text className="text-[10px] text-light-muted dark:text-dark-muted ml-0.5">{weightUnit}</Text>
+                <Text className="text-[12px] text-light-muted dark:text-dark-muted ml-0.5">{weightUnit}</Text>
               </View>
             </TouchableOpacity>
 
@@ -153,6 +153,7 @@ export function BodyWeightCard({
               onPress={onLogWeight}
               activeOpacity={0.7}
               className="w-8 h-8 items-center justify-center bg-black/5 dark:bg-white/5 rounded-lg active:scale-95"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <IconSymbol name="plus" size={18} color={primaryColor || theme.primary} />
             </TouchableOpacity>

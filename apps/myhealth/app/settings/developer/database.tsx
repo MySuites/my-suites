@@ -386,7 +386,7 @@ export default function DeveloperDatabaseScreen() {
                                                         {rowLabel}
                                                     </Text>
                                                     {!isExpanded && row.created_at && (
-                                                        <Text className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+                                                        <Text className="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5">
                                                             Created: {row.created_at}
                                                         </Text>
                                                     )}
@@ -402,7 +402,7 @@ export default function DeveloperDatabaseScreen() {
                                                 <View className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-900">
                                                     {columns.map(col => (
                                                         <View key={col} className="py-2 border-b border-gray-50 dark:border-gray-900">
-                                                            <Text className="text-[10px] text-gray-400 dark:text-gray-500 font-mono font-bold uppercase mb-0.5">
+                                                            <Text className="text-[12px] text-gray-400 dark:text-gray-500 font-mono font-bold uppercase mb-0.5">
                                                                 {col}
                                                             </Text>
                                                             <View className="pl-1">

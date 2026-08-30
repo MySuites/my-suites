@@ -86,7 +86,7 @@ export function StrengthRankCard({ bests, bodyweight, heightInches, sex, onChang
                                 }}
                             >
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                    <Text style={{ fontSize: 10, fontWeight: '700', color: theme.textMuted, width: 36, textTransform: 'uppercase' }}>
+                                    <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textMuted, width: 36, textTransform: 'uppercase' }}>
                                         {lift.category}
                                     </Text>
                                     <Text style={{ fontSize: 14, fontWeight: '600', color: theme.text }}>
@@ -114,7 +114,7 @@ export function StrengthRankCard({ bests, bodyweight, heightInches, sex, onChang
                                                 {rank.tier ?? 'Untrained'}
                                             </Text>
                                         </View>
-                                        <Text style={{ fontSize: 10, color: theme.textMuted, marginTop: 2 }}>
+                                        <Text style={{ fontSize: 12, color: theme.textMuted, marginTop: 2 }}>
                                             {roundForDisplay(lbToDisplay(best, unitSystem), unitSystem)} {weightUnit} · {rank.ratio.toFixed(2)}x BW
                                         </Text>
                                     </View>
