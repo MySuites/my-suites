@@ -21,7 +21,6 @@ import { HollowedCard, RaisedCard, useUITheme, IconSymbol } from '@mysuite/ui';
 
 import { SavedWorkout } from '../../types';
 import { BottomActionBar, BottomNavButton, DashboardButton } from '../../components/ui/BottomNavBar';
-import { BurgerMenu, useBurgerMenu } from '../../components/ui/BurgerMenu';
 import { WORKOUT_MENU_ITEMS } from '../../utils/burgerMenuItems';
 
 function Workout() {
@@ -69,7 +68,6 @@ function Workout() {
             startWorkout([], "Empty Workout");
         }
     };
-    const { visible: menuVisible, toggle: toggleMenu, close: closeMenu } = useBurgerMenu();
     const [activeSwipedCardId, setActiveSwipedCardId] = useState<string | null>(null);
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [isDayModalVisible, setIsDayModalVisible] = useState(false);
@@ -352,32 +350,30 @@ function Workout() {
                 </View>
 			</ScrollView>
 
-            <BottomActionBar>
-                <DashboardButton dimmed={menuVisible} />
-                <BottomNavButton
-                    icon="dumbbell.fill"
-                    label="Exercises"
-                    onPress={() => router.navigate('/(tabs)/exercises' as any)}
-                />
-                <BottomNavButton
-                    icon="list.bullet.clipboard"
-                    label="Saved"
-                    onPress={() => router.navigate('/(tabs)/saved' as any)}
-                />
-                <BottomNavButton
-                    icon="line.3.horizontal"
-                    label="More"
-                    active={menuVisible}
-                    boldWhenActive={false}
-                    onPress={toggleMenu}
-                />
+            <BottomActionBar menuItems={WORKOUT_MENU_ITEMS}>
+                {(menuVisible, toggleMenu) => (
+                    <>
+                        <DashboardButton dimmed={menuVisible} />
+                        <BottomNavButton
+                            icon="dumbbell.fill"
+                            label="Exercises"
+                            onPress={() => router.navigate('/(tabs)/exercises' as any)}
+                        />
+                        <BottomNavButton
+                            icon="list.bullet.clipboard"
+                            label="Saved"
+                            onPress={() => router.navigate('/(tabs)/saved' as any)}
+                        />
+                        <BottomNavButton
+                            icon="line.3.horizontal"
+                            label="More"
+                            active={menuVisible}
+                            boldWhenActive={false}
+                            onPress={toggleMenu}
+                        />
+                    </>
+                )}
             </BottomActionBar>
-
-            <BurgerMenu
-                visible={menuVisible}
-                onClose={closeMenu}
-                items={WORKOUT_MENU_ITEMS}
-            />
 
             <Modal
                 visible={isDayModalVisible}

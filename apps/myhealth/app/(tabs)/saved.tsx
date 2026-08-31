@@ -8,7 +8,6 @@ import { SavedWorkoutItem } from '../../components/workouts/SavedWorkoutItem';
 import { useActiveWorkout } from '../../providers/ActiveWorkoutProvider';
 import { TopNavBanner } from '../../components/ui/TopNavBanner';
 import { BottomActionBar, BottomNavButton, DashboardButton } from '../../components/ui/BottomNavBar';
-import { BurgerMenu, useBurgerMenu } from '../../components/ui/BurgerMenu';
 import { WORKOUT_MENU_ITEMS } from '../../utils/burgerMenuItems';
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -17,8 +16,6 @@ function SavedWorkoutsScreen() {
   const router = useRouter();
   const theme = useUITheme();
   const insets = useSafeAreaInsets();
-  const { visible: menuVisible, toggle: toggleMenu, close: closeMenu } = useBurgerMenu();
-
   const { savedWorkouts, isLoading, deleteSavedWorkout, reorderSavedWorkouts } = useWorkoutManager();
   const { hasActiveSession, startWorkout, finishWorkout, cancelWorkout } = useActiveWorkout();
   const [activeSwipedCardId, setActiveSwipedCardId] = React.useState<string | null>(null);
@@ -128,33 +125,31 @@ function SavedWorkoutsScreen() {
 
       <TopNavBanner />
 
-      <BottomActionBar>
-          <DashboardButton dimmed={menuVisible} />
-          <BottomNavButton
-              icon="dumbbell.fill"
-              label="Exercises"
-              onPress={() => router.navigate('/(tabs)/exercises' as any)}
-          />
-          <BottomNavButton
-              icon="list.bullet.clipboard"
-              label="Saved"
-              active
-              onPress={() => router.navigate('/(tabs)/saved' as any)}
-          />
-          <BottomNavButton
-              icon="line.3.horizontal"
-              label="More"
-              active={menuVisible}
-              boldWhenActive={false}
-              onPress={toggleMenu}
-          />
+      <BottomActionBar menuItems={WORKOUT_MENU_ITEMS}>
+          {(menuVisible, toggleMenu) => (
+              <>
+                  <DashboardButton dimmed={menuVisible} />
+                  <BottomNavButton
+                      icon="dumbbell.fill"
+                      label="Exercises"
+                      onPress={() => router.navigate('/(tabs)/exercises' as any)}
+                  />
+                  <BottomNavButton
+                      icon="list.bullet.clipboard"
+                      label="Saved"
+                      active
+                      onPress={() => router.navigate('/(tabs)/saved' as any)}
+                  />
+                  <BottomNavButton
+                      icon="line.3.horizontal"
+                      label="More"
+                      active={menuVisible}
+                      boldWhenActive={false}
+                      onPress={toggleMenu}
+                  />
+              </>
+          )}
       </BottomActionBar>
-
-      <BurgerMenu
-          visible={menuVisible}
-          onClose={closeMenu}
-          items={WORKOUT_MENU_ITEMS}
-      />
     </GestureHandlerRootView>
   );
 }

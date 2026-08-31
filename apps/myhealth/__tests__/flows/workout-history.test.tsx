@@ -44,6 +44,7 @@ jest.mock('@mysuite/ui', () => {
         HollowedCard: ({ children }: any) => <mockRN.View>{children}</mockRN.View>,
         Skeleton: () => <mockRN.View />,
         IconSymbol: ({ name }: any) => <mockRN.Text>Icon:{name}</mockRN.Text>,
+        useToast: () => ({ showToast: jest.fn() }),
     };
 });
 

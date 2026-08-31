@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { Platform, View, Text, TouchableOpacity } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, usePathname } from 'expo-router';
+import { useRouter, usePathname, useFocusEffect } from 'expo-router';
 import { IconSymbol, useUITheme } from '@mysuite/ui';
 import { findCurrentTab, isOnOwnDashboard } from '../../utils/navTabs';
 
@@ -12,8 +13,22 @@ import { findCurrentTab, isOnOwnDashboard } from '../../utils/navTabs';
 // safe-area inset (added separately as padding).
 export const BOTTOM_ACTION_BAR_HEIGHT = 40;
 
+export interface BurgerMenuItem {
+  label: string;
+  icon: string;
+  route: string;
+}
+
 interface BottomActionBarProps {
-  children: React.ReactNode;
+  // Default row: Dashboard + this screen's own tab buttons, plus a trailing
+  // "More" BottomNavButton wired to the (menuVisible, toggleMenu) this
+  // function receives — the bar owns the toggle now instead of each screen
+  // running its own useState/useBurgerMenu.
+  children: (menuVisible: boolean, toggleMenu: () => void) => React.ReactNode;
+  // Section-specific items (see utils/burgerMenuItems.ts). Rendered as a
+  // second row that morphs in over the default row in the same glass
+  // surface — replaces the old separate BurgerMenu popover.
+  menuItems: BurgerMenuItem[];
 }
 
 // Per-screen contextual actions (settings, history, etc.) that used to live
@@ -25,30 +40,82 @@ interface BottomActionBarProps {
 // at runtime.
 const HAS_NATIVE_GLASS = Platform.OS === 'ios' && isLiquidGlassAvailable();
 
-export function BottomActionBar({ children }: BottomActionBarProps) {
+// Total visual height of the row content (icon+label button height plus its
+// own top/bottom padding) — needed as an explicit number because the two
+// rows stack absolutely on top of each other to crossfade, which would
+// otherwise collapse their flex parent to zero height.
+const ROW_HEIGHT = BOTTOM_ACTION_BAR_HEIGHT + 20;
+
+export function BottomActionBar({ children, menuItems }: BottomActionBarProps) {
   const insets = useSafeAreaInsets();
   const theme = useUITheme();
+  const router = useRouter();
   const barBottom = Math.max(insets.bottom, 12);
+
+  const [menuVisible, setMenuVisible] = useState(false);
+  // Tabs stay mounted when you switch away — without this, leaving the menu
+  // open and navigating elsewhere means it's still open when you come back.
+  useFocusEffect(useCallback(() => () => setMenuVisible(false), []));
+  const toggleMenu = useCallback(() => setMenuVisible((v) => !v), []);
+
+  const morph = useSharedValue(0);
+  React.useEffect(() => {
+    morph.value = withTiming(menuVisible ? 1 : 0, { duration: 220 });
+  }, [menuVisible]);
+  const tabsRowStyle = useAnimatedStyle(() => ({
+    opacity: 1 - morph.value,
+    transform: [{ scale: 1 - morph.value * 0.06 }],
+  }));
+  const menuRowStyle = useAnimatedStyle(() => ({
+    opacity: morph.value,
+    transform: [{ scale: 0.94 + morph.value * 0.06 }],
+  }));
+
+  const rowContent = (
+    <View style={{ height: ROW_HEIGHT, justifyContent: 'center' }}>
+      <Animated.View
+        pointerEvents={menuVisible ? 'none' : 'auto'}
+        className="absolute inset-0 flex-row items-center px-2"
+        style={tabsRowStyle}
+      >
+        {children(menuVisible, toggleMenu)}
+      </Animated.View>
+      <Animated.View
+        pointerEvents={menuVisible ? 'auto' : 'none'}
+        className="absolute inset-0 flex-row items-center px-2"
+        style={menuRowStyle}
+      >
+        {menuItems.map((item) => (
+          <BottomNavButton
+            key={item.route}
+            icon={item.icon}
+            label={item.label}
+            onPress={() => {
+              setMenuVisible(false);
+              router.push(item.route as any);
+            }}
+          />
+        ))}
+        <BottomNavButton icon="xmark" label="Close" onPress={() => setMenuVisible(false)} />
+      </Animated.View>
+    </View>
+  );
 
   return (
     <>
-      {/* Scroll-edge effect: fades content into the bar's material as it
-          scrolls up through the floating gap, instead of a hard cutoff. */}
-      <LinearGradient
-        pointerEvents="none"
-        colors={theme.dark
-          ? ['rgba(2,6,16,0)', 'rgba(2,6,16,0.5)']
-          : ['rgba(255,255,255,0)', 'rgba(255,255,255,0.7)']}
-        style={{ position: 'absolute', left: 0, right: 0, bottom: barBottom, height: 44, zIndex: 99 }}
-      />
       {HAS_NATIVE_GLASS ? (
         <GlassView
           glassEffectStyle="regular"
           colorScheme={theme.dark ? 'dark' : 'light'}
-          className="absolute left-4 right-4 rounded-[28px] overflow-hidden"
+          isInteractive
           style={{
+            position: 'absolute',
+            left: 48,
+            right: 48,
             bottom: barBottom,
             zIndex: 100,
+            borderRadius: 999,
+            overflow: 'hidden',
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.15,
@@ -56,16 +123,11 @@ export function BottomActionBar({ children }: BottomActionBarProps) {
             elevation: 8,
           }}
         >
-          <View
-            className="flex-row justify-around items-center px-2"
-            style={{ minHeight: BOTTOM_ACTION_BAR_HEIGHT, paddingTop: 10, paddingBottom: 10 }}
-          >
-            {children}
-          </View>
+          {rowContent}
         </GlassView>
       ) : (
         <View
-          className="absolute left-4 right-4 rounded-[28px] overflow-hidden border"
+          className="absolute left-16 right-16 rounded-[999px] overflow-hidden border"
           style={{
             bottom: barBottom,
             zIndex: 100,
@@ -101,12 +163,7 @@ export function BottomActionBar({ children }: BottomActionBarProps) {
               : ['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)']}
             style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 28 }}
           />
-          <View
-            className="flex-row justify-around items-center px-2"
-            style={{ minHeight: BOTTOM_ACTION_BAR_HEIGHT, paddingTop: 10, paddingBottom: 10 }}
-          >
-            {children}
-          </View>
+          {rowContent}
         </View>
       )}
     </>
@@ -158,7 +215,7 @@ export function BottomNavButton({
     return (
         <TouchableOpacity
             onPress={onPress}
-            className="items-center justify-center"
+            className="flex-1 items-center justify-center"
             style={{ gap: 2 }}
         >
             <ActivePillHighlight visible={active} dark={theme.dark} />
@@ -192,7 +249,7 @@ export function DashboardButton({ dimmed }: DashboardButtonProps) {
     return (
         <TouchableOpacity
             onPress={() => router.navigate(currentTab.href as any)}
-            className="items-center justify-center"
+            className="flex-1 items-center justify-center"
             style={{ gap: 2 }}
         >
             <ActivePillHighlight visible={!dimmed && isActive} dark={theme.dark} />

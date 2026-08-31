@@ -42,9 +42,10 @@ jest.mock('@mysuite/ui', () => {
     return {
         useUITheme: () => ({ primary: 'blue', textMuted: 'gray', danger: 'red', bg: 'white' }),
         IconSymbol: () => null,
-        RaisedCard: (props: any) => { 
+        RaisedCard: (props: any) => {
             return <mockRN.TouchableOpacity {...props} />;
         },
+        useToast: () => ({ showToast: jest.fn() }),
     };
 });
 

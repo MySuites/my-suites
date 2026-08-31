@@ -5,7 +5,6 @@ import { useFocusEffect } from 'expo-router';
 import { useAuth } from '@mysuite/auth';
 import { useUITheme, useToast } from '@mysuite/ui';
 
-import { BurgerMenu, useBurgerMenu } from '../../components/ui/BurgerMenu';
 import { PROFILE_MENU_ITEMS } from '../../utils/burgerMenuItems';
 import { BottomActionBar, BottomNavButton, DashboardButton } from '../../components/ui/BottomNavBar';
 import { BodyWeightCard } from '../../components/bodyweight/BodyWeightCard';
@@ -34,7 +33,6 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { showToast } = useToast();
   const { unitSystem } = useUnitPreference();
-  const { visible: menuVisible, toggle: toggleMenu, close: closeMenu } = useBurgerMenu();
 
   const [isWeightModalVisible, setIsWeightModalVisible] = useState(false);
   const { workoutHistory, isLoading: workoutsLoading } = useWorkoutManager();
@@ -219,31 +217,29 @@ export default function ProfileScreen() {
         onSave={handleSaveWeight}
       />
 
-      <BottomActionBar>
-        <DashboardButton dimmed={menuVisible} />
-        {isEditMode ? (
-          <TouchableOpacity
-            onPress={() => setIsEditMode(false)}
-            className="h-12 px-4 items-center justify-center"
-          >
-            <Text className="text-base font-semibold text-primary">Done</Text>
-          </TouchableOpacity>
-        ) : (
-          <BottomNavButton
-            icon="line.3.horizontal"
-            label="More"
-            active={menuVisible}
-            boldWhenActive={false}
-            onPress={toggleMenu}
-          />
+      <BottomActionBar menuItems={PROFILE_MENU_ITEMS}>
+        {(menuVisible, toggleMenu) => (
+          <>
+            <DashboardButton dimmed={menuVisible} />
+            {isEditMode ? (
+              <TouchableOpacity
+                onPress={() => setIsEditMode(false)}
+                className="flex-1 h-12 items-center justify-center"
+              >
+                <Text className="text-base font-semibold text-primary">Done</Text>
+              </TouchableOpacity>
+            ) : (
+              <BottomNavButton
+                icon="line.3.horizontal"
+                label="More"
+                active={menuVisible}
+                boldWhenActive={false}
+                onPress={toggleMenu}
+              />
+            )}
+          </>
         )}
       </BottomActionBar>
-
-      <BurgerMenu
-        visible={menuVisible}
-        onClose={closeMenu}
-        items={PROFILE_MENU_ITEMS}
-      />
     </View>
   );
 }

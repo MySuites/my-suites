@@ -1,94 +1,90 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, LayoutChangeEvent } from 'react-native';
-import { useRouter, usePathname } from 'expo-router';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import { IconSymbol, useUITheme } from '@mysuite/ui';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import { useRouter, usePathname, useFocusEffect } from 'expo-router';
+import { IconSymbol, useUITheme, RaisedCard } from '@mysuite/ui';
 import { NAV_TABS as TABS } from '../../utils/navTabs';
-
-const PILL_WIDTH = 92;
-const ROW_PADDING_X = 8; // matches the icon row's px-2
 
 // Top nav banner replacing the OS bottom tab bar: switches between the 5 main
 // screens. Sits above every (tabs) screen, outside the Tabs navigator, so it
 // persists across tab switches instead of remounting per screen.
+//
+// Single word + chevron instead of a 5-icon row — tapping it drops down the
+// other 4 sections as a list, rather than showing every destination at once.
 export function TopNavBanner() {
   const router = useRouter();
   const pathname = usePathname();
   const theme = useUITheme();
-  const [rowWidth, setRowWidth] = useState(0);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+
+  // Tabs stay mounted when you switch away — without this, leaving the
+  // dropdown open and navigating elsewhere means it's still open when you
+  // come back.
+  useFocusEffect(useCallback(() => () => setDropdownVisible(false), []));
 
   const activeIndex = Math.max(0, TABS.findIndex((tab) => tab.match.some((m) => pathname === m)));
   const activeTab = TABS[activeIndex];
-  const columnWidth = (rowWidth - ROW_PADDING_X * 2) / TABS.length;
 
-  const pillX = useSharedValue(0);
-
-  React.useEffect(() => {
-    if (columnWidth > 0) {
-      const target = ROW_PADDING_X + activeIndex * columnWidth + (columnWidth - PILL_WIDTH) / 2;
-      pillX.value = withTiming(target, { duration: 220 });
-    }
-  }, [activeIndex, columnWidth]);
-
-  const pillStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: pillX.value }],
-  }));
-
-  const handleRowLayout = (e: LayoutChangeEvent) => {
-    setRowWidth(e.nativeEvent.layout.width);
+  const goTo = (tab: (typeof TABS)[number]) => {
+    console.log(`[TopNavBanner] switched to: ${tab.label}`);
+    setDropdownVisible(false);
+    router.navigate(tab.href as any);
   };
 
   return (
     <View className="absolute top-0 left-0 right-0" style={{ zIndex: 100 }}>
       <View className="bg-light dark:bg-dark pt-16 pb-3 rounded-b-3xl overflow-hidden border-b border-black/10 dark:border-white/10">
-        <View className="flex-row items-center px-2" onLayout={handleRowLayout}>
-          {TABS.map((tab, index) => {
-            const isActive = index === activeIndex;
-            const color = isActive ? theme.primary : theme.textMuted;
-            return (
-              <TouchableOpacity
-                key={tab.key}
-                onPress={() => router.navigate(tab.href as any)}
-                className="flex-1 items-center py-1"
-              >
-                <IconSymbol name={tab.icon as any} size={tab.key === 'profile' ? 24 : 22} color={color} />
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-
-      {rowWidth > 0 && (
-        <Animated.View
-          className="bg-light dark:bg-dark"
-          style={[
-            {
-              position: 'absolute',
-              top: '100%',
-              marginTop: -2,
-              width: PILL_WIDTH,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingTop: 0,
-              paddingBottom: 8,
-              borderTopLeftRadius: 0,
-              borderTopRightRadius: 0,
-              borderBottomLeftRadius: 16,
-              borderBottomRightRadius: 16,
-              borderLeftWidth: 1,
-              borderRightWidth: 1,
-              borderBottomWidth: 1,
-              borderTopWidth: 0,
-              borderColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-            },
-            pillStyle,
-          ]}
+        <TouchableOpacity
+          onPress={() => setDropdownVisible(true)}
+          className="flex-row items-center self-start"
+          style={{ gap: 4, paddingVertical: 4, paddingLeft: 20 }}
         >
-          <Text style={{ fontSize: 11, fontWeight: '700', color: theme.primary }}>
+          <Text style={{ fontSize: 17, fontWeight: '700', color: theme.primary }}>
             {activeTab.label}
           </Text>
-        </Animated.View>
-      )}
+          <IconSymbol name="chevron.down" size={16} color={theme.primary} />
+        </TouchableOpacity>
+      </View>
+
+      <Modal visible={dropdownVisible} transparent animationType="fade" onRequestClose={() => setDropdownVisible(false)}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setDropdownVisible(false)}
+          className="absolute top-0 bottom-0 left-0 right-0 bg-black/20"
+        />
+        <View className="flex-1 items-start" style={{ paddingTop: 112, paddingLeft: 20 }} pointerEvents="box-none">
+          <RaisedCard
+            className="w-48 p-2 bg-light dark:bg-dark-lighter rounded-xl"
+            style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.12,
+              shadowRadius: 8,
+              elevation: 5,
+            }}
+          >
+            {TABS.map((tab) => (
+              <TouchableOpacity
+                key={tab.key}
+                onPress={() => goTo(tab)}
+                className="flex-row items-center p-3 rounded-lg active:bg-black/5 dark:active:bg-white/5"
+              >
+                <IconSymbol
+                  name={tab.icon as any}
+                  size={20}
+                  color={tab.key === activeTab.key ? theme.primary : theme.text}
+                  style={{ marginRight: 12 }}
+                />
+                <Text
+                  className={tab.key === activeTab.key ? 'font-semibold' : 'font-medium'}
+                  style={{ color: tab.key === activeTab.key ? theme.primary : theme.text }}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </RaisedCard>
+        </View>
+      </Modal>
     </View>
   );
 }

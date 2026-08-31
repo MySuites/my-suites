@@ -1,4 +1,4 @@
-import { BurgerMenuItem } from '../components/ui/BurgerMenu';
+import { BurgerMenuItem } from '../components/ui/BottomNavBar';
 
 // One item list per top-nav section (see NAV_TABS in navTabs.ts) - the
 // burger menu holds whatever doesn't fit in that section's own bottom nav

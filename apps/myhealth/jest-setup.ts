@@ -10,6 +10,13 @@ jest.mock("expo-secure-store", () => ({
     deleteItemAsync: jest.fn(),
 }));
 
+jest.mock("expo-glass-effect", () => ({
+    GlassView: "GlassView",
+    GlassContainer: "GlassContainer",
+    isLiquidGlassAvailable: jest.fn(() => false),
+    isGlassEffectAPIAvailable: jest.fn(() => false),
+}));
+
 jest.mock("expo-audio", () => ({
     useAudioPlayer: jest.fn(() => ({
         play: jest.fn(),

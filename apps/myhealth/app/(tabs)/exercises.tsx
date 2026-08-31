@@ -13,7 +13,6 @@ import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { BackButton } from '../../components/ui/BackButton';
 import { TopNavBanner } from '../../components/ui/TopNavBanner';
 import { BottomActionBar, BottomNavButton, DashboardButton } from '../../components/ui/BottomNavBar';
-import { BurgerMenu, useBurgerMenu } from '../../components/ui/BurgerMenu';
 import { WORKOUT_MENU_ITEMS } from '../../utils/burgerMenuItems';
 
 export interface ExercisesScreenProps {
@@ -37,7 +36,6 @@ export default function ExercisesScreen({
   const searchInputRef = React.useRef<TextInput>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [detailsExercise, setDetailsExercise] = useState<any | null>(null);
-  const { visible: menuVisible, toggle: toggleMenu, close: closeMenu } = useBurgerMenu();
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   React.useEffect(() => {
@@ -440,35 +438,31 @@ export default function ExercisesScreen({
       </KeyboardAvoidingView>
 
       {mode === 'browse' && (
-        <>
-          <BottomActionBar>
-            <DashboardButton dimmed={menuVisible} />
-            <BottomNavButton
-                icon="dumbbell.fill"
-                label="Exercises"
-                active
-                onPress={() => router.navigate('/(tabs)/exercises' as any)}
-            />
-            <BottomNavButton
-                icon="list.bullet.clipboard"
-                label="Saved"
-                onPress={() => router.navigate('/(tabs)/saved' as any)}
-            />
-            <BottomNavButton
-                icon="line.3.horizontal"
-                label="More"
-                active={menuVisible}
-                boldWhenActive={false}
-                onPress={toggleMenu}
-            />
-          </BottomActionBar>
-
-          <BurgerMenu
-            visible={menuVisible}
-            onClose={closeMenu}
-            items={WORKOUT_MENU_ITEMS}
-          />
-        </>
+        <BottomActionBar menuItems={WORKOUT_MENU_ITEMS}>
+          {(menuVisible, toggleMenu) => (
+            <>
+              <DashboardButton dimmed={menuVisible} />
+              <BottomNavButton
+                  icon="dumbbell.fill"
+                  label="Exercises"
+                  active
+                  onPress={() => router.navigate('/(tabs)/exercises' as any)}
+              />
+              <BottomNavButton
+                  icon="list.bullet.clipboard"
+                  label="Saved"
+                  onPress={() => router.navigate('/(tabs)/saved' as any)}
+              />
+              <BottomNavButton
+                  icon="line.3.horizontal"
+                  label="More"
+                  active={menuVisible}
+                  boldWhenActive={false}
+                  onPress={toggleMenu}
+              />
+            </>
+          )}
+        </BottomActionBar>
       )}
 
       {isKeyboardVisible && (
