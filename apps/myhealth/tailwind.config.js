@@ -12,6 +12,20 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
+      // Snapped to Apple's canonical iOS text-style sizes (Human Interface
+      // Guidelines > Typography) — Tailwind's own scale doesn't land on
+      // these: base is 16px (Apple's Body/Headline is 17), sm is 14px
+      // (Apple's Footnote is 13), lg is 18px (Apple's Callout is 16),
+      // 2xl is 24px (Apple's Title2 is 22), 3xl is 30px (Apple's Title1 is
+      // 28), 4xl is 36px (Apple's Large Title is 34).
+      fontSize: {
+        base: '17px',
+        sm: '13px',
+        lg: '16px',
+        '2xl': '22px',
+        '3xl': '28px',
+        '4xl': '34px',
+      },
       backgroundColor: {
         'lighter': baseColors.light.bgLight,
         'light': baseColors.light.bg,

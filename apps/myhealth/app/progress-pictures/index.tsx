@@ -320,12 +320,12 @@ export default function ProgressPicturesScreen() {
                     <View className="p-2">
                         <Text className="font-bold text-[11px] text-light dark:text-dark">{formatDate(item.date)}</Text>
                         {item.notes ? (
-                            <Text className="text-[8px] text-light-muted dark:text-dark-muted mt-0.5" numberOfLines={1}>
+                            <Text className="text-[11px] text-light-muted dark:text-dark-muted mt-0.5" numberOfLines={1}>
                                 {item.notes}
                             </Text>
                         ) : null}
                         {item.muscleGroups?.primaryMuscles?.length ? (
-                            <Text className="text-[8px] mt-0.5" numberOfLines={1} style={{ color: theme.primary }}>
+                            <Text className="text-[11px] mt-0.5" numberOfLines={1} style={{ color: theme.primary }}>
                                 {item.muscleGroups.primaryMuscles.join(', ')}
                             </Text>
                         ) : null}

@@ -180,7 +180,7 @@ function StaticDurationDisplay({ currentMin, currentSec, goalMin, goalSec, goalC
         <View style={{ height: DURATION_WHEEL_HEIGHT, width: 50 }} className="items-center justify-center">
             <Text
                 className="font-black text-light dark:text-dark"
-                style={{ fontSize: 36, ...(goal !== undefined && val === goal ? { color: goalColor } : null) }}
+                style={{ fontSize: 34, ...(goal !== undefined && val === goal ? { color: goalColor } : null) }}
             >
                 {val}
             </Text>

@@ -77,7 +77,7 @@ export function VariationDetailModal({ variation, onClose, onViewFullDetails }: 
 
                         <View style={{ height: 28 }} />
 
-                        <Text style={{ color: text, fontSize: 24, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>
+                        <Text style={{ color: text, fontSize: 22, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>
                             {variation.name}
                         </Text>
 

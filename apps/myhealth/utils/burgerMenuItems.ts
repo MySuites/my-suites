@@ -1,4 +1,4 @@
-import { BurgerMenuItem } from '../components/ui/BottomNavBar';
+import { BurgerMenuItem } from "../components/ui/BottomNavBar";
 
 // One item list per top-nav section (see NAV_TABS in navTabs.ts) - the
 // burger menu holds whatever doesn't fit in that section's own bottom nav
@@ -7,23 +7,27 @@ import { BurgerMenuItem } from '../components/ui/BottomNavBar';
 // the same list here rather than each defining their own.
 
 export const WORKOUT_MENU_ITEMS: BurgerMenuItem[] = [
-    { label: 'Workout History', icon: 'clock.fill', route: '/history' },
-    { label: 'Settings', icon: 'gearshape.fill', route: '/settings' },
+    { label: "Workout History", icon: "clock.fill", route: "/history" },
+    { label: "Settings", icon: "gearshape.fill", route: "/settings" },
 ];
 
 export const PROFILE_MENU_ITEMS: BurgerMenuItem[] = [
-    { label: 'Progress Pictures', icon: 'camera.fill', route: '/progress-pictures' },
-    { label: 'Settings', icon: 'gearshape.fill', route: '/settings' },
+    {
+        label: "Progress Pics",
+        icon: "camera.fill",
+        route: "/progress-pictures",
+    },
+    { label: "Settings", icon: "gearshape.fill", route: "/settings" },
 ];
 
 export const SLEEP_MENU_ITEMS: BurgerMenuItem[] = [
-    { label: 'Settings', icon: 'gearshape.fill', route: '/settings' },
+    { label: "Settings", icon: "gearshape.fill", route: "/settings" },
 ];
 
 export const MIND_MENU_ITEMS: BurgerMenuItem[] = [
-    { label: 'Settings', icon: 'gearshape.fill', route: '/settings' },
+    { label: "Settings", icon: "gearshape.fill", route: "/settings" },
 ];
 
 export const NUTRITION_MENU_ITEMS: BurgerMenuItem[] = [
-    { label: 'Settings', icon: 'gearshape.fill', route: '/settings' },
+    { label: "Settings", icon: "gearshape.fill", route: "/settings" },
 ];
