@@ -1,0 +1,752 @@
+{
+  "builtTestProducts" : [
+    {
+      "binaryPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.xctest/Contents/MacOS/MyHealthKitPackageTests",
+      "packagePath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit",
+      "productName" : "MyHealthKitPackageTests"
+    }
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.MyHealthKit-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/sources",
+      "importPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/DataModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/LiveActivityService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/ProgressiveOverload.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/StrengthStandards.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/WeeklyGoal.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/WorkoutActivityAttributes.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/WorkoutLogic.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "MyHealthKit",
+      "moduleOutputPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules/MyHealthKit.swiftmodule",
+      "objects" : [
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/DataModels.swift.o",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/LiveActivityService.swift.o",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/ProgressiveOverload.swift.o",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/StrengthStandards.swift.o",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/WeeklyGoal.swift.o",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/WorkoutActivityAttributes.swift.o",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/WorkoutLogic.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/include/MyHealthKit-Swift.h",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "myhealthkit"
+      ],
+      "outputFileMapPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/DataModels.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/LiveActivityService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/ProgressiveOverload.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/StrengthStandards.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/WeeklyGoal.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/WorkoutActivityAttributes.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/WorkoutLogic.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules/MyHealthKit.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/DataModels.swift",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/LiveActivityService.swift",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/ProgressiveOverload.swift",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/StrengthStandards.swift",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/WeeklyGoal.swift",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/WorkoutActivityAttributes.swift",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/WorkoutLogic.swift"
+      ],
+      "tempsPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.MyHealthKitPackageTests-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.build/sources",
+      "importPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.derived/runner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules/MyHealthKitTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "MyHealthKitPackageTests",
+      "moduleOutputPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules/MyHealthKitPackageTests.swiftmodule",
+      "objects" : [
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.build/runner.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.build/include/MyHealthKitPackageTests-Swift.h",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "myhealthkit"
+      ],
+      "outputFileMapPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules/MyHealthKitPackageTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.derived/runner.swift"
+      ],
+      "tempsPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.MyHealthKitTests-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/sources",
+      "importPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Tests/MyHealthKitTests/WorkoutLogicTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules/MyHealthKit.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "MyHealthKitTests",
+      "moduleOutputPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules/MyHealthKitTests.swiftmodule",
+      "objects" : [
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/WorkoutLogicTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "myhealthkit"
+      ],
+      "outputFileMapPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/WorkoutLogicTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules/MyHealthKitTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Tests/MyHealthKitTests/WorkoutLogicTests.swift"
+      ],
+      "tempsPath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "MyHealthKit" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "MyHealthKit",
+      "-package-name",
+      "myhealthkit",
+      "-c",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/DataModels.swift",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/LiveActivityService.swift",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/ProgressiveOverload.swift",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/StrengthStandards.swift",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/WeeklyGoal.swift",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/WorkoutActivityAttributes.swift",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/WorkoutLogic.swift",
+      "-I",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/include/MyHealthKit-Swift.h",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "myhealthkit",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "MyHealthKitPackageTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "MyHealthKitPackageTests",
+      "-package-name",
+      "myhealthkit",
+      "-c",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.derived/runner.swift",
+      "-I",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.build/include/MyHealthKitPackageTests-Swift.h",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "myhealthkit",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "MyHealthKitTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "MyHealthKitTests",
+      "-package-name",
+      "myhealthkit",
+      "-c",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Tests/MyHealthKitTests/WorkoutLogicTests.swift",
+      "-I",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "myhealthkit",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "MyHealthKit" : [
+
+    ],
+    "MyHealthKitPackageTests" : [
+      "MyHealthKitTests",
+      "MyHealthKit"
+    ],
+    "MyHealthKitTests" : [
+      "MyHealthKit"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+    "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.derived/runner.swift" : {
+      "inputs" : [
+
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.derived/runner.swift"
+        }
+      ]
+    }
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/DataModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/LiveActivityService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/ProgressiveOverload.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/StrengthStandards.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/WeeklyGoal.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/WorkoutActivityAttributes.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Sources/MyHealthKit/WorkoutLogic.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/sources"
+    },
+    "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.derived/runner.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.build/sources"
+    },
+    "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/DataModels.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/LiveActivityService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/ProgressiveOverload.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/StrengthStandards.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/WeeklyGoal.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/WorkoutActivityAttributes.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKit.build/WorkoutLogic.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/WorkoutLogicTests.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.product/Objects.LinkFileList"
+    },
+    "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Tests/MyHealthKitTests/WorkoutLogicTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/sources"
+    },
+    "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}
