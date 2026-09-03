@@ -35,11 +35,31 @@ Verified:
 
 Fix along the way: `ActivityKit` doesn't exist on watchOS at all, so `WorkoutActivityAttributes.swift` and `LiveActivityService.swift` in `MyHealthKit` are wrapped in `#if canImport(ActivityKit)` — they compile into the iOS build (app + widget extension) and compile out of the watchOS build.
 
-## Not yet done (Phase 2/3, not blocking scaffold)
+## Phase 2 architecture status
 
-- Real screens — `ContentView.swift` and `WatchContentView.swift` are placeholders.
-- Navigation (`TabView`/`NavigationStack` mapped from Expo Router tree).
+Done, ported from the RN app into `MyHealthKit`:
+- **`WorkoutRepository`** — SwiftData CRUD layer ported from `providers/DataRepository.tsx`: workouts, history/logs, exercise library, body measurements, progress pictures, bulk clear. `WorkoutRecord` gained a proper `exercises: [WorkoutExerciseTemplate]` (JSON-encoded, mirroring the RN schema's blob design) that Phase 1's model was missing.
+- **`SettingsStore`** — `@Observable`, UserDefaults-backed, ports the settings slice of `WorkoutManagerProvider.tsx` (RPE, haptics, sound, progressive-overload rep ceiling, live activities, weekly goal).
+- **`WorkoutManagerStore`** — `@Observable`, saved workouts + workout history CRUD over `WorkoutRepository`. Simplified vs. the RN original: `updateSavedWorkout`'s field-by-field completed-set merge logic isn't ported yet — it's UI-editing-flow specific, revisit once the workout editor screen exists in Phase 3.
+- **`ActiveWorkoutStore`** — `@Observable`, the core session state machine ported from `ActiveWorkoutProvider.tsx`: start/pause/resume/reset, add/update/remove/reorder exercises, set completion with rest-timer trigger, finish/cancel with GPS+HealthKit-bodyweight fold-in, Live Activity sync. Deferred to Phase 3 (need concrete screens to know the UX): pre-filling `previousLog` from history, AI muscle-group analysis on saved progress pictures, and the completion-prompt `Alert` (exposed instead as `isWorkoutComplete` for the view layer to react to).
+- **`NotificationService`** — `UserNotifications`, ports `services/NotificationService.ts` in full.
+- **`LocationTrackingService`** — `CoreLocation`, ports `services/WorkoutLocationTrackingService.ts`. iOS-only (`#if os(iOS)`) — GPS route tracking is a phone feature, and several `CLLocationManager` properties used here are unavailable on watchOS anyway.
+- **`HealthKitService`** — `HealthKit`, covers the same read/write scope as `services/HealthKitService.ts` (body mass, workouts, heart rate, active energy, distance). Full workout-import parity (activity-type labeling nuances, per-workout heart-rate statistics) deferred to Phase 3 alongside `WorkoutHealthKitSyncService`.
+
+Verified:
+- Full `MyHealth` scheme (iOS + watchOS + widget extension) still builds clean after all additions.
+- `MyHealthKit` package tests: 14 tests covering domain logic, the repository, and `ActiveWorkoutStore`'s session lifecycle (start → complete sets → finish → saved to history).
+
+Fix along the way: `ActivityKit` is referenced from `ActiveWorkoutStore` too, not just the two Phase 1 files — every call site is wrapped in `#if canImport(ActivityKit)` so the watchOS build of `MyHealthKit` compiles.
+
+**Known flake, not an app bug**: this Xcode 26.3 / iOS 26.2 Simulator combination has an intermittent SwiftData crash-then-recover-on-retry when running the full test suite (`xcodebuild test` retries automatically and every test does end up passing — confirmed by rerunning several times and inspecting the `.xcresult`). It hit different tests on different runs, including ones proven reliable elsewhere, which rules out an actual logic bug in `WorkoutRepository`/`ActiveWorkoutStore`. If a CI run reports a crash here, rerun before assuming a regression.
+
+## Not yet done (Phase 3, not blocking Phase 2 architecture)
+
+- Real screens — `ContentView.swift` and `WatchContentView.swift` are still placeholders.
+- Navigation (`TabView`/`NavigationStack` mapped from the Expo Router tree in `app/(tabs)`).
+- Root app composition wiring `SettingsStore`/`WorkoutManagerStore`/`ActiveWorkoutStore`/`ModelContainer` together (mirrors `app/_layout.tsx`).
 - `WatchConnectivity` sync between iPhone and Watch.
-- CoreLocation, UserNotifications, PhotosUI service wrappers.
-- Auth/account decision (see plan).
+- `PhotosUI`/`AVFoundation` service wrapper for progress pictures (`ProgressPictureService.ts`).
+- Auth/account decision (see plan) — data is local-only now, no code depends on an account existing.
 - `.db` import path for existing users' local data into the new SwiftData store.

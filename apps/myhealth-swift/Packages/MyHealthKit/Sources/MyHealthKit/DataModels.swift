@@ -17,7 +17,7 @@ import SwiftData
 
 @Model
 public final class ExerciseRecord {
-    @Attribute(.unique) public var id: String
+    public var id: String
     public var name: String
     public var muscleGroups: [String]
     public var properties: [String] // e.g. "Weighted", "Bodyweight", "Location" — see isOutdoorGpsExercise
@@ -74,18 +74,102 @@ public final class ExerciseRecord {
     }
 }
 
+// Per-set targets within a workout template's exercise — mirrors the
+// `setTargets` shape used throughout apps/myhealth (workout-logic.ts,
+// DataRepository.tsx). Loosely typed by design, same as the RN original:
+// which fields are meaningful depends on the exercise's `properties`.
+public struct SetTarget: Codable, Hashable {
+    public var weight: Double?
+    public var reps: Int?
+    public var repsLeft: Int?
+    public var repsRight: Int?
+    public var duration: Int?
+    public var distance: Double?
+    public var rpe: Double?
+
+    public init(
+        weight: Double? = nil,
+        reps: Int? = nil,
+        repsLeft: Int? = nil,
+        repsRight: Int? = nil,
+        duration: Int? = nil,
+        distance: Double? = nil,
+        rpe: Double? = nil
+    ) {
+        self.weight = weight
+        self.reps = reps
+        self.repsLeft = repsLeft
+        self.repsRight = repsRight
+        self.duration = duration
+        self.distance = distance
+        self.rpe = rpe
+    }
+}
+
+// One exercise entry within a workout template — ported from the `Exercise`
+// shape in workout-logic.ts. Kept as a plain Codable struct (not its own
+// SwiftData model) and stored as JSON on WorkoutRecord, same design as the
+// RN schema's `workouts.exercises` blob — the field set here is loose enough
+// (varies by exercise type) that a rigid relational model would fight it.
+public struct WorkoutExerciseTemplate: Codable, Hashable, Identifiable {
+    public var id: String
+    public var name: String
+    public var sets: Int
+    public var reps: Int
+    public var properties: [String]
+    public var setTargets: [SetTarget]
+    public var restTime: Int?
+    public var prepTime: Int?
+    public var equipment: String?
+    public var attachment: String?
+    public var movementType: String?
+
+    public init(
+        id: String = UUID().uuidString,
+        name: String,
+        sets: Int,
+        reps: Int,
+        properties: [String] = [],
+        setTargets: [SetTarget] = [],
+        restTime: Int? = nil,
+        prepTime: Int? = nil,
+        equipment: String? = nil,
+        attachment: String? = nil,
+        movementType: String? = nil
+    ) {
+        self.id = id
+        self.name = name
+        self.sets = sets
+        self.reps = reps
+        self.properties = properties
+        self.setTargets = setTargets
+        self.restTime = restTime
+        self.prepTime = prepTime
+        self.equipment = equipment
+        self.attachment = attachment
+        self.movementType = movementType
+    }
+}
+
 @Model
 public final class WorkoutRecord {
-    @Attribute(.unique) public var id: String
+    public var id: String
     public var name: String
+    public var exercisesData: Data
     public var sortOrder: Int?
     public var createdAt: Date
     public var updatedAt: Date
     public var deletedAt: Date?
 
+    public var exercises: [WorkoutExerciseTemplate] {
+        get { (try? JSONDecoder().decode([WorkoutExerciseTemplate].self, from: exercisesData)) ?? [] }
+        set { exercisesData = (try? JSONEncoder().encode(newValue)) ?? Data() }
+    }
+
     public init(
         id: String = UUID().uuidString,
         name: String,
+        exercises: [WorkoutExerciseTemplate] = [],
         sortOrder: Int? = nil,
         createdAt: Date = .now,
         updatedAt: Date = .now,
@@ -93,6 +177,7 @@ public final class WorkoutRecord {
     ) {
         self.id = id
         self.name = name
+        self.exercisesData = (try? JSONEncoder().encode(exercises)) ?? Data()
         self.sortOrder = sortOrder
         self.createdAt = createdAt
         self.updatedAt = updatedAt
@@ -102,7 +187,7 @@ public final class WorkoutRecord {
 
 @Model
 public final class WorkoutLogRecord {
-    @Attribute(.unique) public var id: String
+    public var id: String
     public var workoutDate: Date
     public var workoutName: String
     public var duration: Int // seconds
@@ -172,7 +257,7 @@ public struct RoutePoint: Codable, Hashable {
 
 @Model
 public final class SetLogRecord {
-    @Attribute(.unique) public var id: String
+    public var id: String
     public var exerciseId: String
     public var exerciseName: String // denormalized snapshot
     public var weight: Double? // lb, canonical unit
@@ -224,7 +309,7 @@ public final class SetLogRecord {
 
 @Model
 public final class BodyMeasurementRecord {
-    @Attribute(.unique) public var id: String
+    public var id: String
     public var weight: Double
     public var date: Date
     public var createdAt: Date
@@ -247,7 +332,7 @@ public final class BodyMeasurementRecord {
 
 @Model
 public final class ProgressPictureRecord {
-    @Attribute(.unique) public var id: String
+    public var id: String
     public var imageUri: String
     public var date: Date
     public var notes: String
