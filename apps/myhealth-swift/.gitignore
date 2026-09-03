@@ -1,0 +1,13 @@
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+
+# Swift Package Manager build cache
+.build/
+.swiftpm/
+
+# Simulator/build products that shouldn't be versioned
+*.ipa
+*.dSYM.zip
+*.dSYM
