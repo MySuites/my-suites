@@ -20,6 +20,15 @@ public struct SetLog {
 // positive for added load - so both fields need to be summed, not treated as
 // either/or. Sets logged before that merge only ever have one of the two
 // fields set, so this still degrades correctly for old data.
+// Epley formula — ported from apps/myhealth/utils/workout-api/exercises.ts's
+// estimateOneRepMax. Most common e1RM estimate, accurate for the
+// low-to-moderate rep ranges (roughly 1-12) that strength sets fall in.
+public func estimatedOneRepMax(weight: Double, reps: Int) -> Double? {
+    guard weight.isFinite, weight > 0, reps > 0 else { return nil }
+    if reps == 1 { return weight }
+    return weight * (1 + Double(reps) / 30)
+}
+
 public func effectiveSetWeight(_ set: SetLog) -> Double {
     if let bodyweight = set.bodyweight {
         return bodyweight + (set.weight ?? 0)

@@ -1,0 +1,2681 @@
+[
+{
+"id": "bench_press",
+"name": "Bench Press",
+"muscleGroups": [
+"Chest",
+"Triceps",
+"Shoulders"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Standard horizontal chest press targeting overall chest volume and strength.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [
+"Keep your feet flat on the floor for maximum stability.",
+"Retract your scapula (shoulder blades) and pin them to the bench.",
+"Control the weight on the descent and touch your lower chest/sternum.",
+"Drive the weight up while keeping your elbows tucked at roughly 45 degrees."
+],
+"instructions": [
+"Lie flat on the bench with your feet flat on the floor.",
+"Grip the barbell or dumbbells with hands slightly wider than shoulder-width apart.",
+"Unrack the weight or position dumbbells, holding it straight over your chest.",
+"Lower the weight slowly to your chest while inhaling.",
+"Push the weight back up to the starting position while flexing your chest."
+],
+"equipment": "barbell",
+"movementType": "uniform",
+"attachment": null
+},
+{
+"id": "incline_bench_press",
+"name": "Incline Bench Press",
+"muscleGroups": [
+"Chest"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Elevated bench angle that biases the upper pectoral muscles.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "barbell",
+"movementType": "uniform",
+"attachment": null
+},
+{
+"id": "decline_bench_press",
+"name": "Decline Bench Press",
+"muscleGroups": [
+"Chest"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Lowered bench angle focusing on the lower pectoral muscles and providing a slight mechanical advantage.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "barbell",
+"movementType": "uniform",
+"attachment": null
+},
+{
+"id": "chest_fly",
+"name": "Chest Fly",
+"muscleGroups": [
+"Chest",
+"Shoulders",
+"Biceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Chest fly targeting the pectoral muscles, which can be done using dumbbells, a machine, or cables.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "dumbbell",
+"movementType": "unilateral",
+"attachment": null
+},
+{
+"id": "lat_pulldown",
+"name": "Lat Pulldown",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Upper back and lat exercise using a cable pulldown machine.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": "Lat Bar"
+},
+{
+"id": "seated_cable_row",
+"name": "Seated Cable Row",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Seated horizontal pull targeting the middle and upper back using a cable row machine.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": "Close-Grip V-Bar"
+},
+{
+"id": "face_pull",
+"name": "Face Pull",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Cable exercise targeting the rear delts, upper back, and rotator cuff.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "lateral_raise",
+"name": "Lateral Raise",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Shoulder raise targeting the lateral deltoids to build shoulder width and roundness, which can be done using dumbbells, cables, or a machine.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "dumbbell",
+"movementType": "uniform",
+"attachment": null
+},
+{
+"id": "front_raise",
+"name": "Front Raise",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Shoulder raise targeting the anterior deltoids.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "shoulder_press",
+"name": "Shoulder Press",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Overhead shoulder press targeting the deltoids.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "dumbbell",
+"movementType": "uniform",
+"attachment": null
+},
+{
+"id": "deadlift",
+"name": "Deadlift",
+"muscleGroups": [
+"Lower back"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Compound lift targeting the posterior chain, including hamstrings, glutes, and back.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "romanian_deadlift",
+"name": "Romanian Deadlift",
+"muscleGroups": [
+"Hamstrings"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Deadlift variation focusing on the hamstrings and glutes with minimal knee bend.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "bodyweight_squat",
+"name": "Bodyweight Squat",
+"muscleGroups": [
+"Quadriceps"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Basic lower body exercise targeting the quads, glutes, and hamstrings.",
+"difficulty": 1,
+"nextVariations": [
+"sissy_squat",
+"shrimp_squat"
+],
+"tips": [
+"Keep your heels firmly on the ground throughout the movement.",
+"Push your knees outwards to track inline with your toes.",
+"Maintain a straight, neutral spine and look forward or slightly down.",
+"Descend until your thighs are at least parallel to the floor."
+],
+"instructions": [
+"Stand with your feet shoulder-width apart and toes pointing slightly outward.",
+"Place your hands on your hips, behind your head, or straight out in front.",
+"Lower your hips as if sitting back into a chair, keeping your knees behind your toes.",
+"Keep your chest up and core engaged.",
+"Return to the standing position by driving through your heels."
+],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "sissy_squat",
+"name": "Sissy Squat",
+"muscleGroups": [
+"Quadriceps"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Quad isolation exercise focusing on knee extension.",
+"difficulty": 3.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "shrimp_squat",
+"name": "Shrimp Squat",
+"muscleGroups": [
+"Quadriceps"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Advanced bodyweight unilateral squat holding one leg behind.",
+"difficulty": 3,
+"nextVariations": [
+"pistol_squat"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "pistol_squat",
+"name": "Pistol Squat",
+"muscleGroups": [
+"Quadriceps"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Advanced single-leg bodyweight squat.",
+"difficulty": 3.5,
+"nextVariations": [
+"dragon_squat"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "dragon_squat",
+"name": "Dragon Squat",
+"muscleGroups": [
+"Quadriceps"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Advanced unilateral squat with the non-working leg wrapped behind.",
+"difficulty": 5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "weighted_squat",
+"name": "Weighted Squat",
+"muscleGroups": [
+"Quadriceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Squat variation performed with added weight, which can be done using a barbell, smith machine, hack machine, or pendulum machine.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "barbell",
+"movementType": "uniform",
+"attachment": null
+},
+{
+"id": "lunges",
+"name": "Lunges",
+"muscleGroups": [
+"Quadriceps"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Unilateral leg exercise targeting the quads, glutes, and hamstrings.",
+"difficulty": 1,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "split_squat",
+"name": "Split Squat",
+"muscleGroups": [
+"Quadriceps"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Stationary unilateral squat targeting the quads and glutes.",
+"difficulty": 1,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "bulgarian_split_squat",
+"name": "Bulgarian Split Squat",
+"muscleGroups": [
+"Quadriceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Rear-foot elevated split squat targeting the quads and glutes.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "calf_raise",
+"name": "Calf Raise",
+"muscleGroups": [
+"Calves"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Calf exercise targeting the gastrocnemius muscle.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "weighted_calf_raise",
+"name": "Weighted Calf Raise",
+"muscleGroups": [
+"Calves"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Calf raise performed with additional weight, which can be done using dumbbells or a machine.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "dumbbell",
+"movementType": "unilateral",
+"attachment": null
+},
+{
+"id": "leg_extension",
+"name": "Leg Extension",
+"muscleGroups": [
+"Quadriceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Machine isolation exercise targeting the quadriceps.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "seated_leg_curl",
+"name": "Seated Leg Curl",
+"muscleGroups": [
+"Hamstrings"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Machine isolation exercise targeting the hamstrings while seated.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "lying_leg_curl",
+"name": "Lying Leg Curl",
+"muscleGroups": [
+"Hamstrings"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Machine isolation exercise targeting the hamstrings while lying prone.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "leg_press",
+"name": "Leg Press",
+"muscleGroups": [
+"Quadriceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Compound lower body machine exercise targeting the quads and glutes.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "horizontal_leg_press",
+"name": "Horizontal Leg Press",
+"muscleGroups": [
+"Quadriceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Horizontal leg press machine targeting the quads and glutes.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "glute_bridge",
+"name": "Glute Bridge",
+"muscleGroups": [
+"Glutes"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Glute isolation exercise performed on the floor.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "hip_thrust",
+"name": "Hip Thrust",
+"muscleGroups": [
+"Glutes"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Glute exercise performed with the upper back elevated on a bench.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "hip_adductor",
+"name": "Hip Adductor",
+"muscleGroups": [
+"Adductors"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Machine exercise targeting the inner thigh muscles.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "hip_abductor",
+"name": "Hip Abductor",
+"muscleGroups": [
+"Abductors"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Machine exercise targeting the outer glute muscles.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "bicep_curl",
+"name": "Bicep Curl",
+"muscleGroups": [
+"Biceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Standard curl targeting the biceps brachii, which can be performed using dumbbells, barbell, cables, or a machine.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "dumbbell",
+"movementType": "unilateral",
+"attachment": null
+},
+{
+"id": "incline_curl",
+"name": "Incline Curl",
+"muscleGroups": [
+"Biceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Incline bench curl for a deep stretch on the biceps, which can be done using dumbbells or cables.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "dumbbell",
+"movementType": "unilateral",
+"attachment": null
+},
+{
+"id": "hammer_curl",
+"name": "Hammer Curl",
+"muscleGroups": [
+"Biceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Curl with a neutral grip targeting the brachialis and brachioradialis, which can be done using dumbbells or cables.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "dumbbell",
+"movementType": "unilateral",
+"attachment": null
+},
+{
+"id": "reverse_curl",
+"name": "Reverse Curl",
+"muscleGroups": [
+"Biceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Overhand grip curl targeting the forearms and brachialis, which can be done using a barbell, dumbbells, or cables.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "barbell",
+"movementType": "unilateral",
+"attachment": null
+},
+{
+"id": "bayesian_curl",
+"name": "Bayesian Curl",
+"muscleGroups": [
+"Biceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Cable curl facing away from the machine to stretch the long head of the bicep.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "cable",
+"movementType": "unilateral",
+"attachment": null
+},
+{
+"id": "spider_curl",
+"name": "Spider Curl",
+"muscleGroups": [
+"Biceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Incline bench curl facing down to isolate the biceps.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "barbell",
+"movementType": "uniform",
+"attachment": null
+},
+{
+"id": "preacher_curl",
+"name": "Preacher Curl",
+"muscleGroups": [
+"Biceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Bicep curl performed on a preacher bench to prevent momentum, which can be done using a barbell, dumbbells, or a machine.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "barbell",
+"movementType": "uniform",
+"attachment": null
+},
+{
+"id": "skullcrusher",
+"name": "Skullcrusher",
+"muscleGroups": [
+"Triceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Tricep extension performed lying on a bench, which can be done using a barbell or dumbbells.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "barbell",
+"movementType": "uniform",
+"attachment": null
+},
+{
+"id": "overhead_tricep_extension",
+"name": "Overhead Tricep Extension",
+"muscleGroups": [
+"Triceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Overhead tricep extension targeting the long head of the triceps, which can be done using a dumbbell or cables.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "dumbbell",
+"movementType": "unilateral",
+"attachment": null
+},
+{
+"id": "cable_tricep_pushdown",
+"name": "Cable Tricep Pushdown",
+"muscleGroups": [
+"Triceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Tricep pushdown using a cable machine.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "single_arm_tricep_pushdown",
+"name": "Single-Arm Tricep Pushdown",
+"muscleGroups": [
+"Triceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "One-arm tricep pushdown using a cable machine.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "tricep_kickback",
+"name": "Tricep Kickback",
+"muscleGroups": [
+"Triceps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Dumbbell tricep extension leaning forward.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "leg_raise",
+"name": "Leg Raise",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Core exercise lifting the legs from a lying position.",
+"difficulty": 1,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "hanging_leg_raise",
+"name": "Hanging Leg Raise",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Core exercise lifting the legs while hanging from a bar.",
+"difficulty": 1.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "l-sit_hold",
+"name": "L-Sit Hold",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric core and arm hold in an L shape.",
+"difficulty": 2.5,
+"nextVariations": [
+"v-sit_hold",
+"straddle_l-sit_hold"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "straddle_l-sit_hold",
+"name": "Straddle L-Sit Hold",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric core and arm hold in a straddle L shape.",
+"difficulty": 3,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "v-sit_hold",
+"name": "V-Sit Hold",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric core and arm hold in a V shape.",
+"difficulty": 4.5,
+"nextVariations": [
+"i-sit_hold"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "i-sit_hold",
+"name": "I-Sit Hold",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Advanced isometric hold in an I shape.",
+"difficulty": 6,
+"nextVariations": [
+"manna_hold"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "manna_hold",
+"name": "Manna Hold",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Elite isometric gymnastics hold with hips pushed forward over the hands.",
+"difficulty": 9.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "crunch",
+"name": "Crunch",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Abdominal crunch targeting the upper abs.",
+"difficulty": 1,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "cable_crunch",
+"name": "Cable Crunch",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Kneeling cable crunch targeting the abdominal muscles.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "wall_push_up",
+"name": "Wall Push-up",
+"muscleGroups": [
+"Chest"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Push-up variation performed against a wall.",
+"difficulty": 0.5,
+"nextVariations": [
+"incline_push_up",
+"knee_push_up"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "incline_push_up",
+"name": "Incline Push-up",
+"muscleGroups": [
+"Chest"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Push-up variation with hands elevated.",
+"difficulty": 1,
+"nextVariations": [
+"push_up"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "knee_push_up",
+"name": "Knee Push-up",
+"muscleGroups": [
+"Chest"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Push-up variation performed on the knees.",
+"difficulty": 1.5,
+"nextVariations": [
+"push_up"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "push_up",
+"name": "Push-up",
+"muscleGroups": [
+"Triceps"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Standard bodyweight chest and arm exercise.",
+"difficulty": 2,
+"nextVariations": [
+"decline_push_up",
+"military_push_up",
+"wide_push_up",
+"pike_push_up",
+"pseudo_planche_push_up"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "decline_push_up",
+"name": "Decline Push-up",
+"muscleGroups": [
+"Chest"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Push-up variation with feet elevated to target the upper chest.",
+"difficulty": 2.5,
+"nextVariations": [
+"pseudo_planche_push_up"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "diamond_push_up",
+"name": "Diamond Push-up",
+"muscleGroups": [
+"Triceps"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Close grip push-up targeting the triceps and inner chest.",
+"difficulty": 3,
+"nextVariations": [
+"pseudo_planche_push_up"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "military_push_up",
+"name": "Military Push-up",
+"muscleGroups": [
+"Triceps"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Push-up with elbows tucked to the sides.",
+"difficulty": 2.5,
+"nextVariations": [
+"diamond_push_up",
+"pseudo_planche_push_up"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "wide_push_up",
+"name": "Wide Push-up",
+"muscleGroups": [
+"Chest"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Push-up with hands placed wide apart.",
+"difficulty": 2,
+"nextVariations": [
+"pseudo_planche_push_up"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "pike_push_up",
+"name": "Pike Push-up",
+"muscleGroups": [
+"Chest"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Bodyweight shoulder exercise in a pike position.",
+"difficulty": 3,
+"nextVariations": [
+"pseudo_planche_push_up",
+"wall_handstand_push_up"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "pseudo_planche_push_up",
+"name": "Pseudo Planche Push-up",
+"muscleGroups": [
+"Other"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Push-up leaning forward to target the shoulders and chest.",
+"difficulty": 3.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "scapular_pull_up",
+"name": "Scapular Pull-up",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pull-up variation focusing on scapular retraction and depression, without bending the elbows.",
+"difficulty": 1.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "negative_pull_up",
+"name": "Negative Pull-up",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pull-up variation focusing on the eccentric (lowering) phase. Start at the top of the pull-up and slowly lower yourself to the bottom.",
+"difficulty": 2,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "chin_up",
+"name": "Chin-up",
+"muscleGroups": [
+"Biceps"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pull-up variation with an underhand grip targeting the lats and biceps.",
+"difficulty": 2.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "pull_up",
+"name": "Pull-up",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Upper body pulling exercise targeting the lats and back. Log negative weight for band/machine assistance, positive weight for added load.",
+"difficulty": 3,
+"nextVariations": [
+"wide_pull_up"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "wide_pull_up",
+"name": "Wide Pull-up",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Upper body pulling exercise targeting the lats and back.",
+"difficulty": 3.5,
+"nextVariations": [
+"archer_pull_up",
+"typewriter_pull_up"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "archer_pull_up",
+"name": "Archer Pull-up",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pull-up variation with one arm reaching out to the side.",
+"difficulty": 5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "typewriter_pull_up",
+"name": "Typewriter Pull-up",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pull-up variation with one arm sliding across the bar to the other side.",
+"difficulty": 5.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "explosive_pull_up",
+"name": "Explosive Pull-up",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pull-up variation using explosive force to pull the body as high as possible.",
+"difficulty": 4,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "muscle_up",
+"name": "Muscle-up",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Combination of a pull-up and a dip, using explosive force to pull the body over the bar and into a dip position.",
+"difficulty": 5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "bodyweight_row",
+"name": "Bodyweight Row",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Horizontal pull using bodyweight on rings or a bar.",
+"difficulty": 1.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "dumbbell_row",
+"name": "Dumbbell Row",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "One-arm dumbbell row targeting the lats and upper back.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "plank",
+"name": "Plank",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric core stability exercise.",
+"difficulty": 1,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "side_plank",
+"name": "Side Plank",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric core exercise targeting the obliques.",
+"difficulty": 1.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "russian_twist",
+"name": "Russian Twist",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Rotational core exercise.",
+"difficulty": 1.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "bodyweight_dip",
+"name": "Bodyweight Dip",
+"muscleGroups": [
+"Triceps"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Tricep and lower chest exercise on parallel bars.",
+"difficulty": 3,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "frog_stand",
+"name": "Frog Stand",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Beginner arm support balance targeting the shoulders and core.",
+"difficulty": 1.5,
+"nextVariations": [
+"crow_pose"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "crow_pose",
+"name": "Crow Pose",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Yoga arm balance balancing knees on the triceps.",
+"difficulty": 2,
+"nextVariations": [
+"chest_to_wall_handstand"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "chest_to_wall_handstand",
+"name": "Chest-to-Wall Handstand",
+"muscleGroups": [
+"Other"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Handstand hold facing the wall to practice form.",
+"difficulty": 2.5,
+"nextVariations": [
+"back_to_wall_handstand"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "back_to_wall_handstand",
+"name": "Back-to-Wall Handstand",
+"muscleGroups": [
+"Other"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Handstand hold facing away from the wall.",
+"difficulty": 2.5,
+"nextVariations": [
+"handstand"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "handstand",
+"name": "Handstand",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Free-standing handstand hold balancing on the hands.",
+"difficulty": 3.5,
+"nextVariations": [
+"one_arm_handstand",
+"pike_handstand_press"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "wall_handstand_push_up",
+"name": "Wall Handstand Push-up",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Handstand push-up performed against a wall.",
+"difficulty": 3.5,
+"nextVariations": [
+"handstand_push_up"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "handstand_push_up",
+"name": "Handstand Push-up",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Free-standing handstand push-up.",
+"difficulty": 4.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "one_arm_handstand",
+"name": "One-Arm Handstand",
+"muscleGroups": [
+"Other"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Elite handstand hold balancing on one hand.",
+"difficulty": 9,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "tuck_handstand_press",
+"name": "Tuck Handstand Press",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pressing into a handstand from a tuck position.",
+"difficulty": 7.5,
+"nextVariations": [
+"pike_handstand_press"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "pike_handstand_press",
+"name": "Pike Handstand Press",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pressing into a handstand from a pike position.",
+"difficulty": 7.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "wall_straddle_handstand_press",
+"name": "Wall Straddle Handstand Press",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pressing into a handstand from a straddle position against a wall.",
+"difficulty": 6,
+"nextVariations": [
+"straddle_handstand_press"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "straddle_handstand_press",
+"name": "Straddle Handstand Press",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pressing into a handstand from a straddle position.",
+"difficulty": 7.5,
+"nextVariations": [
+"handstand_press"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "bent_arm_handstand_press",
+"name": "Bent Arm Handstand Press",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pressing into a handstand from a bent arm position.",
+"difficulty": 7.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "pseudo_planche_hold",
+"name": "Pseudo Planche Hold",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric hold leaning forward to prepare for the planche.",
+"difficulty": 2.5,
+"nextVariations": [
+"toe_assisted_tuck_planche",
+"bent_arm_planche_lean"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "toe_assisted_tuck_planche",
+"name": "Toe Assisted Tuck Planche",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Tuck planche hold with assistance from your toes.",
+"difficulty": 4,
+"nextVariations": [
+"tuck_planche"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "tuck_planche",
+"name": "Tuck Planche",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric arm support hold with knees tucked.",
+"difficulty": 4.5,
+"nextVariations": [
+"advanced_tuck_planche"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "advanced_tuck_planche",
+"name": "Advanced Tuck Planche",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric arm support hold with back flat and knees tucked.",
+"difficulty": 5.5,
+"nextVariations": [
+"half_lay_planche"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "half_lay_planche",
+"name": "Half-Lay Planche",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric planche hold with hips extended and knees bent.",
+"difficulty": 7,
+"nextVariations": [
+"straddle_planche"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "straddle_planche",
+"name": "Straddle Planche",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric planche hold with legs straddled.",
+"difficulty": 8,
+"nextVariations": [
+"planche"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "planche",
+"name": "Planche",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Full isometric planche hold with body parallel to the ground.",
+"difficulty": 9,
+"nextVariations": [
+"planche_push_up",
+"one_arm_planche",
+"maltese"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "planche_push_up",
+"name": "Planche Push-up",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Push-up performed in a planche position.",
+"difficulty": 9.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "one_arm_planche",
+"name": "One-Arm Planche",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Planche hold supported on a single arm.",
+"difficulty": 10,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "maltese",
+"name": "Maltese",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Elite wide-arm planche hold.",
+"difficulty": 9.5,
+"nextVariations": [
+"dragon_maltese"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "dragon_maltese",
+"name": "Dragon Maltese",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Advanced wide-arm planche hold variation.",
+"difficulty": 10,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "bent_arm_planche_lean",
+"name": "Bent Arm Planche Lean",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric lean with bent arms, mimicking the planche position.",
+"difficulty": 4,
+"nextVariations": [
+"bent_arm_planche"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "bent_arm_planche",
+"name": "Bent Arm Planche",
+"muscleGroups": [
+"Shoulders"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Bent arm planche hold with body parallel to the ground.",
+"difficulty": 5.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "tuck_front_lever",
+"name": "Tuck Front Lever",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric back pull with knees tucked.",
+"difficulty": 4.5,
+"nextVariations": [
+"advanced_tuck_front_lever"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "advanced_tuck_front_lever",
+"name": "Advanced Tuck Front Lever",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric back pull with back flat and knees tucked.",
+"difficulty": 5,
+"nextVariations": [
+"half_lay_front_lever"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "half_lay_front_lever",
+"name": "Half-Lay Front Lever",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric front lever with hips extended and knees bent.",
+"difficulty": 6,
+"nextVariations": [
+"straddle_front_lever"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "straddle_front_lever",
+"name": "Straddle Front Lever",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Isometric front lever with legs straddled.",
+"difficulty": 6.5,
+"nextVariations": [
+"front_lever"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "front_lever",
+"name": "Front Lever",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Full isometric back hold parallel to the ground.",
+"difficulty": 7,
+"nextVariations": [
+"front_lever_pull_up",
+"one_arm_front_lever"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "front_lever_pull_up",
+"name": "Front Lever Pull-up",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pull-up performed in a front lever position.",
+"difficulty": 7.5,
+"nextVariations": [
+"front_lever_touch"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "front_lever_touch",
+"name": "Front Lever Touch",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Pulling the front lever to touch the bar.",
+"difficulty": 8,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "one_arm_front_lever",
+"name": "One-Arm Front Lever",
+"muscleGroups": [
+"Lats"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Front lever hold supported on a single arm.",
+"difficulty": 9.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "tuck_back_lever",
+"name": "Tuck Back Lever",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Gymnastic hold facing downward with knees tucked.",
+"difficulty": 3,
+"nextVariations": [
+"advanced_tuck_back_lever"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "advanced_tuck_back_lever",
+"name": "Advanced Tuck Back Lever",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Gymnastic hold facing downward with back flat.",
+"difficulty": 3.5,
+"nextVariations": [
+"straddle_back_lever"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "straddle_back_lever",
+"name": "Straddle Back Lever",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Back lever hold with legs straddled.",
+"difficulty": 4,
+"nextVariations": [
+"back_lever"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "back_lever",
+"name": "Back Lever",
+"muscleGroups": [
+"Abdominals"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Full back lever hold parallel to the ground.",
+"difficulty": 4.5,
+"nextVariations": [
+"back_lever_pull_up",
+"one_arm_back_lever"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "back_lever_pull_up",
+"name": "Back Lever Pull-up",
+"muscleGroups": [
+"Other"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Pull-up performed in a back lever position.",
+"difficulty": 6,
+"nextVariations": [
+"back_lever_touch"
+],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "back_lever_touch",
+"name": "Back Lever Touch",
+"muscleGroups": [
+"Other"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Pulling the back lever to touch the bar.",
+"difficulty": 6.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "one_arm_back_lever",
+"name": "One-Arm Back Lever",
+"muscleGroups": [
+"Other"
+],
+"properties": [
+"Bodyweight",
+"Duration"
+],
+"exerciseDescription": "Back lever hold supported on a single arm.",
+"difficulty": 8,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "wrist_curl",
+"name": "Wrist Curl",
+"muscleGroups": [
+"Forearms"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Forearm curl targeting the wrist flexors, which can be done using dumbbells or a barbell.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "barbell",
+"movementType": "uniform",
+"attachment": null
+},
+{
+"id": "reverse_wrist_curl",
+"name": "Reverse Wrist Curl",
+"muscleGroups": [
+"Forearms"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Forearm curl targeting the wrist extensors, which can be done using dumbbells or a barbell.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "barbell",
+"movementType": "uniform",
+"attachment": null
+},
+{
+"id": "first_knuckle_raise",
+"name": "First Knuckle Raise",
+"muscleGroups": [
+"Forearms"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Grip strength exercise raising the hand onto the knuckles.",
+"difficulty": 1,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "tibialis_raise",
+"name": "Tibialis Raise",
+"muscleGroups": [
+"Tibialis"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Exercise to isolate the tibialis anterior muscle on the front of the shin.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "shrug",
+"name": "Shrug",
+"muscleGroups": [
+"Traps"
+],
+"properties": [
+"Weighted",
+"Reps"
+],
+"exerciseDescription": "Shrug targeting the upper trapezius muscles, which can be done using dumbbells or a barbell.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": "barbell",
+"movementType": "uniform",
+"attachment": null
+},
+{
+"id": "treadmill",
+"name": "Treadmill",
+"muscleGroups": [
+"Cardio"
+],
+"properties": [
+"Distance",
+"Duration"
+],
+"exerciseDescription": "Cardio walking or running on a treadmill.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "elliptical",
+"name": "Elliptical Machine",
+"muscleGroups": [
+"Cardio"
+],
+"properties": [
+"Distance",
+"Duration"
+],
+"exerciseDescription": "Low-impact cardio exercise on an elliptical machine.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "stair_climber",
+"name": "Stair Climber",
+"muscleGroups": [
+"Cardio"
+],
+"properties": [
+"Distance",
+"Duration"
+],
+"exerciseDescription": "Cardio climbing exercise on a stair machine.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "rowing_machine",
+"name": "Rowing Machine",
+"muscleGroups": [
+"Cardio"
+],
+"properties": [
+"Distance",
+"Duration"
+],
+"exerciseDescription": "Full body cardio and pulling exercise on a rower.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "bike",
+"name": "Bike Machine",
+"muscleGroups": [
+"Cardio"
+],
+"properties": [
+"Distance",
+"Duration"
+],
+"exerciseDescription": "Stationary cycling cardio exercise.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "running",
+"name": "Running",
+"muscleGroups": [
+"Cardio"
+],
+"properties": [
+"Distance",
+"Duration"
+],
+"exerciseDescription": "Outdoor or indoor running cardio exercise.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "cycling",
+"name": "Biking",
+"muscleGroups": [
+"Cardio"
+],
+"properties": [
+"Distance",
+"Duration"
+],
+"exerciseDescription": "Outdoor or indoor cycling cardio exercise.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "swimming",
+"name": "Swimming",
+"muscleGroups": [
+"Cardio"
+],
+"properties": [
+"Distance",
+"Duration"
+],
+"exerciseDescription": "Full body pool swimming cardio exercise.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "jump_rope",
+"name": "Jump Rope",
+"muscleGroups": [
+"Cardio"
+],
+"properties": [
+"Duration"
+],
+"exerciseDescription": "High intensity jumping cardio exercise.",
+"difficulty": null,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+},
+{
+"id": "jumping_jacks",
+"name": "Jumping Jacks",
+"muscleGroups": [
+"Cardio"
+],
+"properties": [
+"Bodyweight",
+"Reps"
+],
+"exerciseDescription": "Bodyweight jumping cardio exercise.",
+"difficulty": 1.5,
+"nextVariations": [],
+"tips": [],
+"instructions": [],
+"equipment": null,
+"movementType": null,
+"attachment": null
+}
+]

@@ -17,7 +17,10 @@ import SwiftData
 
 @Model
 public final class ExerciseRecord {
-    public var id: String
+    // Unique so seedDefaultExercisesIfNeeded and LegacyImportService can't
+    // both insert the same default exercise (e.g. "bench_press") as two rows
+    // — matches the RN schema's `id TEXT PRIMARY KEY` + `INSERT OR REPLACE`.
+    @Attribute(.unique) public var id: String
     public var name: String
     public var muscleGroups: [String]
     public var properties: [String] // e.g. "Weighted", "Bodyweight", "Location" — see isOutdoorGpsExercise
@@ -365,6 +368,93 @@ public final class ProgressPictureRecord {
         self.muscleGroupSource = muscleGroupSource
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+    }
+}
+
+// MARK: - Export DTOs (ported from apps/myhealth/utils/exportUserData.ts)
+// @Model classes aren't Codable — each gets a plain Codable snapshot for
+// "Export Data" in Settings.
+
+extension ExerciseRecord {
+    public struct ExportDTO: Codable {
+        public var id: String
+        public var name: String
+        public var muscleGroups: [String]
+        public var properties: [String]
+        public var description: String?
+        public var instructions: [String]
+    }
+    public var exportDTO: ExportDTO {
+        ExportDTO(id: id, name: name, muscleGroups: muscleGroups, properties: properties, description: exerciseDescription, instructions: instructions)
+    }
+}
+
+extension WorkoutRecord {
+    public struct ExportDTO: Codable {
+        public var id: String
+        public var name: String
+        public var exercises: [WorkoutExerciseTemplate]
+        public var createdAt: Date
+    }
+    public var exportDTO: ExportDTO {
+        ExportDTO(id: id, name: name, exercises: exercises, createdAt: createdAt)
+    }
+}
+
+extension SetLogRecord {
+    public struct ExportDTO: Codable {
+        public var exerciseId: String
+        public var exerciseName: String
+        public var weight: Double?
+        public var reps: Int?
+        public var repsLeft: Int?
+        public var repsRight: Int?
+        public var distance: Double?
+        public var duration: Int?
+        public var rpe: Double?
+    }
+    public var exportDTO: ExportDTO {
+        ExportDTO(exerciseId: exerciseId, exerciseName: exerciseName, weight: weight, reps: reps, repsLeft: repsLeft, repsRight: repsRight, distance: distance, duration: duration, rpe: rpe)
+    }
+}
+
+extension WorkoutLogRecord {
+    public struct ExportDTO: Codable {
+        public var id: String
+        public var workoutDate: Date
+        public var workoutName: String
+        public var duration: Int
+        public var note: String?
+        public var sets: [SetLogRecord.ExportDTO]
+        public var avgHeartRate: Double?
+        public var maxHeartRate: Double?
+        public var calories: Double?
+        public var distance: Double?
+    }
+    public var exportDTO: ExportDTO {
+        ExportDTO(id: id, workoutDate: workoutDate, workoutName: workoutName, duration: duration, note: note, sets: sets.map(\.exportDTO), avgHeartRate: avgHeartRate, maxHeartRate: maxHeartRate, calories: calories, distance: distance)
+    }
+}
+
+extension BodyMeasurementRecord {
+    public struct ExportDTO: Codable {
+        public var weight: Double
+        public var date: Date
+    }
+    public var exportDTO: ExportDTO {
+        ExportDTO(weight: weight, date: date)
+    }
+}
+
+extension ProgressPictureRecord {
+    public struct ExportDTO: Codable {
+        public var date: Date
+        public var notes: String
+        public var primaryMuscles: [String]?
+        public var secondaryMuscles: [String]?
+    }
+    public var exportDTO: ExportDTO {
+        ExportDTO(date: date, notes: notes, primaryMuscles: primaryMuscles, secondaryMuscles: secondaryMuscles)
     }
 }
 

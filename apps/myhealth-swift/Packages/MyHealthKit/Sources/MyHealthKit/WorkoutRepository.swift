@@ -205,6 +205,32 @@ public final class WorkoutRepository {
         }
     }
 
+    // MARK: - Export (ported from apps/myhealth/utils/exportUserData.ts)
+
+    public struct UserDataExport: Codable {
+        public var savedWorkouts: [WorkoutRecord.ExportDTO]
+        public var workoutHistory: [WorkoutLogRecord.ExportDTO]
+        public var exercises: [ExerciseRecord.ExportDTO]
+        public var bodyWeightHistory: [BodyMeasurementRecord.ExportDTO]
+        public var progressPictures: [ProgressPictureRecord.ExportDTO]
+        public var exportedAt: Date
+    }
+
+    public func exportUserData() throws -> Data {
+        let export = UserDataExport(
+            savedWorkouts: try fetchWorkouts().map(\.exportDTO),
+            workoutHistory: try fetchHistory().map(\.exportDTO),
+            exercises: try fetchExercises().map(\.exportDTO),
+            bodyWeightHistory: try bodyWeightHistory().map(\.exportDTO),
+            progressPictures: try fetchProgressPictures().map(\.exportDTO),
+            exportedAt: .now
+        )
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.dateEncodingStrategy = .iso8601
+        return try encoder.encode(export)
+    }
+
     // MARK: - Bulk
 
     public func clearAllLocalData(preservingExerciseIds: Set<String>) throws {

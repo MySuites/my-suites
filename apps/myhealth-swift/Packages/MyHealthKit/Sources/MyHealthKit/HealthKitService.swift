@@ -47,6 +47,32 @@ public enum HealthKitService {
         return true
     }
 
+    private static let syncEnabledKey = "healthkit_sync_enabled"
+
+    // Authorized = system sharing permission for body mass AND the local
+    // "sync enabled" preference (a user-initiated disconnect stays off even
+    // though HealthKit itself has no revoke-read API). Mirrors
+    // HealthKitService.ts's isAuthorized: unset local pref defaults to true
+    // once the system permission is granted, for backwards compatibility.
+    public static func isAuthorized() -> Bool {
+        guard store.authorizationStatus(for: HKQuantityType(.bodyMass)) == .sharingAuthorized else {
+            return false
+        }
+        guard UserDefaults.standard.object(forKey: syncEnabledKey) != nil else {
+            UserDefaults.standard.set(true, forKey: syncEnabledKey)
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: syncEnabledKey)
+    }
+
+    public static func enableSync() {
+        UserDefaults.standard.set(true, forKey: syncEnabledKey)
+    }
+
+    public static func disableSync() {
+        UserDefaults.standard.set(false, forKey: syncEnabledKey)
+    }
+
     public static func latestBodyWeightKg() async throws -> Double? {
         let type = HKQuantityType(.bodyMass)
         let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)

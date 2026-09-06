@@ -11,7 +11,15 @@ let package = Package(
         .library(name: "MyHealthKit", targets: ["MyHealthKit"]),
     ],
     targets: [
-        .target(name: "MyHealthKit"),
-        .testTarget(name: "MyHealthKitTests", dependencies: ["MyHealthKit"]),
+        .target(
+            name: "MyHealthKit",
+            resources: [.process("Resources")],
+            linkerSettings: [.linkedLibrary("sqlite3")]
+        ),
+        .testTarget(
+            name: "MyHealthKitTests",
+            dependencies: ["MyHealthKit"],
+            linkerSettings: [.linkedLibrary("sqlite3")]
+        ),
     ]
 )
