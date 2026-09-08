@@ -18,28 +18,30 @@ struct DashboardView: View {
     @Query private var exercises: [ExerciseRecord]
     @Query(sort: \BodyMeasurementRecord.date) private var bodyWeights: [BodyMeasurementRecord]
 
+    @Binding var scrollToTopTick: Int
+
     @State private var showWeightLog = false
-    @State private var isSwitcherRevealed = false
-    @State private var switcherHeight: CGFloat = 132
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                Text("Dashboard")
-                    .font(.largeTitle.weight(.bold))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 16)
-                    .padding(.bottom, 8)
-                    .background(Color(.systemBackground))
+                VStack(spacing: 0) {
+                    ZStack {
+                        Text("Dashboard")
+                            .font(.largeTitle.weight(.bold))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        HStack {
+                            SidebarToggleButton()
+                            Spacer()
+                        }
+                    }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
+                        .padding(.bottom, 8)
+                        .background(Color(.systemBackground))
 
-                ZStack(alignment: .top) {
-                    PillarSwitcherRow(onDismiss: { isSwitcherRevealed = false })
-                        .measureHeight($switcherHeight)
-
-                    VStack(spacing: 0) {
+                    ScrollViewReader { proxy in
                         ScrollView {
-                            PillarPullProbe(isRevealed: $isSwitcherRevealed)
+                            Color.clear.frame(height: 1).id("top")
                             VStack(alignment: .leading, spacing: 16) {
                                 WeeklyCompletionCard(completed: weeklyCompletedCount, goal: settings.weeklyGoal)
                                 StrengthRankCard(history: history, bodyweight: latestBodyWeight, heightInches: settings.heightInches)
@@ -51,14 +53,12 @@ struct DashboardView: View {
                             }
                             .padding(16)
                         }
-                        .pillarSwitcherCoordinateSpace()
+                        .onChange(of: scrollToTopTick) {
+                            withAnimation { proxy.scrollTo("top", anchor: .top) }
+                        }
                     }
-                    .background(Color(.systemBackground))
-                    .offset(y: isSwitcherRevealed ? switcherHeight : 0)
                 }
-                .clipped()
-            }
-            .animation(.spring(response: 0.3, dampingFraction: 0.85), value: isSwitcherRevealed)
+                .background(Color(.systemBackground))
             .background(Color(.systemBackground))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)
@@ -371,7 +371,7 @@ private struct DashboardCard<Content: View>: View {
 }
 
 #Preview {
-    DashboardView()
+    DashboardView(scrollToTopTick: .constant(0))
         .environment(SettingsStore())
         .environment(NavSelection())
         .modelContainer(for: MyHealthSchema.models, inMemory: true)

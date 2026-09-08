@@ -4,47 +4,39 @@ import SwiftUI
 
 // Ported from apps/myhealth/app/(tabs)/exercises.tsx (browse mode only).
 // Scoped down from the RN original for this pass:
-// - No progression grouping/variation collapsing (groupExercisesForDisplay) —
-//   this is a flat, searchable, muscle-group-filterable list.
 // - No multi-select "add to workout" mode — that lands with the Workouts
 //   screen, which is what actually drives it in the RN app.
 struct ExercisesLibraryView: View {
     @Query(sort: \ExerciseRecord.name) private var exercises: [ExerciseRecord]
 
+    @Binding var showAddExercise: Bool
+    @Binding var scrollToTopTick: Int
+
     @State private var searchText = ""
     @State private var muscleFilter: String?
-    @State private var showAddExercise = false
     @State private var detailExercise: ExerciseRecord?
-    @State private var isSwitcherRevealed = false
-    @State private var switcherHeight: CGFloat = 132
+    @State private var expandedGroupIds: Set<String> = []
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                HStack {
-                    Text("Exercises").font(.largeTitle.weight(.bold))
-                    Spacer()
-                    Button {
-                        showAddExercise = true
-                    } label: {
-                        Image(systemName: "square.and.pencil")
-                            .font(.title3)
-                            .foregroundStyle(.secondary)
+                VStack(spacing: 0) {
+                ZStack {
+                    Text("Exercises")
+                        .font(.largeTitle.weight(.bold))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    HStack {
+                        SidebarToggleButton()
+                        Spacer()
                     }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
                 .padding(.bottom, 8)
                 .background(Color(.systemBackground))
 
-                ZStack(alignment: .top) {
-                    PillarSwitcherRow(onDismiss: { isSwitcherRevealed = false })
-                        .measureHeight($switcherHeight)
-
-                    VStack(spacing: 0) {
+                    ScrollViewReader { proxy in
                     ScrollView {
-                    PillarPullProbe(isRevealed: $isSwitcherRevealed)
+                    Color.clear.frame(height: 1).id("top")
                     VStack(alignment: .leading, spacing: 12) {
                         HStack(spacing: 8) {
                             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
@@ -74,23 +66,19 @@ struct ExercisesLibraryView: View {
                             }
                         }
 
-                        ForEach(filteredExercises) { exercise in
-                            Button {
-                                detailExercise = exercise
-                            } label: {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(exercise.name).font(.body.weight(.semibold)).foregroundStyle(.primary)
-                                    if !exercise.muscleGroups.isEmpty {
-                                        Text(exercise.muscleGroups.joined(separator: ", "))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                        ForEach(displayItems) { item in
+                            switch item {
+                            case .single(let exercise):
+                                exerciseCard(exercise)
+                            case .group(let group):
+                                groupCard(group)
+                                if expandedGroupIds.contains(group.id) {
+                                    ForEach(group.variations) { exercise in
+                                        exerciseCard(exercise)
+                                            .padding(.leading, 20)
                                     }
                                 }
-                                .padding(16)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
                             }
-                            .buttonStyle(.plain)
                         }
 
                         if filteredExercises.isEmpty {
@@ -103,14 +91,12 @@ struct ExercisesLibraryView: View {
                     }
                     .padding(16)
                     }
-                    .pillarSwitcherCoordinateSpace()
+                    .onChange(of: scrollToTopTick) {
+                        withAnimation { proxy.scrollTo("top", anchor: .top) }
                     }
-                    .background(Color(.systemBackground))
-                    .offset(y: isSwitcherRevealed ? switcherHeight : 0)
+                    }
                 }
-                .clipped()
-            }
-            .animation(.spring(response: 0.3, dampingFraction: 0.85), value: isSwitcherRevealed)
+                .background(Color(.systemBackground))
             .background(Color(.systemBackground))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)
@@ -135,6 +121,67 @@ struct ExercisesLibraryView: View {
         }
     }
 
+    // Variation-family grouping only applies to the unfiltered browse list —
+    // an active search or muscle filter flattens back to individual
+    // exercises so matches buried inside a collapsed group aren't hidden.
+    private var displayItems: [ExerciseListItem] {
+        searchText.isEmpty && muscleFilter == nil
+            ? groupExercisesForDisplay(exercises)
+            : filteredExercises.map { .single($0) }
+    }
+
+    private func exerciseCard(_ exercise: ExerciseRecord) -> some View {
+        Button {
+            detailExercise = exercise
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(exercise.name).font(.body.weight(.semibold)).foregroundStyle(.primary)
+                if !exercise.muscleGroups.isEmpty {
+                    Text(exercise.muscleGroups.joined(separator: ", "))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func groupCard(_ group: ExerciseGroup) -> some View {
+        HStack {
+            Button {
+                detailExercise = group.representative
+            } label: {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(group.name).font(.body.weight(.semibold)).foregroundStyle(.primary)
+                    Text(group.subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                withAnimation {
+                    if expandedGroupIds.contains(group.id) {
+                        expandedGroupIds.remove(group.id)
+                    } else {
+                        expandedGroupIds.insert(group.id)
+                    }
+                }
+            } label: {
+                Image(systemName: expandedGroupIds.contains(group.id) ? "chevron.up" : "chevron.down")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(16)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+    }
+
     private func filterChip(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
@@ -148,7 +195,7 @@ struct ExercisesLibraryView: View {
     }
 }
 
-private struct ExerciseDetailView: View {
+struct ExerciseDetailView: View {
     @Environment(\.dismiss) private var dismiss
     let exercise: ExerciseRecord
 
@@ -192,7 +239,38 @@ private struct ExerciseDetailView: View {
     }
 }
 
+// Looks an exercise up by library id and shows its detail sheet — for
+// callers (like ActiveWorkoutView) that only hold onto an ActiveExercise's
+// id/name, not the ExerciseRecord itself.
+struct ExerciseDetailLookupView: View {
+    @Environment(\.dismiss) private var dismiss
+    let exerciseId: String
+    @Query private var exercises: [ExerciseRecord]
+
+    init(exerciseId: String) {
+        self.exerciseId = exerciseId
+        let predicate = #Predicate<ExerciseRecord> { $0.id == exerciseId }
+        _exercises = Query(filter: predicate)
+    }
+
+    var body: some View {
+        if let exercise = exercises.first {
+            ExerciseDetailView(exercise: exercise)
+        } else {
+            NavigationStack {
+                ContentUnavailableView("Exercise Not Found", systemImage: "questionmark.circle")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") { dismiss() }
+                        }
+                    }
+            }
+        }
+    }
+}
+
 #Preview {
-    ExercisesLibraryView()
+    ExercisesLibraryView(showAddExercise: .constant(false), scrollToTopTick: .constant(0))
+        .environment(NavSelection())
         .modelContainer(for: MyHealthSchema.models, inMemory: true)
 }

@@ -153,26 +153,6 @@ public final class ActiveWorkoutStore {
         startTicking()
     }
 
-    public func pauseWorkout() {
-        isRunning = false
-        #if canImport(ActivityKit)
-        if settings.isLiveActivitiesEnabled {
-            Task { if #available(iOS 16.2, *) { await LiveActivityService.shared.updateActivity(isPaused: true) } }
-        }
-        #endif
-    }
-
-    public func resumeWorkout() {
-        isRunning = true
-        startedAt = Date().addingTimeInterval(-Double(workoutSeconds))
-        #if canImport(ActivityKit)
-        if settings.isLiveActivitiesEnabled {
-            let started = startedAt
-            Task { if #available(iOS 16.2, *) { await LiveActivityService.shared.updateActivity(isPaused: false, startedAt: started) } }
-        }
-        #endif
-    }
-
     public func resetWorkout() {
         isRunning = true
         hasActiveSession = true
@@ -264,6 +244,32 @@ public final class ActiveWorkoutStore {
             }
         }
         #endif
+    }
+
+    public func removeSet(exerciseIndex: Int, setIndex: Int) {
+        guard exercises.indices.contains(exerciseIndex) else { return }
+        var ex = exercises[exerciseIndex]
+        guard setIndex < ex.sets else { return }
+
+        if setIndex < ex.setTargets.count {
+            ex.setTargets.remove(at: setIndex)
+        }
+        ex.sets = max(0, ex.sets - 1)
+
+        var newCompletedIndices: [Int] = []
+        var newLogs: [Int: SetTarget] = [:]
+        for oldIndex in ex.completedIndices where oldIndex != setIndex {
+            let newIndex = oldIndex > setIndex ? oldIndex - 1 : oldIndex
+            newCompletedIndices.append(newIndex)
+        }
+        for (oldIndex, value) in ex.logs where oldIndex != setIndex {
+            let newIndex = oldIndex > setIndex ? oldIndex - 1 : oldIndex
+            newLogs[newIndex] = value
+        }
+        ex.completedIndices = newCompletedIndices
+        ex.logs = newLogs
+
+        exercises[exerciseIndex] = ex
     }
 
     // MARK: - Finish / cancel
@@ -402,6 +408,23 @@ public final class ActiveWorkoutStore {
         #if canImport(ActivityKit)
         if hasActiveSession, settings.isLiveActivitiesEnabled {
             Task { if #available(iOS 16.2, *) { await LiveActivityService.shared.updateActivity(isResting: true, restEndsAt: endsAt) } }
+        }
+        #endif
+    }
+
+    public func addRestTime(_ delta: Int) {
+        guard let restEndsAt else { return }
+        let endsAt = restEndsAt.addingTimeInterval(Double(delta))
+        self.restEndsAt = endsAt
+        restSeconds = max(0, Int(endsAt.timeIntervalSinceNow.rounded(.up)))
+    }
+
+    public func skipRest() {
+        restEndsAt = nil
+        restSeconds = 0
+        #if canImport(ActivityKit)
+        if hasActiveSession, settings.isLiveActivitiesEnabled {
+            Task { if #available(iOS 16.2, *) { await LiveActivityService.shared.updateActivity(isResting: false) } }
         }
         #endif
     }

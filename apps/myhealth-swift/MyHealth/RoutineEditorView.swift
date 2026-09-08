@@ -10,7 +10,7 @@ import SwiftUI
 // overrides — those are exercise-library metadata edits, not template
 // authoring, and can be added if the workout-editing flow turns out to need
 // them in practice.
-struct SavedWorkoutEditorView: View {
+struct RoutineEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(WorkoutManagerStore.self) private var workoutManager
 
@@ -92,7 +92,7 @@ struct SavedWorkoutEditorView: View {
                 Button("Cancel", role: .cancel) {}
                 Button("Delete", role: .destructive) {
                     if let existingId {
-                        workoutManager.deleteSavedWorkout(id: existingId)
+                        workoutManager.deleteRoutine(id: existingId)
                     }
                     dismiss()
                 }
@@ -106,7 +106,7 @@ struct SavedWorkoutEditorView: View {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         if let existingId {
-            workoutManager.updateSavedWorkout(id: existingId, name: trimmed, exercises: exercises)
+            workoutManager.updateRoutine(id: existingId, name: trimmed, exercises: exercises)
         } else {
             workoutManager.saveWorkout(name: trimmed, exercises: exercises)
         }
@@ -158,6 +158,6 @@ private struct DraftExerciseRow: View {
 }
 
 #Preview {
-    SavedWorkoutEditorView(workout: nil)
+    RoutineEditorView(workout: nil)
         .environment(WorkoutManagerStore(repository: WorkoutRepository(context: try! ModelContainer(for: Schema(MyHealthSchema.models)).mainContext)))
 }

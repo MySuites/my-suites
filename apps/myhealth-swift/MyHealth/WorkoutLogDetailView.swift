@@ -3,7 +3,7 @@ import SwiftUI
 
 // The read-only "isLogView" mode of apps/myhealth/app/workouts/details.tsx —
 // viewing a completed workout from History. The editable-template mode is
-// SavedWorkoutEditorView; WorkoutOverviewChart's per-exercise performance
+// RoutineEditorView; WorkoutOverviewChart's per-exercise performance
 // tab isn't ported (a chart of one already-finished log's own sets isn't a
 // trend), only the Details tab's stats + set list.
 struct WorkoutLogDetailView: View {

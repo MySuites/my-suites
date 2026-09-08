@@ -17,40 +17,34 @@ struct WorkoutsHomeView: View {
     @Environment(ActiveWorkoutStore.self) private var activeWorkout
     @Environment(WorkoutManagerStore.self) private var workoutManager
 
+    @Binding var showCreateNew: Bool
+    @Binding var startEmptyWorkoutTick: Int
+    @Binding var scrollToTopTick: Int
+
     @State private var showActiveWorkout = false
-    @State private var showCreateNew = false
     @State private var editingWorkout: WorkoutRecord?
     @State private var replaceConfirmWorkout: WorkoutRecord?
-    @State private var isSwitcherRevealed = false
-    @State private var switcherHeight: CGFloat = 132
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                HStack {
-                    Text("Workout").font(.largeTitle.weight(.bold))
-                    Spacer()
-                    Button {
-                        showCreateNew = true
-                    } label: {
-                        Image(systemName: "square.and.pencil")
-                            .font(.title3)
-                            .foregroundStyle(.secondary)
+                VStack(spacing: 0) {
+                ZStack {
+                    Text("Workout")
+                        .font(.largeTitle.weight(.bold))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    HStack {
+                        SidebarToggleButton()
+                        Spacer()
                     }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
                 .padding(.bottom, 8)
                 .background(Color(.systemBackground))
 
-                ZStack(alignment: .top) {
-                    PillarSwitcherRow(onDismiss: { isSwitcherRevealed = false })
-                        .measureHeight($switcherHeight)
-
-                    VStack(spacing: 0) {
+                    ScrollViewReader { proxy in
                     ScrollView {
-                        PillarPullProbe(isRevealed: $isSwitcherRevealed)
+                        Color.clear.frame(height: 1).id("top")
                         VStack(alignment: .leading, spacing: 16) {
                             if activeWorkout.hasActiveSession {
                             Button {
@@ -72,22 +66,22 @@ struct WorkoutsHomeView: View {
                         .buttonStyle(.plain)
 
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Saved Workouts")
+                            Text("Routines")
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(.secondary)
                                 .padding(.horizontal, 4)
 
-                            if workoutManager.savedWorkouts.isEmpty {
-                                Text("Create a workout to save your favorite exercises and sets.")
+                            if workoutManager.routines.isEmpty {
+                                Text("Create a workout routine to save your favorite exercises and sets.")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                     .padding(16)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
                             } else {
-                                ForEach(workoutManager.savedWorkouts) { workout in
+                                ForEach(workoutManager.routines) { workout in
                                     Button {
-                                        startSavedWorkout(workout)
+                                        startRoutine(workout)
                                     } label: {
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(workout.name).font(.body.weight(.semibold)).foregroundStyle(.primary)
@@ -103,7 +97,7 @@ struct WorkoutsHomeView: View {
                                     .contextMenu {
                                         Button("Edit") { editingWorkout = workout }
                                         Button("Delete", role: .destructive) {
-                                            workoutManager.deleteSavedWorkout(id: workout.id)
+                                            workoutManager.deleteRoutine(id: workout.id)
                                         }
                                     }
                                 }
@@ -112,14 +106,12 @@ struct WorkoutsHomeView: View {
                     }
                     .padding(16)
                     }
-                    .pillarSwitcherCoordinateSpace()
+                    .onChange(of: scrollToTopTick) {
+                        withAnimation { proxy.scrollTo("top", anchor: .top) }
                     }
-                    .background(Color(.systemBackground))
-                    .offset(y: isSwitcherRevealed ? switcherHeight : 0)
+                    }
                 }
-                .clipped()
-            }
-            .animation(.spring(response: 0.3, dampingFraction: 0.85), value: isSwitcherRevealed)
+                .background(Color(.systemBackground))
             .background(Color(.systemBackground))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)
@@ -127,10 +119,13 @@ struct WorkoutsHomeView: View {
                 ActiveWorkoutView()
             }
             .sheet(isPresented: $showCreateNew) {
-                SavedWorkoutEditorView(workout: nil)
+                RoutineEditorView(workout: nil)
             }
             .sheet(item: $editingWorkout) { workout in
-                SavedWorkoutEditorView(workout: workout)
+                RoutineEditorView(workout: workout)
+            }
+            .onChange(of: startEmptyWorkoutTick) {
+                startEmptyWorkout()
             }
             .alert("Active Workout", isPresented: Binding(get: { replaceConfirmWorkout != nil }, set: { if !$0 { replaceConfirmWorkout = nil } })) {
                 Button("Cancel", role: .cancel) { replaceConfirmWorkout = nil }
@@ -165,7 +160,7 @@ struct WorkoutsHomeView: View {
         }
     }
 
-    private func startSavedWorkout(_ workout: WorkoutRecord) {
+    private func startRoutine(_ workout: WorkoutRecord) {
         if activeWorkout.hasActiveSession {
             replaceConfirmWorkout = workout
         } else {
@@ -205,7 +200,7 @@ func formatSeconds(_ seconds: Int) -> String {
 }
 
 #Preview {
-    WorkoutsHomeView()
+    WorkoutsHomeView(showCreateNew: .constant(false), startEmptyWorkoutTick: .constant(0), scrollToTopTick: .constant(0))
         .environment(SettingsStore())
         .environment(NavSelection())
         .modelContainer(for: MyHealthSchema.models, inMemory: true)

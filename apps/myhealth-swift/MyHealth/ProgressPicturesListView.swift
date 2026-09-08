@@ -10,7 +10,9 @@ struct ProgressPicturesListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ProgressPictureRecord.date, order: .reverse) private var pictures: [ProgressPictureRecord]
 
-    @State private var showAddSheet = false
+    @Binding var showAddSheet: Bool
+    @Binding var scrollToTopTick: Int
+
     @State private var selectedPicture: ProgressPictureRecord?
     @State private var pictureToDelete: ProgressPictureRecord?
 
@@ -18,41 +20,55 @@ struct ProgressPicturesListView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if pictures.isEmpty {
-                    ContentUnavailableView {
-                        Label("No Pictures Yet", systemImage: "camera.fill")
-                    } description: {
-                        Text("Take progress photos regularly to visualise your body transformation and track muscle gain.")
-                    } actions: {
-                        Button("Add First Picture") { showAddSheet = true }
+                VStack(spacing: 0) {
+                ZStack {
+                    Text("Progress Pictures")
+                        .font(.largeTitle.weight(.bold))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    HStack {
+                        SidebarToggleButton()
+                        Spacer()
                     }
-                } else {
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 12) {
-                            ForEach(pictures) { picture in
-                                Button {
-                                    selectedPicture = picture
-                                } label: {
-                                    thumbnail(for: picture)
+                }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 8)
+                    .background(Color(.systemBackground))
+
+                    ScrollViewReader { proxy in
+                            ScrollView {
+                                Color.clear.frame(height: 1).id("top")
+                                if pictures.isEmpty {
+                                    ContentUnavailableView {
+                                        Label("No Pictures Yet", systemImage: "camera.fill")
+                                    } description: {
+                                        Text("Take progress photos regularly to visualise your body transformation and track muscle gain.")
+                                    } actions: {
+                                        Button("Add First Picture") { showAddSheet = true }
+                                    }
+                                } else {
+                                    LazyVGrid(columns: columns, spacing: 12) {
+                                        ForEach(pictures) { picture in
+                                            Button {
+                                                selectedPicture = picture
+                                            } label: {
+                                                thumbnail(for: picture)
+                                            }
+                                            .buttonStyle(.plain)
+                                        }
+                                    }
+                                    .padding(16)
                                 }
-                                .buttonStyle(.plain)
                             }
-                        }
-                        .padding(16)
+                            .onChange(of: scrollToTopTick) {
+                                withAnimation { proxy.scrollTo("top", anchor: .top) }
+                            }
                     }
                 }
-            }
-            .navigationTitle("Progress Pictures")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showAddSheet = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                }
-            }
+                .background(Color(.systemBackground))
+            .background(Color(.systemBackground))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showAddSheet) {
                 AddProgressPictureView()
             }
@@ -148,6 +164,7 @@ private struct LocalImage: View {
 }
 
 #Preview {
-    ProgressPicturesListView()
+    ProgressPicturesListView(showAddSheet: .constant(false), scrollToTopTick: .constant(0))
+        .environment(NavSelection())
         .modelContainer(for: MyHealthSchema.models, inMemory: true)
 }

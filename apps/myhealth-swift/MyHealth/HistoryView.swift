@@ -4,6 +4,8 @@ import SwiftUI
 // Ported from apps/myhealth/app/history/index.tsx.
 struct HistoryView: View {
     @Environment(WorkoutManagerStore.self) private var workoutManager
+    @Binding var scrollToTopTick: Int
+    @Binding var exportTick: Int
     @State private var selectedLog: WorkoutLogRecord?
     @State private var exportedFile: ExportedCsv?
 
@@ -14,63 +16,84 @@ struct HistoryView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if workoutManager.workoutHistory.isEmpty {
-                    ContentUnavailableView(
-                        "No Workout History",
-                        systemImage: "clock.arrow.circlepath",
-                        description: Text("There are currently no past workouts, start and finish a workout first.")
-                    )
-                } else {
-                    List {
-                        ForEach(workoutManager.workoutHistory) { log in
-                            Button {
-                                selectedLog = log
-                            } label: {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    HStack {
-                                        Text(log.workoutName).font(.body.weight(.semibold))
-                                        Spacer()
-                                        Text(log.workoutDate.formatted(date: .abbreviated, time: .omitted))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    if let note = log.note, !note.isEmpty {
-                                        Text(note).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                VStack(spacing: 0) {
+                    ZStack {
+                        Text("Workout History")
+                            .font(.largeTitle.weight(.bold))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        HStack {
+                            SidebarToggleButton()
+                            Spacer()
+                        }
+                    }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
+                        .padding(.bottom, 8)
+                        .background(Color(.systemBackground))
+
+                    Group {
+                        if workoutManager.workoutHistory.isEmpty {
+                            ContentUnavailableView(
+                                "No Workout History",
+                                systemImage: "clock.arrow.circlepath",
+                                description: Text("There are currently no past workouts, start and finish a workout first.")
+                            )
+                        } else {
+                            ScrollViewReader { proxy in
+                                List {
+                                    Color.clear.frame(height: 1).id("top")
+                                        .listRowSeparator(.hidden)
+                                        .listRowBackground(Color.clear)
+                                    ForEach(workoutManager.workoutHistory) { log in
+                                        Button {
+                                            selectedLog = log
+                                        } label: {
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                HStack {
+                                                    Text(log.workoutName).font(.body.weight(.semibold))
+                                                    Spacer()
+                                                    Text(log.workoutDate.formatted(date: .abbreviated, time: .omitted))
+                                                        .font(.caption)
+                                                        .foregroundStyle(.secondary)
+                                                }
+                                                if let note = log.note, !note.isEmpty {
+                                                    Text(note).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                                                }
+                                            }
+                                        }
+                                        .foregroundStyle(.primary)
+                                        .swipeActions(edge: .trailing) {
+                                            Button("Delete", role: .destructive) {
+                                                workoutManager.deleteWorkoutLog(id: log.id)
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                            .foregroundStyle(.primary)
-                            .swipeActions(edge: .trailing) {
-                                Button("Delete", role: .destructive) {
-                                    workoutManager.deleteWorkoutLog(id: log.id)
+                                .onChange(of: scrollToTopTick) {
+                                    withAnimation { proxy.scrollTo("top", anchor: .top) }
                                 }
                             }
                         }
                     }
+                    .background(Color(.systemBackground))
                 }
-            }
-            .navigationTitle("Workout History")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        exportCsv()
-                    } label: {
-                        Image(systemName: "square.and.arrow.down")
-                    }
-                    .disabled(workoutManager.workoutHistory.isEmpty)
-                }
-            }
+                .background(Color(.systemBackground))
+            .background(Color(.systemBackground))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(item: $selectedLog) { log in
                 WorkoutLogDetailView(log: log)
             }
             .sheet(item: $exportedFile) { file in
                 ActivityShareSheet(activityItems: [file.url])
             }
+            .onChange(of: exportTick) {
+                exportCsv()
+            }
         }
     }
 
-    private func exportCsv() {
+    func exportCsv() {
         let csv = buildWorkoutHistoryCsv(workoutManager.workoutHistory)
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("workout_history_\(Int(Date().timeIntervalSince1970))")

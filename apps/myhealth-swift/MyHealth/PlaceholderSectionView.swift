@@ -10,11 +10,31 @@ struct PlaceholderSectionView: View {
 
     var body: some View {
         NavigationStack {
-            Text("To be implemented")
-                .font(.headline)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .navigationTitle(title)
+                VStack(spacing: 0) {
+                    ZStack {
+                        Text(title)
+                            .font(.largeTitle.weight(.bold))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        HStack {
+                            SidebarToggleButton()
+                            Spacer()
+                        }
+                    }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
+                        .padding(.bottom, 8)
+                        .background(Color(.systemBackground))
+
+                    Text("To be implemented")
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color(.systemBackground))
+                }
+                .background(Color(.systemBackground))
+            .background(Color(.systemBackground))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
         }
     }
 }

@@ -39,4 +39,6 @@ enum NavSection: String, CaseIterable, Identifiable {
 @MainActor
 final class NavSelection {
     var current: NavSection = .profile
+    var showSettings = false
+    var sidebarOpen = false
 }

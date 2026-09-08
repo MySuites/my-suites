@@ -8,7 +8,7 @@ import Observation
 @Observable
 @MainActor
 public final class WorkoutManagerStore {
-    public private(set) var savedWorkouts: [WorkoutRecord] = []
+    public private(set) var routines: [WorkoutRecord] = []
     public private(set) var workoutHistory: [WorkoutLogRecord] = []
     public private(set) var isLoading = true
     public private(set) var isSaving = false
@@ -24,7 +24,7 @@ public final class WorkoutManagerStore {
         isLoading = true
         defer { isLoading = false }
         do {
-            savedWorkouts = try repository.fetchWorkouts()
+            routines = try repository.fetchWorkouts()
             workoutHistory = try repository.fetchHistory()
         } catch {
             lastError = error
@@ -39,40 +39,40 @@ public final class WorkoutManagerStore {
         defer { isSaving = false }
         do {
             try repository.saveWorkout(name: trimmed, exercises: exercises)
-            savedWorkouts = try repository.fetchWorkouts()
+            routines = try repository.fetchWorkouts()
         } catch {
             lastError = error
         }
     }
 
-    // Simplified relative to the RN original's updateSavedWorkout: this
+    // Simplified relative to the RN original's updateRoutine: this
     // replaces the template's exercises/targets outright rather than
     // merging completed-set values back into the template on a
     // field-by-field basis. That merge behavior is UI-editing-flow specific
     // (values-only edits vs. full edits) — revisit when the workout editor
     // screen is built in Phase 3 and the exact UX is known.
-    public func updateSavedWorkout(id: String, name: String, exercises: [WorkoutExerciseTemplate]) {
+    public func updateRoutine(id: String, name: String, exercises: [WorkoutExerciseTemplate]) {
         isSaving = true
         defer { isSaving = false }
         do {
             try repository.saveWorkout(id: id, name: name, exercises: exercises)
-            savedWorkouts = try repository.fetchWorkouts()
+            routines = try repository.fetchWorkouts()
         } catch {
             lastError = error
         }
     }
 
-    public func deleteSavedWorkout(id: String) {
+    public func deleteRoutine(id: String) {
         do {
             try repository.deleteWorkout(id: id)
-            savedWorkouts.removeAll { $0.id == id }
+            routines.removeAll { $0.id == id }
         } catch {
             lastError = error
         }
     }
 
-    public func reorderSavedWorkouts(_ newOrder: [WorkoutRecord]) {
-        savedWorkouts = newOrder
+    public func reorderRoutines(_ newOrder: [WorkoutRecord]) {
+        routines = newOrder
         do {
             try repository.updateWorkoutSortOrders(newOrder.enumerated().map { (id: $1.id, sortOrder: $0) })
         } catch {

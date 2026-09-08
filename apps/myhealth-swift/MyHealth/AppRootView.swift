@@ -11,58 +11,108 @@ import SwiftUI
 // bottom sheet.
 struct AppRootView: View {
     @State private var nav = NavSelection()
-    @State private var showSettings = false
-    @State private var showProgressPictures = false
-    @State private var showWorkoutHistory = false
+    @State private var showAddProgressPicture = false
+    @State private var showCreateWorkout = false
+    @State private var showAddExercise = false
+    @State private var startEmptyWorkoutTick = 0
+    @State private var exportHistoryTick = 0
+    @State private var profileDashboardScrollTick = 0
+    @State private var progressPicturesScrollTick = 0
+    @State private var workoutDashboardScrollTick = 0
+    @State private var exercisesScrollTick = 0
+    @State private var savedScrollTick = 0
+    @State private var historyScrollTick = 0
 
     var body: some View {
-        Group {
-            switch nav.current {
+        PillarSidebarScreen {
+            Group {
+                switch nav.current {
                 case .sleep:
                     PillarTabView(
-                        mainTabs: [MainTabSpec(id: "dashboard", label: "Dashboard", icon: "house.fill") { SleepView() }],
-                        moreItems: [BurgerMenuItemSpec(label: "Settings", icon: "gearshape.fill") { showSettings = true }]
+                        mainTabs: [MainTabSpec(id: "dashboard", label: "Dashboard", icon: "house.fill") { SleepView() }]
                     )
                 case .mind:
                     PillarTabView(
-                        mainTabs: [MainTabSpec(id: "dashboard", label: "Dashboard", icon: "house.fill") { MindView() }],
-                        moreItems: [BurgerMenuItemSpec(label: "Settings", icon: "gearshape.fill") { showSettings = true }]
+                        mainTabs: [MainTabSpec(id: "dashboard", label: "Dashboard", icon: "house.fill") { MindView() }]
                     )
                 case .nutrition:
                     PillarTabView(
-                        mainTabs: [MainTabSpec(id: "dashboard", label: "Dashboard", icon: "house.fill") { NutritionView() }],
-                        moreItems: [BurgerMenuItemSpec(label: "Settings", icon: "gearshape.fill") { showSettings = true }]
+                        mainTabs: [MainTabSpec(id: "dashboard", label: "Dashboard", icon: "house.fill") { NutritionView() }]
                     )
                 case .profile:
                     PillarTabView(
                         mainTabs: [
-                            MainTabSpec(id: "dashboard", label: "Dashboard", icon: "house.fill") { DashboardView() },
-                        ],
-                        moreItems: [
-                            BurgerMenuItemSpec(label: "Progress Pics", icon: "camera.fill") { showProgressPictures = true },
-                            BurgerMenuItemSpec(label: "Settings", icon: "gearshape.fill") { showSettings = true },
+                            MainTabSpec(
+                                id: "dashboard", label: "Dashboard", icon: "house.fill",
+                                scrollToTop: { profileDashboardScrollTick += 1 }
+                            ) { DashboardView(scrollToTopTick: $profileDashboardScrollTick) },
+                            MainTabSpec(
+                                id: "progress", label: "Progress Pics", icon: "camera.fill",
+                                menuIcon: "ellipsis",
+                                menuActions: [
+                                    MenuAction(label: "Add Picture", icon: "plus") { showAddProgressPicture = true },
+                                ],
+                                scrollToTop: { progressPicturesScrollTick += 1 }
+                            ) { ProgressPicturesListView(showAddSheet: $showAddProgressPicture, scrollToTopTick: $progressPicturesScrollTick) },
                         ]
                     )
                 case .workout:
                     PillarTabView(
                         mainTabs: [
-                            MainTabSpec(id: "dashboard", label: "Dashboard", icon: "house.fill") { WorkoutsHomeView() },
-                            MainTabSpec(id: "exercises", label: "Exercises", icon: "dumbbell.fill") { ExercisesLibraryView() },
-                            MainTabSpec(id: "saved", label: "Saved", icon: "list.bullet.clipboard") { SavedWorkoutsView() },
-                        ],
-                        moreItems: [
-                            BurgerMenuItemSpec(label: "Workout History", icon: "clock.fill") { showWorkoutHistory = true },
-                            BurgerMenuItemSpec(label: "Settings", icon: "gearshape.fill") { showSettings = true },
+                            MainTabSpec(
+                                id: "dashboard", label: "Dashboard", icon: "house.fill",
+                                menuIcon: "ellipsis",
+                                menuActions: [
+                                    MenuAction(label: "New Workout", icon: "square.and.pencil") { showCreateWorkout = true },
+                                    MenuAction(label: "Start Empty Workout", icon: "bolt.fill") { startEmptyWorkoutTick += 1 },
+                                ],
+                                scrollToTop: { workoutDashboardScrollTick += 1 }
+                            ) { WorkoutsHomeView(showCreateNew: $showCreateWorkout, startEmptyWorkoutTick: $startEmptyWorkoutTick, scrollToTopTick: $workoutDashboardScrollTick) },
+                            MainTabSpec(
+                                id: "exercises", label: "Exercises", icon: "dumbbell.fill",
+                                menuIcon: "ellipsis",
+                                menuActions: [
+                                    MenuAction(label: "Add Exercise", icon: "plus") { showAddExercise = true },
+                                ],
+                                scrollToTop: { exercisesScrollTick += 1 }
+                            ) { ExercisesLibraryView(showAddExercise: $showAddExercise, scrollToTopTick: $exercisesScrollTick) },
+                            MainTabSpec(
+                                id: "saved", label: "Routines", icon: "list.bullet.clipboard",
+                                menuIcon: "ellipsis",
+                                menuActions: [
+                                    MenuAction(label: "Create Routine", icon: "square.and.pencil") { showCreateWorkout = true },
+                                    MenuAction(label: "Start Empty Workout", icon: "bolt.fill") { startEmptyWorkoutTick += 1 },
+                                ],
+                                scrollToTop: { savedScrollTick += 1 }
+                            ) { RoutinesView(showCreateNew: $showCreateWorkout, startEmptyWorkoutTick: $startEmptyWorkoutTick, scrollToTopTick: $savedScrollTick) },
+                            MainTabSpec(
+                                id: "history", label: "History", icon: "clock.fill",
+                                menuIcon: "square.and.arrow.down",
+                                menuActions: [
+                                    MenuAction(label: "Export CSV", icon: "square.and.arrow.down") { exportHistoryTick += 1 },
+                                ],
+                                scrollToTop: { historyScrollTick += 1 }
+                            ) { HistoryView(scrollToTopTick: $historyScrollTick, exportTick: $exportHistoryTick) },
                         ]
                     )
+                }
             }
         }
         .environment(nav)
-        .sheet(isPresented: $showSettings) { SettingsView() }
-        .sheet(isPresented: $showProgressPictures) { ProgressPicturesListView() }
-        .sheet(isPresented: $showWorkoutHistory) { HistoryView() }
+        .fullScreenCover(isPresented: $nav.showSettings) { SettingsView() }
+        .simultaneousGesture(TapGesture().onEnded { UIApplication.shared.endEditing() })
     }
 }
+
+#if os(iOS)
+import UIKit
+
+extension UIApplication {
+    func endEditing() {
+        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+#endif
 
 #Preview {
     AppRootView()
