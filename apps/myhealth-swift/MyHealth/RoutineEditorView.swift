@@ -6,10 +6,7 @@ import SwiftUI
 // apps/myhealth/app/workouts/details.tsx (the "isEditing" template-builder
 // mode — the read-only workout-log-viewing mode is WorkoutLogDetailView).
 // Scoped down: no drag-reorder (WorkoutDraftExerciseItem's onMove up/down
-// buttons cover reordering instead), no per-set attachment/equipment/movement
-// overrides — those are exercise-library metadata edits, not template
-// authoring, and can be added if the workout-editing flow turns out to need
-// them in practice.
+// buttons cover reordering instead).
 struct RoutineEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(WorkoutManagerStore.self) private var workoutManager
@@ -19,6 +16,13 @@ struct RoutineEditorView: View {
     @State private var exercises: [WorkoutExerciseTemplate]
     @State private var showAddExercise = false
     @State private var showDeleteConfirm = false
+    @State private var editingEquipmentIndex: Int?
+    @State private var editingAttachmentIndex: Int?
+    @State private var editingMovementIndex: Int?
+
+    private let equipmentOptions = ["Barbell", "Dumbbell", "Cable", "Machine", "Kettlebell", "Resistance Band", "Smith Machine", "EZ Bar"]
+    private let attachmentOptions = ["Lat Bar", "Rope", "Straight Bar", "V-Bar", "Close-Grip V-Bar", "D-Handle", "Ankle Strap", "EZ Bar"]
+    private let movementOptions = ["Uniform", "Unilateral"]
 
     init(workout: WorkoutRecord?) {
         existingId = workout?.id
@@ -45,7 +49,10 @@ struct RoutineEditorView: View {
                                 ),
                                 onMoveUp: index > 0 ? { exercises.swapAt(index, index - 1) } : nil,
                                 onMoveDown: index < exercises.count - 1 ? { exercises.swapAt(index, index + 1) } : nil,
-                                onRemove: { exercises.remove(at: index) }
+                                onRemove: { exercises.remove(at: index) },
+                                onEditEquipment: { editingEquipmentIndex = index },
+                                onEditAttachment: { editingAttachmentIndex = index },
+                                onEditMovement: { editingMovementIndex = index }
                             )
                         }
                     }
@@ -99,6 +106,45 @@ struct RoutineEditorView: View {
             } message: {
                 Text("Are you sure?")
             }
+            .sheet(item: Binding(
+                get: { editingEquipmentIndex.map { DraftEditTarget(index: $0) } },
+                set: { editingEquipmentIndex = $0?.index }
+            )) { target in
+                OptionPickerSheet(
+                    title: "Equipment",
+                    options: equipmentOptions,
+                    selected: exercises[target.index].equipment
+                ) { selected in
+                    exercises[target.index].equipment = selected
+                }
+                .presentationDetents([.medium, .large])
+            }
+            .sheet(item: Binding(
+                get: { editingAttachmentIndex.map { DraftEditTarget(index: $0) } },
+                set: { editingAttachmentIndex = $0?.index }
+            )) { target in
+                OptionPickerSheet(
+                    title: "Attachment",
+                    options: attachmentOptions,
+                    selected: exercises[target.index].attachment
+                ) { selected in
+                    exercises[target.index].attachment = selected
+                }
+                .presentationDetents([.medium, .large])
+            }
+            .sheet(item: Binding(
+                get: { editingMovementIndex.map { DraftEditTarget(index: $0) } },
+                set: { editingMovementIndex = $0?.index }
+            )) { target in
+                OptionPickerSheet(
+                    title: "Movement",
+                    options: movementOptions,
+                    selected: exercises[target.index].movementType.map { $0.capitalized }
+                ) { selected in
+                    exercises[target.index].movementType = selected?.lowercased()
+                }
+                .presentationDetents([.medium, .large])
+            }
         }
     }
 
@@ -114,11 +160,19 @@ struct RoutineEditorView: View {
     }
 }
 
+private struct DraftEditTarget: Identifiable {
+    let index: Int
+    var id: Int { index }
+}
+
 private struct DraftExerciseRow: View {
     @Binding var exercise: WorkoutExerciseTemplate
     let onMoveUp: (() -> Void)?
     let onMoveDown: (() -> Void)?
     let onRemove: () -> Void
+    let onEditEquipment: () -> Void
+    let onEditAttachment: () -> Void
+    let onEditMovement: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -152,8 +206,36 @@ private struct DraftExerciseRow: View {
                 get: { exercise.restTime ?? 90 },
                 set: { exercise.restTime = $0 }
             ), in: 15...300, step: 15)
+
+            HStack(spacing: 8) {
+                MetadataPill(label: "Equipment", value: exercise.equipment, action: onEditEquipment)
+                MetadataPill(label: "Attachment", value: exercise.attachment, action: onEditAttachment)
+                MetadataPill(label: "Movement", value: exercise.movementType?.capitalized, action: onEditMovement)
+            }
         }
         .padding(.vertical, 4)
+    }
+}
+
+// Same per-exercise equipment/attachment/movement overrides as the active
+// session (ActiveWorkoutView's OptionPickerSheet edits) — a routine's own
+// template used to only be editable there, so building a routine meant
+// setting these later mid-workout instead of at creation time.
+private struct MetadataPill: View {
+    let label: String
+    let value: String?
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(value ?? label)
+                .font(.caption.weight(.medium))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(value == nil ? Color(.tertiarySystemFill) : Color.accentColor.opacity(0.15), in: Capsule())
+                .foregroundStyle(value == nil ? .secondary : Color.accentColor)
+        }
+        .buttonStyle(.plain)
     }
 }
 

@@ -357,6 +357,9 @@ struct SettingsView: View {
 
     private func refreshHealthStatus() async {
         isHealthConnected = HealthKitService.isAuthorized()
+        if isHealthConnected {
+            WorkoutHealthKitSyncService.syncWorkoutsFromHealthKit(context: modelContext)
+        }
     }
 
     private func connectHealth() async {
@@ -364,6 +367,7 @@ struct SettingsView: View {
             try await HealthKitService.requestAuthorization()
             HealthKitService.enableSync()
             isHealthConnected = HealthKitService.isAuthorized()
+            await WorkoutHealthKitSyncService.syncWorkoutsFromHealthKit(context: modelContext).value
             toast("HealthKit synced successfully")
         } catch {
             toast("Failed to sync HealthKit")

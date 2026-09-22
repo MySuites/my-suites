@@ -2,10 +2,11 @@ import MyHealthKit
 import SwiftData
 import SwiftUI
 
-// Ported from apps/myhealth/app/exercises/create.tsx. The RN version's
-// full-screen picker modals become plain Pickers/multi-select lists here —
-// same fields (name, properties, primary/secondary muscle groups, location
-// tracking), simpler presentation.
+// Ported from apps/myhealth/app/exercises/create.tsx — same fields (name,
+// properties, primary/secondary muscle groups, location tracking), and now
+// the same full-screen push pickers for both muscle-group fields (primary
+// already used .navigationLink; secondary used to be an inline Toggle list
+// in this same Form).
 struct AddExerciseView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -48,13 +49,19 @@ struct AddExerciseView: View {
                 }
 
                 Section("Secondary Muscle Groups") {
-                    ForEach(muscleGroups.filter { $0 != primaryMuscle }, id: \.self) { muscle in
-                        Toggle(muscle, isOn: Binding(
-                            get: { secondaryMuscles.contains(muscle) },
-                            set: { isOn in
-                                if isOn { secondaryMuscles.insert(muscle) } else { secondaryMuscles.remove(muscle) }
-                            }
-                        ))
+                    NavigationLink {
+                        SecondaryMuscleGroupPicker(
+                            muscleGroups: muscleGroups.filter { $0 != primaryMuscle },
+                            selected: $secondaryMuscles
+                        )
+                    } label: {
+                        HStack {
+                            Text("Secondary Muscle Groups")
+                            Spacer()
+                            Text(secondaryMuscles.isEmpty ? "None" : secondaryMuscles.sorted().joined(separator: ", "))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
                     }
                 }
             }
@@ -96,6 +103,34 @@ struct AddExerciseView: View {
         } catch {
             errorMessage = "Failed to create exercise"
         }
+    }
+}
+
+private struct SecondaryMuscleGroupPicker: View {
+    let muscleGroups: [String]
+    @Binding var selected: Set<String>
+
+    var body: some View {
+        List(muscleGroups, id: \.self) { muscle in
+            Button {
+                if selected.contains(muscle) {
+                    selected.remove(muscle)
+                } else {
+                    selected.insert(muscle)
+                }
+            } label: {
+                HStack {
+                    Text(muscle)
+                    Spacer()
+                    if selected.contains(muscle) {
+                        Image(systemName: "checkmark").foregroundStyle(Color.accentColor)
+                    }
+                }
+            }
+            .foregroundStyle(.primary)
+        }
+        .navigationTitle("Secondary Muscle Groups")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

@@ -37,9 +37,12 @@
 		8456C114A5A248B09E4ADAD2 /* PillarTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C348F920BEC741969E73FA55 /* PillarTabView.swift */; };
 		BB3B11262C3048819161AACE /* RoutinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0770902C3F8A49AA82143701 /* RoutinesView.swift */; };
 		AB11EE001A2B4A6B9B7A0F01 /* PillarSidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB11EE011A2B4A6B9B7A0F02 /* PillarSidebar.swift */; };
+		665A20B9EBA04FC7A9E8698D /* LiveWorkoutMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10AB837CDBE844F9AA686D44 /* LiveWorkoutMapView.swift */; };
+		27F0DE3197AC456B800D9DB3 /* RouteSnapshotMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE86DFFE0BF498F8092ADBE /* RouteSnapshotMapView.swift */; };
 		93DB247196BB402F4F998A09 /* MyHealthKit in Frameworks */ = {isa = PBXBuildFile; productRef = 187BB1BD867FCA0A8497AD94 /* MyHealthKit */; };
 		C3899BDE4B8806229834FAA0 /* MyHealthWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F787ACDAA5E02BFBF9C3D1 /* MyHealthWidgetsBundle.swift */; };
 		C81F91B7A90362466772684A /* ActivityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3062470C1A2E29E410C9FDC0 /* ActivityKit.framework */; };
+		368FDE271A6B4CAEB2483B43 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 24AA65D6CDA442E382FC7294 /* libsqlite3.tbd */; };
 		CC1FC8B6B29A8EE51C42AEFE /* MyHealthApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85EDBFA83501F2EFC29414E2 /* MyHealthApp.swift */; };
 		FB961AB4FFA1795F8BF48F4E /* MyHealthWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47BE61EDF84C11B2760E97F /* MyHealthWatchApp.swift */; };
 /* End PBXBuildFile section */
@@ -90,6 +93,7 @@
 		05D55C05F808CDF580A53740 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		24C2DD7B3A5B16AC4E37AA7C /* MyHealthKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MyHealthKit; path = Packages/MyHealthKit; sourceTree = SOURCE_ROOT; };
 		3062470C1A2E29E410C9FDC0 /* ActivityKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ActivityKit.framework; path = System/Library/Frameworks/ActivityKit.framework; sourceTree = SDKROOT; };
+		24AA65D6CDA442E382FC7294 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		424AAD904C399CF23CE6E9A6 /* MyHealthWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = MyHealthWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		5233AEF50ADE1C5F72DEC66C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		60AA1719224422B218DC46DE /* MyHealth.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MyHealth.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -118,6 +122,8 @@
 		C348F920BEC741969E73FA55 /* PillarTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillarTabView.swift; sourceTree = "<group>"; };
 		0770902C3F8A49AA82143701 /* RoutinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutinesView.swift; sourceTree = "<group>"; };
 		AB11EE011A2B4A6B9B7A0F02 /* PillarSidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillarSidebar.swift; sourceTree = "<group>"; };
+		10AB837CDBE844F9AA686D44 /* LiveWorkoutMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkoutMapView.swift; sourceTree = "<group>"; };
+		8BE86DFFE0BF498F8092ADBE /* RouteSnapshotMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteSnapshotMapView.swift; sourceTree = "<group>"; };
 		A00427F00C3E3B0AFEEE5CA0 /* WatchContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchContentView.swift; sourceTree = "<group>"; };
 		A4A8C9CD8AB62EF919420619 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		B30BF388794386D94AF2A866 /* MyHealth Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MyHealth Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -144,6 +150,7 @@
 				1B69316EBB3ADEE7C13EEE07 /* SwiftUI.framework in Frameworks */,
 				7A97776F008D011656D2C637 /* WidgetKit.framework in Frameworks */,
 				C81F91B7A90362466772684A /* ActivityKit.framework in Frameworks */,
+				368FDE271A6B4CAEB2483B43 /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,6 +222,8 @@
 				C348F920BEC741969E73FA55 /* PillarTabView.swift */,
 				0770902C3F8A49AA82143701 /* RoutinesView.swift */,
 				AB11EE011A2B4A6B9B7A0F02 /* PillarSidebar.swift */,
+				10AB837CDBE844F9AA686D44 /* LiveWorkoutMapView.swift */,
+				8BE86DFFE0BF498F8092ADBE /* RouteSnapshotMapView.swift */,
 				05D55C05F808CDF580A53740 /* Info.plist */,
 				F38FDA9C6BFC8BBC536C08F8 /* MyHealth.entitlements */,
 				85EDBFA83501F2EFC29414E2 /* MyHealthApp.swift */,
@@ -236,6 +245,7 @@
 			isa = PBXGroup;
 			children = (
 				3062470C1A2E29E410C9FDC0 /* ActivityKit.framework */,
+				24AA65D6CDA442E382FC7294 /* libsqlite3.tbd */,
 				5233AEF50ADE1C5F72DEC66C /* SwiftUI.framework */,
 				A4A8C9CD8AB62EF919420619 /* WidgetKit.framework */,
 			);
@@ -396,6 +406,8 @@
 				8456C114A5A248B09E4ADAD2 /* PillarTabView.swift in Sources */,
 				BB3B11262C3048819161AACE /* RoutinesView.swift in Sources */,
 				AB11EE001A2B4A6B9B7A0F01 /* PillarSidebar.swift in Sources */,
+				665A20B9EBA04FC7A9E8698D /* LiveWorkoutMapView.swift in Sources */,
+				27F0DE3197AC456B800D9DB3 /* RouteSnapshotMapView.swift in Sources */,
 				CC1FC8B6B29A8EE51C42AEFE /* MyHealthApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

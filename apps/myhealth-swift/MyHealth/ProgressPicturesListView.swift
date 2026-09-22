@@ -6,6 +6,7 @@ import SwiftUI
 // analysis (analyzeProgressPicture, the queued/analyzing badges) is dropped —
 // see memory note "AI muscle-group JSON reliability": on-device VLM output
 // is unreliable and that whole feature is deferred, not part of this port.
+// Multi-select bulk delete IS ported (RN's grid long-press/select mode).
 struct ProgressPicturesListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ProgressPictureRecord.date, order: .reverse) private var pictures: [ProgressPictureRecord]
@@ -15,6 +16,9 @@ struct ProgressPicturesListView: View {
 
     @State private var selectedPicture: ProgressPictureRecord?
     @State private var pictureToDelete: ProgressPictureRecord?
+    @State private var isSelecting = false
+    @State private var selectedIds: Set<String> = []
+    @State private var showBulkDeleteConfirm = false
 
     private let columns = [GridItem(.adaptive(minimum: 100), spacing: 10)]
 
@@ -28,6 +32,13 @@ struct ProgressPicturesListView: View {
                     HStack {
                         SidebarToggleButton()
                         Spacer()
+                        if !pictures.isEmpty {
+                            Button(isSelecting ? "Cancel" : "Select") {
+                                isSelecting.toggle()
+                                selectedIds.removeAll()
+                            }
+                            .font(.subheadline.weight(.semibold))
+                        }
                     }
                 }
                     .padding(.horizontal, 16)
@@ -50,14 +61,31 @@ struct ProgressPicturesListView: View {
                                     LazyVGrid(columns: columns, spacing: 12) {
                                         ForEach(pictures) { picture in
                                             Button {
-                                                selectedPicture = picture
+                                                if isSelecting {
+                                                    if selectedIds.contains(picture.id) {
+                                                        selectedIds.remove(picture.id)
+                                                    } else {
+                                                        selectedIds.insert(picture.id)
+                                                    }
+                                                } else {
+                                                    selectedPicture = picture
+                                                }
                                             } label: {
                                                 thumbnail(for: picture)
+                                                    .overlay(alignment: .topTrailing) {
+                                                        if isSelecting {
+                                                            Image(systemName: selectedIds.contains(picture.id) ? "checkmark.circle.fill" : "circle")
+                                                                .foregroundStyle(selectedIds.contains(picture.id) ? Color.accentColor : .white)
+                                                                .background(Circle().fill(.black.opacity(0.3)).padding(-2))
+                                                                .padding(6)
+                                                        }
+                                                    }
                                             }
                                             .buttonStyle(.plain)
                                         }
                                     }
                                     .padding(16)
+                                    .padding(.bottom, isSelecting ? 60 : 0)
                                 }
                             }
                             .onChange(of: scrollToTopTick) {
@@ -66,6 +94,23 @@ struct ProgressPicturesListView: View {
                     }
                 }
                 .background(Color(.systemBackground))
+                .overlay(alignment: .bottom) {
+                    if isSelecting {
+                        Button(role: .destructive) {
+                            showBulkDeleteConfirm = true
+                        } label: {
+                            Text("Delete \(selectedIds.count) Selected")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(selectedIds.isEmpty ? Color.gray : Color.red, in: RoundedRectangle(cornerRadius: 14))
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(selectedIds.isEmpty)
+                        .padding(16)
+                    }
+                }
             .background(Color(.systemBackground))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)
@@ -86,6 +131,18 @@ struct ProgressPicturesListView: View {
                 }
             } message: {
                 Text("Are you sure you want to delete this progress picture permanently?")
+            }
+            .alert("Delete Pictures", isPresented: $showBulkDeleteConfirm) {
+                Button("Cancel", role: .cancel) {}
+                Button("Delete", role: .destructive) {
+                    for picture in pictures where selectedIds.contains(picture.id) {
+                        delete(picture)
+                    }
+                    selectedIds.removeAll()
+                    isSelecting = false
+                }
+            } message: {
+                Text("Are you sure you want to delete \(selectedIds.count) progress pictures permanently?")
             }
         }
     }

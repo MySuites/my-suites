@@ -5,9 +5,9 @@ import SwiftUI
 // (the "detail" — all exercises stacked and drag-to-reorder) — that RN app
 // also has a one-exercise-at-a-time ActiveWorkoutScreen.tsx toggled from the
 // same overlay, but this Swift port keeps only the always-visible stacked
-// list. Outdoor GPS run panel (live map) is not ported — GPS tracking itself
-// still runs via ActiveWorkoutStore, only its map visualization is skipped
-// here.
+// list. The outdoor GPS run panel's live map IS ported (LiveWorkoutMapView,
+// shown inline on a running Distance set's row) — see CompactSetRowView
+// below; only the one-exercise-at-a-time page layout itself is skipped.
 // Aligns the header's title Text to the screen's true center while the
 // timer sits to its left — a plain HStack centers the (timer + title) pair
 // as a group, which drifts off-center as the timer's digit count changes.
@@ -28,12 +28,15 @@ private extension Alignment {
 struct ActiveWorkoutView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(ActiveWorkoutStore.self) private var store
+    @Environment(WorkoutManagerStore.self) private var workoutManager
 
     @State private var showAddExercise = false
     @State private var showFinish = false
     @State private var showCancelConfirm = false
     @State private var showResetConfirm = false
     @State private var showReorderSheet = false
+    @State private var showCompletionPrompt = false
+    @State private var hasPromptedCompletion = false
     @State private var editingEquipmentIndex: Int?
     @State private var editingAttachmentIndex: Int?
     @State private var editingMovementIndex: Int?
@@ -69,6 +72,22 @@ struct ActiveWorkoutView: View {
                 }
             }
             .toolbar(.hidden)
+            .onChange(of: store.isWorkoutComplete) { _, isComplete in
+                if isComplete {
+                    if !hasPromptedCompletion {
+                        hasPromptedCompletion = true
+                        showCompletionPrompt = true
+                    }
+                } else {
+                    hasPromptedCompletion = false
+                }
+            }
+            .alert("Workout Complete!", isPresented: $showCompletionPrompt) {
+                Button("Not Yet", role: .cancel) {}
+                Button("Yes!") { showFinish = true }
+            } message: {
+                Text("You've finished all sets and exercises. Ready to end the workout?")
+            }
             .alert("Reset Workout", isPresented: $showResetConfirm) {
                 Button("Cancel", role: .cancel) {}
                 Button("Reset", role: .destructive) { store.resetWorkout() }
@@ -214,6 +233,7 @@ struct ActiveWorkoutView: View {
     private var exerciseList: some View {
         List {
             ForEach(Array(store.exercises.enumerated()), id: \.element.id) { index, exercise in
+                let previousSets = previousSets(for: exercise.id)
                 Section {
                     ForEach(0..<exercise.sets, id: \.self) { setIndex in
                         CompactSetRowView(
@@ -221,9 +241,11 @@ struct ActiveWorkoutView: View {
                             isCompleted: exercise.completedIndices.contains(setIndex),
                             logged: exercise.logs[setIndex],
                             target: setIndex < exercise.setTargets.count ? exercise.setTargets[setIndex] : SetTarget(),
+                            previous: previousSets?.indices.contains(setIndex) == true ? previousSets?[setIndex] : nil,
                             showsWeight: exercise.properties.contains("Weighted"),
                             showsDuration: exercise.properties.contains("Duration"),
                             showsDistance: exercise.properties.contains("Distance"),
+                            isOutdoorGps: isOutdoorGpsExercise(id: exercise.id, properties: exercise.properties),
                             onToggleComplete: {
                                 store.toggleSetCompletion(exerciseIndex: index, setIndex: setIndex)
                             },
@@ -307,6 +329,19 @@ struct ActiveWorkoutView: View {
             }
         }
         .listStyle(.plain)
+    }
+
+    // Ported from ActiveWorkoutProvider.tsx's previousLog fetch: the most
+    // recent past session that logged this exercise, in completed-set order
+    // (SetLogRecords are saved via completedIndices.sorted(), so array
+    // position already lines up with set index). Used as a placeholder hint
+    // when there's no explicit template target for that field.
+    private func previousSets(for exerciseId: String) -> [SetLogRecord]? {
+        for log in workoutManager.workoutHistory.sorted(by: { $0.workoutDate > $1.workoutDate }) {
+            let matches = log.sets.filter { $0.exerciseId == exerciseId }
+            if !matches.isEmpty { return matches }
+        }
+        return nil
     }
 
     private let equipmentOptions = ["Barbell", "Dumbbell", "Cable", "Machine", "Kettlebell", "Resistance Band", "Smith Machine", "EZ Bar"]
@@ -455,7 +490,7 @@ private struct RPEWheelSheet: View {
                         .padding(.bottom, 12)
 
                     Button {
-                        onSave(value)
+                        onSave(value ?? 8)
                         dismiss()
                     } label: {
                         Text("Done")
@@ -478,7 +513,7 @@ private struct RPEWheelSheet: View {
     }
 }
 
-private struct OptionPickerSheet: View {
+struct OptionPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
     let title: String
     let options: [String]
@@ -613,9 +648,11 @@ private struct CompactSetRowView: View {
     let isCompleted: Bool
     let logged: SetTarget?
     let target: SetTarget
+    let previous: SetLogRecord?
     let showsWeight: Bool
     let showsDuration: Bool
     let showsDistance: Bool
+    let isOutdoorGps: Bool
     let onToggleComplete: () -> Void
     let onLog: (SetTarget) -> Void
 
@@ -628,6 +665,19 @@ private struct CompactSetRowView: View {
     @State private var isTimerRunning = false
     @State private var timerElapsed = 0
     @State private var showingRpeSheet = false
+
+    // Ported from OutdoorRunPanel.tsx: while a Running/Biking set's stopwatch
+    // is going, poll the same GPS buffer the background location task writes
+    // to, auto-filling this set's distance and drawing the live route.
+    @State private var liveRoutePoints: [LocationTrackingService.TrackedRoutePoint] = []
+
+    // Ported from CardWorkoutSet.tsx's prep countdown: an optional lead-in
+    // before the set's own timer starts, so you can hit play, get into
+    // position, and have the hold/stopwatch begin on its own. 0 = no prep.
+    @State private var selectedPrepSec = 0
+    @State private var isPrepping = false
+    @State private var prepRemaining = 0
+    private static let prepOptions = [0, 3, 5, 10]
 
     var body: some View {
         // Duration-based sets (timed holds, outdoor runs) get a second row
@@ -669,6 +719,7 @@ private struct CompactSetRowView: View {
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.separator)))
                         .foregroundStyle(rpeValue == nil ? .secondary : .primary)
                 }
+                .buttonStyle(.plain)
                 .disabled(isCompleted)
                 .sheet(isPresented: $showingRpeSheet) {
                     RPEWheelSheet(value: rpeValue) { newValue in
@@ -696,15 +747,41 @@ private struct CompactSetRowView: View {
                     .buttonStyle(.plain)
                     .disabled(isCompleted)
 
-                    Text(formatSeconds(timerElapsed))
-                        .font(.subheadline.monospacedDigit())
-                        .foregroundStyle(.secondary)
+                    if isPrepping {
+                        Text("Prep \(prepRemaining)s")
+                            .font(.subheadline.monospacedDigit().weight(.semibold))
+                            .foregroundStyle(.orange)
+                    } else {
+                        Text(formatSeconds(timerElapsed))
+                            .font(.subheadline.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
 
-                    if !durationText.isEmpty {
-                        Text("(\(durationText)s logged)")
+                    Spacer()
+
+                    Menu {
+                        ForEach(Self.prepOptions, id: \.self) { option in
+                            Button {
+                                selectedPrepSec = option
+                            } label: {
+                                if option == selectedPrepSec {
+                                    Label(option == 0 ? "No Prep" : "\(option)s Prep", systemImage: "checkmark")
+                                } else {
+                                    Text(option == 0 ? "No Prep" : "\(option)s Prep")
+                                }
+                            }
+                        }
+                    } label: {
+                        Text(selectedPrepSec == 0 ? "Prep: None" : "Prep: \(selectedPrepSec)s")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+                    .disabled(isCompleted || isTimerRunning)
+                }
+
+                if isOutdoorGps && !isPrepping {
+                    LiveWorkoutMapView(points: liveRoutePoints)
+                        .frame(height: 180)
                 }
             }
         }
@@ -712,14 +789,38 @@ private struct CompactSetRowView: View {
         .onAppear(perform: seedFromExisting)
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
             guard isTimerRunning else { return }
-            timerElapsed += 1
-            durationText = String(timerElapsed)
+            if isPrepping {
+                if prepRemaining > 1 {
+                    prepRemaining -= 1
+                } else {
+                    isPrepping = false
+                    timerElapsed = 0
+                }
+            } else {
+                timerElapsed += 1
+                durationText = String(timerElapsed)
+                if isOutdoorGps {
+                    let points = LocationTrackingService.shared.liveRoute()
+                    liveRoutePoints = points
+                    if points.count >= 2 {
+                        let meters = routeDistance(points)
+                        distanceText = String(format: "%.2f", meters / 1609.34)
+                    }
+                }
+            }
         }
     }
 
     private func toggleTimer() {
         if isTimerRunning {
             isTimerRunning = false
+            isPrepping = false
+        } else if selectedPrepSec > 0 {
+            isPrepping = true
+            prepRemaining = selectedPrepSec
+            timerElapsed = 0
+            durationText = ""
+            isTimerRunning = true
         } else {
             timerElapsed = 0
             durationText = ""
@@ -727,21 +828,20 @@ private struct CompactSetRowView: View {
         }
     }
 
-    // Placeholders show the exercise's previous/target value per field —
-    // RN's "Previous" hint on CardWorkoutSet.tsx (session history-backed
-    // previousLog isn't ported yet, see ActiveWorkoutStore.swift's Phase 3
-    // note), reused here as the target carried over from the template.
+    // Placeholders show the template target when set, else fall back to
+    // what was actually logged for this same set index last session (RN's
+    // "Previous" hint on CardWorkoutSet.tsx, backed by previousLog).
     private var weightPlaceholder: String {
-        target.weight.map { String(Int($0)) } ?? "-"
+        (target.weight ?? previous?.weight).map { String(Int($0)) } ?? "-"
     }
     private var repsPlaceholder: String {
-        target.reps.map { String($0) } ?? "-"
+        (target.reps ?? previous?.reps).map { String($0) } ?? "-"
     }
     private var distancePlaceholder: String {
-        target.distance.map { String(format: "%.1f", $0) } ?? "-"
+        (target.distance ?? previous?.distance).map { String(format: "%.1f", $0) } ?? "-"
     }
     private var rpePlaceholder: String {
-        target.rpe.map { String(format: "%.1f", $0) } ?? "-"
+        (target.rpe ?? previous?.rpe).map { String(format: "%.1f", $0) } ?? "-"
     }
 
     private func handleTap() {

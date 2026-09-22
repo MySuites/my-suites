@@ -1,12 +1,14 @@
+import CoreLocation
 import MyHealthKit
 import PhotosUI
 import SwiftUI
 
-// Ported from apps/myhealth/app/workouts/end.tsx. Route/map snapshot export
-// is not ported (RouteSnapshotMap, MapView.takeSnapshot) — GPS distance and
-// elevation still get saved with the log via ActiveWorkoutStore, only the
-// visual map thumbnail/export is skipped. Auto-save-to-Photos-library reuses
-// the same `autoSavePhotosToGallery` setting as the RN version.
+// Ported from apps/myhealth/app/workouts/end.tsx, including the route
+// thumbnail (RouteSnapshotMap) — GPS tracking is still live at this point
+// (finishWorkout/stopTracking hasn't run yet), so the thumbnail reads
+// LocationTrackingService's in-progress buffer directly. Auto-save-to-
+// Photos-library reuses the same `autoSavePhotosToGallery` setting as the RN
+// version.
 struct WorkoutEndView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(ActiveWorkoutStore.self) private var store
@@ -18,6 +20,8 @@ struct WorkoutEndView: View {
     @State private var photoSelections: [PhotosPickerItem] = []
     @State private var pendingImages: [UIImage] = []
     @State private var isSaving = false
+    @State private var showFullRoute = false
+    @State private var routePoints: [LocationTrackingService.TrackedRoutePoint] = []
 
     var body: some View {
         NavigationStack {
@@ -26,6 +30,18 @@ struct WorkoutEndView: View {
                     LabeledContent("Duration", value: formatSeconds(store.workoutSeconds))
                     LabeledContent("Exercises", value: "\(completedExerciseCount)")
                     LabeledContent("Sets Completed", value: "\(completedSetCount)")
+                }
+
+                if store.isGpsTrackingActive && routePoints.count >= 2 {
+                    Section("Route") {
+                        Button {
+                            showFullRoute = true
+                        } label: {
+                            RouteSnapshotMapView(coordinates: routeCoordinates)
+                                .frame(height: 140)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
 
                 Section("Progress Photos") {
@@ -82,7 +98,30 @@ struct WorkoutEndView: View {
                         .disabled(isSaving)
                 }
             }
+            .onAppear {
+                #if os(iOS)
+                routePoints = LocationTrackingService.shared.liveRoute()
+                #endif
+            }
+            .fullScreenCover(isPresented: $showFullRoute) {
+                ZStack(alignment: .topLeading) {
+                    RouteSnapshotMapView(coordinates: routeCoordinates, interactive: true)
+                        .ignoresSafeArea()
+                    Button {
+                        showFullRoute = false
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title)
+                            .foregroundStyle(.white, .black.opacity(0.4))
+                    }
+                    .padding()
+                }
+            }
         }
+    }
+
+    private var routeCoordinates: [CLLocationCoordinate2D] {
+        routePoints.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
     }
 
     private var completedExerciseCount: Int {

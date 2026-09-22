@@ -172,19 +172,24 @@ private struct BodyWeightCard: View {
     let unitSystem: SettingsStore.UnitSystem
     let onLogWeight: () -> Void
 
+    @State private var showDetail = false
+
     var body: some View {
         DashboardCard(title: "Body Weight") {
-            HStack {
-                if let latest = measurements.last {
-                    Text(displayWeight(latest.weight))
-                        .font(.title2.weight(.bold))
-                } else {
-                    Text("No entries yet").foregroundStyle(.secondary)
+            Button {
+                if !measurements.isEmpty { showDetail = true }
+            } label: {
+                HStack {
+                    if let latest = measurements.last {
+                        Text(displayWeight(latest.weight))
+                            .font(.title2.weight(.bold))
+                    } else {
+                        Text("No entries yet").foregroundStyle(.secondary)
+                    }
+                    Spacer()
                 }
-                Spacer()
-                Button("Log Weight", action: onLogWeight)
-                    .buttonStyle(.bordered)
             }
+            .buttonStyle(.plain)
 
             if measurements.count > 1 {
                 Chart(measurements) { measurement in
@@ -196,8 +201,47 @@ private struct BodyWeightCard: View {
                 }
                 .frame(height: 120)
                 .padding(.top, 8)
+                .allowsHitTesting(false)
+            }
+
+            Button("Log Weight", action: onLogWeight)
+                .buttonStyle(.bordered)
+        }
+        .sheet(isPresented: $showDetail) {
+            MetricDetailSheet(
+                icon: "scalemass.fill",
+                title: "Body Weight",
+                color: .blue
+            ) { range in
+                let filtered = filteredMeasurements(range: range)
+                return AnyView(
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(filtered.last.map { displayWeight($0.weight) } ?? "—")
+                            .font(.system(size: 32, weight: .bold))
+                        if filtered.count > 1 {
+                            Chart(filtered) { measurement in
+                                LineMark(
+                                    x: .value("Date", measurement.date),
+                                    y: .value("Weight", displayValue(measurement.weight))
+                                )
+                                .interpolationMethod(.catmullRom)
+                            }
+                            .frame(height: 200)
+                        } else {
+                            Text("Not enough data for this period.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, minHeight: 120)
+                        }
+                    }
+                )
             }
         }
+    }
+
+    private func filteredMeasurements(range: MetricDateRange) -> [BodyMeasurementRecord] {
+        guard let cutoff = range.cutoffDate else { return measurements }
+        return measurements.filter { $0.date >= cutoff }
     }
 
     private func displayValue(_ lb: Double) -> Double {
@@ -215,6 +259,8 @@ private struct BodyWeightCard: View {
 private struct VolumeTrendCard: View {
     let history: [WorkoutLogRecord]
 
+    @State private var showDetail = false
+
     private struct WeeklyVolume: Identifiable {
         var id: Date { weekStart }
         var weekStart: Date
@@ -223,27 +269,62 @@ private struct VolumeTrendCard: View {
 
     var body: some View {
         DashboardCard(title: "Training Volume") {
-            let data = weeklyVolumes
+            let data = weeklyVolumes(since: nil).suffix(8)
             if data.isEmpty {
                 Text("Log a workout to see your volume trend.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
-                Chart(data) { entry in
-                    BarMark(
-                        x: .value("Week", entry.weekStart, unit: .weekOfYear),
-                        y: .value("Volume (lb)", entry.volume)
-                    )
+                Button {
+                    showDetail = true
+                } label: {
+                    Chart(data) { entry in
+                        BarMark(
+                            x: .value("Week", entry.weekStart, unit: .weekOfYear),
+                            y: .value("Volume (lb)", entry.volume)
+                        )
+                    }
+                    .frame(height: 140)
                 }
-                .frame(height: 140)
+                .buttonStyle(.plain)
+            }
+        }
+        .sheet(isPresented: $showDetail) {
+            MetricDetailSheet(
+                icon: "chart.bar.fill",
+                title: "Training Volume",
+                color: .orange
+            ) { range in
+                let filtered = weeklyVolumes(since: range.cutoffDate)
+                return AnyView(
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(filtered.last.map { Int($0.volume).formatted() } ?? "—")
+                            .font(.system(size: 32, weight: .bold))
+                        if filtered.isEmpty {
+                            Text("Not enough data for this period.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, minHeight: 120)
+                        } else {
+                            Chart(filtered) { entry in
+                                BarMark(
+                                    x: .value("Week", entry.weekStart, unit: .weekOfYear),
+                                    y: .value("Volume (lb)", entry.volume)
+                                )
+                            }
+                            .frame(height: 200)
+                        }
+                    }
+                )
             }
         }
     }
 
-    private var weeklyVolumes: [WeeklyVolume] {
+    private func weeklyVolumes(since cutoff: Date?) -> [WeeklyVolume] {
         let calendar = Calendar.current
         var totals: [Date: Double] = [:]
         for log in history {
+            if let cutoff, log.workoutDate < cutoff { continue }
             guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: log.workoutDate)?.start else { continue }
             let logVolume = log.sets.reduce(0.0) { sum, set in
                 sum + (set.weight ?? 0) * Double(set.reps ?? 0)
@@ -253,7 +334,6 @@ private struct VolumeTrendCard: View {
         return totals
             .map { WeeklyVolume(weekStart: $0.key, volume: $0.value) }
             .sorted { $0.weekStart < $1.weekStart }
-            .suffix(8)
     }
 }
 
@@ -309,6 +389,74 @@ private struct MuscleVolumeCard: View {
             .sorted { $0.volume > $1.volume }
             .prefix(5)
             .map { $0 }
+    }
+}
+
+// MARK: - Metric detail sheet (ported from MetricDetailModal.tsx)
+
+// A shared M/3M/6M/Y range control + expanded chart, opened by tapping a
+// dashboard card. RN's version is a generic modal fed via props/children;
+// here `content` gets rebuilt per range selection and returns its own
+// primary-value/chart body since each metric's aggregation differs too much
+// to share beyond the chrome (title/icon/range picker).
+private enum MetricDateRange: String, CaseIterable, Identifiable {
+    case month = "M", threeMonth = "3M", sixMonth = "6M", year = "Y"
+    var id: String { rawValue }
+
+    var cutoffDate: Date? {
+        let days: Int
+        switch self {
+        case .month: days = 30
+        case .threeMonth: days = 90
+        case .sixMonth: days = 182
+        case .year: days = 365
+        }
+        return Calendar.current.date(byAdding: .day, value: -days, to: .now)
+    }
+}
+
+private struct MetricDetailSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let icon: String
+    let title: String
+    var color: Color = .accentColor
+    let content: (MetricDateRange) -> AnyView
+
+    @State private var selectedRange: MetricDateRange = .sixMonth
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Picker("Range", selection: $selectedRange) {
+                        ForEach(MetricDateRange.allCases) { range in
+                            Text(range.rawValue).tag(range)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    content(selectedRange)
+                }
+                .padding()
+            }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Label(title, systemImage: icon)
+                        .foregroundStyle(color)
+                        .font(.headline)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
     }
 }
 

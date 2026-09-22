@@ -438,7 +438,7 @@ private func setProgressLabel(for exercise: ActiveExercise?) -> String {
 }
 
 #if os(iOS)
-private func routeDistance(_ points: [LocationTrackingService.TrackedRoutePoint]) -> Double {
+public func routeDistance(_ points: [LocationTrackingService.TrackedRoutePoint]) -> Double {
     guard points.count >= 2 else { return 0 }
     var total = 0.0
     for i in 1..<points.count {

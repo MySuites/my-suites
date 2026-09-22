@@ -1,11 +1,10 @@
 import MyHealthKit
 import SwiftUI
 
-// Ported from apps/myhealth/app/(tabs)/workout.tsx. Scoped down from the RN
-// original: no 30-day calendar strip / day-detail modal (a visual nicety on
-// top of the same workoutHistory data History already shows) — this keeps
-// the active-session banner, start-empty-workout, and saved-workouts list,
-// which is the actual navigation this screen exists for.
+// Ported from apps/myhealth/app/(tabs)/workout.tsx, now including the
+// "Recent Activity" 30-day calendar strip + day-detail modal — tapping a
+// filled day lists that day's completed workouts, tapping one opens its
+// WorkoutLogDetailView.
 //
 // Uses a plain ScrollView (not List) so the pillar-switcher reveal/collapse
 // scroll-position tracking matches DashboardView's — List's cell-based
@@ -24,6 +23,7 @@ struct WorkoutsHomeView: View {
     @State private var showActiveWorkout = false
     @State private var editingWorkout: WorkoutRecord?
     @State private var replaceConfirmWorkout: WorkoutRecord?
+    @State private var selectedDay: Date?
 
     var body: some View {
         NavigationStack {
@@ -55,15 +55,21 @@ struct WorkoutsHomeView: View {
                             .buttonStyle(.plain)
                         }
 
-                        Button {
-                            startEmptyWorkout()
-                        } label: {
-                            Text("Start Empty Workout")
-                                .padding(16)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+                        RecentActivityCalendarCard(history: workoutManager.workoutHistory) { day in
+                            selectedDay = day
                         }
-                        .buttonStyle(.plain)
+
+                        if !activeWorkout.hasActiveSession {
+                            Button {
+                                startEmptyWorkout()
+                            } label: {
+                                Text("Start Empty Workout")
+                                    .padding(16)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+                            }
+                            .buttonStyle(.plain)
+                        }
 
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Routines")
@@ -148,6 +154,12 @@ struct WorkoutsHomeView: View {
             } message: {
                 Text("You have an active workout. What would you like to do?")
             }
+            .sheet(item: Binding(
+                get: { selectedDay.map { DaySelection(date: $0) } },
+                set: { selectedDay = $0?.date }
+            )) { selection in
+                DayDetailSheet(day: selection.date, history: workoutManager.workoutHistory)
+            }
         }
     }
 
@@ -166,6 +178,134 @@ struct WorkoutsHomeView: View {
         } else {
             activeWorkout.startWorkout(exercises: workout.exercises, name: workout.name, sourceWorkoutId: workout.id)
             showActiveWorkout = true
+        }
+    }
+}
+
+// Ported from the "Recent Activity" calendar strip on
+// apps/myhealth/app/(tabs)/workout.tsx — a 30-day horizontal strip, filled
+// dot for any day with a completed workout, tapping a day opens the
+// day-detail sheet below.
+private struct RecentActivityCalendarCard: View {
+    let history: [WorkoutLogRecord]
+    let onSelectDay: (Date) -> Void
+
+    private var last30Days: [Date] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        return (0..<30).reversed().compactMap { calendar.date(byAdding: .day, value: -$0, to: today) }
+    }
+
+    private var completedDays: Set<Date> {
+        let calendar = Calendar.current
+        return Set(history.map { calendar.startOfDay(for: $0.workoutDate) })
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Recent Activity")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 4)
+
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 16) {
+                        ForEach(last30Days, id: \.self) { day in
+                            dayButton(for: day)
+                                .id(day)
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                }
+                .onAppear {
+                    if let last = last30Days.last {
+                        proxy.scrollTo(last, anchor: .trailing)
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func dayButton(for day: Date) -> some View {
+        let calendar = Calendar.current
+        let isToday = calendar.isDateInToday(day)
+        let isCompleted = completedDays.contains(day)
+
+        return Button {
+            onSelectDay(day)
+        } label: {
+            VStack(spacing: 6) {
+                Text(day.formatted(.dateTime.weekday(.abbreviated)))
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(isToday ? .primary : .secondary)
+                ZStack {
+                    Circle()
+                        .fill(isCompleted ? Color.accentColor : Color.clear)
+                    Circle()
+                        .stroke(isCompleted ? Color.clear : Color.accentColor, lineWidth: isToday ? 1 : 0)
+                    Text("\(calendar.component(.day, from: day))")
+                        .font(.subheadline.weight(isToday || isCompleted ? .bold : .regular))
+                        .foregroundStyle(isCompleted ? .white : (isToday ? Color.accentColor : .primary))
+                }
+                .frame(width: 34, height: 34)
+            }
+            .frame(width: 34)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct DaySelection: Identifiable {
+    let date: Date
+    var id: Date { date }
+}
+
+private struct DayDetailSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let day: Date
+    let history: [WorkoutLogRecord]
+
+    @State private var detailLog: WorkoutLogRecord?
+
+    private var logsOnDay: [WorkoutLogRecord] {
+        let calendar = Calendar.current
+        return history.filter { calendar.isDate($0.workoutDate, inSameDayAs: day) }
+    }
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if logsOnDay.isEmpty {
+                    ContentUnavailableView("No Workouts", systemImage: "calendar")
+                } else {
+                    List(logsOnDay) { log in
+                        Button {
+                            detailLog = log
+                        } label: {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(log.workoutName).font(.body.weight(.semibold)).foregroundStyle(.primary)
+                                Text("\(formatSeconds(log.duration)) · \(log.sets.count) sets")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .listStyle(.plain)
+                }
+            }
+            .navigationTitle(day.formatted(date: .abbreviated, time: .omitted))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { dismiss() }
+                }
+            }
+            .sheet(item: $detailLog) { log in
+                WorkoutLogDetailView(log: log)
+            }
         }
     }
 }
