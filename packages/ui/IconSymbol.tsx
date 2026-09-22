@@ -71,6 +71,7 @@ const MAPPING = {
   'lightbulb.fill': 'lightbulb',
   'list.bullet': 'list',
   'square.and.arrow.down': 'file-download',
+  'square.and.arrow.up': 'file-upload',
 } as const;
 
 

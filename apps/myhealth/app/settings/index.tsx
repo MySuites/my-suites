@@ -16,9 +16,11 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as WebBrowser from 'expo-web-browser';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
+import * as DocumentPicker from 'expo-document-picker';
 import { router } from 'expo-router';
 import * as Application from 'expo-application';
 import { buildUserDataExport } from '../../utils/exportUserData';
+import { parseUserDataExport, UserDataImportError } from '../../utils/importUserData';
 import { WEEKLY_GOAL_STORAGE_KEY, DEFAULT_WEEKLY_GOAL } from '../../utils/weeklyGoal';
 import { WorkoutLocationTrackingService } from '../../services/WorkoutLocationTrackingService';
 import { REP_CEILING_MIN, REP_CEILING_MAX } from '../../utils/progressiveOverload';
@@ -48,6 +50,7 @@ export default function SettingsScreen() {
     isProgressiveOverloadEnabled, setIsProgressiveOverloadEnabled,
     progressiveOverloadRepCeiling, setProgressiveOverloadRepCeiling,
     isLiveActivitiesEnabled, setIsLiveActivitiesEnabled,
+    refreshWorkoutData,
   } = useWorkoutManager();
   const handleUpdateRepCeiling = async (ceiling: number) => {
     await setProgressiveOverloadRepCeiling(ceiling);
@@ -136,6 +139,62 @@ export default function SettingsScreen() {
         showToast({ message: 'Failed to export data', type: 'error' });
     } finally {
         setIsExportingData(false);
+    }
+  };
+
+  const [isImportingData, setIsImportingData] = useState(false);
+  const handleImportData = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/json', 'public.json'],
+        copyToCacheDirectory: true,
+    });
+    if (result.canceled || !result.assets?.[0]) return;
+
+    setIsImportingData(true);
+    let data;
+    try {
+        const json = await FileSystem.readAsStringAsync(result.assets[0].uri);
+        data = parseUserDataExport(json);
+    } catch (error) {
+        console.error('Import data error:', error);
+        const message = error instanceof UserDataImportError ? error.message : 'Failed to read data file';
+        showToast({ message, type: 'error' });
+        setIsImportingData(false);
+        return;
+    }
+
+    const counts = `${data.savedWorkouts.length} saved workout(s), ${data.workoutHistory.length} history log(s), ${data.exercises.length} exercise(s), ${data.bodyWeightHistory.length} body weight log(s), ${data.progressPictures.length} progress picture(s)`;
+    Alert.alert(
+        'Import Data?',
+        `This will merge ${counts} into your current data. Items with matching IDs will be overwritten.`,
+        [
+            { text: 'Cancel', style: 'cancel', onPress: () => setIsImportingData(false) },
+            { text: 'Import', onPress: () => performImportData(data!) },
+        ]
+    );
+  };
+
+  const performImportData = async (data: ReturnType<typeof parseUserDataExport>) => {
+    try {
+        await DataRepository.saveWorkouts(data.savedWorkouts);
+        await DataRepository.saveHistory(data.workoutHistory);
+        await DataRepository.saveExercises(data.exercises);
+        for (const log of data.bodyWeightHistory) {
+            await DataRepository.saveBodyWeight(log);
+        }
+        for (const pic of data.progressPictures) {
+            await DataRepository.saveProgressPicture(pic.userId, pic);
+        }
+
+        await refreshWorkoutData();
+
+        showToast({ message: 'Data imported successfully', type: 'success' });
+    } catch (error) {
+        console.error('Import data error:', error);
+        const message = error instanceof UserDataImportError ? error.message : 'Failed to import data';
+        showToast({ message, type: 'error' });
+    } finally {
+        setIsImportingData(false);
     }
   };
 
@@ -745,6 +804,12 @@ export default function SettingsScreen() {
             label={isExportingData ? "Exporting..." : "Export Data"}
             icon="square.and.arrow.down"
             onPress={handleExportData}
+          />
+          <SettingsLinkRow
+            testID="import-data-btn"
+            label={isImportingData ? "Importing..." : "Import Data"}
+            icon="square.and.arrow.up"
+            onPress={handleImportData}
           />
           <SettingsLinkRow
             testID="delete-data-btn"

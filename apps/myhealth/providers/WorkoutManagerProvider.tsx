@@ -32,6 +32,8 @@ interface WorkoutManagerContextType {
     workoutHistory: WorkoutLog[];
     fetchWorkoutLogDetails: (logId: string) => Promise<{ data: any[], error: any }>;
     saveCompletedWorkout: (name: string, exercises: Exercise[], duration: number, onSuccess?: () => void, note?: string, sourceWorkoutId?: string, imageUrl?: string, imageUrls?: string[]) => Promise<void>;
+    importWorkoutLogs: (logs: WorkoutLog[]) => Promise<number>;
+    refreshWorkoutData: () => Promise<void>;
     deleteWorkoutLog: (id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => void;
     lastSyncedAt: Date | null;
     sync: () => Promise<void>;
@@ -350,6 +352,52 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         return await fetchWorkoutLogDetails(user, id);
     }, [user]);
 
+    // Re-fetches savedWorkouts + workoutHistory from storage - used after a
+    // bulk restore (Settings > Import Data) writes directly via DataRepository
+    // and needs the in-memory state to catch up.
+    const refreshWorkoutData = useCallback(async (): Promise<void> => {
+        const storedWorkouts = await DataRepository.getWorkouts();
+        setSavedWorkouts(storedWorkouts);
+
+        const storedHistory = await DataRepository.getHistory();
+        const mappedHistory: WorkoutLog[] = storedHistory.map(h => ({
+            id: h.id,
+            userId: user?.id || 'guest',
+            workoutDate: h.date,
+            workoutName: h.name,
+            createdAt: h.date,
+            notes: h.note,
+            exercises: h.exercises,
+            imageUrl: h.imageUrl,
+            imageUrls: h.imageUrls
+        }));
+        mappedHistory.sort((a, b) => new Date(b.workoutDate).getTime() - new Date(a.workoutDate).getTime());
+        setWorkoutHistory(mappedHistory);
+    }, [user]);
+
+    // Bulk-inserts parsed workout logs (e.g. from a CSV import) and refreshes
+    // history from storage once, rather than one-by-one via saveCompletedWorkout
+    // (which always stamps "now" as the date - wrong for historical imports).
+    const importWorkoutLogs = useCallback(async (logs: WorkoutLog[]): Promise<number> => {
+        let imported = 0;
+        for (const log of logs) {
+            await DataRepository.saveLog({
+                userId: user?.id || 'guest',
+                name: log.workoutName || 'Untitled Workout',
+                exercises: log.exercises || [],
+                duration: 0,
+                date: log.workoutDate,
+                createdAt: new Date().toISOString(),
+                note: log.notes,
+            });
+            imported += 1;
+        }
+
+        await refreshWorkoutData();
+
+        return imported;
+    }, [user, refreshWorkoutData]);
+
     const deleteWorkoutLog = useCallback((id: string, options?: { onSuccess?: () => void; skipConfirmation?: boolean }) => {
         const performDelete = async () => {
             try {
@@ -411,6 +459,8 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
         workoutHistory,
         fetchWorkoutLogDetails: fetchWorkoutLogDetailsStable,
         saveCompletedWorkout,
+        importWorkoutLogs,
+        refreshWorkoutData,
         deleteWorkoutLog,
         createCustomExercise,
         deleteCustomExercise,
@@ -433,7 +483,7 @@ export function WorkoutManagerProvider({ children }: { children: React.ReactNode
     }), [
         savedWorkouts, isSaving, isLoading, saveWorkout,
         deleteSavedWorkout, updateSavedWorkout,
-        workoutHistory, fetchWorkoutLogDetailsStable, saveCompletedWorkout,
+        workoutHistory, fetchWorkoutLogDetailsStable, saveCompletedWorkout, importWorkoutLogs, refreshWorkoutData,
         deleteWorkoutLog, createCustomExercise, deleteCustomExercise, lastSyncedAt,
         sync, isSyncing, reorderSavedWorkouts, isRpeEnabled, setIsRpeEnabled,
         isHapticsEnabled, setIsHapticsEnabled,
@@ -462,6 +512,8 @@ export function useWorkoutManager() {
             workoutHistory: [],
             fetchWorkoutLogDetails: async () => ({ data: [], error: null }),
             saveCompletedWorkout: async () => {},
+            importWorkoutLogs: async () => 0,
+            refreshWorkoutData: async () => {},
             deleteWorkoutLog: () => {},
             lastSyncedAt: null,
             sync: async () => {},

@@ -1103,7 +1103,7 @@ export const DataRepository = {
                     ex.nextVariations ? JSON.stringify(ex.nextVariations) : JSON.stringify([]),
                     ex.tips ? JSON.stringify(ex.tips) : null,
                     ex.instructions ? JSON.stringify(ex.instructions) : null,
-                    ex.equipment || null,
+                    ex.equipment ? (Array.isArray(ex.equipment) ? JSON.stringify(ex.equipment) : ex.equipment) : null,
                     ex.movementType || null,
                     ex.attachment || null,
                     new Date().toISOString(),
