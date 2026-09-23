@@ -1,0 +1,19 @@
+{
+  "": {
+    "swift-dependencies": "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/master.swiftdeps"
+  },
+  "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Tests/MyHealthKitTests/RepositoryAndStoreTests.swift": {
+    "dependencies": "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/RepositoryAndStoreTests.d",
+    "object": "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/RepositoryAndStoreTests.swift.o",
+    "swiftmodule": "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/RepositoryAndStoreTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/RepositoryAndStoreTests.swiftdeps",
+    "diagnostics": "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/RepositoryAndStoreTests.dia"
+  },
+  "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/Tests/MyHealthKitTests/WorkoutLogicTests.swift": {
+    "dependencies": "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/WorkoutLogicTests.d",
+    "object": "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/WorkoutLogicTests.swift.o",
+    "swiftmodule": "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/WorkoutLogicTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/WorkoutLogicTests.swiftdeps",
+    "diagnostics": "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitTests.build/WorkoutLogicTests.dia"
+  }
+}

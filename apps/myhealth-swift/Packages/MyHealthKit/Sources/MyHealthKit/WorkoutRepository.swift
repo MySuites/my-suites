@@ -121,6 +121,12 @@ public final class WorkoutRepository {
         }
     }
 
+    private func fetchWorkoutLog(id targetId: String) throws -> WorkoutLogRecord? {
+        var descriptor = FetchDescriptor<WorkoutLogRecord>(predicate: #Predicate { $0.id == targetId })
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first
+    }
+
     public func hasWorkoutLog(healthkitUuid targetUuid: String) throws -> Bool {
         var descriptor = FetchDescriptor<WorkoutLogRecord>(predicate: #Predicate { $0.healthkitUuid == targetUuid })
         descriptor.fetchLimit = 1
@@ -229,6 +235,122 @@ public final class WorkoutRepository {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         encoder.dateEncodingStrategy = .iso8601
         return try encoder.encode(export)
+    }
+
+    // MARK: - Import (counterpart to exportUserData; ported from
+    // apps/myhealth/utils/importUserData.ts + the DataRepository bulk-save
+    // methods it drives)
+
+    public struct ImportSummary {
+        public var savedWorkouts: Int
+        public var workoutHistory: Int
+        public var exercises: Int
+        public var bodyWeightHistory: Int
+    }
+
+    public enum ImportError: LocalizedError {
+        case invalidFormat
+
+        public var errorDescription: String? {
+            switch self {
+            case .invalidFormat: return "File is not a valid MyHealth data export"
+            }
+        }
+    }
+
+    // Progress pictures aren't restorable from this file - the export DTO
+    // deliberately omits the image (only date/notes/muscle metadata), since
+    // the actual photo lives on-device and was never serialized. Everything
+    // else upserts by id: an existing row with the same id is overwritten,
+    // matching the RN version's INSERT OR REPLACE semantics.
+    @discardableResult
+    public func importUserData(_ data: Data) throws -> ImportSummary {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let export: UserDataExport
+        if let native = try? decoder.decode(UserDataExport.self, from: data) {
+            export = native
+        } else if let legacy = try? JSONDecoder().decode(LegacyJSONImport.Bundle.self, from: data) {
+            // Same top-level key names as this app's own export (both trace
+            // back to the same original RN schema), so the native decode
+            // above is what actually distinguishes the two: it fails on the
+            // RN shape's mismatched field names/types (snake_case reps_left,
+            // string-typed template reps, etc.) and falls through to here.
+            export = legacy.toUserDataExport()
+        } else {
+            throw ImportError.invalidFormat
+        }
+
+        for dto in export.savedWorkouts {
+            if let existing = try fetchWorkout(id: dto.id) {
+                existing.name = dto.name
+                existing.exercises = dto.exercises
+                existing.updatedAt = .now
+            } else {
+                context.insert(WorkoutRecord(id: dto.id, name: dto.name, exercises: dto.exercises, createdAt: dto.createdAt))
+            }
+        }
+
+        for dto in export.workoutHistory {
+            // Sets are a cascade-deleted relationship, not addressable by id
+            // individually here, so replace the whole log rather than diffing sets.
+            if let existing = try fetchWorkoutLog(id: dto.id) {
+                context.delete(existing)
+            }
+            let log = WorkoutLogRecord(
+                id: dto.id,
+                workoutDate: dto.workoutDate,
+                workoutName: dto.workoutName,
+                duration: dto.duration,
+                note: dto.note,
+                avgHeartRate: dto.avgHeartRate,
+                maxHeartRate: dto.maxHeartRate,
+                calories: dto.calories,
+                distance: dto.distance
+            )
+            context.insert(log)
+            for setDTO in dto.sets {
+                let set = SetLogRecord(
+                    exerciseId: setDTO.exerciseId,
+                    exerciseName: setDTO.exerciseName,
+                    weight: setDTO.weight,
+                    reps: setDTO.reps,
+                    repsLeft: setDTO.repsLeft,
+                    repsRight: setDTO.repsRight,
+                    distance: setDTO.distance,
+                    duration: setDTO.duration,
+                    rpe: setDTO.rpe
+                )
+                set.workoutLog = log
+                context.insert(set)
+            }
+        }
+
+        for dto in export.exercises {
+            // id is @Attribute(.unique) - inserting a duplicate merges into
+            // the existing row instead of creating a second one.
+            context.insert(ExerciseRecord(
+                id: dto.id,
+                name: dto.name,
+                muscleGroups: dto.muscleGroups,
+                properties: dto.properties,
+                exerciseDescription: dto.description,
+                instructions: dto.instructions
+            ))
+        }
+
+        for dto in export.bodyWeightHistory {
+            context.insert(BodyMeasurementRecord(weight: dto.weight, date: dto.date))
+        }
+
+        try context.save()
+
+        return ImportSummary(
+            savedWorkouts: export.savedWorkouts.count,
+            workoutHistory: export.workoutHistory.count,
+            exercises: export.exercises.count,
+            bodyWeightHistory: export.bodyWeightHistory.count
+        )
     }
 
     // MARK: - Bulk

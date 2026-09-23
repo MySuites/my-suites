@@ -161,6 +161,8 @@ private struct PillarSidebarPanel: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
+                .background(Color.clear, in: RoundedRectangle(cornerRadius: 10))
+                .contentShape(Rectangle())
                 .foregroundStyle(.primary)
             }
             .buttonStyle(.plain)

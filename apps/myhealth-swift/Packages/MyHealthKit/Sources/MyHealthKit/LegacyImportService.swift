@@ -359,7 +359,11 @@ public enum LegacyImportService {
     // milliseconds. Tries with-fractional-seconds first since that's what
     // `toISOString()` actually produces, then falls back progressively
     // rather than losing the row entirely over a formatting edge case.
-    private static func parseDate(_ raw: String?) -> Date? {
+    // Not private, and nonisolated: reused by LegacyJSONImport.swift for the
+    // RN app's JSON export, which uses the exact same date formats (ISO
+    // 8601 with fractional seconds, plain ISO 8601, or a bare yyyy-MM-dd).
+    // Pure function, no actor state involved.
+    nonisolated static func parseDate(_ raw: String?) -> Date? {
         guard let raw, !raw.isEmpty else { return nil }
         let withFractional = ISO8601DateFormatter()
         withFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]

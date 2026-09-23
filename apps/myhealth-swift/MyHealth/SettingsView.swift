@@ -1,6 +1,7 @@
 import MyHealthKit
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 
 // Ported from apps/myhealth/app/settings/index.tsx — see SWIFT_MIGRATION_PLAN.md
 // Phase 3, screen 1. AI model management isn't ported — the on-device
@@ -11,12 +12,19 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(SettingsStore.self) private var settings
+    @Environment(WorkoutManagerStore.self) private var workoutManager
 
     @State private var isHealthConnected = false
     @State private var isExporting = false
     @State private var showDeleteConfirm = false
     @State private var exportedFile: ExportedFile?
     @State private var toastMessage: String?
+
+    @State private var isImportPickerPresented = false
+    @State private var isImporting = false
+    @State private var showImportConfirm = false
+    @State private var pendingImportData: Data?
+    @State private var pendingImportCounts: (workouts: Int, history: Int, exercises: Int, bodyWeight: Int)?
 
     private static let privacyPolicyURL = URL(string: "https://mysuites.github.io/my-suites/privacy_policy.html")!
     private static let termsOfServiceURL = URL(string: "https://mysuites.github.io/my-suites/tos.html")!
@@ -60,6 +68,20 @@ struct SettingsView: View {
             }
             .sheet(item: $exportedFile) { file in
                 ActivityShareSheet(activityItems: [file.url])
+            }
+            .fileImporter(isPresented: $isImportPickerPresented, allowedContentTypes: [.json]) { result in
+                handleImportPick(result)
+            }
+            .alert("Import Data?", isPresented: $showImportConfirm) {
+                Button("Cancel", role: .cancel) {
+                    pendingImportData = nil
+                    pendingImportCounts = nil
+                }
+                Button("Import") { performImport() }
+            } message: {
+                if let counts = pendingImportCounts {
+                    Text("This will merge \(counts.workouts) saved workout(s), \(counts.history) history log(s), \(counts.exercises) exercise(s), \(counts.bodyWeight) body weight log(s) into your current data. Items with matching IDs will be overwritten.")
+                }
             }
             .overlay(alignment: .bottom) {
                 if let toastMessage {
@@ -332,6 +354,13 @@ struct SettingsView: View {
             }
             .disabled(isExporting)
 
+            Button {
+                isImportPickerPresented = true
+            } label: {
+                Label(isImporting ? "Importing…" : "Import Data", systemImage: "square.and.arrow.up")
+            }
+            .disabled(isImporting)
+
             Button(role: .destructive) {
                 showDeleteConfirm = true
             } label: {
@@ -390,12 +419,77 @@ struct SettingsView: View {
         }
     }
 
+    private func handleImportPick(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            guard url.startAccessingSecurityScopedResource() else {
+                toast("Couldn't access file")
+                return
+            }
+            defer { url.stopAccessingSecurityScopedResource() }
+            do {
+                let data = try Data(contentsOf: url)
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                // Mirrors WorkoutRepository.importUserData's own fallback:
+                // try this app's native export shape first, then the RN
+                // app's export shape (same top-level keys, different field
+                // names/types - see LegacyJSONImport.swift). Only used here
+                // to preview counts before the user confirms; performImport
+                // re-decodes the same way when it actually applies the data.
+                let counts: (workouts: Int, history: Int, exercises: Int, bodyWeight: Int)
+                if let export = try? decoder.decode(WorkoutRepository.UserDataExport.self, from: data) {
+                    counts = (export.savedWorkouts.count, export.workoutHistory.count, export.exercises.count, export.bodyWeightHistory.count)
+                } else if let legacy = try? JSONDecoder().decode(LegacyJSONImport.Bundle.self, from: data) {
+                    counts = (legacy.savedWorkouts.count, legacy.workoutHistory.count, legacy.exercises.count, legacy.bodyWeightHistory.count)
+                } else {
+                    toast("File is not a valid MyHealth data export")
+                    return
+                }
+                pendingImportData = data
+                pendingImportCounts = counts
+                showImportConfirm = true
+            } catch {
+                toast("Failed to read file")
+            }
+        case .failure:
+            toast("Failed to read file")
+        }
+    }
+
+    private func performImport() {
+        guard let data = pendingImportData else { return }
+        isImporting = true
+        defer {
+            isImporting = false
+            pendingImportData = nil
+            pendingImportCounts = nil
+        }
+        do {
+            let repository = WorkoutRepository(context: modelContext)
+            try repository.importUserData(data)
+            // WorkoutManagerStore caches routines/workoutHistory itself
+            // (loaded once, then kept in sync only through its own
+            // save/delete methods) rather than observing SwiftData live via
+            // @Query, so a bulk write made directly through the repository
+            // like this leaves it stale - Routines/History kept showing the
+            // pre-import data until the app was relaunched. DashboardView
+            // uses real @Query and doesn't need this.
+            workoutManager.loadInitialData()
+            toast("Data imported successfully")
+        } catch {
+            toast("Failed to import data")
+        }
+    }
+
     private func deleteAllData() {
         do {
             let repository = WorkoutRepository(context: modelContext)
             try repository.clearAllLocalData(preservingExerciseIds: [])
             HealthKitService.disableSync()
             isHealthConnected = false
+            // See the comment in performImport - same staleness issue.
+            workoutManager.loadInitialData()
             toast("All data deleted")
         } catch {
             toast("Failed to delete data")
