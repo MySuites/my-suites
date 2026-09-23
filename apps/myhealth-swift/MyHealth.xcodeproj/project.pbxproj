@@ -1,0 +1,740 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0244647457AF51958D946925 /* MyHealth Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B30BF388794386D94AF2A866 /* MyHealth Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		0A58A486A2656B46B86C26A7 /* WorkoutLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE70AD7370B29C9243E1614B /* WorkoutLiveActivity.swift */; };
+		1B69316EBB3ADEE7C13EEE07 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5233AEF50ADE1C5F72DEC66C /* SwiftUI.framework */; };
+		325006945E374B4C19BE4D8D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 736DBC42809BDA47784D3BBB /* Assets.xcassets */; };
+		3782002DE98F80CD09B1FFBC /* MyHealthKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8A1360A2C6B9CDFD42CFED4A /* MyHealthKit */; };
+		4D97D19259A1090632A1CD87 /* MyHealthWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 424AAD904C399CF23CE6E9A6 /* MyHealthWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		58751DFF6E1263389247732D /* MyHealthKit in Frameworks */ = {isa = PBXBuildFile; productRef = 851296529E7003690A26E1EB /* MyHealthKit */; };
+		61551667548EE590D3D227F4 /* WatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00427F00C3E3B0AFEEE5CA0 /* WatchContentView.swift */; };
+		7A97776F008D011656D2C637 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4A8C9CD8AB62EF919420619 /* WidgetKit.framework */; };
+		858C8BAB07C64864730B982B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8681C30052A5CFF709826990 /* ContentView.swift */; };
+		E55A1AF323834640AD181459 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F52FC620C3D428DA1D9473D /* SettingsView.swift */; };
+		CBE8888AD9CD42B6955417E4 /* AddProgressPictureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97E3B3BA820F4458872BFFA5 /* AddProgressPictureView.swift */; };
+		98348AC4332444C4A8AAE4A5 /* ProgressPicturesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A327B450E72A4486BC98344F /* ProgressPicturesListView.swift */; };
+		A96C51DFC8FE49579B9C094A /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80878A4A1EC9451CA993D79A /* DashboardView.swift */; };
+		57A52377C0BC42DAB6335F2E /* ExercisesLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F50DC05AEC45E094B0A822 /* ExercisesLibraryView.swift */; };
+		9E958F826CB54D89A32065C6 /* AddExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C063E7A8370451CBDAF5EB6 /* AddExerciseView.swift */; };
+		04B7FFCC873348878F6F9AF0 /* WorkoutsHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00B97207F758468C9554E373 /* WorkoutsHomeView.swift */; };
+		F91ED1E1EFD94065B748176C /* RoutineEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6032262B4548C192BE10CF /* RoutineEditorView.swift */; };
+		0AD0231A8492476D8D410702 /* ExercisePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 669090DE45414CE5BE1D3E03 /* ExercisePickerView.swift */; };
+		060AAFBB90184621A80AA96B /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0973BF936B4A898FB54DED /* ActiveWorkoutView.swift */; };
+		B74332133D674702BCC6E217 /* WorkoutEndView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853D9768DEB945E58EBF03DF /* WorkoutEndView.swift */; };
+		F63FD255070C4C9FB374CF38 /* WorkoutLogDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 386768EC211D49C190E74363 /* WorkoutLogDetailView.swift */; };
+		A0D8A7E5420241D382712B08 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E74BADD84A34732B3208589 /* HistoryView.swift */; };
+		D51688DF59424AF1B9EEEF6C /* DeveloperDatabaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA8360AB1747430680BE3046 /* DeveloperDatabaseView.swift */; };
+		8C58E3E2DC9F4E17A34D13B3 /* NavSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A870C5AC0D445AA54408E8 /* NavSection.swift */; };
+		8CC6F10E1D2448CDA3FFE123 /* PlaceholderSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FAE9C61B2F94EBA8358BC2D /* PlaceholderSectionView.swift */; };
+		083ABC9A9CBC4708AF0F4501 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28505C919BBC41608615407C /* AppRootView.swift */; };
+		8456C114A5A248B09E4ADAD2 /* PillarTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C348F920BEC741969E73FA55 /* PillarTabView.swift */; };
+		BB3B11262C3048819161AACE /* RoutinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0770902C3F8A49AA82143701 /* RoutinesView.swift */; };
+		AB11EE001A2B4A6B9B7A0F01 /* PillarSidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB11EE011A2B4A6B9B7A0F02 /* PillarSidebar.swift */; };
+		665A20B9EBA04FC7A9E8698D /* LiveWorkoutMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10AB837CDBE844F9AA686D44 /* LiveWorkoutMapView.swift */; };
+		27F0DE3197AC456B800D9DB3 /* RouteSnapshotMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE86DFFE0BF498F8092ADBE /* RouteSnapshotMapView.swift */; };
+		93DB247196BB402F4F998A09 /* MyHealthKit in Frameworks */ = {isa = PBXBuildFile; productRef = 187BB1BD867FCA0A8497AD94 /* MyHealthKit */; };
+		C3899BDE4B8806229834FAA0 /* MyHealthWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F787ACDAA5E02BFBF9C3D1 /* MyHealthWidgetsBundle.swift */; };
+		C81F91B7A90362466772684A /* ActivityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3062470C1A2E29E410C9FDC0 /* ActivityKit.framework */; };
+		368FDE271A6B4CAEB2483B43 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 24AA65D6CDA442E382FC7294 /* libsqlite3.tbd */; };
+		CC1FC8B6B29A8EE51C42AEFE /* MyHealthApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85EDBFA83501F2EFC29414E2 /* MyHealthApp.swift */; };
+		FB961AB4FFA1795F8BF48F4E /* MyHealthWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47BE61EDF84C11B2760E97F /* MyHealthWatchApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8A000CEAABD80E8A99630B07 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 32797708C7859F703E9262C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 54F6F71D1E624B68F0BA0A58;
+			remoteInfo = MyHealthWidgets;
+		};
+		CC0786A2EB81F41469832F20 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 32797708C7859F703E9262C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3AFEE0315048B37EE1FD1CF8;
+			remoteInfo = "MyHealth Watch App";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		9F59E5594066437547052E70 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4D97D19259A1090632A1CD87 /* MyHealthWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B645420F1AC4C612173F8F09 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				0244647457AF51958D946925 /* MyHealth Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		05D55C05F808CDF580A53740 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		24C2DD7B3A5B16AC4E37AA7C /* MyHealthKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MyHealthKit; path = Packages/MyHealthKit; sourceTree = SOURCE_ROOT; };
+		3062470C1A2E29E410C9FDC0 /* ActivityKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ActivityKit.framework; path = System/Library/Frameworks/ActivityKit.framework; sourceTree = SDKROOT; };
+		24AA65D6CDA442E382FC7294 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		424AAD904C399CF23CE6E9A6 /* MyHealthWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = MyHealthWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		5233AEF50ADE1C5F72DEC66C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		60AA1719224422B218DC46DE /* MyHealth.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MyHealth.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6883A41FB56E09B449E13EC9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		736DBC42809BDA47784D3BBB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		83F787ACDAA5E02BFBF9C3D1 /* MyHealthWidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyHealthWidgetsBundle.swift; sourceTree = "<group>"; };
+		85EDBFA83501F2EFC29414E2 /* MyHealthApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyHealthApp.swift; sourceTree = "<group>"; };
+		8681C30052A5CFF709826990 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		7F52FC620C3D428DA1D9473D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		97E3B3BA820F4458872BFFA5 /* AddProgressPictureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddProgressPictureView.swift; sourceTree = "<group>"; };
+		A327B450E72A4486BC98344F /* ProgressPicturesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressPicturesListView.swift; sourceTree = "<group>"; };
+		80878A4A1EC9451CA993D79A /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		93F50DC05AEC45E094B0A822 /* ExercisesLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisesLibraryView.swift; sourceTree = "<group>"; };
+		9C063E7A8370451CBDAF5EB6 /* AddExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddExerciseView.swift; sourceTree = "<group>"; };
+		00B97207F758468C9554E373 /* WorkoutsHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutsHomeView.swift; sourceTree = "<group>"; };
+		4F6032262B4548C192BE10CF /* RoutineEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineEditorView.swift; sourceTree = "<group>"; };
+		669090DE45414CE5BE1D3E03 /* ExercisePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisePickerView.swift; sourceTree = "<group>"; };
+		0F0973BF936B4A898FB54DED /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
+		853D9768DEB945E58EBF03DF /* WorkoutEndView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutEndView.swift; sourceTree = "<group>"; };
+		386768EC211D49C190E74363 /* WorkoutLogDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLogDetailView.swift; sourceTree = "<group>"; };
+		5E74BADD84A34732B3208589 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		CA8360AB1747430680BE3046 /* DeveloperDatabaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperDatabaseView.swift; sourceTree = "<group>"; };
+		84A870C5AC0D445AA54408E8 /* NavSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavSection.swift; sourceTree = "<group>"; };
+		0FAE9C61B2F94EBA8358BC2D /* PlaceholderSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderSectionView.swift; sourceTree = "<group>"; };
+		28505C919BBC41608615407C /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		C348F920BEC741969E73FA55 /* PillarTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillarTabView.swift; sourceTree = "<group>"; };
+		0770902C3F8A49AA82143701 /* RoutinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutinesView.swift; sourceTree = "<group>"; };
+		AB11EE011A2B4A6B9B7A0F02 /* PillarSidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillarSidebar.swift; sourceTree = "<group>"; };
+		10AB837CDBE844F9AA686D44 /* LiveWorkoutMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkoutMapView.swift; sourceTree = "<group>"; };
+		8BE86DFFE0BF498F8092ADBE /* RouteSnapshotMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteSnapshotMapView.swift; sourceTree = "<group>"; };
+		A00427F00C3E3B0AFEEE5CA0 /* WatchContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchContentView.swift; sourceTree = "<group>"; };
+		A4A8C9CD8AB62EF919420619 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		B30BF388794386D94AF2A866 /* MyHealth Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MyHealth Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE70AD7370B29C9243E1614B /* WorkoutLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivity.swift; sourceTree = "<group>"; };
+		D47BE61EDF84C11B2760E97F /* MyHealthWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyHealthWatchApp.swift; sourceTree = "<group>"; };
+		E1DD1F81D5FF8011028459C9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		F38FDA9C6BFC8BBC536C08F8 /* MyHealth.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MyHealth.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0DD22FEE220AEC5B3B2DB791 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				58751DFF6E1263389247732D /* MyHealthKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D63D8853E34F6C5C9B6DF9E3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				93DB247196BB402F4F998A09 /* MyHealthKit in Frameworks */,
+				1B69316EBB3ADEE7C13EEE07 /* SwiftUI.framework in Frameworks */,
+				7A97776F008D011656D2C637 /* WidgetKit.framework in Frameworks */,
+				C81F91B7A90362466772684A /* ActivityKit.framework in Frameworks */,
+				368FDE271A6B4CAEB2483B43 /* libsqlite3.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD8C6AE802541CC898EBB34D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3782002DE98F80CD09B1FFBC /* MyHealthKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		07071FBCEEA91500475031A4 /* MyHealthWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				E1DD1F81D5FF8011028459C9 /* Info.plist */,
+				83F787ACDAA5E02BFBF9C3D1 /* MyHealthWidgetsBundle.swift */,
+				CE70AD7370B29C9243E1614B /* WorkoutLiveActivity.swift */,
+			);
+			path = MyHealthWidgets;
+			sourceTree = "<group>";
+		};
+		22144979E3A15F717F63CAAD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B30BF388794386D94AF2A866 /* MyHealth Watch App.app */,
+				60AA1719224422B218DC46DE /* MyHealth.app */,
+				424AAD904C399CF23CE6E9A6 /* MyHealthWidgets.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3FBCE3F3D013D7E47A2894BA = {
+			isa = PBXGroup;
+			children = (
+				80D5EC60A84796D1016AEA0B /* MyHealth */,
+				9D67272584CEE1B3CDF606CB /* MyHealth Watch App */,
+				07071FBCEEA91500475031A4 /* MyHealthWidgets */,
+				B6301606C4211C8D80DD13C4 /* Packages */,
+				ACD4A404D768301E99E73B0F /* Frameworks */,
+				22144979E3A15F717F63CAAD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		80D5EC60A84796D1016AEA0B /* MyHealth */ = {
+			isa = PBXGroup;
+			children = (
+				736DBC42809BDA47784D3BBB /* Assets.xcassets */,
+				8681C30052A5CFF709826990 /* ContentView.swift */,
+				7F52FC620C3D428DA1D9473D /* SettingsView.swift */,
+				97E3B3BA820F4458872BFFA5 /* AddProgressPictureView.swift */,
+				A327B450E72A4486BC98344F /* ProgressPicturesListView.swift */,
+				80878A4A1EC9451CA993D79A /* DashboardView.swift */,
+				93F50DC05AEC45E094B0A822 /* ExercisesLibraryView.swift */,
+				9C063E7A8370451CBDAF5EB6 /* AddExerciseView.swift */,
+				00B97207F758468C9554E373 /* WorkoutsHomeView.swift */,
+				4F6032262B4548C192BE10CF /* RoutineEditorView.swift */,
+				669090DE45414CE5BE1D3E03 /* ExercisePickerView.swift */,
+				0F0973BF936B4A898FB54DED /* ActiveWorkoutView.swift */,
+				853D9768DEB945E58EBF03DF /* WorkoutEndView.swift */,
+				386768EC211D49C190E74363 /* WorkoutLogDetailView.swift */,
+				5E74BADD84A34732B3208589 /* HistoryView.swift */,
+				CA8360AB1747430680BE3046 /* DeveloperDatabaseView.swift */,
+				84A870C5AC0D445AA54408E8 /* NavSection.swift */,
+				0FAE9C61B2F94EBA8358BC2D /* PlaceholderSectionView.swift */,
+				28505C919BBC41608615407C /* AppRootView.swift */,
+				C348F920BEC741969E73FA55 /* PillarTabView.swift */,
+				0770902C3F8A49AA82143701 /* RoutinesView.swift */,
+				AB11EE011A2B4A6B9B7A0F02 /* PillarSidebar.swift */,
+				10AB837CDBE844F9AA686D44 /* LiveWorkoutMapView.swift */,
+				8BE86DFFE0BF498F8092ADBE /* RouteSnapshotMapView.swift */,
+				05D55C05F808CDF580A53740 /* Info.plist */,
+				F38FDA9C6BFC8BBC536C08F8 /* MyHealth.entitlements */,
+				85EDBFA83501F2EFC29414E2 /* MyHealthApp.swift */,
+			);
+			path = MyHealth;
+			sourceTree = "<group>";
+		};
+		9D67272584CEE1B3CDF606CB /* MyHealth Watch App */ = {
+			isa = PBXGroup;
+			children = (
+				6883A41FB56E09B449E13EC9 /* Info.plist */,
+				D47BE61EDF84C11B2760E97F /* MyHealthWatchApp.swift */,
+				A00427F00C3E3B0AFEEE5CA0 /* WatchContentView.swift */,
+			);
+			path = "MyHealth Watch App";
+			sourceTree = "<group>";
+		};
+		ACD4A404D768301E99E73B0F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3062470C1A2E29E410C9FDC0 /* ActivityKit.framework */,
+				24AA65D6CDA442E382FC7294 /* libsqlite3.tbd */,
+				5233AEF50ADE1C5F72DEC66C /* SwiftUI.framework */,
+				A4A8C9CD8AB62EF919420619 /* WidgetKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B6301606C4211C8D80DD13C4 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				24C2DD7B3A5B16AC4E37AA7C /* MyHealthKit */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		325C456C21C430ADDC0D62D9 /* MyHealth */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 16A23D358F2F9C53EFDA532D /* Build configuration list for PBXNativeTarget "MyHealth" */;
+			buildPhases = (
+				7104F391DA17FEA7D8A6B28C /* Sources */,
+				6705139681CA2057A2F0B37D /* Resources */,
+				DD8C6AE802541CC898EBB34D /* Frameworks */,
+				9F59E5594066437547052E70 /* Embed Foundation Extensions */,
+				B645420F1AC4C612173F8F09 /* Embed Watch Content */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				87EB4EEF4FE5622CD4B09208 /* PBXTargetDependency */,
+				2C04F4226E2A9E5EB9771D06 /* PBXTargetDependency */,
+			);
+			name = MyHealth;
+			packageProductDependencies = (
+				8A1360A2C6B9CDFD42CFED4A /* MyHealthKit */,
+			);
+			productName = MyHealth;
+			productReference = 60AA1719224422B218DC46DE /* MyHealth.app */;
+			productType = "com.apple.product-type.application";
+		};
+		3AFEE0315048B37EE1FD1CF8 /* MyHealth Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A96C9C8CCFC134786CBC6C20 /* Build configuration list for PBXNativeTarget "MyHealth Watch App" */;
+			buildPhases = (
+				B2B6DEF7FE01A8B51EF34BF2 /* Sources */,
+				0DD22FEE220AEC5B3B2DB791 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "MyHealth Watch App";
+			packageProductDependencies = (
+				851296529E7003690A26E1EB /* MyHealthKit */,
+			);
+			productName = "MyHealth Watch App";
+			productReference = B30BF388794386D94AF2A866 /* MyHealth Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		54F6F71D1E624B68F0BA0A58 /* MyHealthWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A262F7F150A641463627FD07 /* Build configuration list for PBXNativeTarget "MyHealthWidgets" */;
+			buildPhases = (
+				DCC8766414F662938BFC37A6 /* Sources */,
+				D63D8853E34F6C5C9B6DF9E3 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MyHealthWidgets;
+			packageProductDependencies = (
+				187BB1BD867FCA0A8497AD94 /* MyHealthKit */,
+			);
+			productName = MyHealthWidgets;
+			productReference = 424AAD904C399CF23CE6E9A6 /* MyHealthWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		32797708C7859F703E9262C5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					325C456C21C430ADDC0D62D9 = {
+						DevelopmentTeam = YGZKAF6C6H;
+					};
+					3AFEE0315048B37EE1FD1CF8 = {
+						DevelopmentTeam = YGZKAF6C6H;
+					};
+					54F6F71D1E624B68F0BA0A58 = {
+						DevelopmentTeam = YGZKAF6C6H;
+					};
+				};
+			};
+			buildConfigurationList = 04A8F95859FB4E4998967F03 /* Build configuration list for PBXProject "MyHealth" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 3FBCE3F3D013D7E47A2894BA;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2BCCDFFA59E96334057A95B9 /* XCLocalSwiftPackageReference "Packages/MyHealthKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 22144979E3A15F717F63CAAD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				325C456C21C430ADDC0D62D9 /* MyHealth */,
+				3AFEE0315048B37EE1FD1CF8 /* MyHealth Watch App */,
+				54F6F71D1E624B68F0BA0A58 /* MyHealthWidgets */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6705139681CA2057A2F0B37D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				325006945E374B4C19BE4D8D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7104F391DA17FEA7D8A6B28C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				858C8BAB07C64864730B982B /* ContentView.swift in Sources */,
+				E55A1AF323834640AD181459 /* SettingsView.swift in Sources */,
+				CBE8888AD9CD42B6955417E4 /* AddProgressPictureView.swift in Sources */,
+				98348AC4332444C4A8AAE4A5 /* ProgressPicturesListView.swift in Sources */,
+				A96C51DFC8FE49579B9C094A /* DashboardView.swift in Sources */,
+				57A52377C0BC42DAB6335F2E /* ExercisesLibraryView.swift in Sources */,
+				9E958F826CB54D89A32065C6 /* AddExerciseView.swift in Sources */,
+				04B7FFCC873348878F6F9AF0 /* WorkoutsHomeView.swift in Sources */,
+				F91ED1E1EFD94065B748176C /* RoutineEditorView.swift in Sources */,
+				0AD0231A8492476D8D410702 /* ExercisePickerView.swift in Sources */,
+				060AAFBB90184621A80AA96B /* ActiveWorkoutView.swift in Sources */,
+				B74332133D674702BCC6E217 /* WorkoutEndView.swift in Sources */,
+				F63FD255070C4C9FB374CF38 /* WorkoutLogDetailView.swift in Sources */,
+				A0D8A7E5420241D382712B08 /* HistoryView.swift in Sources */,
+				D51688DF59424AF1B9EEEF6C /* DeveloperDatabaseView.swift in Sources */,
+				8C58E3E2DC9F4E17A34D13B3 /* NavSection.swift in Sources */,
+				8CC6F10E1D2448CDA3FFE123 /* PlaceholderSectionView.swift in Sources */,
+				083ABC9A9CBC4708AF0F4501 /* AppRootView.swift in Sources */,
+				8456C114A5A248B09E4ADAD2 /* PillarTabView.swift in Sources */,
+				BB3B11262C3048819161AACE /* RoutinesView.swift in Sources */,
+				AB11EE001A2B4A6B9B7A0F01 /* PillarSidebar.swift in Sources */,
+				665A20B9EBA04FC7A9E8698D /* LiveWorkoutMapView.swift in Sources */,
+				27F0DE3197AC456B800D9DB3 /* RouteSnapshotMapView.swift in Sources */,
+				CC1FC8B6B29A8EE51C42AEFE /* MyHealthApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2B6DEF7FE01A8B51EF34BF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB961AB4FFA1795F8BF48F4E /* MyHealthWatchApp.swift in Sources */,
+				61551667548EE590D3D227F4 /* WatchContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DCC8766414F662938BFC37A6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C3899BDE4B8806229834FAA0 /* MyHealthWidgetsBundle.swift in Sources */,
+				0A58A486A2656B46B86C26A7 /* WorkoutLiveActivity.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2C04F4226E2A9E5EB9771D06 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3AFEE0315048B37EE1FD1CF8 /* MyHealth Watch App */;
+			targetProxy = CC0786A2EB81F41469832F20 /* PBXContainerItemProxy */;
+		};
+		87EB4EEF4FE5622CD4B09208 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 54F6F71D1E624B68F0BA0A58 /* MyHealthWidgets */;
+			targetProxy = 8A000CEAABD80E8A99630B07 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0343925174449BC8BF105EBC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = "MyHealth Watch App/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.mysuite.myhealth.watchkitapp;
+				PRODUCT_NAME = "MyHealth Watch App";
+				SDKROOT = watchos;
+				SKIP_INSTALL = NO;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		07CE9DEDCBDF7A4D226C8E9E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MyHealth/MyHealth.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = MyHealth/Info.plist;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mysuite.myhealth;
+				PRODUCT_NAME = MyHealth;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		256E8CEBEA6EE4EB9FF269B7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = "MyHealth Watch App/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.mysuite.myhealth.watchkitapp;
+				PRODUCT_NAME = "MyHealth Watch App";
+				SDKROOT = watchos;
+				SKIP_INSTALL = NO;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		3941B34B5BB3B9ACA9BABCE4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = YGZKAF6C6H;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.1;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		549B4DD50F0C24471422B763 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = MyHealth/MyHealth.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = MyHealth/Info.plist;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mysuite.myhealth;
+				PRODUCT_NAME = MyHealth;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		61DB26275C36CED5A2428CE2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = MyHealthWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mysuite.myhealth.widgets;
+				PRODUCT_NAME = MyHealthWidgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		D80349E63A1519B53C1B1641 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = MyHealthWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mysuite.myhealth.widgets;
+				PRODUCT_NAME = MyHealthWidgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		DE8E5D2133DBB9236E0CE659 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = YGZKAF6C6H;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.1;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		04A8F95859FB4E4998967F03 /* Build configuration list for PBXProject "MyHealth" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE8E5D2133DBB9236E0CE659 /* Debug */,
+				3941B34B5BB3B9ACA9BABCE4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		16A23D358F2F9C53EFDA532D /* Build configuration list for PBXNativeTarget "MyHealth" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				07CE9DEDCBDF7A4D226C8E9E /* Debug */,
+				549B4DD50F0C24471422B763 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A262F7F150A641463627FD07 /* Build configuration list for PBXNativeTarget "MyHealthWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				61DB26275C36CED5A2428CE2 /* Debug */,
+				D80349E63A1519B53C1B1641 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A96C9C8CCFC134786CBC6C20 /* Build configuration list for PBXNativeTarget "MyHealth Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0343925174449BC8BF105EBC /* Debug */,
+				256E8CEBEA6EE4EB9FF269B7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		2BCCDFFA59E96334057A95B9 /* XCLocalSwiftPackageReference "Packages/MyHealthKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/MyHealthKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		187BB1BD867FCA0A8497AD94 /* MyHealthKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MyHealthKit;
+		};
+		851296529E7003690A26E1EB /* MyHealthKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MyHealthKit;
+		};
+		8A1360A2C6B9CDFD42CFED4A /* MyHealthKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MyHealthKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 32797708C7859F703E9262C5 /* Project object */;
+}

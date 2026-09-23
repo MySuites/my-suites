@@ -1,0 +1,3 @@
+module MyHealthKitPackageTests {
+    header "/Users/zbanks/Documents/MySuite/apps/myhealth-swift/Packages/MyHealthKit/.build/arm64-apple-macosx/debug/MyHealthKitPackageTests.build/include/MyHealthKitPackageTests-Swift.h"
+}
